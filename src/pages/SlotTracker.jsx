@@ -218,7 +218,7 @@ const SlotTracker = () => {
                     <td className="py-4 px-6 text-gray-400 font-bold text-xs font-mono">{new Date(log.ts).toLocaleTimeString('en-GB')}</td>
                     <td className="py-4 px-6 text-right">
                       <button 
-                        onClick={() => deleteRecord(log.id)}
+                        onClick={() => deleteRecord(log.firebaseKey || log.id)}
                         className="p-1.5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={14} />
@@ -267,7 +267,7 @@ const SlotTracker = () => {
                       </div>
                     </div>
                     <button 
-                      onClick={() => deleteRecord(log.id)}
+                      onClick={() => deleteRecord(log.firebaseKey || log.id)}
                       className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/10 transition-all bg-white/5"
                     >
                       <Trash2 size={16} />

@@ -285,7 +285,7 @@ const Tickets = () => {
                         <td className="py-6 px-8 text-right">
                           <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
                              <button className="p-2.5 bg-white/5 border border-white/5 text-gray-500 hover:text-white hover:border-white/10 rounded-xl transition-all shadow-xl"><Eye size={16} /></button>
-                             <button className="p-2.5 bg-red-500/5 border border-red-500/10 text-gray-700 hover:text-red-500 hover:border-red-500/20 rounded-xl transition-all shadow-xl" onClick={() => deleteRecord(ticket.id)}><Trash2 size={16} /></button>
+                             <button className="p-2.5 bg-red-500/5 border border-red-500/10 text-gray-700 hover:text-red-500 hover:border-red-500/20 rounded-xl transition-all shadow-xl" onClick={() => deleteRecord(ticket.firebaseKey || ticket.id)}><Trash2 size={16} /></button>
                           </div>
                         </td>
                       </motion.tr>
@@ -327,7 +327,7 @@ const Tickets = () => {
                         </div>
                         <div className="flex gap-3">
                            <button className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all rounded-xl shadow-lg active:scale-95"><Eye size={16} /></button>
-                           <button className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all rounded-xl shadow-lg active:scale-95" onClick={() => deleteRecord(ticket.id)}><Trash2 size={16} /></button>
+                           <button className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all rounded-xl shadow-lg active:scale-95" onClick={() => deleteRecord(ticket.firebaseKey || ticket.id)}><Trash2 size={16} /></button>
                         </div>
                       </div>
 

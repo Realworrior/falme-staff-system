@@ -20,10 +20,14 @@ export const useFirebaseData = (path, initialValue = []) => {
             const val = snapshot.val();
             // Convert objects to arrays if needed for lists
             if (val && typeof val === 'object' && !Array.isArray(val)) {
-                const list = Object.entries(val).map(([id, item]) => ({
-                    id,
+                const list = Object.entries(val).map(([key, item]) => ({
+                    firebaseKey: key,
+                    id: key,
                     ...item
                 }));
+                setData(list);
+            } else if (Array.isArray(val)) {
+                const list = val.map((item, idx) => (typeof item === 'object' && item !== null ? { ...item, firebaseKey: idx.toString() } : item));
                 setData(list);
             } else {
                 setData(val || initialValue);
