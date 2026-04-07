@@ -53,7 +53,7 @@ const AppShell = ({ children }) => {
                 duration: 0.5, 
                 ease: [0.23, 1, 0.32, 1] 
               }}
-              className="min-h-full"
+              className="flex-1 w-full flex flex-col"
             >
               {children}
             </motion.div>

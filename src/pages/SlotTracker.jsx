@@ -172,8 +172,9 @@ const SlotTracker = () => {
           </div>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="w-full">
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5 bg-black/40">
                 <th className="text-left py-4 px-6 text-gray-600 text-[10px] font-black uppercase tracking-widest">#</th>
@@ -185,7 +186,7 @@ const SlotTracker = () => {
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence>
                 {paginatedLogs.map((log, index) => (
                   <motion.tr 
                     key={log.id} 
@@ -227,7 +228,56 @@ const SlotTracker = () => {
                 ))}
               </AnimatePresence>
             </tbody>
-          </table>
+            </table>
+          </div>
+
+          {/* Mobile Stacked Cards Layout (Hidden on Desktop) */}
+          <div className="md:hidden flex flex-col divide-y divide-white/5">
+            <AnimatePresence>
+              {paginatedLogs.map((log, index) => (
+                <motion.div 
+                  key={log.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  layout
+                  className="p-5 space-y-4 hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex gap-2">
+                      {(log.type === 'Slot 1' || log.type === 'Both') && (
+                        <span className="px-2 py-0.5 rounded-md bg-dull-red/10 text-dull-red border border-dull-red/20 font-black text-[9px] uppercase tracking-widest">
+                          Slot 1
+                        </span>
+                      )}
+                      {(log.type === 'Slot 2' || log.type === 'Both') && (
+                        <span className="px-2 py-0.5 rounded-md bg-dull-green/10 text-dull-green border border-dull-green/20 font-black text-[9px] uppercase tracking-widest">
+                          Slot 2
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-red-400/60 font-black text-[10px] tracking-tighter uppercase italic bg-red-500/5 px-2 py-0.5 border border-red-500/10 rounded">FAILED</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-4">
+                    <div>
+                      <span className="block text-gray-500 text-[9px] uppercase tracking-widest mb-1.5 font-bold">Date & Time</span>
+                      <div className="text-gray-300 text-xs font-bold">
+                        {new Date(log.ts).toLocaleDateString()} <span className="font-mono text-gray-500 ml-1">{new Date(log.ts).toLocaleTimeString('en-GB')}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => deleteRecord(log.id)}
+                      className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/10 transition-all bg-white/5"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
           {logs.length === 0 && (
             <div className="py-16 text-center text-gray-600 font-black uppercase tracking-widest text-[10px] italic">
               No historical records found
