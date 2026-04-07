@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
-
+import KeywordHighlighter from '../components/KeywordHighlighter';
 import { 
   Dialog, 
   DialogTitle, 
@@ -255,7 +255,7 @@ const Templates = () => {
                             <div className="w-6 h-1 bg-white/5 rounded-full" />
                           </div>
                           <div className="text-gray-500 text-xs md:text-sm leading-relaxed font-medium">
-                            {resp.text}
+                            <KeywordHighlighter text={resp.text} />
                           </div>
                           
                           {/* Copy Success Feedback Overlay */}
