@@ -303,14 +303,14 @@ const Tickets = () => {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 10 }}
-                      className="p-6 space-y-4"
+                      className="p-4 sm:p-6 space-y-4 hover:bg-white/[0.02] transition-colors"
                     >
                       <div className="flex justify-between items-start gap-4">
                         <div className="min-w-0 flex-1">
                           <p className="text-white font-black uppercase tracking-tight text-sm truncate">{ticket.title || "No Summary"}</p>
-                          <p className="text-gray-700 text-[10px] font-mono mt-1 font-bold">#{(ticket.id || '').toUpperCase()}</p>
+                          <p className="text-gray-500 text-[10px] font-mono mt-1 font-bold">#{(ticket.id || '').toUpperCase()}</p>
                         </div>
-                        <span className={`flex-shrink-0 px-2 py-0.5 rounded text-[8px] font-black tracking-widest border h-fit ${
+                        <span className={`flex-shrink-0 px-2.5 py-1 rounded text-[8px] font-black tracking-widest border h-fit ${
                            (ticket.category || ticket.type || "").includes("Pending") ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-white/5 text-gray-400 border-white/5"
                          }`}>
                           {(ticket.category || ticket.type || "General").toUpperCase()}
@@ -319,28 +319,28 @@ const Tickets = () => {
 
                       <div className="flex items-center justify-between py-3 border-y border-white/5">
                         <div className="flex items-center gap-2">
-                          <div className={`w-1.5 h-1.5 rounded-full ${
+                          <div className={`w-2 h-2 rounded-full ${
                              ticket.status === 'Resolved' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 
                              ticket.status === 'In Progress' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
                           }`} />
-                          <span className="text-gray-500 font-black text-[9px] uppercase tracking-[0.2em]">{ticket.status}</span>
+                          <span className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em]">{ticket.status}</span>
                         </div>
-                        <div className="flex gap-2">
-                           <button className="p-2 bg-white/5 border border-white/5 text-gray-500 rounded-lg"><Eye size={14} /></button>
-                           <button className="p-2 bg-red-500/5 border border-red-500/10 text-gray-700 rounded-lg" onClick={() => deleteRecord(ticket.id)}><Trash2 size={14} /></button>
+                        <div className="flex gap-3">
+                           <button className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all rounded-xl shadow-lg active:scale-95"><Eye size={16} /></button>
+                           <button className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all rounded-xl shadow-lg active:scale-95" onClick={() => deleteRecord(ticket.id)}><Trash2 size={16} /></button>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
-                         {ticket.phone && <span onClick={() => handleCopy(ticket.phone)} className="text-gray-600 font-bold font-mono text-[9px] bg-white/5 hover:bg-white/10 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95 border border-transparent hover:border-white/10" title="Copy Phone Number">PH: {ticket.phone}</span>}
-                         {ticket.amount && <span className="text-red-500 font-black text-[9px] bg-red-500/5 px-2 py-1 rounded">AMT: {ticket.amount}</span>}
-                         {ticket.betId && <span onClick={() => handleCopy(ticket.betId)} className="text-indigo-400 font-bold font-mono text-[9px] bg-indigo-500/5 hover:bg-indigo-500/10 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95 border border-transparent hover:border-indigo-500/20" title="Copy Bet ID">BET: {ticket.betId}</span>}
-                         {ticket.game && <span className="text-amber-400 font-black text-[9px] bg-amber-500/5 px-2 py-1 rounded">GAME: {ticket.game}</span>}
-                         {ticket.comments && <div className="w-full mt-1 text-gray-500 font-medium italic text-[10px] break-words px-1 border-l-2 border-white/5">"{ticket.comments}"</div>}
+                      <div className="flex flex-wrap gap-2.5">
+                         {ticket.phone && <span onClick={() => handleCopy(ticket.phone)} className="text-gray-300 font-bold font-mono text-[10px] bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg cursor-pointer transition-colors active:scale-95 border border-white/10 shadow-sm" title="Copy Phone Number">PH: {ticket.phone}</span>}
+                         {ticket.amount && <span className="text-red-400 font-black text-[10px] bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20 shadow-sm">AMT: {ticket.amount}</span>}
+                         {ticket.betId && <span onClick={() => handleCopy(ticket.betId)} className="text-indigo-400 font-bold font-mono text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg cursor-pointer transition-colors active:scale-95 border border-indigo-500/20 shadow-sm" title="Copy Bet ID">BET: {ticket.betId}</span>}
+                         {ticket.game && <span className="text-amber-400 font-black text-[10px] bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 shadow-sm">GAME: {ticket.game}</span>}
+                         {ticket.comments && <div className="w-full mt-2 text-gray-400 font-medium italic text-[11px] leading-relaxed break-words px-3 py-2 bg-black/20 rounded-xl border border-white/5">"{ticket.comments}"</div>}
                          {(ticket.category === "Pending Cashout" || ticket.type === "Pending Cashout") && (
                            <div className="w-full mt-2">
-                             <div className="w-full h-16 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center italic text-[6px] text-emerald-500/40 font-black uppercase tracking-[0.2em]">
-                               PROOF_SYNCHRONIZED_PREVIEW
+                             <div className="w-full h-20 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center italic text-[8px] text-emerald-500/50 font-black uppercase tracking-[0.3em] shadow-inner shadow-emerald-500/5 hover:bg-emerald-500/10 transition-colors cursor-pointer">
+                               View Screenshot Proof
                              </div>
                            </div>
                          )}
@@ -361,9 +361,9 @@ const Tickets = () => {
       </div>
 
       {/* Initialize Specialized Record Dialog */}
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ elevation: 0 }}>
-        <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-8 py-6 uppercase tracking-tighter bg-black">Initialize Specialized Infrastructure Entry</DialogTitle>
-        <DialogContent className="space-y-8 pt-8 px-8 bg-[#0a0a0f]">
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ elevation: 0, className: "m-4 rounded-3xl overflow-hidden" }}>
+        <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-6 md:px-8 py-5 md:py-6 uppercase tracking-tighter bg-black">Initialize Specialized Infrastructure Entry</DialogTitle>
+        <DialogContent className="space-y-8 pt-8 px-6 md:px-8 bg-[#0a0a0f]">
           {/* Category Selector */}
           <FormControl fullWidth>
             <InputLabel>Infrastructure Segment</InputLabel>
@@ -455,9 +455,9 @@ const Tickets = () => {
             )}
           </Box>
         </DialogContent>
-        <DialogActions className="px-8 py-6 border-t border-white/5 bg-black">
-          <button onClick={() => setModalOpen(false)} className="px-6 py-3 text-[10px] font-black text-gray-600 hover:text-white transition-colors uppercase tracking-[0.2em]">Abort Sync</button>
-          <button onClick={handleCreate} className="px-10 py-3 accent-gradient text-white rounded-xl font-black text-[10px] shadow-2xl shadow-red-500/20 uppercase tracking-[0.3em]">Initialize Operational Entry</button>
+        <DialogActions className="px-6 md:px-8 py-4 md:py-6 border-t border-white/5 bg-black flex-col sm:flex-row gap-3">
+          <button onClick={() => setModalOpen(false)} className="w-full sm:w-auto px-6 py-4 text-[10px] font-black text-gray-400 hover:text-white transition-colors uppercase tracking-[0.2em] border border-white/5 sm:border-none rounded-xl">Abort Sync</button>
+          <button onClick={handleCreate} className="w-full sm:w-auto px-10 py-4 accent-gradient text-white rounded-xl font-black text-[10px] shadow-2xl shadow-red-500/20 uppercase tracking-[0.3em] active:scale-95 transition-transform">Initialize Entry</button>
         </DialogActions>
       </Dialog>
     </div>

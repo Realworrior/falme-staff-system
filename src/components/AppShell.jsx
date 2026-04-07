@@ -43,7 +43,7 @@ const AppShell = ({ children }) => {
         <div className={`flex-1 overflow-auto flex flex-col transition-all duration-500 pt-16 lg:pt-0 ${
           isTemplateRoute ? "pb-28" : ""
         }`}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, scale: 0.98 }}
