@@ -79,7 +79,7 @@ const SlotTracker = () => {
           <p className="text-gray-500 text-sm md:text-base font-medium">Record and analyze real-time slot failure performance</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6">
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -120,7 +120,7 @@ const SlotTracker = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => logFailure('Both')}
-            className="group relative overflow-hidden px-5 py-3 bg-[#1a1a24] border border-white/10 rounded-2xl transition-all hover:border-white/30 shadow-xl sm:col-span-1"
+            className="group relative overflow-hidden px-5 py-3 bg-[#1a1a24] border border-white/10 rounded-2xl transition-all hover:border-white/30 shadow-xl col-span-2 sm:col-span-1"
           >
             <div className="relative z-10 flex flex-col items-center gap-2">
               <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-all">

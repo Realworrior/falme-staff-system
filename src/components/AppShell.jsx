@@ -40,7 +40,7 @@ const AppShell = ({ children }) => {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative">
-        <div className={`flex-1 overflow-auto transition-all duration-500 pt-16 lg:pt-0 ${
+        <div className={`flex-1 overflow-auto flex flex-col transition-all duration-500 pt-16 lg:pt-0 ${
           isTemplateRoute ? "pb-28" : ""
         }`}>
           <AnimatePresence mode="wait">

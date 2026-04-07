@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
-import KeywordHighlighter from '../components/KeywordHighlighter';
+
 import { 
   Dialog, 
   DialogTitle, 
@@ -141,36 +141,60 @@ const Templates = () => {
 
         {/* Dynamic Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            {selectedCategory && (
-              <button 
-                onClick={() => setSelectedCategory(null)}
-                className="p-3 text-gray-500 hover:text-white bg-white/5 rounded-2xl border border-white/5 transition-all group"
-              >
-                <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-              </button>
-            )}
-            <div>
-              <h1 className="text-3xl font-black text-white font-heading tracking-tighter uppercase leading-none">
-                {selectedCategory || "Global Library"}
-              </h1>
-              <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mt-2 italic decoration-red-500/20 underline">
-                {selectedCategory ? "Contextual Segment Active" : "Operational Core Index"}
-              </p>
+          <div className="flex flex-1 items-center justify-between gap-4 w-full">
+            <div className="flex flex-1 items-center gap-4 min-w-0">
+              {selectedCategory && (
+                <button 
+                  onClick={() => setSelectedCategory(null)}
+                  className="p-3 text-gray-500 hover:text-white bg-white/5 rounded-2xl border border-white/5 transition-all group shrink-0"
+                >
+                  <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                </button>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-xl sm:text-3xl font-black text-white font-heading tracking-tighter uppercase leading-none truncate">
+                    {selectedCategory || "Global Library"}
+                  </h1>
+                  {/* Mobile Search Input Icon */}
+                  <div className="sm:hidden relative flex items-center shrink-0">
+                    <Search className="absolute left-2.5 w-4 h-4 text-gray-500" />
+                    <input 
+                      type="text" 
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="w-9 h-9 focus:w-36 transition-all duration-300 bg-white/5 border border-white/10 rounded-full pl-8 pr-3 text-white text-[10px] focus:bg-[#0f0f17] outline-none placeholder-transparent focus:placeholder-gray-600 focus:ring-1 focus:ring-red-500/50"
+                      placeholder="Search..."
+                    />
+                  </div>
+                </div>
+                <p className="hidden sm:block text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mt-2 italic decoration-red-500/20 underline">
+                  {selectedCategory ? "Contextual Segment Active" : "Operational Core Index"}
+                </p>
+              </div>
             </div>
+            
+            {/* Mobile Initialize Record Collapsed Button */}
+            <button 
+              onClick={() => setModalOpen(true)}
+              className="sm:hidden p-3 accent-gradient text-white rounded-2xl font-black shadow-xl shrink-0"
+            >
+              <Plus size={18} strokeWidth={3} />
+            </button>
           </div>
           
+          {/* Desktop Initialize Record */}
           <button 
             onClick={() => setModalOpen(true)}
-            className="px-8 py-4 accent-gradient text-white rounded-2xl font-black hover:shadow-2xl hover:shadow-red-500/30 transition-all duration-500 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em] shadow-xl"
+            className="hidden sm:flex px-8 py-4 accent-gradient text-white rounded-2xl font-black hover:shadow-2xl hover:shadow-red-500/30 transition-all duration-500 items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em] shadow-xl shrink-0"
           >
             <Plus size={18} strokeWidth={3} />
             Initialize Record
           </button>
         </div>
 
-        {/* Advanced Search */}
-        <div className="relative group">
+        {/* Advanced Search (Desktop Only) */}
+        <div className="hidden sm:block relative group">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-700 group-focus-within:text-red-500 transition-colors" />
           <input
             type="text"
@@ -231,7 +255,7 @@ const Templates = () => {
                             <div className="w-6 h-1 bg-white/5 rounded-full" />
                           </div>
                           <div className="text-gray-500 text-xs md:text-sm leading-relaxed font-medium">
-                            <KeywordHighlighter text={resp.text} />
+                            {resp.text}
                           </div>
                           
                           {/* Copy Success Feedback Overlay */}
