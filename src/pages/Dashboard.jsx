@@ -79,7 +79,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-10 max-w-[1600px] mx-auto">
+    <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto">
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -122,9 +122,9 @@ const Dashboard = () => {
               </div>
             </div>
             <h3 className="text-3xl font-black text-white mb-1 font-heading">{stat.value}</h3>
-            <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.2em]">{stat.label}</p>
+            <p className="text-gray-600 text-xs font-black uppercase tracking-[0.2em]">{stat.label}</p>
             <div className="mt-4 pt-4 border-t border-white/5">
-              <span className="text-gray-500 text-[10px] font-bold italic">{stat.detail}</span>
+              <span className="text-gray-500 text-xs font-bold italic">{stat.detail}</span>
             </div>
           </motion.div>
         ))}
@@ -154,10 +154,10 @@ const Dashboard = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-white font-black text-sm uppercase tracking-tight group-hover:text-red-500 transition-colors">{activity.title}</p>
                 <div className="flex items-center gap-3 mt-1.5">
-                  <span className="px-2 py-0.5 rounded bg-white/5 text-gray-500 text-[9px] font-black uppercase tracking-widest border border-white/5">
+                  <span className="px-2 py-0.5 rounded bg-white/5 text-gray-500 text-xs font-black uppercase tracking-widest border border-white/5">
                     {activity.type}
                   </span>
-                  <span className="text-gray-600 text-[10px] font-bold italic">{activity.detail}</span>
+                  <span className="text-gray-600 text-xs font-bold italic">{activity.detail}</span>
                 </div>
               </div>
               <div className="text-right">

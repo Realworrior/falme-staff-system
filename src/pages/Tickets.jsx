@@ -183,7 +183,7 @@ const Tickets = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-10 max-w-[1600px] mx-auto pb-24">
+    <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto pb-24">
       {/* Dynamic Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -274,11 +274,11 @@ const Tickets = () => {
               <table className="w-full text-sm hidden md:table">
                 <thead>
                   <tr className="border-b border-white/5 bg-black/40">
-                    <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">TICKET ID</th>
-                    <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">CATEGORY</th>
-                    <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">STATUS</th>
-                    <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">DETAILS</th>
-                    <th className="text-center py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">ACTIONS</th>
+                    <th className="text-left py-6 px-8 text-gray-500 text-[11px] font-black uppercase tracking-widest">TICKET ID / INFO</th>
+                    <th className="text-left py-6 px-8 text-gray-500 text-[11px] font-black uppercase tracking-widest">ISSUE CATEGORY</th>
+                    <th className="text-left py-6 px-8 text-gray-500 text-[11px] font-black uppercase tracking-widest">CURRENT STATUS</th>
+                    <th className="text-left py-6 px-8 text-gray-500 text-[11px] font-black uppercase tracking-widest">CONTEXTUAL DETAILS</th>
+                    <th className="text-center py-6 px-8 text-gray-500 text-[11px] font-black uppercase tracking-widest">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -293,33 +293,35 @@ const Tickets = () => {
                       >
                         <td className="py-6 px-8">
                           <div className="flex flex-col">
-                            <span className="text-white font-black uppercase tracking-tight text-xs">{ticket.title || "No Summary"}</span>
-                            <span className="text-gray-700 text-[10px] font-mono mt-1 font-bold">#{(ticket.id || '').toUpperCase()}</span>
+                            <span className="text-white font-black uppercase tracking-tight text-sm md:text-base">{ticket.title || "No Summary Provided"}</span>
+                            <span className="text-gray-600 text-[11px] font-mono mt-1 font-bold">UID: #{(ticket.id || '').toUpperCase()}</span>
                           </div>
                         </td>
                         <td className="py-6 px-8">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-black tracking-widest border ${
-                            (ticket.category || ticket.type || "").includes("Pending") ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-white/5 text-gray-400 border-white/5"
+                          <span className={`px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest border shadow-sm ${
+                            (ticket.category || ticket.type || "").includes("Pending") 
+                              ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
+                              : "bg-red-500/10 text-red-500 border-red-500/20"
                           }`}>
-                            {(ticket.category || ticket.type || "General Enquiry").toUpperCase()}
+                            {(ticket.category || ticket.type || "General Inquiry").toUpperCase()}
                           </span>
                         </td>
                         <td className="py-6 px-8">
                           <div className="flex items-center gap-2.5">
-                             <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                               ticket.status === 'Resolved' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 
-                               ticket.status === 'In Progress' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
+                             <div className={`w-2 h-2 rounded-full animate-pulse ${
+                               ticket.status === 'Resolved' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 
+                               ticket.status === 'In Progress' ? 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.6)]' : 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]'
                              }`} />
-                             <span className="text-gray-500 font-black text-[9px] uppercase tracking-[0.2em]">{ticket.status}</span>
+                             <span className="text-gray-400 font-black text-xs uppercase tracking-[0.2em]">{ticket.status}</span>
                           </div>
                         </td>
-                        <td className="py-6 px-8 max-w-xs">
-                          <div className="flex flex-wrap gap-2">
-                            {ticket.phone && <span onClick={() => handleCopy(ticket.phone)} className="text-gray-600 font-bold font-mono text-[10px] bg-white/5 hover:bg-white/10 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95 border border-transparent hover:border-white/10" title="Copy Phone Number">PH: {ticket.phone}</span>}
-                            {ticket.amount && <span className="text-red-500 font-black text-[10px] bg-red-500/5 px-2 py-1 rounded">AMT: {ticket.amount}</span>}
-                            {ticket.betId && <span onClick={() => handleCopy(ticket.betId)} className="text-indigo-400 font-bold font-mono text-[9px] bg-indigo-500/5 hover:bg-indigo-500/10 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95 border border-transparent hover:border-indigo-500/20" title="Copy Bet ID">BET: {ticket.betId}</span>}
-                            {ticket.game && <span className="text-amber-400 font-black text-[9px] bg-amber-500/5 px-2 py-1 rounded">GAME: {ticket.game}</span>}
-                            {ticket.comments && <div className="w-full mt-1.5 text-gray-500 font-medium italic text-[10px] break-words px-1 border-l-2 border-white/5">"{ticket.comments}"</div>}
+                        <td className="py-6 px-8">
+                          <div className="flex flex-wrap gap-2.5">
+                            {ticket.phone && <span onClick={() => handleCopy(ticket.phone)} className="text-gray-300 font-bold font-mono text-xs bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg cursor-pointer transition-colors active:scale-95 border border-white/5 shadow-inner" title="Copy Phone Number">{ticket.phone}</span>}
+                            {ticket.amount && <span className="text-red-400 font-black text-xs bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20">KES {ticket.amount}</span>}
+                            {ticket.betId && <span onClick={() => handleCopy(ticket.betId)} className="text-indigo-400 font-bold font-mono text-[11px] bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg cursor-pointer transition-colors active:scale-95 border border-indigo-500/20" title="Copy Bet ID">BET: {ticket.betId}</span>}
+                            {ticket.game && <span className="text-amber-400 font-black text-[11px] bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">GAME: {ticket.game}</span>}
+                            {ticket.comments && <div className="w-full mt-2 text-gray-500 font-medium italic text-xs leading-relaxed break-words px-3 border-l-4 border-red-500/20 py-1">"{ticket.comments}"</div>}
                             {ticket.category === "Pending Cashout" && (
                               <div className="flex flex-col gap-2">
                                 <div className="flex items-center gap-1 text-emerald-400 font-black text-[9px] bg-emerald-500/5 px-2 py-1 rounded">
@@ -385,7 +387,7 @@ const Tickets = () => {
                              ticket.status === 'Resolved' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 
                              ticket.status === 'In Progress' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
                           }`} />
-                          <span className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em]">{ticket.status}</span>
+                          <span className="text-gray-400 font-black text-xs uppercase tracking-[0.2em]">{ticket.status}</span>
                         </div>
                         <div className="flex gap-3">
                            <button className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all rounded-xl shadow-lg active:scale-95"><Eye size={16} /></button>
@@ -394,11 +396,11 @@ const Tickets = () => {
                       </div>
 
                       <div className="flex flex-wrap gap-2.5">
-                         {ticket.phone && <span onClick={() => handleCopy(ticket.phone)} className="text-gray-300 font-bold font-mono text-[10px] bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg cursor-pointer transition-colors active:scale-95 border border-white/10 shadow-sm" title="Copy Phone Number">PH: {ticket.phone}</span>}
-                         {ticket.amount && <span className="text-red-400 font-black text-[10px] bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20 shadow-sm">AMT: {ticket.amount}</span>}
-                         {ticket.betId && <span onClick={() => handleCopy(ticket.betId)} className="text-indigo-400 font-bold font-mono text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg cursor-pointer transition-colors active:scale-95 border border-indigo-500/20 shadow-sm" title="Copy Bet ID">BET: {ticket.betId}</span>}
-                         {ticket.game && <span className="text-amber-400 font-black text-[10px] bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 shadow-sm">GAME: {ticket.game}</span>}
-                         {ticket.comments && <div className="w-full mt-2 text-gray-400 font-medium italic text-[11px] leading-relaxed break-words px-3 py-2 bg-black/20 rounded-xl border border-white/5">"{ticket.comments}"</div>}
+                         {ticket.phone && <span onClick={() => handleCopy(ticket.phone)} className="text-gray-300 font-bold font-mono text-xs bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg cursor-pointer transition-colors active:scale-95 border border-white/10 shadow-sm" title="Copy Phone Number">{ticket.phone}</span>}
+                         {ticket.amount && <span className="text-red-400 font-black text-xs bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20 shadow-sm">KES {ticket.amount}</span>}
+                         {ticket.betId && <span onClick={() => handleCopy(ticket.betId)} className="text-indigo-400 font-bold font-mono text-xs bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg cursor-pointer transition-colors active:scale-95 border border-indigo-500/20 shadow-sm" title="Copy Bet ID">BET: {ticket.betId}</span>}
+                         {ticket.game && <span className="text-amber-400 font-black text-xs bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 shadow-sm">GAME: {ticket.game}</span>}
+                         {ticket.comments && <div className="w-full mt-3 text-gray-400 font-medium italic text-xs leading-relaxed break-words px-4 py-3 bg-black/20 rounded-xl border border-white/5">"{ticket.comments}"</div>}
                          {(ticket.category === "Pending Cashout" || ticket.type === "Pending Cashout") && (
                            <div className="w-full mt-2">
                              <div className="w-full h-20 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center italic text-[8px] text-emerald-500/50 font-black uppercase tracking-[0.3em] shadow-inner shadow-emerald-500/5 hover:bg-emerald-500/10 transition-colors cursor-pointer">

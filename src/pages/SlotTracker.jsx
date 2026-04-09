@@ -67,7 +67,7 @@ const SlotTracker = () => {
   }, [logs]);
 
   return (
-    <div className="p-4 md:p-8 space-y-10 max-w-[1600px] mx-auto">
+    <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto">
       {/* 1. Header & Prominent Buttons */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -177,12 +177,12 @@ const SlotTracker = () => {
             <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5 bg-black/40">
-                <th className="text-left py-4 px-6 text-gray-600 text-[10px] font-black uppercase tracking-widest">#</th>
-                <th className="text-left py-4 px-6 text-gray-600 text-[10px] font-black uppercase tracking-widest">SLOT IDENTIFIER</th>
-                <th className="text-left py-4 px-6 text-gray-600 text-[10px] font-black uppercase tracking-widest">STATUS</th>
-                <th className="text-left py-4 px-6 text-gray-600 text-[10px] font-black uppercase tracking-widest">DATE</th>
-                <th className="text-left py-4 px-6 text-gray-600 text-[10px] font-black uppercase tracking-widest">TIME</th>
-                <th className="text-right py-4 px-6 text-gray-600 text-[10px] font-black uppercase tracking-widest text-center">MANAGE</th>
+                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">#</th>
+                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">SLOT IDENTIFIER</th>
+                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">STATUS</th>
+                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">DATE</th>
+                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">TIME</th>
+                <th className="text-right py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest text-center">MANAGE</th>
               </tr>
             </thead>
             <tbody>
@@ -256,7 +256,7 @@ const SlotTracker = () => {
                         </span>
                       )}
                     </div>
-                    <span className="text-red-400/60 font-black text-[10px] tracking-tighter uppercase italic bg-red-500/5 px-2 py-0.5 border border-red-500/10 rounded">FAILED</span>
+                    <span className="text-red-400/60 font-black text-xs tracking-tighter uppercase italic bg-red-500/5 px-2 py-0.5 border border-red-500/10 rounded">FAILED</span>
                   </div>
                   
                   <div className="flex items-center justify-between mt-4">
@@ -309,7 +309,7 @@ const SlotTracker = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white font-heading">7-Day Performance</h2>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Historical trend analysis</p>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Historical trend analysis</p>
             </div>
           </div>
           <div className="flex items-center gap-6">
