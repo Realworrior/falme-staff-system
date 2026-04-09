@@ -408,7 +408,7 @@ const Tickets = () => {
       {/* Initialize Specialized Record Dialog */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ elevation: 0, className: "m-4 rounded-3xl overflow-hidden" }}>
         <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-6 md:px-8 py-5 md:py-6 uppercase tracking-tighter bg-black">Create New Ticket</DialogTitle>
-        <DialogContent className="space-y-8 pt-8 px-6 md:px-8 bg-[#0a0a0f]">
+        <DialogContent className="flex flex-col gap-6 pt-8 px-6 md:px-8 bg-[#0a0a0f]">
           {/* Quick Paste Auto-Fill */}
           <TextField 
             label="Quick Paste / Auto-fill (Paste details here...)" 
@@ -418,42 +418,25 @@ const Tickets = () => {
             sx={{ backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 2 }}
           />
 
-          {/* Category Selector */}
-          <FormControl fullWidth>
-            <InputLabel>Issue Category</InputLabel>
-            <Select 
-              value={form.category} 
-              label="Issue Category" 
-              onChange={e => setForm({ ...form, category: e.target.value })}
-              MenuProps={{ PaperProps: { sx: { maxHeight: 400, width: { xs: 280, sm: 'auto' } } } }}
-            >
-              {CATEGORIES.map(c => (
-                <MenuItem key={c} value={c} sx={{ whiteSpace: 'normal' }}>{c}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField 
-            label="Summary of Issue" 
-            fullWidth 
-            multiline
-            rows={2}
-            value={form.title} 
-            onChange={e => setForm({ ...form, title: e.target.value })} 
-          />
-          <TextField 
-            label="Additional Comments (Optional)" 
-            fullWidth 
-            multiline
-            rows={2}
-            value={form.comments} 
-            onChange={e => setForm({ ...form, comments: e.target.value })} 
-          />
-
           <Box className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Common Field: Phone */}
             <TextField label="Phone Number" fullWidth value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             
+            <FormControl fullWidth>
+              <InputLabel>Issue Category</InputLabel>
+              <Select 
+                value={form.category} 
+                label="Issue Category" 
+                onChange={e => setForm({ ...form, category: e.target.value })}
+                MenuProps={{ PaperProps: { sx: { maxHeight: 400, width: { xs: 280, sm: 'auto' } } } }}
+              >
+                {CATEGORIES.map(c => (
+                  <MenuItem key={c} value={c} sx={{ whiteSpace: 'normal' }}>{c}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Conditional Fields Based on Category */}
             {form.category === "Pending Bet" && (
               <>
@@ -508,8 +491,16 @@ const Tickets = () => {
                 <TextField label="Time of Issue" fullWidth placeholder="e.g., 14:30" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
               </>
             )}
-
           </Box>
+
+          <TextField 
+            label="Issue Summary & Additional Comments" 
+            fullWidth 
+            multiline
+            rows={3}
+            value={form.title} 
+            onChange={e => setForm({ ...form, title: e.target.value })} 
+          />
         </DialogContent>
         <DialogActions className="px-6 md:px-8 py-4 md:py-6 border-t border-white/5 bg-black flex-col sm:flex-row gap-3">
           <button onClick={() => setModalOpen(false)} className="w-full sm:w-auto px-6 py-4 text-[10px] font-black text-gray-400 hover:text-white transition-colors uppercase tracking-[0.2em] border border-white/5 sm:border-none rounded-xl">Cancel</button>
