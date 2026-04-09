@@ -38,8 +38,8 @@ const TicketAuth = ({ onLogin }) => {
             <div className="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center shadow-2xl shadow-red-500/20 mb-4">
               <Shield className="text-white w-8 h-8" />
             </div>
-            <h1 className="text-2xl font-black text-white font-heading tracking-tighter uppercase">Operational Gate</h1>
-            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mt-1">Ticket Infrastructure Access</p>
+            <h1 className="text-2xl font-black text-white font-heading tracking-tighter uppercase">Support Login</h1>
+            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mt-1">Sign in to manage tickets</p>
           </div>
 
           {/* Module Switcher */}
@@ -66,7 +66,7 @@ const TicketAuth = ({ onLogin }) => {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Security Token</label>
+              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
                 <input 
@@ -84,7 +84,7 @@ const TicketAuth = ({ onLogin }) => {
               type="submit"
               className="w-full py-5 accent-gradient text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-red-500/20 hover:shadow-red-500/40 transition-all active:scale-95 flex items-center justify-center gap-2 mt-8"
             >
-              Establish Connection
+              Log In
               <ArrowRight size={16} strokeWidth={3} />
             </button>
           </form>

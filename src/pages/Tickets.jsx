@@ -149,7 +149,7 @@ const Tickets = () => {
     createRecord(payload);
     setModalOpen(false);
     resetForm();
-    showToast('Infrastructure ticket initialized!', 'success');
+    showToast('Ticket created successfully!', 'success');
   };
 
   const resetForm = () => {
@@ -179,12 +179,12 @@ const Tickets = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-black text-white font-heading tracking-tighter uppercase">{auth.role} Terminal</h1>
+              <h1 className="text-3xl font-black text-white font-heading tracking-tighter uppercase">{auth.role} Portal</h1>
               <span className="px-2 py-0.5 rounded bg-red-600/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">Active Session</span>
             </div>
             <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2">
               <Briefcase size={10} />
-              Operations / Infrastructure System 2.4
+              Customer Support System
             </p>
           </div>
         </div>
@@ -194,14 +194,14 @@ const Tickets = () => {
             onClick={handleLogout}
             className="px-5 py-3 text-gray-500 hover:text-white font-black text-[9px] uppercase tracking-widest transition-colors border border-white/5 rounded-xl bg-white/5"
           >
-            Terminal Logout
+            Log Out
           </button>
           <button 
             onClick={() => { resetForm(); setModalOpen(true); }}
             className="px-8 py-4 accent-gradient text-white rounded-2xl font-black shadow-2xl hover:shadow-red-500/40 transition-all duration-300 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em]"
           >
             <Plus size={18} strokeWidth={3} />
-            Initialize Record
+            New Ticket
           </button>
         </div>
       </motion.div>
@@ -235,7 +235,7 @@ const Tickets = () => {
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-700 group-focus-within:text-red-500 transition-colors" />
               <input
                 type="text"
-                placeholder="Synchronize with Identifier / Phone / Category..."
+                placeholder="Search tickets by ID, Phone, or Category..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-14 pr-6 py-5 bg-[#0f0f17] border border-white/5 rounded-3xl text-white placeholder-gray-700 focus:outline-none focus:border-red-500/20 transition-all shadow-2xl"
@@ -247,9 +247,9 @@ const Tickets = () => {
             <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/20">
               <div className="flex items-center gap-3">
                 <Filter size={18} className="text-red-500" />
-                <h2 className="text-lg font-black text-white font-heading uppercase tracking-tighter">Synchronized Feed</h2>
+                <h2 className="text-lg font-black text-white font-heading uppercase tracking-tighter">Ticket Feed</h2>
               </div>
-              <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">{filteredTickets.length} Entries Encrypted</span>
+              <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">{filteredTickets.length} Tickets Found</span>
             </div>
             
             <div className="no-scrollbar">
@@ -257,7 +257,7 @@ const Tickets = () => {
               <table className="w-full text-sm hidden md:table">
                 <thead>
                   <tr className="border-b border-white/5 bg-black/40">
-                    <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">RECORD / UID</th>
+                    <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">TICKET ID</th>
                     <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">CATEGORY</th>
                     <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">STATUS</th>
                     <th className="text-left py-6 px-8 text-gray-700 text-[9px] font-black uppercase tracking-widest">DETAILS</th>
@@ -312,7 +312,7 @@ const Tickets = () => {
                                 <div className="w-20 h-12 rounded-lg border border-emerald-500/20 bg-black/40 overflow-hidden relative group/thumb cursor-pointer">
                                   <div className="absolute inset-0 bg-emerald-500/10 animate-pulse group-hover/thumb:opacity-0 transition-opacity" />
                                   <div className="w-full h-full flex items-center justify-center italic text-[6px] text-emerald-500/40 font-black uppercase tracking-tighter">
-                                    IMG_SYNCHRONIZED
+                                    SCREENSHOT
                                   </div>
                                 </div>
                               </div>
@@ -397,7 +397,7 @@ const Tickets = () => {
 
               {filteredTickets.length === 0 && (
                 <div className="py-32 text-center text-gray-800 font-black uppercase tracking-[0.4em] text-[10px] italic underline decoration-white/5">
-                  Null Record / No Synchronized Data
+                  No tickets found
                 </div>
               )}
             </div>
@@ -407,7 +407,7 @@ const Tickets = () => {
 
       {/* Initialize Specialized Record Dialog */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ elevation: 0, className: "m-4 rounded-3xl overflow-hidden" }}>
-        <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-6 md:px-8 py-5 md:py-6 uppercase tracking-tighter bg-black">Initialize Specialized Infrastructure Entry</DialogTitle>
+        <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-6 md:px-8 py-5 md:py-6 uppercase tracking-tighter bg-black">Create New Ticket</DialogTitle>
         <DialogContent className="space-y-8 pt-8 px-6 md:px-8 bg-[#0a0a0f]">
           {/* Quick Paste Auto-Fill */}
           <TextField 
@@ -420,10 +420,10 @@ const Tickets = () => {
 
           {/* Category Selector */}
           <FormControl fullWidth>
-            <InputLabel>Infrastructure Segment</InputLabel>
+            <InputLabel>Issue Category</InputLabel>
             <Select 
               value={form.category} 
-              label="Infrastructure Segment" 
+              label="Issue Category" 
               onChange={e => setForm({ ...form, category: e.target.value })}
               MenuProps={{ PaperProps: { sx: { maxHeight: 400, width: { xs: 280, sm: 'auto' } } } }}
             >
@@ -434,7 +434,7 @@ const Tickets = () => {
           </FormControl>
 
           <TextField 
-            label="Situation Summary / Narrative" 
+            label="Summary of Issue" 
             fullWidth 
             multiline
             rows={2}
@@ -452,12 +452,12 @@ const Tickets = () => {
 
           <Box className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Common Field: Phone */}
-            <TextField label="Origin Point (Phone)" fullWidth value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+            <TextField label="Phone Number" fullWidth value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             
             {/* Conditional Fields Based on Category */}
             {form.category === "Pending Bet" && (
               <>
-                <TextField label="Hex Bet ID" fullWidth value={form.betId} onChange={e => setForm({ ...form, betId: e.target.value })} />
+                <TextField label="Bet ID" fullWidth value={form.betId} onChange={e => setForm({ ...form, betId: e.target.value })} />
                 <TextField label="Possible Win" fullWidth value={form.possibleWin} onChange={e => setForm({ ...form, possibleWin: e.target.value })} />
               </>
             )}
@@ -475,7 +475,7 @@ const Tickets = () => {
                   setForm({ ...form, tenDigitCode: e.target.value.toUpperCase() })
                 }} />
                 <TextField label="Time" fullWidth value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
-                <TextField label="Payload Amount" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+                <TextField label="Deposit Amount" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
                 <FormControl fullWidth>
                   <InputLabel>Merchant Portal</InputLabel>
                   <Select value={form.merchant} label="Merchant Portal" onChange={e => setForm({ ...form, merchant: e.target.value })}>
@@ -505,15 +505,15 @@ const Tickets = () => {
               <>
                 <TextField label="Active Game Played" fullWidth value={form.game} onChange={e => setForm({ ...form, game: e.target.value })} />
                 <TextField label="Amount Lost" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
-                <TextField label="Temporal Marker (Time)" fullWidth placeholder="e.g., 14:30" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
+                <TextField label="Time of Issue" fullWidth placeholder="e.g., 14:30" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
               </>
             )}
 
           </Box>
         </DialogContent>
         <DialogActions className="px-6 md:px-8 py-4 md:py-6 border-t border-white/5 bg-black flex-col sm:flex-row gap-3">
-          <button onClick={() => setModalOpen(false)} className="w-full sm:w-auto px-6 py-4 text-[10px] font-black text-gray-400 hover:text-white transition-colors uppercase tracking-[0.2em] border border-white/5 sm:border-none rounded-xl">Abort Sync</button>
-          <button onClick={handleCreate} className="w-full sm:w-auto px-10 py-4 accent-gradient text-white rounded-xl font-black text-[10px] shadow-2xl shadow-red-500/20 uppercase tracking-[0.3em] active:scale-95 transition-transform">Initialize Entry</button>
+          <button onClick={() => setModalOpen(false)} className="w-full sm:w-auto px-6 py-4 text-[10px] font-black text-gray-400 hover:text-white transition-colors uppercase tracking-[0.2em] border border-white/5 sm:border-none rounded-xl">Cancel</button>
+          <button onClick={handleCreate} className="w-full sm:w-auto px-10 py-4 accent-gradient text-white rounded-xl font-black text-[10px] shadow-2xl shadow-red-500/20 uppercase tracking-[0.3em] active:scale-95 transition-transform">Submit Ticket</button>
         </DialogActions>
       </Dialog>
 
