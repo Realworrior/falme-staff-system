@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Filter, Trash2, Eye, AlertCircle, Clock, 
   CheckCircle2, AlertTriangle, User, Shield, Briefcase, 
-  Image as ImageIcon, Upload, ChevronRight, ArrowLeft
+  Image as ImageIcon, Upload, ChevronRight, ArrowLeft, Zap
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
