@@ -7,9 +7,15 @@ const TicketAuth = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({ id: '', password: '' });
   const [isError, setIsError] = useState(false);
 
+  const STAFF_PWD = "staff";
+  const DEPT_PWD = "tech";
+
   const handleLogin = (e) => {
     e.preventDefault();
-    if (credentials.id.trim()) {
+    const isStaffValid = role === 'Staff' && credentials.password === STAFF_PWD;
+    const isDeptValid = role === 'Dept' && credentials.password === DEPT_PWD;
+
+    if (isStaffValid || isDeptValid) {
       onLogin(role);
     } else {
       setIsError(true);
@@ -59,21 +65,6 @@ const TicketAuth = ({ onLogin }) => {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Identifier Hash</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
-                <input 
-                  type="text" 
-                  placeholder={role === 'Staff' ? "STAFF_ID_0X" : "DEPT_CODE_0X"}
-                  required
-                  value={credentials.id}
-                  onChange={(e) => setCredentials({ ...credentials, id: e.target.value })}
-                  className={`w-full bg-black/40 border ${isError ? 'border-red-500' : 'border-white/5'} rounded-2xl py-4 pl-12 pr-4 text-white text-sm font-bold focus:outline-none focus:border-red-500/50 transition-all placeholder:text-gray-700`}
-                />
-              </div>
-            </div>
-
             <div className="space-y-1.5">
               <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Security Token</label>
               <div className="relative">
