@@ -67,12 +67,29 @@ const Tickets = () => {
     const text = e.target.value;
     const newForm = { ...form };
 
-    // Regex extraction
-    const phoneMatch = text.match(/\b\d{10}\b/);
-    if (phoneMatch) newForm.phone = phoneMatch[0];
+    // Advanced Phone extraction (Targeting 10 digits starting with 0)
+    // Handles: 2547..., 25407..., +254..., spaces, etc.
+    let digits = text.replace(/[^\d]/g, '');
+    let phone = '';
+    
+    if (digits.startsWith('254')) {
+      let after254 = digits.substring(3);
+      if (after254.startsWith('0')) {
+        phone = after254; // e.g. 2540712... -> 0712...
+      } else {
+        phone = '0' + after254; // e.g. 254712... -> 0712...
+      }
+    } else if (digits.startsWith('0')) {
+      phone = digits;
+    } else if (digits.length === 9 && (digits.startsWith('7') || digits.startsWith('1'))) {
+      phone = '0' + digits;
+    }
+
+    if (phone.length >= 10) {
+      newForm.phone = phone.substring(0, 10);
+    }
 
     const amountMatch = text.match(/\b\d+(?:[.,]\d+)?\s*(?:\/=|KES|Ksh|\$|)\b/i);
-    // clean up to just number
     if (amountMatch) newForm.amount = amountMatch[0].replace(/[a-z/=,$\s]/gi, '');
 
     const timeMatch = text.match(/\b(1[0-2]|0?[1-9])(?::[0-5][0-9])?\s*(am|pm)\b|\b([01]?[0-9]|2[0-3]):[0-5][0-9]\b/i);
@@ -166,7 +183,7 @@ const Tickets = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-10 max-w-7xl mx-auto pb-24">
+    <div className="p-4 md:p-8 space-y-10 max-w-[1600px] mx-auto pb-24">
       {/* Dynamic Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -178,9 +195,9 @@ const Tickets = () => {
             {auth.role === 'Staff' ? <User className="text-red-500" /> : <Shield className="text-red-500" />}
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-black text-white font-heading tracking-tighter uppercase">{auth.role} Portal</h1>
-              <span className="px-2 py-0.5 rounded bg-red-600/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">Active Session</span>
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
+              <h1 className="text-2xl md:text-3xl font-black text-white font-heading tracking-tighter uppercase">{auth.role} Portal</h1>
+              <span className="w-fit px-2 py-0.5 rounded bg-red-600/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">Active Session</span>
             </div>
             <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2">
               <Briefcase size={10} />
@@ -409,14 +426,37 @@ const Tickets = () => {
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ elevation: 0, className: "m-4 rounded-3xl overflow-hidden" }}>
         <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-6 md:px-8 py-5 md:py-6 uppercase tracking-tighter bg-black">Create New Ticket</DialogTitle>
         <DialogContent className="flex flex-col gap-6 pt-8 px-6 md:px-8 bg-[#0a0a0f]">
-          {/* Quick Paste Auto-Fill */}
-          <TextField 
-            label="Quick Paste / Auto-fill (Paste details here...)" 
-            fullWidth 
-            placeholder="e.g. Withdrawal, 200/=, 9am, 0710435678"
-            onChange={handleQuickPaste} 
-            sx={{ backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 2 }}
-          />
+          {/* Quick Paste Auto-Fill Section */}
+          <Box className="p-6 rounded-2xl bg-gradient-to-br from-red-600/5 to-transparent border border-red-500/10 shadow-inner relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-100 transition-opacity">
+              <Zap className="text-red-500 w-4 h-4" />
+            </div>
+            <TextField 
+              label="Quick Paste / Auto-fill (Paste details here...)" 
+              fullWidth 
+              placeholder="e.g. Withdrawal, 200/=, 9am, 0710435678"
+              onChange={handleQuickPaste} 
+              variant="standard"
+              InputProps={{ 
+                disableUnderline: true,
+                sx: { 
+                  color: 'white', 
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  '&::placeholder': { color: 'rgba(255,255,255,0.2)' }
+                }
+              }}
+              InputLabelProps={{
+                sx: { 
+                  color: 'rgba(255,255,255,0.4)', 
+                  fontSize: '0.75rem', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '0.1em',
+                  fontWeight: 900
+                }
+              }}
+            />
+          </Box>
 
           <Box className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <TextField label="Phone Number" fullWidth value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />

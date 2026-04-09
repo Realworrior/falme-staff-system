@@ -79,7 +79,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-10 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 space-y-10 max-w-[1600px] mx-auto">
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
