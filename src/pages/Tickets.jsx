@@ -15,15 +15,12 @@ import {
 } from '@mui/material';
 
 const CATEGORIES = [
-  "Enable Withdrawal",
-  "Failed Withdrawal",
-  "Deposit (Expired Token/Manual)",
   "Pending Bet",
-  "Lost Amount",
+  "Pending Withdrawal",
+  "Enable Withdrawal",
+  "Failed Deposit",
   "Pending Cashout",
-  "Password Recovery/Request",
-  "Account Closure",
-  "General Enquiry"
+  "Lost Amount"
 ];
 
 const MERCHANTS = ["METAPAY", "FALMEBET"];
@@ -37,6 +34,9 @@ const Tickets = () => {
   const [auth, setAuth] = useState({ isAuth: false, role: 'Staff' });
   const [searchQuery, setSearchQuery] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const { data: templates } = useFirebaseData('supportTemplates', []);
+  const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
+  const [suggestedResponses, setSuggestedResponses] = useState([]);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -53,6 +53,7 @@ const Tickets = () => {
     time: '',
     game: '',
     betId: '',
+    possibleWin: '',
     tenDigitCode: '',
     merchant: MERCHANTS[0],
     tokenExpired: false,
@@ -61,6 +62,32 @@ const Tickets = () => {
     priority: 'Normal',
     status: 'Pending'
   });
+
+  const handleQuickPaste = (e) => {
+    const text = e.target.value;
+    const newForm = { ...form };
+
+    // Regex extraction
+    const phoneMatch = text.match(/\b\d{10}\b/);
+    if (phoneMatch) newForm.phone = phoneMatch[0];
+
+    const amountMatch = text.match(/\b\d+(?:[.,]\d+)?\s*(?:\/=|KES|Ksh|\$|)\b/i);
+    // clean up to just number
+    if (amountMatch) newForm.amount = amountMatch[0].replace(/[a-z/=,$\s]/gi, '');
+
+    const timeMatch = text.match(/\b(1[0-2]|0?[1-9])(?::[0-5][0-9])?\s*(am|pm)\b|\b([01]?[0-9]|2[0-3]):[0-5][0-9]\b/i);
+    if (timeMatch) newForm.time = timeMatch[0];
+
+    // Infer category
+    const tLower = text.toLowerCase();
+    if (tLower.includes("cashout")) newForm.category = "Pending Cashout";
+    else if (tLower.includes("deposit")) newForm.category = "Failed Deposit";
+    else if (tLower.includes("withdraw")) newForm.category = "Pending Withdrawal";
+    else if (tLower.includes("bet") && !tLower.includes("cashout")) newForm.category = "Pending Bet";
+    else if (tLower.includes("lost")) newForm.category = "Lost Amount";
+
+    setForm(newForm);
+  };
 
   const handleLogin = (role) => {
     setAuth({ isAuth: true, role });
@@ -109,6 +136,16 @@ const Tickets = () => {
       payload.urgency = 'Critical';
     }
 
+    // Find template responses
+    const matchedCategory = templates.find(c => c.category === form.category);
+    if (matchedCategory && matchedCategory.templates.length > 0) {
+      const allResponses = matchedCategory.templates.flatMap(t => t.responses || []);
+      if (allResponses.length > 0) {
+        setSuggestedResponses(allResponses);
+        setSuggestionModalOpen(true);
+      }
+    }
+
     createRecord(payload);
     setModalOpen(false);
     resetForm();
@@ -118,7 +155,7 @@ const Tickets = () => {
   const resetForm = () => {
     setForm({
       category: CATEGORIES[0],
-      title: '', phone: '', comments: '', amount: '', time: '', game: '', betId: '', tenDigitCode: '',
+      title: '', phone: '', comments: '', amount: '', time: '', game: '', betId: '', possibleWin: '', tenDigitCode: '',
       merchant: MERCHANTS[0], tokenExpired: false, urgency: URGENCY_LEVELS[1],
       screenshot: null, priority: 'Normal', status: 'Pending'
     });
@@ -307,8 +344,16 @@ const Tickets = () => {
                     >
                       <div className="flex justify-between items-start gap-4">
                         <div className="min-w-0 flex-1">
-                          <p className="text-white font-black uppercase tracking-tight text-sm truncate">{ticket.title || "No Summary"}</p>
-                          <p className="text-gray-500 text-[10px] font-mono mt-1 font-bold">#{(ticket.id || '').toUpperCase()}</p>
+                          {ticket.phone ? (
+                            <p onClick={() => handleCopy(ticket.phone)} className="text-white font-black font-mono text-lg tracking-tight hover:text-emerald-400 transition-colors cursor-pointer" title="Copy Phone">
+                              {ticket.phone}
+                            </p>
+                          ) : (
+                            <p className="text-white font-black uppercase tracking-tight text-sm truncate">{ticket.title || "No Summary"}</p>
+                          )}
+                          <p className="text-gray-500 text-[10px] font-mono mt-1 font-bold">
+                            #{(ticket.id || '').toUpperCase()} {ticket.phone && ticket.title ? `• ${ticket.title}` : ''}
+                          </p>
                         </div>
                         <span className={`flex-shrink-0 px-2.5 py-1 rounded text-[8px] font-black tracking-widest border h-fit ${
                            (ticket.category || ticket.type || "").includes("Pending") ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-white/5 text-gray-400 border-white/5"
@@ -364,11 +409,27 @@ const Tickets = () => {
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ elevation: 0, className: "m-4 rounded-3xl overflow-hidden" }}>
         <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-6 md:px-8 py-5 md:py-6 uppercase tracking-tighter bg-black">Initialize Specialized Infrastructure Entry</DialogTitle>
         <DialogContent className="space-y-8 pt-8 px-6 md:px-8 bg-[#0a0a0f]">
+          {/* Quick Paste Auto-Fill */}
+          <TextField 
+            label="Quick Paste / Auto-fill (Paste details here...)" 
+            fullWidth 
+            placeholder="e.g. Withdrawal, 200/=, 9am, 0710435678"
+            onChange={handleQuickPaste} 
+            sx={{ backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 2 }}
+          />
+
           {/* Category Selector */}
           <FormControl fullWidth>
             <InputLabel>Infrastructure Segment</InputLabel>
-            <Select value={form.category} label="Infrastructure Segment" onChange={e => setForm({ ...form, category: e.target.value })}>
-              {CATEGORIES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+            <Select 
+              value={form.category} 
+              label="Infrastructure Segment" 
+              onChange={e => setForm({ ...form, category: e.target.value })}
+              MenuProps={{ PaperProps: { sx: { maxHeight: 400, width: { xs: 280, sm: 'auto' } } } }}
+            >
+              {CATEGORIES.map(c => (
+                <MenuItem key={c} value={c} sx={{ whiteSpace: 'normal' }}>{c}</MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -394,9 +455,26 @@ const Tickets = () => {
             <TextField label="Origin Point (Phone)" fullWidth value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             
             {/* Conditional Fields Based on Category */}
-            {form.category === "Deposit (Expired Token/Manual)" && (
+            {form.category === "Pending Bet" && (
               <>
-                <TextField label="10-Digit Code" fullWidth value={form.tenDigitCode} onChange={e => setForm({ ...form, tenDigitCode: e.target.value })} />
+                <TextField label="Hex Bet ID" fullWidth value={form.betId} onChange={e => setForm({ ...form, betId: e.target.value })} />
+                <TextField label="Possible Win" fullWidth value={form.possibleWin} onChange={e => setForm({ ...form, possibleWin: e.target.value })} />
+              </>
+            )}
+
+            {(form.category === "Pending Withdrawal" || form.category === "Enable Withdrawal") && (
+              <>
+                <TextField label="Amount" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+                <TextField label="Time" fullWidth value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
+              </>
+            )}
+
+            {form.category === "Failed Deposit" && (
+              <>
+                <TextField label="10-Digit Code" fullWidth value={form.tenDigitCode} onChange={e => {
+                  setForm({ ...form, tenDigitCode: e.target.value.toUpperCase() })
+                }} />
+                <TextField label="Time" fullWidth value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
                 <TextField label="Payload Amount" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
                 <FormControl fullWidth>
                   <InputLabel>Merchant Portal</InputLabel>
@@ -404,60 +482,70 @@ const Tickets = () => {
                     {MERCHANTS.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
                   </Select>
                 </FormControl>
-                <FormControlLabel
-                  control={<Switch checked={form.tokenExpired} onChange={e => setForm({ ...form, tokenExpired: e.target.checked })} color="error" />}
-                  label={<span className="text-white text-xs font-black uppercase tracking-widest">Token Expired (Urgent)</span>}
-                />
-              </>
-            )}
-
-            {form.category === "Pending Bet" && (
-              <>
-                <TextField label="Hex Bet ID" fullWidth value={form.betId} onChange={e => setForm({ ...form, betId: e.target.value })} />
-                <TextField label="Wager Amount" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
-              </>
-            )}
-
-            {form.category === "Lost Amount" && (
-              <>
-                <TextField label="Loss Value" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
-                <TextField label="Temporal Marker (Time)" fullWidth placeholder="e.g., 14:30" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
-                <TextField label="Active Game" fullWidth value={form.game} onChange={e => setForm({ ...form, game: e.target.value })} />
               </>
             )}
 
             {form.category === "Pending Cashout" && (
               <>
-                <TextField label="Cashout Value" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+                <TextField label="Amount Pending" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
                 <TextField label="Time of Action" fullWidth value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
                 <div className="col-span-full p-8 rounded-3xl border-2 border-dashed border-white/5 bg-white/[0.02] flex flex-col items-center justify-center gap-4 group hover:border-red-500/30 transition-all cursor-pointer">
                   <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
                     <Upload size={24} />
                   </div>
                   <div className="text-center">
-                    <p className="text-white font-black text-[10px] uppercase tracking-widest">Upload Win Screenshot</p>
-                    <p className="text-gray-600 text-[8px] font-bold uppercase tracking-widest mt-1">PROMINENT IT PREVIEW REQ.</p>
-                  </div>
-                  <div className="w-full h-24 bg-black/40 rounded-2xl flex items-center justify-center italic text-gray-700 text-[9px] font-black uppercase tracking-[0.2em]">
-                    Prominent Preview Active (Simulated)
+                    <p className="text-white font-black text-[10px] uppercase tracking-widest">Upload Bet History Screenshot</p>
+                    <p className="text-gray-600 text-[8px] font-bold uppercase tracking-widest mt-1">REQ</p>
                   </div>
                 </div>
               </>
             )}
 
-            {form.category === "Account Closure" && (
-              <FormControl fullWidth>
-                <InputLabel>Urgency Level</InputLabel>
-                <Select value={form.urgency} label="Urgency Level" onChange={e => setForm({ ...form, urgency: e.target.value })}>
-                  {URGENCY_LEVELS.map(l => <MenuItem key={l} value={l}>{l}</MenuItem>)}
-                </Select>
-              </FormControl>
+            {form.category === "Lost Amount" && (
+              <>
+                <TextField label="Active Game Played" fullWidth value={form.game} onChange={e => setForm({ ...form, game: e.target.value })} />
+                <TextField label="Amount Lost" fullWidth value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+                <TextField label="Temporal Marker (Time)" fullWidth placeholder="e.g., 14:30" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
+              </>
             )}
+
           </Box>
         </DialogContent>
         <DialogActions className="px-6 md:px-8 py-4 md:py-6 border-t border-white/5 bg-black flex-col sm:flex-row gap-3">
           <button onClick={() => setModalOpen(false)} className="w-full sm:w-auto px-6 py-4 text-[10px] font-black text-gray-400 hover:text-white transition-colors uppercase tracking-[0.2em] border border-white/5 sm:border-none rounded-xl">Abort Sync</button>
           <button onClick={handleCreate} className="w-full sm:w-auto px-10 py-4 accent-gradient text-white rounded-xl font-black text-[10px] shadow-2xl shadow-red-500/20 uppercase tracking-[0.3em] active:scale-95 transition-transform">Initialize Entry</button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Suggested Template Response Dialog */}
+      <Dialog open={suggestionModalOpen} onClose={() => setSuggestionModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ elevation: 0, className: "m-4 rounded-3xl overflow-hidden" }}>
+        <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-6 md:px-8 py-5 bg-black uppercase tracking-tighter text-sm flex items-center gap-2">
+          <CheckCircle2 className="text-emerald-500" size={18} />
+          Ticket Initialized - Suggested Response
+        </DialogTitle>
+        <DialogContent className="pt-8 px-6 md:px-8 bg-[#0a0a0f]">
+          <div className="space-y-4">
+            {suggestedResponses.map((resp, i) => (
+              <div 
+                key={i} 
+                className="p-4 rounded-2xl bg-black/40 border border-white/5 hover:bg-black/60 hover:border-emerald-500/20 transition-all cursor-pointer group"
+                onClick={() => { handleCopy(resp.text); setSuggestionModalOpen(false); }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`px-2 py-0.5 text-[8px] uppercase tracking-widest font-black rounded border ${
+                    resp.type === 'Standard' ? 'bg-blue-500/5 text-blue-400 border-blue-500/10' : 'bg-pink-500/5 text-pink-400 border-pink-500/10'
+                  }`}>
+                    {resp.type}
+                  </span>
+                  <span className="text-gray-500 text-[9px] font-black uppercase group-hover:text-emerald-500 transition-colors">Click to Copy</span>
+                </div>
+                <p className="text-gray-300 text-xs md:text-sm">{resp.text}</p>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+        <DialogActions className="px-6 md:px-8 py-4 border-t border-white/5 bg-black">
+          <button onClick={() => setSuggestionModalOpen(false)} className="w-full sm:w-auto px-6 py-3 text-[10px] font-black text-gray-400 hover:text-white transition-colors uppercase tracking-[0.2em] border border-white/5 sm:border-none rounded-xl">Dismiss</button>
         </DialogActions>
       </Dialog>
     </div>
