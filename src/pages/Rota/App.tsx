@@ -125,7 +125,10 @@ export default function App() {
               <Clock size={28} />
             </div>
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Live Session</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Live Session</p>
+                <span className="text-[8px] bg-white/5 px-1.5 py-0.5 rounded text-gray-600 font-bold border border-white/5">v1.2.0</span>
+              </div>
               <h4 className="text-xl font-black text-white uppercase tracking-tight font-heading">{currentShiftType} Active</h4>
             </div>
           </div>

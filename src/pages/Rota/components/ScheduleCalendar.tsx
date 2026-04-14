@@ -99,15 +99,15 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
                     </div>
 
                     {/* Staff name pills */}
-                    <div className="flex flex-col gap-[3px]">
+                    <div className="flex flex-col gap-[3px] w-full min-w-0">
                       {shift.staff.map(name => (
                         <div
                           key={name}
-                          className="rounded-[4px] md:rounded-[6px] px-1 md:px-1.5 py-[2px] md:py-1 text-white leading-tight"
+                          className="w-full rounded-[4px] md:rounded-[6px] px-1 md:px-1.5 py-[2px] md:py-1 text-white leading-tight shadow-sm"
                           style={{ backgroundColor: STAFF_COLORS[name] ?? '#555' }}
                           title={`${name} — ${shift.id}`}
                         >
-                          <span className="text-[7px] md:text-[9px] font-bold block whitespace-normal break-words">
+                          <span className="text-[7px] md:text-[9px] font-bold block whitespace-normal break-words w-full">
                             {name}
                           </span>
                         </div>
