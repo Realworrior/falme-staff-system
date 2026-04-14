@@ -85,10 +85,11 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
                           return (
                             <div
                               key={`${staffName}-${idx}`}
-                              className="text-white px-1.5 py-0.5 md:py-1 rounded text-[7px] md:text-[9px] font-bold leading-tight shadow-sm"
+                              className="text-white px-1.5 py-1 rounded text-[7px] md:text-[9.5px] font-black leading-tight shadow-sm whitespace-normal break-words text-center"
                               style={{ 
                                 backgroundColor: STAFF_COLORS[staffName],
-                                opacity: selectedStaff === staffName ? 1 : 0.9
+                                opacity: selectedStaff === staffName ? 1 : 0.9,
+                                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
                               }}
                               title={`${staffName} - ${s.id}`}
                             >

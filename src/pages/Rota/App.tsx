@@ -26,6 +26,13 @@ import {
 } from './utils/scheduleGenerator';
 import { useFirebaseData } from '../../hooks/useFirebase';
 import { ImportModal } from './components/ImportModal';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription 
+} from './components/ui/dialog';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1)); // April 2026
@@ -34,6 +41,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'schedule' | 'analytics'>('schedule');
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isDayDetailsOpen, setIsDayDetailsOpen] = useState(false);
 
   // Fetch Overrides from Firebase
   const { data: rawOverrides, updateRecord } = useFirebaseData('rotaOverrides', {});
@@ -74,6 +82,11 @@ export default function App() {
   const handleNextMonth = () => {
     setCurrentDate(new Date(year, month + 1, 1));
     setSelectedDate(null);
+  };
+
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
+    setIsDayDetailsOpen(true);
   };
 
   const handleOverride = async (date: string, staff: string, type: string) => {
@@ -283,13 +296,13 @@ export default function App() {
 
         {/* Content */}
         {activeTab === 'schedule' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 items-start">
+          <div className="items-start">
             {/* Calendar */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="lg:col-span-2 print:col-span-3"
+              className="w-full print:col-span-3"
             >
               <div className="bg-[#0f0f17] border border-white/5 rounded-3xl shadow-xl p-3 md:p-6 print:bg-white print:text-black print:border-black">
                 <div className="flex items-center justify-between mb-4 md:mb-6 print:mb-2">
@@ -304,27 +317,8 @@ export default function App() {
                 <ScheduleCalendar
                   schedule={schedule}
                   selectedStaff={selectedStaff}
-                  onDayClick={setSelectedDate}
+                  onDayClick={handleDayClick}
                 />
-              </div>
-            </motion.div>
-
-            {/* Shift Mates */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="print:hidden"
-            >
-              <div className="bg-[#0f0f17] border border-white/5 shadow-xl rounded-3xl overflow-hidden h-full">
-                 <ShiftMates
-                   selectedDate={selectedDate}
-                   schedule={schedule}
-                   selectedStaff={selectedStaff}
-                   isManagerMode={isManagerMode}
-                   onOverride={handleOverride}
-                   overrides={overrides}
-                 />
               </div>
             </motion.div>
           </div>
@@ -337,6 +331,20 @@ export default function App() {
             <AnalyticsDashboard analytics={analytics} />
           </motion.div>
         )}
+
+        {/* Shift Details Modal */}
+        <Dialog open={isDayDetailsOpen} onOpenChange={setIsDayDetailsOpen}>
+          <DialogContent className="bg-[#0a0a0f] border-white/5 text-white p-0 overflow-hidden rounded-[32px] max-w-lg">
+            <ShiftMates
+               selectedDate={selectedDate}
+               schedule={schedule}
+               selectedStaff={selectedStaff}
+               isManagerMode={isManagerMode}
+               onOverride={handleOverride}
+               overrides={overrides}
+             />
+          </DialogContent>
+        </Dialog>
 
         <ImportModal
           isOpen={isImportModalOpen}

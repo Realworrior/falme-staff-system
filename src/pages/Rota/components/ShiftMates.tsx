@@ -23,17 +23,7 @@ const shiftColors = {
 export function ShiftMates({ selectedDate, schedule, selectedStaff, isManagerMode, onOverride, overrides = {} }: ShiftMatesProps) {
   const [editingStaff, setEditingStaff] = useState<string | null>(null);
 
-  if (!selectedDate) {
-    return (
-      <div className="bg-[#0f0f17] border border-white/5 rounded-[32px] p-6 md:p-8 text-center h-full flex flex-col items-center justify-center shadow-2xl">
-        <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/5">
-          <Users className="w-8 h-8 text-gray-600" />
-        </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Awaiting Synchronized Selection</p>
-        <p className="text-gray-700 text-[9px] mt-2 italic">Select a date to initialize teammate index</p>
-      </div>
-    );
-  }
+  if (!selectedDate) return null;
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
   const daySchedule = schedule.find(d => format(d.date, 'yyyy-MM-dd') === dateKey);
