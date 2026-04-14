@@ -108,6 +108,9 @@ export default function App() {
                 <div className="h-1 w-12 bg-red-600 rounded-full mt-2" />
               </div>
             </div>
+          </div>
+        </motion.header>
+
         {/* Month Nav + Personnel Filter */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
