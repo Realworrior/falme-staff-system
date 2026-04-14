@@ -44,20 +44,19 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
 
   const normalizeDate = (raw: string): string | null => {
     if (!raw) return null;
-    const clean = raw.trim();
+    // Clean double commas or extra noise
+    const clean = raw.trim().replace(/,+/g, ',');
     
     // Check if it's "Wed, 1" or "1"
     const match = clean.match(/(\d+)/);
     if (match) {
       const dayNum = parseInt(match[1]);
       if (dayNum >= 1 && dayNum <= 31) {
-        // Use the context year/month
         const d = new Date(year, month, dayNum);
         return format(d, 'yyyy-MM-dd');
       }
     }
 
-    // Try standard parsing
     try {
       const d = new Date(clean);
       if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
@@ -80,6 +79,25 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
     }
   };
 
+  const adaptiveSplitAndMerge = (line: string, delimiter: string, expectedLen: number): string[] => {
+    let values = splitCSVLine(line, delimiter);
+    
+    // If we have more values than expected, and it's a date column issue
+    if (values.length > expectedLen && expectedLen > 0) {
+      const extraCount = values.length - expectedLen;
+      const mergedDate = values.slice(0, extraCount + 1).join(' ');
+      return [mergedDate, ...values.slice(extraCount + 1)];
+    }
+    return values;
+  };
+
+  const cleanShift = (raw: string) => {
+    if (!raw) return '';
+    // Strip everything except alphanumeric, then upper
+    const cleaned = raw.replace(/[^a-zA-Z]/g, '').toUpperCase();
+    return cleaned;
+  };
+
   const parseCSV = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -94,7 +112,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       setPreviewHeaders(headers);
       
       const rows = lines.slice(1, 6).map(line => {
-        return splitCSVLine(line, delimiter);
+        return adaptiveSplitAndMerge(line, delimiter, headers.length);
       });
       setPreviewRows(rows);
     };
@@ -118,9 +136,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       const staffIndices: { name: string; index: number }[] = [];
       const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
 
-      // Map columns to staff members
       headers.forEach((h, i) => {
-        if (i === 0) return; // Column A is date
+        if (i === 0) return;
         if (validStaffNames.includes(h.toLowerCase())) {
           const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
           if (properName) staffIndices.push({ name: properName, index: i });
@@ -131,7 +148,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       const invalidEntries: string[] = [];
 
       lines.slice(1).forEach((line, lineIdx) => {
-        const values = splitCSVLine(line, delimiter);
+        const values = adaptiveSplitAndMerge(line, delimiter, headers.length);
         const rawDate = values[0];
         const dateKey = normalizeDate(rawDate);
 
@@ -141,7 +158,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         }
 
         staffIndices.forEach(({ name, index }) => {
-          const shift = values[index]?.toUpperCase();
+          const shift = cleanShift(values[index]);
           if (shift && ['AM', 'PM', 'NT', 'OFF'].includes(shift)) {
             if (!result[dateKey]) result[dateKey] = {};
             result[dateKey][name] = shift;
@@ -154,8 +171,6 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         return;
       }
 
-      // Pass the mode along with data if needed, or handle in App.tsx
-      // For simplicity, we'll wrap result with metadata if App.tsx supports it
       (onImport as any)(result, shouldReplace); 
       onClose();
       setFile(null);
@@ -232,9 +247,9 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
               </div>
 
               {/* Advanced Options */}
-              <div className="p-4 bg-red-600/5 border border-red-500/10 rounded-2xl">
+              <div className="p-4 bg-white/2 border border-white/10 rounded-2xl">
                  <label className="flex items-center gap-3 cursor-pointer group">
-                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldReplace ? 'bg-red-500 border-red-500' : 'border-white/20 bg-black/40'}`}>
+                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldReplace ? 'bg-red-500 border-red-500 shadow-lg shadow-red-500/20' : 'border-white/20 bg-black/40'}`}>
                        <input 
                          type="checkbox" 
                          className="hidden" 
@@ -247,7 +262,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
                        <span className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-red-400 transition-colors">
                           Replace Existing Shifts
                        </span>
-                       <span className="text-[8px] text-gray-500 uppercase tracking-tighter">
+                       <span className="text-[8px] text-gray-500 uppercase tracking-tighter mt-0.5">
                           Wipe all manual overrides for the dates in this file before import
                        </span>
                     </div>
@@ -271,27 +286,30 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
                           <tbody className="divide-y divide-white/5">
                             {previewRows.map((row, i) => (
                               <tr key={i} className="text-gray-300 text-[10px]">
-                                {row.map((val, j) => (
-                                  <td key={j} className={`p-3 ${j === 0 ? 'sticky left-0 bg-[#12121a] font-black text-white border-r border-white/5' : ''}`}>
-                                    {j === 0 ? val : (
-                                      <span className={`px-2 py-0.5 rounded text-[8px] font-black ${
-                                        val?.toUpperCase() === 'AM' ? 'bg-orange-500/10 text-orange-400' :
-                                        val?.toUpperCase() === 'PM' ? 'bg-emerald-500/10 text-emerald-400' :
-                                        val?.toUpperCase() === 'NT' ? 'bg-indigo-500/10 text-indigo-400' :
-                                        val?.toUpperCase() === 'OFF' ? 'bg-red-500/10 text-red-500' :
-                                        'bg-gray-500/10 text-gray-500'
-                                      }`}>
-                                        {val || '-'}
-                                      </span>
-                                    )}
-                                  </td>
-                                ))}
+                                {row.map((val, j) => {
+                                  const rawVal = val?.trim() || '';
+                                  const displayVal = j === 0 ? rawVal.replace(/,+/g, ', ') : cleanShift(rawVal);
+                                  return (
+                                    <td key={j} className={`p-3 ${j === 0 ? 'sticky left-0 bg-[#12121a] font-black text-white border-r border-white/5' : ''}`}>
+                                      {j === 0 ? displayVal : (
+                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black ${
+                                          displayVal === 'AM' ? 'bg-orange-500/10 text-orange-400' :
+                                          displayVal === 'PM' ? 'bg-emerald-500/10 text-emerald-400' :
+                                          displayVal === 'NT' ? 'bg-indigo-500/10 text-indigo-400' :
+                                          displayVal === 'OFF' ? 'bg-red-500/10 text-red-500' :
+                                          'bg-gray-500/10 text-gray-500'
+                                        }`}>
+                                          {displayVal || '-'}
+                                        </span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
                               </tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
-                      {/* Visual hint for horizontal scroll */}
                       <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-black/20 to-transparent pointer-events-none rounded-r-2xl" />
                    </div>
                 </div>
@@ -307,22 +325,22 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
           )}
         </div>
 
-        <div className="p-6 border-t border-white/5 bg-black/40">
-           <DialogFooter className="flex gap-3">
+        <div className="p-8 border-t border-white/5 bg-black/40">
+           <div className="flex flex-col sm:flex-row gap-4">
              <button 
                onClick={onClose}
-               className="flex-1 px-6 py-4 rounded-2xl border border-white/5 text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-all"
+               className="order-2 sm:order-1 flex-1 px-8 py-4 rounded-2xl border border-white/5 text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all text-center"
              >
                Cancel
              </button>
              <button 
                onClick={handleProcess}
                disabled={!file}
-               className="flex-1 px-6 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all"
+               className="order-1 sm:order-2 flex-[2] px-8 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all text-center"
              >
                Execute Matrix Sync
              </button>
-           </DialogFooter>
+           </div>
         </div>
       </DialogContent>
     </Dialog>
