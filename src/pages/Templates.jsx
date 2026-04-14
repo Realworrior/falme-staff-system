@@ -30,7 +30,12 @@ import {
   User,
   HandCoins,
   ServerCrash,
-  PhoneCall
+  PhoneCall,
+  BrainCircuit,
+  BadgePercent,
+  Gamepad2,
+  Hourglass,
+  Wallet
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
@@ -49,6 +54,26 @@ const getCategoryIcon = (category, size = 18, baseClass = "") => {
   if (!category) return <div className={`text-red-500 flex items-center justify-center ${baseClass}`}><LayoutGrid size={size} /></div>;
   const name = category.toLowerCase();
   
+  // AI / Automation
+  if (name.includes('ai') || name.includes('bot') || name.includes('auto')) {
+    return <div className={`text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.4)] flex items-center justify-center ${baseClass}`}><BrainCircuit size={size} /></div>;
+  }
+  // Cashback / Bonus 
+  if (name.includes('cashback') || name.includes('cash back') || name.includes('bonus')) {
+    return <div className={`text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.4)] flex items-center justify-center ${baseClass}`}><BadgePercent size={size} /></div>;
+  }
+  // Casino / Games / Crash
+  if (name.includes('casino') || name.includes('game') || name.includes('crash') || name.includes('play')) {
+    return <div className={`text-fuchsia-500 drop-shadow-[0_0_8px_rgba(217,70,239,0.4)] flex items-center justify-center ${baseClass}`}><Gamepad2 size={size} /></div>;
+  }
+  // Patience / Time / Delays
+  if (name.includes('patience') || name.includes('wait') || name.includes('delay') || name.includes('time')) {
+    return <div className={`text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.4)] flex items-center justify-center ${baseClass}`}><Hourglass size={size} /></div>;
+  }
+  // Withdrawal / Payout
+  if (name.includes('withdraw') || name.includes('payout') || name.includes('cashout')) {
+    return <div className={`text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.4)] flex items-center justify-center ${baseClass}`}><Wallet size={size} /></div>;
+  }
   // Deposit match as requested
   if (name.includes('deposit') || name.includes('fund')) {
     return <div className={`text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)] flex items-center justify-center ${baseClass}`}><HandCoins size={size} /></div>;
@@ -73,7 +98,7 @@ const getCategoryIcon = (category, size = 18, baseClass = "") => {
     return <div className={`text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.4)] flex items-center justify-center ${baseClass}`}><ShoppingCart size={size} /></div>;
   }
   // Booking / Appointment
-  if (name.includes('book') || name.includes('appoint') || name.includes('schedul') || name.includes('time')) {
+  if (name.includes('book') || name.includes('appoint') || name.includes('schedul')) {
     return <div className={`text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.4)] flex items-center justify-center ${baseClass}`}><Calendar size={size} /></div>;
   }
   // Refunds / Returns
