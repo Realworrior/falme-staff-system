@@ -159,12 +159,12 @@ const getCategoryIcon = (category, size = 18, baseClass = "") => {
 };
 
 const Templates = () => {
-  const { data, loading } = useFirebaseData('supportTemplates', []);
+  const { data, loading, setAllData } = useFirebaseData('supportTemplates', []);
   const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [newTemplate, setNewTemplate] = useState({ title: '', standardText: '', empathyText: '' });
+  const [newTemplate, setNewTemplate] = useState({ category: '', title: '', standardText: '', empathyText: '' });
   
   // Collapse mode toggle: Default navigation displays all categories (expanded)
   const [catSidebarOpen, setCatSidebarOpen] = useState(true);
@@ -203,6 +203,70 @@ const Templates = () => {
     }
     return result;
   }, [data, selectedCategory, searchQuery]);
+
+  const handleCreate = async () => {
+    if (!newTemplate.category || !newTemplate.title || !newTemplate.standardText) {
+      return showToast('Category, ID, and Standard Text are required', 'error');
+    }
+
+    const tplObject = {
+      title: newTemplate.title,
+      responses: [
+        { type: 'Standard', text: newTemplate.standardText },
+        { type: 'Empathy', text: newTemplate.empathyText || newTemplate.standardText }
+      ]
+    };
+
+    let updatedData = [...data];
+    const catIndex = updatedData.findIndex(c => c.category === newTemplate.category);
+
+    if (catIndex > -1) {
+      // Add to existing category
+      const currentTemplates = updatedData[catIndex].templates || [];
+      updatedData[catIndex] = {
+        ...updatedData[catIndex],
+        templates: [...currentTemplates, tplObject]
+      };
+    } else {
+      // Create new category
+      updatedData.push({
+        category: newTemplate.category,
+        templates: [tplObject]
+      });
+    }
+
+    try {
+      await setAllData(updatedData);
+      setModalOpen(false);
+      setNewTemplate({ category: '', title: '', standardText: '', empathyText: '' });
+      showToast('Record deployed successfully', 'success');
+    } catch (err) {
+      showToast('Failed to sync record', 'error');
+    }
+  };
+
+  const handleDelete = async (categoryName, templateTitle) => {
+    if (!window.confirm('Permanently remove this record?')) return;
+
+    let updatedData = [...data];
+    const catIndex = updatedData.findIndex(c => c.category === categoryName);
+
+    if (catIndex > -1) {
+      updatedData[catIndex].templates = updatedData[catIndex].templates.filter(t => t.title !== templateTitle);
+      
+      // Remove empty categories?
+      if (updatedData[catIndex].templates.length === 0) {
+        updatedData = updatedData.filter(c => c.category !== categoryName);
+      }
+
+      try {
+        await setAllData(updatedData);
+        showToast('Record purged', 'success');
+      } catch (err) {
+        showToast('Failed to delete', 'error');
+      }
+    }
+  };
 
   return (
     <div className="flex flex-row min-h-full">
@@ -426,7 +490,12 @@ const Templates = () => {
                       </div>
                       <div className="flex gap-1">
                         <button className="p-2 text-gray-700 hover:text-white transition-all opacity-0 group-hover:opacity-100" onClick={() => handleCopy(template.title)}><Copy size={16} /></button>
-                        <button className="p-2 text-gray-700 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"><Trash2 size={16} /></button>
+                        <button 
+                          onClick={() => handleDelete(category.category, template.title)}
+                          className="p-2 text-gray-700 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
 
@@ -481,6 +550,14 @@ const Templates = () => {
         <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-8 py-6 uppercase tracking-tighter">Initialize Segment Record</DialogTitle>
         <DialogContent className="space-y-6 pt-8 px-8 bg-[#0a0a0f]">
           <TextField 
+            label="Category" 
+            fullWidth 
+            placeholder="e.g., Deposit, Technical, or New Category"
+            value={newTemplate.category} 
+            onChange={e => setNewTemplate({ ...newTemplate, category: e.target.value })} 
+            autoFocus
+          />
+          <TextField 
             label="ID / Identifier" 
             fullWidth 
             value={newTemplate.title} 
@@ -491,7 +568,7 @@ const Templates = () => {
         </DialogContent>
         <DialogActions className="px-8 py-6 border-t border-white/5 bg-black">
           <button onClick={() => setModalOpen(false)} className="px-6 py-3 text-[10px] font-black text-gray-600 hover:text-white transition-colors uppercase tracking-[0.2em]">Abort</button>
-          <button onClick={() => showToast('Write logic not updated for new structure', 'info')} className="px-10 py-3 accent-gradient text-white rounded-xl font-black text-[10px] shadow-2xl shadow-red-500/20 uppercase tracking-[0.2em]">Deploy Record</button>
+          <button onClick={handleCreate} className="px-10 py-3 accent-gradient text-white rounded-xl font-black text-[10px] shadow-2xl shadow-red-500/20 uppercase tracking-[0.2em]">Deploy Record</button>
         </DialogActions>
       </Dialog>
     </div>
