@@ -33,10 +33,10 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1.5 md:gap-3">
+      <div className="grid grid-cols-7 gap-1.5 md:gap-3 auto-rows-max">
         {calendarDays.map((day, index) => {
           if (!day) {
-            return <div key={`empty-${index}`} className="aspect-square" />;
+            return <div key={`empty-${index}`} className="min-h-[140px] md:min-h-[200px]" />;
           }
 
           const isSelected = selectedStaff
@@ -58,7 +58,7 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
               transition={{ delay: index * 0.005 }}
               onClick={() => onDayClick(day.date)}
               className={`
-                min-h-[140px] md:min-h-[180px] h-auto border rounded-2xl p-2 md:p-3 cursor-pointer transition-all relative group/day
+                min-h-[140px] md:min-h-[200px] h-auto border rounded-2xl p-2 md:p-3 cursor-pointer transition-all relative group/day
                 ${isSelected 
                   ? 'border-red-500 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.1)]' 
                   : 'border-white/5 bg-white/2 hover:border-white/10 hover:bg-white/5'}
@@ -85,7 +85,7 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
                           return (
                             <div
                               key={`${staffName}-${idx}`}
-                              className="text-white px-1.5 py-0.5 md:py-1 rounded text-[7px] md:text-[9px] font-bold leading-tight truncate shadow-sm"
+                              className="text-white px-1.5 py-0.5 md:py-1 rounded text-[7px] md:text-[9px] font-bold leading-tight shadow-sm"
                               style={{ 
                                 backgroundColor: STAFF_COLORS[staffName],
                                 opacity: selectedStaff === staffName ? 1 : 0.9
