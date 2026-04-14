@@ -305,11 +305,12 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Bulk Import Modal */}
         <ImportModal
           isOpen={isImportModalOpen}
           onClose={() => setIsImportModalOpen(false)}
           onImport={handleBulkImport}
+          year={year}
+          month={month}
         />
       </div>
     </div>

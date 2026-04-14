@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { format } from 'date-fns';
 import { 
   Dialog, 
   DialogContent, 
@@ -9,17 +10,46 @@ import {
 } from './ui/dialog';
 import { Upload, FileText, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { STAFF_CONFIG } from '../utils/scheduleGenerator';
 
 interface ImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImport: (data: Record<string, Record<string, string>>) => void;
+  year: number;
+  month: number;
 }
 
-export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
+export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<any[]>([]);
+  const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
+  const [previewRows, setPreviewRows] = useState<string[][]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const normalizeDate = (raw: string): string | null => {
+    if (!raw) return null;
+    const clean = raw.trim();
+    
+    // Check if it's "Wed, 1" or "1"
+    const match = clean.match(/(\d+)/);
+    if (match) {
+      const dayNum = parseInt(match[1]);
+      if (dayNum >= 1 && dayNum <= 31) {
+        // Use the context year/month
+        const d = new Date(year, month, dayNum);
+        return format(d, 'yyyy-MM-dd');
+      }
+    }
+
+    // Try standard parsing
+    try {
+      const d = new Date(clean);
+      if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
+    } catch {
+      return null;
+    }
+    return null;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -38,17 +68,16 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const rows = text.split('\n').filter(row => row.trim());
-      const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
-      
-      const dataRows = rows.slice(1).map(row => {
-        const values = row.split(',').map(v => v.trim());
-        const obj: any = {};
-        headers.forEach((h, i) => obj[h] = values[i]);
-        return obj;
-      });
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+      if (lines.length < 1) return;
 
-      setPreview(dataRows.slice(0, 5));
+      const headers = lines[0].split(',').map(h => h.trim());
+      setPreviewHeaders(headers);
+      
+      const rows = lines.slice(1, 6).map(line => {
+        return line.split(',').map(v => v.trim());
+      });
+      setPreviewRows(rows);
     };
     reader.readAsText(file);
   };
@@ -59,27 +88,45 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const rows = text.split('\n').filter(row => row.trim());
-      const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
-      
-      const result: Record<string, Record<string, string>> = {};
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+      if (lines.length < 2) {
+        setError('File contains no data');
+        return;
+      }
+
+      const headers = lines[0].split(',').map(h => h.trim());
+      const staffIndices: { name: string; index: number }[] = [];
       const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
+
+      // Map columns to staff members
+      headers.forEach((h, i) => {
+        if (i === 0) return; // Column A is date
+        if (validStaffNames.includes(h.toLowerCase())) {
+          const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
+          if (properName) staffIndices.push({ name: properName, index: i });
+        }
+      });
+
+      const result: Record<string, Record<string, string>> = {};
       const invalidEntries: string[] = [];
 
-      rows.slice(1).forEach((row, rowIndex) => {
-        const values = row.split(',').map(v => v.trim());
-        const date = values[headers.indexOf('date')];
-        const staff = values[headers.indexOf('staff')];
-        const shift = values[headers.indexOf('shift')];
+      lines.slice(1).forEach((line, lineIdx) => {
+        const values = line.split(',').map(v => v.trim());
+        const rawDate = values[0];
+        const dateKey = normalizeDate(rawDate);
 
-        if (date && staff && shift) {
-          if (!validStaffNames.includes(staff.toLowerCase())) {
-            invalidEntries.push(`Row ${rowIndex + 2}: Invalid personnel "${staff}"`);
-            return;
-          }
-          if (!result[date]) result[date] = {};
-          result[date][staff] = shift.toUpperCase();
+        if (!dateKey) {
+          if (rawDate) invalidEntries.push(`Row ${lineIdx + 2}: Invalid date "${rawDate}"`);
+          return;
         }
+
+        staffIndices.forEach(({ name, index }) => {
+          const shift = values[index]?.toUpperCase();
+          if (shift && ['AM', 'PM', 'NT', 'OFF'].includes(shift)) {
+            if (!result[dateKey]) result[dateKey] = {};
+            result[dateKey][name] = shift;
+          }
+        });
       });
 
       if (invalidEntries.length > 0) {
@@ -90,22 +137,22 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
       onImport(result);
       onClose();
       setFile(null);
-      setPreview([]);
+      setPreviewRows([]);
     };
     reader.readAsText(file);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#0a0a0f] border-white/5 text-white max-w-xl p-0 overflow-hidden rounded-[32px]">
+      <DialogContent className="bg-[#0a0a0f] border-white/5 text-white max-w-4xl p-0 overflow-hidden rounded-[32px]">
         <div className="p-8 border-b border-white/5 bg-black/40">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
               <Upload className="text-red-500" />
-              Bulk Schedule Import
+              Matrix Schedule Import
             </DialogTitle>
             <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2">
-              Synchronize External Operation Logs
+              Synchronize Operational Grid Data
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -132,7 +179,10 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
               </div>
               <div className="text-center">
                 <p className="text-sm font-bold">Drop CSV file here or click to browse</p>
-                <p className="text-[10px] text-gray-600 mt-1 uppercase tracking-widest font-black">Format: Date, Staff, Shift</p>
+                <div className="mt-2 text-[9px] text-gray-600 uppercase tracking-widest font-black flex flex-col gap-1">
+                   <span>Row 1: Names (Headers) | Column A: Dates</span>
+                   <span>Format: Date, Chris, Faye, Joyce...</span>
+                </div>
               </div>
             </div>
           ) : (
@@ -152,35 +202,42 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
                   </div>
                 </div>
                 <button 
-                  onClick={() => { setFile(null); setPreview([]); }}
+                  onClick={() => { setFile(null); setPreviewRows([]); }}
                   className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-500"
                 >
                   <X size={16} />
                 </button>
               </div>
 
-              {preview.length > 0 && (
+              {previewRows.length > 0 && (
                 <div className="space-y-2">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Data Preview (First 5 records)</p>
-                   <div className="bg-black/40 border border-white/5 rounded-2xl overflow-hidden">
-                      <table className="w-full text-[10px] text-left">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Grid Preview (Matrix Format)</p>
+                   <div className="bg-black/40 border border-white/5 rounded-2xl overflow-x-auto">
+                      <table className="w-full text-left whitespace-nowrap">
                         <thead>
-                          <tr className="bg-white/5 text-gray-400 uppercase tracking-widest">
-                            <th className="p-3">Date</th>
-                            <th className="p-3">Staff</th>
-                            <th className="p-3">Shift</th>
+                          <tr className="bg-white/5 text-gray-400 uppercase tracking-widest text-[9px]">
+                            {previewHeaders.map((h, i) => (
+                              <th key={i} className="p-3 border-b border-white/5">{h}</th>
+                            ))}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                          {preview.map((row, i) => (
-                            <tr key={i} className="text-gray-300">
-                              <td className="p-3 font-mono">{row.date}</td>
-                              <td className="p-3">{row.staff}</td>
-                              <td className="p-3">
-                                <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[8px] font-black">
-                                  {row.shift?.toUpperCase()}
-                                </span>
-                              </td>
+                          {previewRows.map((row, i) => (
+                            <tr key={i} className="text-gray-300 text-[10px]">
+                              {row.map((val, j) => (
+                                <td key={j} className={`p-3 ${j === 0 ? 'font-black text-white bg-white/2' : ''}`}>
+                                  {j === 0 ? val : (
+                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black ${
+                                      val.toUpperCase() === 'AM' ? 'bg-orange-500/10 text-orange-400' :
+                                      val.toUpperCase() === 'PM' ? 'bg-emerald-500/10 text-emerald-400' :
+                                      val.toUpperCase() === 'NT' ? 'bg-indigo-500/10 text-indigo-400' :
+                                      'bg-gray-500/10 text-gray-500'
+                                    }`}>
+                                      {val || '-'}
+                                    </span>
+                                  )}
+                                </td>
+                              ))}
                             </tr>
                           ))}
                         </tbody>
@@ -212,7 +269,7 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
                disabled={!file}
                className="flex-1 px-6 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all"
              >
-               Initialize Sync
+               Sync Grid Data
              </button>
            </DialogFooter>
         </div>
