@@ -31,11 +31,11 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
 
   const normalizeDate = (raw: string): string | null => {
     if (!raw) return null;
-    const clean = raw.trim().replace(/,+/g, ',');
+    const clean = raw.trim().replace(/,+/g, ',').replace(/[\u200B-\u200D\uFEFF]/g, '');
     
-    // Check if it's "Wed, 1" or "1"
+    // Check if it's strictly a single day digit like "Wed, 1" or "1"
     const match = clean.match(/(\d+)/);
-    if (match) {
+    if (match && !clean.includes('-') && !clean.includes('/')) {
       const dayNum = parseInt(match[1]);
       if (dayNum >= 1 && dayNum <= 31) {
         const d = new Date(year, month, dayNum);
@@ -142,13 +142,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       });
     });
 
-    if (invalidEntries.length > 0) {
-      setError("Import issues: " + invalidEntries.slice(0, 3).join('; ') + (invalidEntries.length > 3 ? ` (+${invalidEntries.length - 3} more)` : ''));
-      return;
-    }
-
     if (Object.keys(result).length === 0) {
-      setError('No valid shift data found. Ensure staff names in CSV match the system exactly (e.g. Ascar, Chris).');
+      setError(`No valid shift data found. ${invalidEntries.length > 0 ? "Some dates were invalid." : "Ensure staff names exactly match."}`);
       return;
     }
 
