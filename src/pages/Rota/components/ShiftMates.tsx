@@ -118,49 +118,33 @@ export function ShiftMates({
                             <span className="text-[8px] text-amber-500 font-black uppercase tracking-widest">Modified</span>
                           )}
                         </div>
-                        {isManagerMode && !isEditing && (
-                          <button
-                            onClick={() => setEditingStaff(staffName)}
-                            className="p-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity bg-white/10 hover:bg-white/20 rounded-lg text-gray-400 hover:text-white"
-                          >
-                            <Edit2 size={12} />
-                          </button>
-                        )}
-                        {isManagerMode && isEditing && (
-                          <button
-                            onClick={() => setEditingStaff(null)}
-                            className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-gray-400 hover:text-white"
-                          >
-                            <X size={12} />
-                          </button>
-                        )}
-                      </div>
-
-                      <AnimatePresence>
-                        {isEditing && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -4 }}
-                            className="mt-1 flex gap-1 p-1 bg-[#1a1a2e] rounded-xl border border-white/10"
-                          >
-                            {(['AM', 'PM', 'NT'] as ShiftType[]).map(type => (
+                        
+                        {isManagerMode ? (
+                          <div className="flex gap-1 p-0.5 bg-black/20 rounded-lg border border-white/5">
+                            {(['AM', 'PM', 'NT', 'OFF'] as ShiftType[]).map(type => (
                               <button
                                 key={type}
-                                onClick={() => handleShiftChange(staffName, type)}
-                                className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
-                                  shift.id === type
-                                    ? 'text-white shadow-lg'
-                                    : 'text-gray-500 hover:text-white hover:bg-white/5'
-                                }`}
-                                style={shift.id === type ? { backgroundColor: SHIFT_META[type].color } : {}}
+                                onClick={() => onOverride?.(dateKey, staffName, type)}
+                                className={`
+                                  px-2 py-1 rounded md:px-2.5 md:py-1.5 text-[7px] md:text-[8px] font-black uppercase tracking-widest transition-all
+                                  ${(overrides[dateKey]?.[staffName] || (shift.id === type && !overrides[dateKey]?.[staffName]))
+                                    ? 'bg-white/10 text-white shadow-sm' 
+                                    : 'text-gray-600 hover:text-gray-400 hover:bg-white/5'}
+                                `}
+                                style={(overrides[dateKey]?.[staffName] === type || (shift.id === type && !overrides[dateKey]?.[staffName])) && type !== 'OFF' 
+                                  ? { backgroundColor: SHIFT_META[type].color + '40', color: SHIFT_META[type].color } 
+                                  : {}}
                               >
                                 {type}
                               </button>
                             ))}
-                          </motion.div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-500 font-bold uppercase">{shift.id}</span>
+                          </div>
                         )}
-                      </AnimatePresence>
+                      </div>
                     </div>
                   );
                 })}

@@ -110,21 +110,6 @@ export default function App() {
                 <div className="h-1 w-12 bg-red-600 rounded-full mt-2" />
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => exportToCSV(schedule)}
-                className="p-4 bg-white/5 border border-white/5 rounded-2xl text-gray-400 hover:text-white transition-all"
-                title="Export to CSV"
-              >
-                <Upload size={20} className="rotate-180" />
-              </button>
-              <button
-                onClick={triggerPrint}
-                className="p-4 bg-white/5 border border-white/5 rounded-2xl text-gray-400 hover:text-white transition-all"
-                title="Print schedule"
-              >
-                <Printer size={20} />
-              </button>
             </div>
           </div>
           <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] font-heading mt-4">
@@ -189,17 +174,8 @@ export default function App() {
                 </h5>
               </div>
             </div>
-            {isManagerMode && (
-              <motion.button
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                onClick={() => setIsImportModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest transition-all"
-              >
-                <Upload size={14} className="text-red-500" />
-                Import
-              </motion.button>
-            )}
+            </div>
+            {/* Manager Mode indicator moved here or kept in admin panel */}
           </div>
         </motion.div>
 
@@ -282,25 +258,36 @@ export default function App() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <div className="bg-[#0f0f17] border border-white/5 rounded-3xl shadow-2xl p-4 md:p-8 print:bg-white">
               <div className="flex items-center justify-between mb-6 md:mb-8 print:mb-4">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter font-heading print:text-black">
-                    Monthly Schedule
-                  </h2>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mt-1 print:hidden">
-                    Tap a date to view team allocation
-                  </p>
+                <div className="flex items-center gap-6">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter font-heading print:text-black">
+                      Monthly Schedule
+                    </h2>
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mt-1 print:hidden">
+                      Tap a date to view or custom edit shifts
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest transition-all print:hidden group"
+                  >
+                    <Upload size={14} className="group-hover:-translate-y-0.5 transition-transform" />
+                    Bulk Import
+                  </button>
                 </div>
-                <div className="flex items-center gap-3 print:hidden">
-                  {[
-                    { id: 'AM', color: '#FF6B35' },
-                    { id: 'PM', color: '#4ECDC4' },
-                    { id: 'NT', color: '#6366F1' },
-                  ].map(s => (
-                    <div key={s.id} className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                      <span className="text-[9px] font-black uppercase text-gray-500">{s.id}</span>
-                    </div>
-                  ))}
+                <div className="flex items-center gap-6 print:hidden">
+                  <div className="flex items-center gap-3">
+                    {[
+                      { id: 'AM', color: '#FF6B35' },
+                      { id: 'PM', color: '#4ECDC4' },
+                      { id: 'NT', color: '#6366F1' },
+                    ].map(s => (
+                      <div key={s.id} className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                        <span className="text-[9px] font-black uppercase text-gray-500">{s.id}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
               <ScheduleCalendar
