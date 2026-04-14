@@ -24,6 +24,7 @@ import {
   getCurrentShiftType,
 } from './utils/scheduleGenerator';
 import { useFirebaseData } from '../../hooks/useFirebase';
+import { exportScheduleToCSV, downloadCSV } from './utils/RotaExportUtility';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1));
@@ -34,7 +35,6 @@ export default function App() {
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  // ... (useFirebaseData and overrides memo logic same) ...
   const { data: rawOverrides, updateRecord } = useFirebaseData('rotaOverrides', {});
 
   const overrides = useMemo(() => {
@@ -49,13 +49,6 @@ export default function App() {
 
   const schedule = useMemo(() => generateMonthSchedule(year, month, overrides), [year, month, overrides]);
   const analytics = useMemo(() => calculateMonthlyAnalytics(year, month, overrides), [year, month, overrides]);
-
-  const currentShiftType = useMemo(() => getCurrentShiftType(), []);
-  const todayKey = format(new Date(), 'yyyy-MM-dd');
-  const currentStaffOnShift = useMemo(() => {
-    const today = schedule.find(d => format(d.date, 'yyyy-MM-dd') === todayKey);
-    return today ? today.shifts[currentShiftType as 'AM' | 'PM' | 'NT'] : [];
-  }, [schedule, todayKey, currentShiftType]);
 
   const handlePrevMonth = () => { setCurrentDate(new Date(year, month - 1, 1)); setSelectedDate(null); };
   const handleNextMonth = () => { setCurrentDate(new Date(year, month + 1, 1)); setSelectedDate(null); };
@@ -73,6 +66,12 @@ export default function App() {
     await Promise.all(Object.entries(data).map(([date, staffOverrides]) => updateRecord(date, staffOverrides)));
   };
 
+  const handleExport = () => {
+    const csv = exportScheduleToCSV(schedule);
+    const fileName = `Rota_${format(currentDate, 'MMM_yyyy')}.csv`;
+    downloadCSV(csv, fileName);
+  };
+
   const handleManagerToggle = () => {
     if (isManagerMode) {
       setIsManagerMode(false);
@@ -87,102 +86,111 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-3 md:p-6 lg:p-8 print:p-0">
+    <div className="min-h-screen bg-background p-3 md:p-6 print:p-0">
       <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 md:mb-10 print:hidden"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl accent-gradient flex items-center justify-center shadow-lg shadow-red-500/20">
-                <CalendarIcon size={24} className="text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase font-heading leading-none">
-                  Staff Rota
-                </h1>
-                <div className="h-1 w-12 bg-red-600 rounded-full mt-2" />
-              </div>
+        {/* Compact Header & Navigation */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl accent-gradient flex items-center justify-center shadow-lg shadow-red-500/20">
+              <CalendarIcon size={20} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase font-heading leading-tight">
+                Staff Rota
+              </h1>
+              <div className="text-[8px] font-black uppercase tracking-[0.3em] text-red-500">Live Management</div>
             </div>
           </div>
-        </motion.header>
 
-        {/* Month Nav + Personnel Filter */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-8 flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between print:hidden"
-        >
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3 bg-[#0f0f17] border border-white/5 p-2 rounded-2xl shadow-xl">
-              <button onClick={handlePrevMonth} className="p-3 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-95">
-                <ChevronLeft size={20} />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-black/40 border border-white/5 p-1 rounded-xl">
+              <button onClick={handlePrevMonth} className="p-2 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-lg transition-all active:scale-95">
+                <ChevronLeft size={16} />
               </button>
-              <div className="min-w-[160px] text-center">
-                <div className="text-lg font-black text-white uppercase tracking-wider font-heading">
+              <div className="min-w-[120px] text-center px-2">
+                <span className="text-xs font-black text-white uppercase tracking-widest">
                   {format(currentDate, 'MMMM yyyy')}
-                </div>
+                </span>
               </div>
-              <button onClick={handleNextMonth} className="p-3 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-95">
-                <ChevronRight size={20} />
+              <button onClick={handleNextMonth} className="p-2 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-lg transition-all active:scale-95">
+                <ChevronRight size={16} />
               </button>
             </div>
-            
-            {/* Quick Management Tools */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleManagerToggle}
-                className={`flex items-center gap-2 px-4 py-3 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest ${
-                  isManagerMode 
-                    ? 'bg-red-600/10 border border-red-500/30 text-red-500' 
-                    : 'bg-white/5 border border-white/5 text-gray-500 hover:text-white'
-                }`}
-              >
-                {isManagerMode ? <ShieldAlert size={16} /> : <Shield size={16} />}
-                {isManagerMode ? 'Manager Ops Active' : 'Enter Manager Mode'}
-              </button>
-              
-              <button
-                onClick={() => setIsImportModalOpen(true)}
-                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#0f0f17] border border-white/5 text-white text-[10px] font-black uppercase tracking-widest hover:border-red-500/30 transition-all shadow-xl"
-              >
-                <Upload size={16} className="text-red-500" />
-                Bulk Import
-              </button>
-            </div>
-          </div>
 
-          <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setSelectedStaff(null)}
-              className={`px-5 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
-                !selectedStaff ? 'accent-gradient text-white shadow-lg shadow-red-500/20' : 'bg-white/5 text-gray-500 border border-white/5 hover:text-white hover:bg-white/10'
+              onClick={handleManagerToggle}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all font-black text-[9px] uppercase tracking-widest ${
+                isManagerMode 
+                  ? 'bg-red-600/10 border-red-500/30 text-red-500' 
+                  : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'
               }`}
             >
-              All Staff
+              {isManagerMode ? <ShieldAlert size={14} /> : <Shield size={14} />}
+              {isManagerMode ? 'Manager ON' : 'Login'}
             </button>
-            {STAFF_CONFIG.map(staff => (
-              <button
-                key={staff.name}
-                onClick={() => setSelectedStaff(staff.name)}
-                className={`px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border ${
-                  selectedStaff === staff.name ? 'text-white shadow-lg' : 'border-transparent text-gray-500 bg-white/2 hover:bg-white/5 hover:text-gray-300'
-                }`}
-                style={{
-                  backgroundColor: selectedStaff === staff.name ? STAFF_COLORS[staff.name] : undefined,
-                  borderColor: selectedStaff === staff.name ? 'rgba(255,255,255,0.2)' : undefined,
-                }}
-              >
-                {staff.name}
-              </button>
-            ))}
           </div>
-        </motion.div>
+        </div>
+
+        {/* Manager Command Center - Gated Row */}
+        <AnimatePresence>
+          {isManagerMode && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mb-6 overflow-hidden"
+            >
+              <div className="flex flex-wrap items-center gap-3 p-4 bg-red-600/5 border border-red-500/20 rounded-2xl">
+                 <div className="flex items-center gap-2 mr-2">
+                    <ShieldAlert size={14} className="text-red-500" />
+                    <span className="text-[9px] font-black uppercase text-red-500 tracking-widest">Admin Controls:</span>
+                 </div>
+                 <button
+                   onClick={() => setIsImportModalOpen(true)}
+                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black border border-white/10 text-white text-[9px] font-black uppercase tracking-widest hover:border-red-500/30 transition-all"
+                 >
+                   <Upload size={14} className="text-red-500" />
+                   Bulk Import
+                 </button>
+                 <button
+                   onClick={handleExport}
+                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black border border-white/10 text-white text-[9px] font-black uppercase tracking-widest hover:border-blue-500/30 transition-all"
+                 >
+                   <TrendingUp size={14} className="text-blue-500" />
+                   Export CSV
+                 </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Personnel Filter Row */}
+        <div className="mb-6 flex flex-wrap gap-2 print:hidden backdrop-blur-md bg-white/[0.02] p-3 rounded-2xl border border-white/[0.03]">
+          <button
+            onClick={() => setSelectedStaff(null)}
+            className={`px-4 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all ${
+              !selectedStaff ? 'accent-gradient text-white shadow-lg' : 'bg-white/5 text-gray-500 hover:text-white'
+            }`}
+          >
+            Team View
+          </button>
+          {STAFF_CONFIG.map(staff => (
+            <button
+              key={staff.name}
+              onClick={() => setSelectedStaff(staff.name)}
+              className={`px-3 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all ${
+                selectedStaff === staff.name ? 'text-white border' : 'text-gray-500 bg-white/2 hover:text-gray-300'
+              }`}
+              style={{
+                backgroundColor: selectedStaff === staff.name ? STAFF_COLORS[staff.name] : undefined,
+                borderColor: selectedStaff === staff.name ? 'rgba(255,255,255,0.2)' : 'transparent',
+              }}
+            >
+              {staff.name}
+            </button>
+          ))}
+        </div>
 
         {/* Tab Nav */}
         <motion.div

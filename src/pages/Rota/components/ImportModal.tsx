@@ -71,11 +71,15 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       const lines = text.split('\n').map(l => l.trim()).filter(l => l);
       if (lines.length < 1) return;
 
-      const headers = lines[0].split(',').map(h => h.trim());
+      // Detection: Comma or Semicolon?
+      const firstLine = lines[0];
+      const delimiter = firstLine.includes(';') ? ';' : ',';
+
+      const headers = firstLine.split(delimiter).map(h => h.trim());
       setPreviewHeaders(headers);
       
       const rows = lines.slice(1, 6).map(line => {
-        return line.split(',').map(v => v.trim());
+        return line.split(delimiter).map(v => v.trim());
       });
       setPreviewRows(rows);
     };
@@ -94,13 +98,13 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         return;
       }
 
-      const headers = lines[0].split(',').map(h => h.trim());
+      const delimiter = lines[0].includes(';') ? ';' : ',';
+      const headers = lines[0].split(delimiter).map(h => h.trim());
       const staffIndices: { name: string; index: number }[] = [];
       const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
 
-      // Map columns to staff members
       headers.forEach((h, i) => {
-        if (i === 0) return; // Column A is date
+        if (i === 0) return;
         if (validStaffNames.includes(h.toLowerCase())) {
           const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
           if (properName) staffIndices.push({ name: properName, index: i });
@@ -111,7 +115,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       const invalidEntries: string[] = [];
 
       lines.slice(1).forEach((line, lineIdx) => {
-        const values = line.split(',').map(v => v.trim());
+        const values = line.split(delimiter).map(v => v.trim());
         const rawDate = values[0];
         const dateKey = normalizeDate(rawDate);
 
@@ -130,7 +134,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       });
 
       if (invalidEntries.length > 0) {
-        setError(invalidEntries.slice(0, 3).join('; ') + (invalidEntries.length > 3 ? ` (+${invalidEntries.length - 3} more)` : ''));
+        setError("Import issues: " + invalidEntries.slice(0, 3).join('; ') + (invalidEntries.length > 3 ? ` (+${invalidEntries.length - 3} more)` : ''));
         return;
       }
 
