@@ -5,6 +5,7 @@ import {
   FileText, 
   Activity, 
   Ticket,
+  CalendarDays,
   ExternalLink
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -19,6 +20,7 @@ const BottomNav = ({ className }) => {
     { path: '/templates', label: 'Templates', icon: FileText },
     { path: '/slots', label: 'Aviator', icon: Activity },
     { path: '/tickets', label: 'Tickets', icon: Ticket },
+    { path: '/rota', label: 'Rota', icon: CalendarDays },
   ];
 
   return (
