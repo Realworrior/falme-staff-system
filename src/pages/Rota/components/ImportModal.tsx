@@ -15,7 +15,7 @@ import { STAFF_CONFIG } from '../utils/scheduleGenerator';
 interface ImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (data: Record<string, Record<string, string>>) => void;
+  onImport: (data: Record<string, Record<string, string>>, shouldReplace: boolean) => void;
   year: number;
   month: number;
 }
@@ -171,7 +171,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         return;
       }
 
-      (onImport as any)(result, shouldReplace); 
+      onImport(result, shouldReplace); 
       onClose();
       setFile(null);
       setPreviewRows([]);
@@ -275,7 +275,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
                    {/* FIXED SCROLL CONTAINER */}
                    <div className="relative group/scroll bg-black/40 border border-white/5 rounded-2xl">
                       <div className="overflow-x-auto overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                        <table className="w-full text-left whitespace-nowrap table-fixed min-w-[800px]">
+                        <table className="w-full text-left whitespace-nowrap table-auto min-w-max">
                           <thead className="sticky top-0 z-10">
                             <tr className="bg-[#0f0f17] text-gray-400 uppercase tracking-widest text-[9px]">
                               {previewHeaders.map((h, i) => (
