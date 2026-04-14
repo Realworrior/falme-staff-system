@@ -23,6 +23,7 @@ interface ImportModalProps {
 
 export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [parsedData, setParsedData] = useState<string[][] | null>(null);
   const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
   const [previewRows, setPreviewRows] = useState<string[][]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +76,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         const data = results.data as string[][];
         if (data.length < 1) return;
         
+        setParsedData(data); // Cache the parsed array memory
+        
         const headers = data[0].map(h => h?.trim() || '').filter(h => h !== '');
         setPreviewHeaders(headers);
         
@@ -93,68 +96,67 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
   };
 
   const handleProcess = () => {
-    if (!file) return;
+    if (!parsedData) {
+      setError('Please allow the file to finish parsing before executing.');
+      return;
+    }
 
-    Papa.parse(file, {
-      complete: (results) => {
-        const data = results.data as string[][];
-        if (data.length < 2) {
-          setError('File contains no data');
-          return;
-        }
+    const data = parsedData;
+    if (data.length < 2) {
+      setError('File contains no valid shift data');
+      return;
+    }
 
-        const headers = data[0].map(h => h?.trim() || '');
-        const staffIndices: { name: string; index: number }[] = [];
-        const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
+    const headers = data[0].map(h => h?.trim() || '');
+    const staffIndices: { name: string; index: number }[] = [];
+    const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
 
-        headers.forEach((h, i) => {
-          if (i === 0) return;
-          if (validStaffNames.includes(h.toLowerCase())) {
-            const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
-            if (properName) staffIndices.push({ name: properName, index: i });
-          }
-        });
-
-        const result: Record<string, Record<string, string>> = {};
-        const invalidEntries: string[] = [];
-
-        data.slice(1).forEach((row, lineIdx) => {
-          if (!row || row.length === 0 || !row[0]?.trim()) return;
-
-          const rawDate = row[0].trim();
-          const dateKey = normalizeDate(rawDate);
-
-          if (!dateKey) {
-            invalidEntries.push(`Row ${lineIdx + 2}: Invalid date "${rawDate}"`);
-            return;
-          }
-
-          staffIndices.forEach(({ name, index }) => {
-            const shift = cleanShift(row[index]);
-            if (shift && ['AM', 'PM', 'NT', 'OFF'].includes(shift)) {
-              if (!result[dateKey]) result[dateKey] = {};
-              result[dateKey][name] = shift;
-            }
-          });
-        });
-
-        if (invalidEntries.length > 0) {
-          setError("Import issues: " + invalidEntries.slice(0, 3).join('; ') + (invalidEntries.length > 3 ? ` (+${invalidEntries.length - 3} more)` : ''));
-          return;
-        }
-
-        if (Object.keys(result).length === 0) {
-          setError('No valid shift data found. Ensure staff names in CSV match the system exactly (e.g. Ascar, Chris).');
-          return;
-        }
-
-        onImport(result, shouldReplace); 
-        onClose();
-        setFile(null);
-        setPreviewRows([]);
-      },
-      skipEmptyLines: true
+    headers.forEach((h, i) => {
+      if (i === 0) return;
+      if (validStaffNames.includes(h.toLowerCase())) {
+        const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
+        if (properName) staffIndices.push({ name: properName, index: i });
+      }
     });
+
+    const result: Record<string, Record<string, string>> = {};
+    const invalidEntries: string[] = [];
+
+    data.slice(1).forEach((row, lineIdx) => {
+      if (!row || row.length === 0 || !row[0]?.trim()) return;
+
+      const rawDate = row[0].trim();
+      const dateKey = normalizeDate(rawDate);
+
+      if (!dateKey) {
+        invalidEntries.push(`Row ${lineIdx + 2}: Invalid date "${rawDate}"`);
+        return;
+      }
+
+      staffIndices.forEach(({ name, index }) => {
+        const shift = cleanShift(row[index]);
+        if (shift && ['AM', 'PM', 'NT', 'OFF'].includes(shift)) {
+          if (!result[dateKey]) result[dateKey] = {};
+          result[dateKey][name] = shift;
+        }
+      });
+    });
+
+    if (invalidEntries.length > 0) {
+      setError("Import issues: " + invalidEntries.slice(0, 3).join('; ') + (invalidEntries.length > 3 ? ` (+${invalidEntries.length - 3} more)` : ''));
+      return;
+    }
+
+    if (Object.keys(result).length === 0) {
+      setError('No valid shift data found. Ensure staff names in CSV match the system exactly (e.g. Ascar, Chris).');
+      return;
+    }
+
+    onImport(result, shouldReplace); 
+    onClose();
+    setFile(null);
+    setParsedData(null);
+    setPreviewRows([]);
   };
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
