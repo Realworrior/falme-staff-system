@@ -25,6 +25,9 @@ import {
 } from './utils/scheduleGenerator';
 import { useFirebaseData } from '../../hooks/useFirebase';
 import { exportScheduleToCSV, downloadCSV } from './utils/RotaExportUtility';
+import { useToast } from '../../context/ToastContext';
+import { ref, update } from 'firebase/database';
+import { db } from '../../firebase';
 
 // v4.5 - Atomic Sync Optimization
 export default function App() {
@@ -35,6 +38,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'schedule' | 'analytics'>('schedule');
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const { showToast } = useToast();
 
   const [isReady, setIsReady] = useState(false);
   const { data: rawOverrides, loading, updateRecord, deleteRecord } = useFirebaseData('rotaOverrides', {});
@@ -102,14 +106,12 @@ export default function App() {
     });
 
     try {
-      // Use the raw firebase 'update' to perform the multi-path atomic update
-      const { update: fbUpdate, ref: fbRef } = await import('firebase/database');
-      const { db } = await import('../../firebase');
-      await fbUpdate(fbRef(db), updates);
+      // Perform atomic multipath update
+      await update(ref(db), updates);
       showToast('Rota specialized update complete', 'success');
     } catch (err) {
       console.error('Bulk import error:', err);
-      showToast('Import failed', 'error');
+      showToast('Import failed - check console', 'error');
     }
   };
 
