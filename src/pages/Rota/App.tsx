@@ -49,8 +49,20 @@ export default function App() {
   });
 
   const overrides = useMemo(() => {
-    if (!isReady) return {};
-    if (rawOverrides && typeof rawOverrides === 'object' && !Array.isArray(rawOverrides)) {
+    if (!isReady || !rawOverrides) return {};
+    if (Array.isArray(rawOverrides)) {
+      const mapped: Record<string, Record<string, any>> = {};
+      rawOverrides.forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+          const { firebaseKey, id, ...rest } = item;
+          if (firebaseKey || id) {
+            mapped[firebaseKey || id] = rest;
+          }
+        }
+      });
+      return mapped;
+    }
+    if (typeof rawOverrides === 'object') {
       return rawOverrides as Record<string, Record<string, any>>;
     }
     return {};

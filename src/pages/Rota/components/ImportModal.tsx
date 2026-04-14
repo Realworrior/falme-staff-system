@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
+import Papa from 'papaparse';
 import { 
   Dialog, 
   DialogContent, 
@@ -27,24 +28,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
   const [error, setError] = useState<string | null>(null);
   const [shouldReplace, setShouldReplace] = useState(false);
 
-  // Helper to split CSV line respecting double quotes
-  const splitCSVLine = (line: string, delimiter: string) => {
-    if (delimiter === ';') return line.split(';').map(v => v.trim());
-    
-    // Regex for comma split only if outside quotes
-    const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
-    return line.split(regex).map(v => {
-      let trimmed = v.trim();
-      if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
-        trimmed = trimmed.substring(1, trimmed.length - 1);
-      }
-      return trimmed;
-    });
-  };
-
   const normalizeDate = (raw: string): string | null => {
     if (!raw) return null;
-    // Clean double commas or extra noise
     const clean = raw.trim().replace(/,+/g, ',');
     
     // Check if it's "Wed, 1" or "1"
@@ -79,109 +64,97 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
     }
   };
 
-  const adaptiveSplitAndMerge = (line: string, delimiter: string, expectedLen: number): string[] => {
-    let values = splitCSVLine(line, delimiter);
-    
-    // If we have more values than expected, and it's a date column issue
-    if (values.length > expectedLen && expectedLen > 0) {
-      const extraCount = values.length - expectedLen;
-      const mergedDate = values.slice(0, extraCount + 1).join(' ');
-      return [mergedDate, ...values.slice(extraCount + 1)];
-    }
-    return values;
-  };
-
   const cleanShift = (raw: string) => {
     if (!raw) return '';
-    // Strip everything except alphanumeric, then upper
-    const cleaned = raw.replace(/[^a-zA-Z]/g, '').toUpperCase();
-    return cleaned;
+    return raw.replace(/[^a-zA-Z]/g, '').toUpperCase();
   };
 
   const parseCSV = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-      if (lines.length < 1) return;
-
-      const firstLine = lines[0];
-      const delimiter = firstLine.includes(';') ? ';' : ',';
-
-      const headers = splitCSVLine(firstLine, delimiter).filter(h => h.trim() !== '');
-      setPreviewHeaders(headers);
-      
-      const rows = lines.slice(1, 6).map(line => {
-        return adaptiveSplitAndMerge(line, delimiter, headers.length);
-      });
-      setPreviewRows(rows);
-    };
-    reader.readAsText(file);
+    Papa.parse(file, {
+      complete: (results) => {
+        const data = results.data as string[][];
+        if (data.length < 1) return;
+        
+        const headers = data[0].map(h => h?.trim() || '').filter(h => h !== '');
+        setPreviewHeaders(headers);
+        
+        const rows = data.slice(1, 6).filter(row => row.length > 0 && row[0]?.trim() !== '');
+        const formattedRows = rows.map(row => {
+            const arr = new Array(headers.length).fill('');
+            for (let i = 0; i < Math.min(row.length, headers.length); i++) {
+                arr[i] = row[i]?.trim() || '';
+            }
+            return arr;
+        });
+        setPreviewRows(formattedRows);
+      },
+      skipEmptyLines: true
+    });
   };
 
   const handleProcess = () => {
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-      if (lines.length < 2) {
-        setError('File contains no data');
-        return;
-      }
-
-      const delimiter = lines[0].includes(';') ? ';' : ',';
-      const headers = splitCSVLine(lines[0], delimiter).filter(h => h.trim() !== '');
-      const staffIndices: { name: string; index: number }[] = [];
-      const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
-
-      headers.forEach((h, i) => {
-        if (i === 0) return;
-        if (validStaffNames.includes(h.toLowerCase())) {
-          const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
-          if (properName) staffIndices.push({ name: properName, index: i });
-        }
-      });
-
-      const result: Record<string, Record<string, string>> = {};
-      const invalidEntries: string[] = [];
-
-      lines.slice(1).forEach((line, lineIdx) => {
-        const values = adaptiveSplitAndMerge(line, delimiter, headers.length);
-        const rawDate = values[0];
-        const dateKey = normalizeDate(rawDate);
-
-        if (!dateKey) {
-          if (rawDate) invalidEntries.push(`Row ${lineIdx + 2}: Invalid date "${rawDate}"`);
+    Papa.parse(file, {
+      complete: (results) => {
+        const data = results.data as string[][];
+        if (data.length < 2) {
+          setError('File contains no data');
           return;
         }
 
-        staffIndices.forEach(({ name, index }) => {
-          const shift = cleanShift(values[index]);
-          if (shift && ['AM', 'PM', 'NT', 'OFF'].includes(shift)) {
-            if (!result[dateKey]) result[dateKey] = {};
-            result[dateKey][name] = shift;
+        const headers = data[0].map(h => h?.trim() || '');
+        const staffIndices: { name: string; index: number }[] = [];
+        const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
+
+        headers.forEach((h, i) => {
+          if (i === 0) return;
+          if (validStaffNames.includes(h.toLowerCase())) {
+            const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
+            if (properName) staffIndices.push({ name: properName, index: i });
           }
         });
-      });
 
-      if (invalidEntries.length > 0) {
-        setError("Import issues: " + invalidEntries.slice(0, 3).join('; ') + (invalidEntries.length > 3 ? ` (+${invalidEntries.length - 3} more)` : ''));
-        return;
-      }
+        const result: Record<string, Record<string, string>> = {};
+        const invalidEntries: string[] = [];
 
-      if (Object.keys(result).length === 0) {
-        setError('No valid shift data found. Ensure staff names in CSV match the system exactly (e.g. Ascar, Chris).');
-        return;
-      }
+        data.slice(1).forEach((row, lineIdx) => {
+          if (!row || row.length === 0 || !row[0]?.trim()) return;
 
-      onImport(result, shouldReplace); 
-      onClose();
-      setFile(null);
-      setPreviewRows([]);
-    };
-    reader.readAsText(file);
+          const rawDate = row[0].trim();
+          const dateKey = normalizeDate(rawDate);
+
+          if (!dateKey) {
+            invalidEntries.push(`Row ${lineIdx + 2}: Invalid date "${rawDate}"`);
+            return;
+          }
+
+          staffIndices.forEach(({ name, index }) => {
+            const shift = cleanShift(row[index]);
+            if (shift && ['AM', 'PM', 'NT', 'OFF'].includes(shift)) {
+              if (!result[dateKey]) result[dateKey] = {};
+              result[dateKey][name] = shift;
+            }
+          });
+        });
+
+        if (invalidEntries.length > 0) {
+          setError("Import issues: " + invalidEntries.slice(0, 3).join('; ') + (invalidEntries.length > 3 ? ` (+${invalidEntries.length - 3} more)` : ''));
+          return;
+        }
+
+        if (Object.keys(result).length === 0) {
+          setError('No valid shift data found. Ensure staff names in CSV match the system exactly (e.g. Ascar, Chris).');
+          return;
+        }
+
+        onImport(result, shouldReplace); 
+        onClose();
+        setFile(null);
+        setPreviewRows([]);
+      },
+      skipEmptyLines: true
+    });
   };
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
