@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
@@ -20,7 +20,14 @@ import {
   Folder,
   Phone,
   ShoppingCart,
-  Menu
+  Menu,
+  Terminal,
+  Calendar,
+  Package,
+  RotateCcw,
+  Tag,
+  ThumbsUp,
+  User
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
@@ -30,22 +37,44 @@ import {
   DialogTitle, 
   DialogContent, 
   DialogActions, 
-  TextField
+  TextField,
+  Tooltip
 } from '@mui/material';
 
 // Helper for dynamic icons
 const getCategoryIcon = (category, size = 16, className = "") => {
   if (!category) return <Folder size={size} className={className} />;
   const name = category.toLowerCase();
-  if (name.includes('bill') || name.includes('payment') || name.includes('finance') || name.includes('pay')) return <CreditCard size={size} className={className} />;
-  if (name.includes('tech') || name.includes('bug') || name.includes('fix') || name.includes('error')) return <Wrench size={size} className={className} />;
-  if (name.includes('help') || name.includes('support') || name.includes('faq')) return <HelpCircle size={size} className={className} />;
-  if (name.includes('doc') || name.includes('temp') || name.includes('info')) return <FileText size={size} className={className} />;
-  if (name.includes('chat') || name.includes('msg') || name.includes('message')) return <MessageSquare size={size} className={className} />;
-  if (name.includes('sec') || name.includes('auth') || name.includes('pass')) return <Shield size={size} className={className} />;
-  if (name.includes('fast') || name.includes('quick') || name.includes('urgent')) return <Zap size={size} className={className} />;
+  
+  // Billing / Payment
+  if (name.includes('bill') || name.includes('pay') || name.includes('financ') || name.includes('invoice')) return <CreditCard size={size} className={className} />;
+  // Tech / Engineering
+  if (name.includes('tech') || name.includes('bug') || name.includes('fix') || name.includes('dev') || name.includes('error')) return <Terminal size={size} className={className} />;
+  // Account / User
+  if (name.includes('account') || name.includes('user') || name.includes('profile') || name.includes('login')) return <User size={size} className={className} />;
+  // Orders / Shipping
+  if (name.includes('order') || name.includes('ship') || name.includes('track') || name.includes('deliver') || name.includes('pack')) return <Package size={size} className={className} />;
+  if (name.includes('cart') || name.includes('shop')) return <ShoppingCart size={size} className={className} />;
+  // Booking / Appointment
+  if (name.includes('book') || name.includes('appoint') || name.includes('schedul') || name.includes('time')) return <Calendar size={size} className={className} />;
+  // Refunds / Returns
+  if (name.includes('refund') || name.includes('return') || name.includes('cancel')) return <RotateCcw size={size} className={className} />;
+  // Sales / Promo
+  if (name.includes('promo') || name.includes('offer') || name.includes('discount') || name.includes('sale')) return <Tag size={size} className={className} />;
+  // Security / Privacy
+  if (name.includes('sec') || name.includes('auth') || name.includes('pass') || name.includes('verif')) return <Shield size={size} className={className} />;
+  // Communications
+  if (name.includes('chat') || name.includes('msg') || name.includes('message') || name.includes('email')) return <MessageSquare size={size} className={className} />;
   if (name.includes('call') || name.includes('phone') || name.includes('contact')) return <Phone size={size} className={className} />;
-  if (name.includes('order') || name.includes('shop') || name.includes('cart')) return <ShoppingCart size={size} className={className} />;
+  // Support / Help
+  if (name.includes('help') || name.includes('support') || name.includes('faq') || name.includes('question')) return <HelpCircle size={size} className={className} />;
+  if (name.includes('fast') || name.includes('quick') || name.includes('urgent')) return <Zap size={size} className={className} />;
+  // Feedback
+  if (name.includes('feed') || name.includes('review') || name.includes('rate') || name.includes('complaint')) return <ThumbsUp size={size} className={className} />;
+  // Docs / Templates
+  if (name.includes('doc') || name.includes('temp') || name.includes('info') || name.includes('policy')) return <FileText size={size} className={className} />;
+  
+  // Custom Fallback (Generates an alphabetic icon based on char if needed, or default folder)
   return <Folder size={size} className={className} />;
 };
 
@@ -55,8 +84,14 @@ const Templates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  
+  // Collapse mode toggle (true = expanded text, false = collapsed icon rail)
   const [catSidebarOpen, setCatSidebarOpen] = useState(false);
-  const [newTemplate, setNewTemplate] = useState({ title: '', standardText: '', empathyText: '' });
+
+  // Default to expanded on desktop initially, collapsed on mobile
+  useEffect(() => {
+    setCatSidebarOpen(window.innerWidth >= 1024);
+  }, []);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -65,6 +100,7 @@ const Templates = () => {
 
   const handleMobileCategorySelect = (cat) => {
     setSelectedCategory(cat);
+    // Auto-collapse on mobile after selecting
     if(window.innerWidth < 1024) {
       setCatSidebarOpen(false);
     }
@@ -108,115 +144,107 @@ const Templates = () => {
         )}
       </AnimatePresence>
 
-      {/* Unified Responsive Category Sidebar */}
+      {/* Unified Responsive & Collapsible Category Sidebar */}
       <aside 
         className={`flex flex-col bg-[#0a0a12] lg:bg-sidebar/30 border-r border-white/5 sticky top-0 h-[calc(100vh-80px)] overflow-hidden shrink-0 transition-all duration-300 z-[90] ${
           catSidebarOpen 
-            ? 'w-[280px] fixed lg:relative shadow-2xl lg:shadow-none left-0' 
-            : 'w-[75px] lg:w-72 relative'
+            ? 'w-[280px] fixed shadow-2xl lg:relative lg:shadow-none left-0' 
+            : 'w-[75px] relative'
         }`}
       >
         <div className={`flex items-center pt-6 pb-4 border-b border-white/5 transition-all ${
-          catSidebarOpen ? 'px-5 justify-between' : 'px-0 justify-center lg:px-6 lg:justify-between'
+          catSidebarOpen ? 'px-5 justify-between' : 'px-0 justify-center'
         }`}>
-          {/* Header Label (hidden on mobile when collapsed) */}
-          <div className={`items-center gap-2.5 ${catSidebarOpen ? 'flex' : 'hidden lg:flex'}`}>
+          {/* Header Label (hidden when collapsed) */}
+          <div className={`items-center gap-2.5 ${catSidebarOpen ? 'flex' : 'hidden'}`}>
             <div className="w-8 h-8 rounded-xl accent-gradient flex items-center justify-center shadow-lg shadow-red-500/20 shrink-0">
-              <Filter size={14} className="text-white" />
+              <Menu size={14} className="text-white" />
             </div>
-            <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Library</h2>
+            <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Categories</h2>
           </div>
           
-          {/* Mobile Toggle Button */}
+          {/* Universal Toggle Button */}
           <button 
             onClick={() => setCatSidebarOpen(!catSidebarOpen)}
-            className={`p-2 text-gray-500 hover:text-white bg-white/5 rounded-xl border border-white/5 transition-all active:scale-95 lg:hidden flex-shrink-0 ${
-              !catSidebarOpen && 'mt-1'
-            }`}
+            className="p-2.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-all active:scale-95 flex-shrink-0"
           >
             {catSidebarOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 space-y-2 custom-scrollbar px-2 lg:px-3">
-          <button 
-            onClick={() => handleMobileCategorySelect(null)}
-            className={`w-full flex py-3 rounded-2xl transition-all duration-300 group relative ${
-              !selectedCategory 
-                ? "bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/5 lg:rotate-[-1deg]" 
-                : "text-gray-500 hover:text-white hover:bg-white/5"
-            } ${
-              catSidebarOpen 
-                ? 'flex-row items-center px-4 gap-3' 
-                : 'flex-col items-center justify-center gap-1.5 lg:flex-row lg:px-4 lg:justify-start lg:gap-3'
-            }`}
-            title="All Entries"
-          >
-            <div className="shrink-0 flex items-center justify-center">
-              <LayoutGrid size={18} className={!selectedCategory ? "text-red-500" : "group-hover:text-red-400"} />
-            </div>
-            <span className={`transition-all ${
-              catSidebarOpen 
-                ? 'flex-1 text-sm font-bold text-left truncate block' 
-                : 'block text-[8px] font-black uppercase tracking-tight text-center w-full px-1 truncate lg:flex-1 lg:text-sm lg:font-bold lg:normal-case lg:tracking-normal lg:text-left'
-            } ${!selectedCategory && !catSidebarOpen ? 'text-red-500 lg:text-red-500' : 'text-gray-500 group-hover:text-gray-300 lg:text-inherit'}`}>
-              All Entries
-            </span>
-            {!selectedCategory && (
-               <motion.div layoutId="activeCat" className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full ${
-                 catSidebarOpen ? 'block' : 'hidden lg:block'
-               }`} />
-            )}
-             {!selectedCategory && !catSidebarOpen && (
-               <motion.div layoutId="activeCatMobile" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full lg:hidden block" />
-            )}
-          </button>
-
-          <div className="h-px bg-white/5 my-4" />
-
-          {categories.map((cat) => (
+          <Tooltip title={!catSidebarOpen ? "All Entries" : ""} placement="right" arrow>
             <button 
-              key={cat}
-              onClick={() => handleMobileCategorySelect(cat)}
+              onClick={() => handleMobileCategorySelect(null)}
               className={`w-full flex py-3 rounded-2xl transition-all duration-300 group relative ${
-                selectedCategory === cat 
-                  ? "bg-white/[0.04] text-white border border-white/10 shadow-xl" 
+                !selectedCategory 
+                  ? "bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/5 rotate-[-1deg]" 
                   : "text-gray-500 hover:text-white hover:bg-white/5"
               } ${
                 catSidebarOpen 
                   ? 'flex-row items-center px-4 gap-3' 
-                  : 'flex-col items-center justify-center gap-1.5 lg:flex-row lg:px-4 lg:justify-start lg:gap-3'
+                  : 'flex-col items-center justify-center gap-1.5'
               }`}
-              title={cat}
             >
               <div className="shrink-0 flex items-center justify-center relative">
-                 {getCategoryIcon(cat, 18, selectedCategory === cat ? "text-red-500" : "group-hover:text-gray-300")}
+                <LayoutGrid size={18} className={!selectedCategory ? "text-red-500" : "group-hover:text-red-400"} />
               </div>
               
               <span className={`transition-all ${
                 catSidebarOpen 
-                  ? 'flex-1 text-sm font-bold text-left truncate block' 
-                  : 'block text-[8px] font-black uppercase tracking-tight text-center w-full px-1 truncate lg:flex-1 lg:text-sm lg:font-bold lg:normal-case lg:tracking-normal lg:text-left'
-              } ${selectedCategory === cat && !catSidebarOpen ? 'text-white lg:text-white' : 'text-gray-500 group-hover:text-gray-300 lg:text-inherit'}`}>
-                {cat}
+                  ? 'flex-1 text-sm font-bold text-left truncate block opacity-100' 
+                  : 'hidden opacity-0'
+              }`}>
+                All Entries
               </span>
 
-              {selectedCategory === cat && (
-                <motion.div layoutId="activeCat" className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full ${
-                  catSidebarOpen ? 'block' : 'hidden lg:block'
-                }`} />
-              )}
-               {selectedCategory === cat && !catSidebarOpen && (
-                <motion.div layoutId="activeCatMobile" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full lg:hidden block" />
+              {/* Active Indicator Line */}
+              {!selectedCategory && (
+                <motion.div layoutId="activeCat" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full" />
               )}
             </button>
+          </Tooltip>
+
+          <div className="h-px bg-white/5 my-4" />
+
+          {categories.map((cat) => (
+            <Tooltip key={cat} title={!catSidebarOpen ? cat : ""} placement="right" arrow>
+              <button 
+                onClick={() => handleMobileCategorySelect(cat)}
+                className={`w-full flex py-3 rounded-2xl transition-all duration-300 group relative ${
+                  selectedCategory === cat 
+                    ? "bg-white/[0.04] text-white border border-white/10 shadow-xl" 
+                    : "text-gray-500 hover:text-white hover:bg-white/5"
+                } ${
+                  catSidebarOpen 
+                    ? 'flex-row items-center px-4 gap-3' 
+                    : 'flex-col items-center justify-center gap-1.5'
+                }`}
+              >
+                <div className="shrink-0 flex items-center justify-center relative">
+                   {getCategoryIcon(cat, 18, selectedCategory === cat ? "text-red-500" : "group-hover:text-gray-300 transition-colors")}
+                </div>
+                
+                <span className={`transition-all ${
+                  catSidebarOpen 
+                    ? 'flex-1 text-sm font-bold text-left truncate block opacity-100' 
+                    : 'hidden opacity-0'
+                } ${selectedCategory === cat ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`}>
+                  {cat}
+                </span>
+
+                {selectedCategory === cat && (
+                  <motion.div layoutId="activeCat" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full" />
+                )}
+              </button>
+            </Tooltip>
           ))}
         </nav>
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-white/5 mt-auto">
-          <div className={`p-3.5 rounded-2xl bg-black/30 border border-white/5 ${
-            catSidebarOpen ? 'block' : 'hidden lg:block'
+          <div className={`p-3.5 rounded-2xl bg-black/30 border border-white/5 transition-all ${
+            catSidebarOpen ? 'block opacity-100' : 'hidden opacity-0'
           }`}>
             <p className="text-[9px] text-gray-600 leading-relaxed font-bold italic">
               {categories.length} segments available
