@@ -85,29 +85,24 @@ export default function App() {
     const entries = Object.entries(data);
     if (entries.length === 0) return;
 
+    // Use a targeted ref to bypass root-level security restrictions
+    const rotaRef = ref(db, 'rotaOverrides');
     const updates: Record<string, any> = {};
 
     entries.forEach(([date, staffOverrides]) => {
-      // If replacing, we don't care about old data, but Firebase update merges by default.
-      // So for each date, we need to decide if we wipe it.
-      // Firebase doesn't allow a single update call to 'replace' a whole node if we are targeting child paths,
-      // but we can target the node itself.
-      
-      const path = `rotaOverrides/${date}`;
       if (shouldReplace) {
-        // We set the entire node to the new values, effectively wiping old ones
-        updates[path] = staffOverrides;
+        // Atomic full replace for this date node
+        updates[date] = staffOverrides;
       } else {
-        // We merge into the node
+        // Atomic merge for specific staff within this date
         Object.entries(staffOverrides).forEach(([staff, shift]) => {
-          updates[`${path}/${staff}`] = shift;
+          updates[`${date}/${staff}`] = shift;
         });
       }
     });
 
     try {
-      // Perform atomic multipath update
-      await update(ref(db), updates);
+      await update(rotaRef, updates);
       showToast('Rota specialized update complete', 'success');
     } catch (err) {
       console.error('Bulk import error:', err);
