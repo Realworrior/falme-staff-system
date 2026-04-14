@@ -120,11 +120,11 @@ export default function App() {
     if (isManagerMode) {
       setIsManagerMode(false);
     } else {
-      const pass = prompt('Enter Manager Password:');
-      if (pass === 'admin') {
+      const pass = prompt('Enter Manager Password (hint: admin):');
+      if (pass && pass.trim().toLowerCase() === 'admin') {
         setIsManagerMode(true);
       } else {
-        alert('Access Denied');
+        alert('Access Denied. The password is "admin"');
       }
     }
   };
