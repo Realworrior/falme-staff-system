@@ -26,7 +26,7 @@ import {
 import { useFirebaseData } from '../../hooks/useFirebase';
 import { exportScheduleToCSV, downloadCSV } from './utils/RotaExportUtility';
 import { useToast } from '../../context/ToastContext';
-import { ref, update } from 'firebase/database';
+import { ref, update, set } from 'firebase/database';
 import { db } from '../../firebase';
 
 // v4.5 - Atomic Sync Optimization
@@ -85,24 +85,18 @@ export default function App() {
     const entries = Object.entries(data);
     if (entries.length === 0) return;
 
-    // Use a targeted ref to bypass root-level security restrictions
-    const rotaRef = ref(db, 'rotaOverrides');
-    const updates: Record<string, any> = {};
-
-    entries.forEach(([date, staffOverrides]) => {
-      if (shouldReplace) {
-        // Atomic full replace for this date node
-        updates[date] = staffOverrides;
-      } else {
-        // Atomic merge for specific staff within this date
-        Object.entries(staffOverrides).forEach(([staff, shift]) => {
-          updates[`${date}/${staff}`] = shift;
-        });
-      }
-    });
-
     try {
-      await update(rotaRef, updates);
+      const promises = entries.map(([date, staffOverrides]) => {
+        const dateRef = ref(db, `rotaOverrides/${date}`);
+        if (shouldReplace) {
+          // Atomic full replace for this date node
+          return set(dateRef, staffOverrides);
+        } else {
+          // Atomic merge for specific staff within this date
+          return update(dateRef, staffOverrides);
+        }
+      });
+      await Promise.all(promises);
       showToast('Rota specialized update complete', 'success');
     } catch (err) {
       console.error('Bulk import error:', err);
