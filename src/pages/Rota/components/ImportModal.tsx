@@ -170,6 +170,11 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         return;
       }
 
+      if (Object.keys(result).length === 0) {
+        setError('No valid shift data found. Ensure staff names in CSV match the system exactly (e.g. Ascar, Chris).');
+        return;
+      }
+
       onImport(result, shouldReplace); 
       onClose();
       setFile(null);

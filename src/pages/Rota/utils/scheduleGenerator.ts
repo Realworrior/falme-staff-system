@@ -37,7 +37,7 @@ export const STAFF_CONFIG: StaffMember[] = [
   // 2 AM rotation workers (5-day streak: AM·AM·AM·AM·AM, then 2 days off)
   { name: 'Linda', type: 'AM_ROTATION', cycleOffset: 0 }, // Mon-Fri
   { name: 'Nickson', type: 'AM_ROTATION', cycleOffset: 2 }, // Wed-Sun
-];
+].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
 // Color mapping for each staff member
 export const STAFF_COLORS: Record<string, string> = {
