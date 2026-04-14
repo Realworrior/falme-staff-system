@@ -138,22 +138,28 @@ const Templates = () => {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 space-y-2 custom-scrollbar px-3">
+        <nav className="flex-1 overflow-y-auto py-4 space-y-2 custom-scrollbar px-2 lg:px-3">
           <button 
             onClick={() => handleMobileCategorySelect(null)}
-            className={`w-full flex items-center gap-3 py-3 rounded-2xl transition-all duration-300 group relative ${
+            className={`w-full flex py-3 rounded-2xl transition-all duration-300 group relative ${
               !selectedCategory 
                 ? "bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/5 lg:rotate-[-1deg]" 
                 : "text-gray-500 hover:text-white hover:bg-white/5"
-            } ${catSidebarOpen ? 'px-4' : 'px-0 justify-center lg:px-4 lg:justify-start'}`}
+            } ${
+              catSidebarOpen 
+                ? 'flex-row items-center px-4 gap-3' 
+                : 'flex-col items-center justify-center gap-1.5 lg:flex-row lg:px-4 lg:justify-start lg:gap-3'
+            }`}
             title="All Entries"
           >
             <div className="shrink-0 flex items-center justify-center">
               <LayoutGrid size={18} className={!selectedCategory ? "text-red-500" : "group-hover:text-red-400"} />
             </div>
-            <span className={`flex-1 text-sm font-bold text-left truncate transition-all ${
-              catSidebarOpen ? 'block' : 'hidden lg:block'
-            }`}>
+            <span className={`transition-all ${
+              catSidebarOpen 
+                ? 'flex-1 text-sm font-bold text-left truncate block' 
+                : 'block text-[8px] font-black uppercase tracking-tight text-center w-full px-1 truncate lg:flex-1 lg:text-sm lg:font-bold lg:normal-case lg:tracking-normal lg:text-left'
+            } ${!selectedCategory && !catSidebarOpen ? 'text-red-500 lg:text-red-500' : 'text-gray-500 group-hover:text-gray-300 lg:text-inherit'}`}>
               All Entries
             </span>
             {!selectedCategory && (
@@ -172,24 +178,26 @@ const Templates = () => {
             <button 
               key={cat}
               onClick={() => handleMobileCategorySelect(cat)}
-              className={`w-full flex items-center gap-3 py-3 rounded-2xl transition-all duration-300 group relative ${
+              className={`w-full flex py-3 rounded-2xl transition-all duration-300 group relative ${
                 selectedCategory === cat 
                   ? "bg-white/[0.04] text-white border border-white/10 shadow-xl" 
                   : "text-gray-500 hover:text-white hover:bg-white/5"
-              } ${catSidebarOpen ? 'px-4' : 'px-0 justify-center lg:px-4 lg:justify-start'}`}
+              } ${
+                catSidebarOpen 
+                  ? 'flex-row items-center px-4 gap-3' 
+                  : 'flex-col items-center justify-center gap-1.5 lg:flex-row lg:px-4 lg:justify-start lg:gap-3'
+              }`}
               title={cat}
             >
               <div className="shrink-0 flex items-center justify-center relative">
                  {getCategoryIcon(cat, 18, selectedCategory === cat ? "text-red-500" : "group-hover:text-gray-300")}
-                 {/* Mini notification dot indicator for desktop collapsed look on mobile */}
-                 {selectedCategory === cat && !catSidebarOpen && (
-                   <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] lg:hidden" />
-                 )}
               </div>
               
-              <span className={`flex-1 text-xs font-black uppercase tracking-tight text-left truncate transition-all ${
-                catSidebarOpen ? 'block' : 'hidden lg:block'
-              }`}>
+              <span className={`transition-all ${
+                catSidebarOpen 
+                  ? 'flex-1 text-sm font-bold text-left truncate block' 
+                  : 'block text-[8px] font-black uppercase tracking-tight text-center w-full px-1 truncate lg:flex-1 lg:text-sm lg:font-bold lg:normal-case lg:tracking-normal lg:text-left'
+              } ${selectedCategory === cat && !catSidebarOpen ? 'text-white lg:text-white' : 'text-gray-500 group-hover:text-gray-300 lg:text-inherit'}`}>
                 {cat}
               </span>
 
