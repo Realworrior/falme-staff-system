@@ -177,10 +177,9 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
     };
     reader.readAsText(file);
   };
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#0a0a0f] border-white/5 text-white max-w-7xl w-[98vw] p-0 overflow-hidden rounded-[32px]">
+      <DialogContent className="bg-[#0a0a0f] border-white/5 text-white max-w-7xl w-[98vw] max-h-[92vh] p-0 overflow-hidden rounded-[32px] flex flex-col">
         <div className="p-8 border-b border-white/5 bg-black/40">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
@@ -193,7 +192,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
           </DialogHeader>
         </div>
 
-        <div className="p-8 space-y-6">
+        <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           {!file ? (
             <div 
               className="border-2 border-dashed border-white/10 rounded-3xl p-12 flex flex-col items-center justify-center gap-4 hover:border-red-500/30 transition-all group cursor-pointer relative"
