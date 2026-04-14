@@ -238,6 +238,7 @@ export default function App() {
                 schedule={schedule}
                 selectedStaff={selectedStaff}
                 onDayClick={handleDayClick}
+                overrides={overrides}
               />
             </div>
 

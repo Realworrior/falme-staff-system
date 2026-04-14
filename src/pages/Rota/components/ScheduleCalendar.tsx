@@ -6,6 +6,7 @@ interface ScheduleCalendarProps {
   schedule: DailySchedule[];
   selectedStaff: string | null;
   onDayClick: (date: Date) => void;
+  overrides?: Record<string, Record<string, string>>;
 }
 
 const SHIFT_COLORS: Record<string, string> = {
@@ -14,7 +15,7 @@ const SHIFT_COLORS: Record<string, string> = {
   NT: '#6366F1',
 };
 
-export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: ScheduleCalendarProps) {
+export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, overrides = {} }: ScheduleCalendarProps) {
   if (schedule.length === 0) return null;
 
   const firstDay = schedule[0].date;
@@ -74,10 +75,20 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
                 ${dimmed ? 'border-white/[0.03] bg-transparent opacity-30' : ''}
               `}
             >
-              {/* Date number */}
-              <div className={`text-[10px] md:text-xs font-black mb-1.5 ${isToday ? 'text-red-500' : 'text-gray-500'}`}>
-                {format(day.date, 'd')}
-                {isToday && <span className="ml-1 text-[7px] uppercase tracking-widest">Today</span>}
+              {/* Date & Status */}
+              <div className="flex items-center justify-between mb-1.5 min-h-[16px]">
+                <div className={`text-[10px] md:text-xs font-black ${isToday ? 'text-red-500' : 'text-gray-500'}`}>
+                  {format(day.date, 'd')}
+                  {isToday && <span className="ml-1 text-[7px] uppercase tracking-widest">Today</span>}
+                </div>
+                {Object.keys(overrides[format(day.date, 'yyyy-MM-dd')] || {}).length > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                    title="Manual Override Active"
+                  />
+                )}
               </div>
 
               {/* Shift groups */}
