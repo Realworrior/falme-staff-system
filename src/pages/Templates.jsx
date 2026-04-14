@@ -10,7 +10,8 @@ import {
   ChevronRight,
   ArrowLeft,
   LayoutGrid,
-  Filter
+  Filter,
+  X
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
@@ -30,11 +31,17 @@ const Templates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [catSidebarOpen, setCatSidebarOpen] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ title: '', standardText: '', empathyText: '' });
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     showToast('Copied to clipboard!', 'success');
+  };
+
+  const handleMobileCategorySelect = (cat) => {
+    setSelectedCategory(cat);
+    setCatSidebarOpen(false);
   };
 
   const categories = useMemo(() => {
@@ -112,41 +119,118 @@ const Templates = () => {
         </div>
       </aside>
 
+      {/* Mobile Category Sidebar Drawer */}
+      <AnimatePresence>
+        {catSidebarOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setCatSidebarOpen(false)}
+              className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[80]"
+            />
+            {/* Sidebar Panel */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+              className="lg:hidden fixed left-0 top-0 bottom-0 w-72 z-[90] bg-[#0a0a12] border-r border-white/5 flex flex-col shadow-2xl shadow-black/60"
+            >
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-white/5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl accent-gradient flex items-center justify-center shadow-lg shadow-red-500/20">
+                    <Filter size={14} className="text-white" />
+                  </div>
+                  <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Categories</h2>
+                </div>
+                <button 
+                  onClick={() => setCatSidebarOpen(false)}
+                  className="p-2 text-gray-500 hover:text-white bg-white/5 rounded-xl border border-white/5 transition-all active:scale-95"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Sidebar Navigation */}
+              <nav className="flex-1 overflow-y-auto p-4 space-y-1.5 custom-scrollbar">
+                <button 
+                  onClick={() => handleMobileCategorySelect(null)}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+                    !selectedCategory 
+                      ? "bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/5" 
+                      : "text-gray-500 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <LayoutGrid size={16} className={!selectedCategory ? "text-red-500" : "group-hover:text-red-400"} />
+                  <span className="flex-1 text-sm font-bold text-left">All Entries</span>
+                  {!selectedCategory && (
+                    <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                  )}
+                </button>
+
+                <div className="h-px bg-white/5 my-3" />
+
+                {categories.map((cat) => (
+                  <button 
+                    key={cat}
+                    onClick={() => handleMobileCategorySelect(cat)}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative ${
+                      selectedCategory === cat 
+                        ? "bg-white/[0.04] text-white border border-white/10 shadow-xl" 
+                        : "text-gray-500 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <div className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                      selectedCategory === cat ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "bg-white/10 group-hover:bg-white/30"
+                    }`} />
+                    <span className="flex-1 text-xs font-black uppercase tracking-tight text-left truncate">{cat}</span>
+                    {selectedCategory === cat && (
+                      <motion.div layoutId="activeCatMobile" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full" />
+                    )}
+                  </button>
+                ))}
+              </nav>
+
+              {/* Sidebar Footer */}
+              <div className="p-4 border-t border-white/5">
+                <div className="p-3.5 rounded-2xl bg-black/30 border border-white/5">
+                  <p className="text-[9px] text-gray-600 leading-relaxed font-bold italic">
+                    {categories.length} segments available · {selectedCategory ? '1 active' : 'All active'}
+                  </p>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* 2. Main Content Area */}
       <div className="flex-1 min-w-0 flex flex-col p-4 md:p-8 space-y-6">
-        {/* Mobile Category Switcher (Horizontal Scroll) */}
-        <div className="lg:hidden w-full overflow-x-auto pb-4 no-scrollbar relative z-10 touch-pan-x">
-          <div className="flex items-center gap-3 w-max px-1">
-            <button 
-              onClick={() => setSelectedCategory(null)}
-              className={`flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all ${
-                !selectedCategory ? "bg-red-500 border-red-500 text-white" : "bg-white/5 border-white/10 text-gray-500"
-              }`}
-            >
-              All Areas
-            </button>
-            {categories.map(cat => (
-              <button 
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all ${
-                  selectedCategory === cat ? "bg-red-500 border-red-500 text-white" : "bg-white/5 border-white/10 text-gray-500"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Dynamic Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex flex-1 items-center justify-between gap-4 w-full">
-            <div className="flex flex-1 items-center gap-4 min-w-0">
+            <div className="flex flex-1 items-center gap-3 min-w-0">
+              {/* Mobile Category Sidebar Toggle */}
+              <button 
+                onClick={() => setCatSidebarOpen(true)}
+                className={`lg:hidden p-3 rounded-2xl border transition-all active:scale-95 shrink-0 ${
+                  selectedCategory 
+                    ? "bg-red-500/10 text-red-500 border-red-500/20 shadow-lg shadow-red-500/10" 
+                    : "text-gray-500 hover:text-white bg-white/5 border-white/5"
+                }`}
+              >
+                <Filter size={18} />
+              </button>
+
               {selectedCategory && (
                 <button 
                   onClick={() => setSelectedCategory(null)}
-                  className="p-3 text-gray-500 hover:text-white bg-white/5 rounded-2xl border border-white/5 transition-all group shrink-0"
+                  className="hidden lg:flex p-3 text-gray-500 hover:text-white bg-white/5 rounded-2xl border border-white/5 transition-all group shrink-0"
                 >
                   <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                 </button>
