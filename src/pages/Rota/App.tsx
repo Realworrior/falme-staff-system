@@ -9,7 +9,6 @@ import {
   ShieldAlert,
   Upload,
   Clock,
-  Printer,
   X,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -25,7 +24,6 @@ import {
   getCurrentShiftType,
 } from './utils/scheduleGenerator';
 import { useFirebaseData } from '../../hooks/useFirebase';
-import { triggerPrint, exportToCSV } from './utils/ExportUtility';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1));
@@ -110,95 +108,52 @@ export default function App() {
                 <div className="h-1 w-12 bg-red-600 rounded-full mt-2" />
               </div>
             </div>
-            </div>
-          </div>
-          <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] font-heading mt-4">
-            Synchronized Operational Schedule & Resource Analytics
-          </p>
-        </motion.header>
-
-        {/* Live Operations Panel */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden"
-        >
-          {/* Current Shift */}
-          <div className="bg-[#0f0f17] border border-white/5 rounded-3xl p-5 flex items-center gap-5 shadow-xl relative overflow-hidden group">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-              currentShiftType === 'AM' ? 'bg-orange-500/20 text-orange-400' :
-              currentShiftType === 'PM' ? 'bg-emerald-500/20 text-emerald-400' :
-              'bg-indigo-500/20 text-indigo-400'
-            }`}>
-              <Clock size={28} />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Live Session</p>
-                <span className="text-[8px] bg-white/5 px-1.5 py-0.5 rounded text-gray-600 font-bold border border-white/5">v1.2.0</span>
-              </div>
-              <h4 className="text-xl font-black text-white uppercase tracking-tight font-heading">{currentShiftType} Active</h4>
-            </div>
-          </div>
-
-          {/* Staff on Duty */}
-          <div className="bg-[#0f0f17] border border-white/5 rounded-3xl p-5 shadow-xl">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Personnel On Duty</p>
-            <div className="flex flex-wrap gap-2">
-              {currentStaffOnShift.map(name => (
-                <span key={name} className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-white text-[11px] font-bold flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: STAFF_COLORS[name] }} />
-                  {name}
-                </span>
-              ))}
-              {currentStaffOnShift.length === 0 && <span className="text-gray-600 text-[10px] italic">None assigned</span>}
-            </div>
-          </div>
-
-          {/* Admin Controls */}
-          <div className="bg-[#0f0f17] border border-white/5 rounded-3xl p-5 flex items-center justify-between shadow-xl">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleManagerToggle}
-                className={`p-3 rounded-2xl transition-all flex-shrink-0 ${
-                  isManagerMode ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'bg-white/5 text-gray-500 hover:bg-white/10'
-                }`}
-              >
-                {isManagerMode ? <ShieldAlert size={20} /> : <Shield size={20} />}
-              </button>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">Access Tier</p>
-                <h5 className="text-sm font-black text-white uppercase tracking-tight">
-                  {isManagerMode ? 'Manager Mode' : 'Read Only'}
-                </h5>
-              </div>
-            </div>
-            </div>
-            {/* Manager Mode indicator moved here or kept in admin panel */}
-          </div>
-        </motion.div>
-
-        {/* Month Nav + Staff Filter */}
+        {/* Month Nav + Personnel Filter */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="mb-8 flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between print:hidden"
         >
-          <div className="flex items-center gap-3 bg-[#0f0f17] border border-white/5 p-2 rounded-2xl shadow-xl">
-            <button onClick={handlePrevMonth} className="p-3 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-95">
-              <ChevronLeft size={20} />
-            </button>
-            <div className="min-w-[160px] text-center">
-              <div className="text-lg font-black text-white uppercase tracking-wider font-heading">
-                {format(currentDate, 'MMMM yyyy')}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3 bg-[#0f0f17] border border-white/5 p-2 rounded-2xl shadow-xl">
+              <button onClick={handlePrevMonth} className="p-3 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-95">
+                <ChevronLeft size={20} />
+              </button>
+              <div className="min-w-[160px] text-center">
+                <div className="text-lg font-black text-white uppercase tracking-wider font-heading">
+                  {format(currentDate, 'MMMM yyyy')}
+                </div>
               </div>
+              <button onClick={handleNextMonth} className="p-3 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-95">
+                <ChevronRight size={20} />
+              </button>
             </div>
-            <button onClick={handleNextMonth} className="p-3 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-95">
-              <ChevronRight size={20} />
-            </button>
+            
+            {/* Quick Management Tools */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleManagerToggle}
+                className={`flex items-center gap-2 px-4 py-3 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest ${
+                  isManagerMode 
+                    ? 'bg-red-600/10 border border-red-500/30 text-red-500' 
+                    : 'bg-white/5 border border-white/5 text-gray-500 hover:text-white'
+                }`}
+              >
+                {isManagerMode ? <ShieldAlert size={16} /> : <Shield size={16} />}
+                {isManagerMode ? 'Manager Ops Active' : 'Enter Manager Mode'}
+              </button>
+              
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#0f0f17] border border-white/5 text-white text-[10px] font-black uppercase tracking-widest hover:border-red-500/30 transition-all shadow-xl"
+              >
+                <Upload size={16} className="text-red-500" />
+                Bulk Import
+              </button>
+            </div>
           </div>
+
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedStaff(null)}
@@ -258,36 +213,25 @@ export default function App() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <div className="bg-[#0f0f17] border border-white/5 rounded-3xl shadow-2xl p-4 md:p-8 print:bg-white">
               <div className="flex items-center justify-between mb-6 md:mb-8 print:mb-4">
-                <div className="flex items-center gap-6">
-                  <div>
-                    <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter font-heading print:text-black">
-                      Monthly Schedule
-                    </h2>
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mt-1 print:hidden">
-                      Tap a date to view or custom edit shifts
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setIsImportModalOpen(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest transition-all print:hidden group"
-                  >
-                    <Upload size={14} className="group-hover:-translate-y-0.5 transition-transform" />
-                    Bulk Import
-                  </button>
+                <div>
+                  <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter font-heading print:text-black">
+                    Monthly Schedule
+                  </h2>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mt-1 print:hidden">
+                    Tap a date to view team allocation
+                  </p>
                 </div>
-                <div className="flex items-center gap-6 print:hidden">
-                  <div className="flex items-center gap-3">
-                    {[
-                      { id: 'AM', color: '#FF6B35' },
-                      { id: 'PM', color: '#4ECDC4' },
-                      { id: 'NT', color: '#6366F1' },
-                    ].map(s => (
-                      <div key={s.id} className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                        <span className="text-[9px] font-black uppercase text-gray-500">{s.id}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="flex items-center gap-3 print:hidden">
+                  {[
+                    { id: 'AM', color: '#FF6B35' },
+                    { id: 'PM', color: '#4ECDC4' },
+                    { id: 'NT', color: '#6366F1' },
+                  ].map(s => (
+                    <div key={s.id} className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                      <span className="text-[9px] font-black uppercase text-gray-500">{s.id}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               <ScheduleCalendar

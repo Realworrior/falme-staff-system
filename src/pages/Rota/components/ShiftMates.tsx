@@ -18,6 +18,7 @@ const SHIFT_META: Record<string, { label: string; color: string; bg: string; tex
   AM: { label: 'AM — Morning', color: '#FF6B35', bg: 'bg-[#FF6B35]/10', textColor: 'text-[#FF6B35]' },
   PM: { label: 'PM — Afternoon', color: '#4ECDC4', bg: 'bg-[#4ECDC4]/10', textColor: 'text-[#4ECDC4]' },
   NT: { label: 'NT — Night', color: '#6366F1', bg: 'bg-[#6366F1]/10', textColor: 'text-[#6366F1]' },
+  OFF: { label: 'OFF — Day Off', color: '#9CA3AF', bg: 'bg-gray-500/10', textColor: 'text-gray-400' },
 };
 
 export function ShiftMates({
@@ -29,11 +30,10 @@ export function ShiftMates({
   overrides = {},
   onClose,
 }: ShiftMatesProps) {
-  const [editingStaff, setEditingStaff] = useState<string | null>(null);
-
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
   const daySchedule = schedule.find(d => format(d.date, 'yyyy-MM-dd') === dateKey);
 
+  // Group staff by their current shift
   const shifts = daySchedule
     ? [
         { id: 'AM' as ShiftType, staff: daySchedule.shifts.AM },
@@ -44,7 +44,6 @@ export function ShiftMates({
 
   const handleShiftChange = (staff: string, type: ShiftType) => {
     onOverride?.(dateKey, staff, type);
-    setEditingStaff(null);
   };
 
   return (
@@ -61,7 +60,7 @@ export function ShiftMates({
         <div className="flex items-center gap-2 flex-shrink-0">
           {isManagerMode && (
             <div className="px-2 py-1 rounded-lg bg-red-600/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest">
-              Edit Mode
+              Manager Desk
             </div>
           )}
           {onClose && (
@@ -90,61 +89,53 @@ export function ShiftMates({
             <div key={shift.id} className={`rounded-2xl p-4 ${meta.bg} border border-white/5`}>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: meta.color }} />
-                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${meta.textColor}`}>
+                <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${meta.textColor}`}>
                   {meta.label}
                 </span>
                 <span className="ml-auto text-[9px] text-gray-500 font-bold">{shift.staff.length} staff</span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {shift.staff.map(staffName => {
                   if (selectedStaff && selectedStaff !== staffName) return null;
                   const isModified = !!overrides[dateKey]?.[staffName];
-                  const isEditing = editingStaff === staffName;
 
                   return (
-                    <div key={staffName} className="relative">
+                    <div key={staffName} className="space-y-2">
                       <div
                         className={`
                           flex items-center justify-between px-4 py-3 rounded-xl border
-                          text-white text-[12px] font-bold transition-all group/card
-                          ${isModified ? 'border-amber-500/30 bg-amber-500/5' : 'border-white/5 bg-white/5 hover:bg-white/8'}
+                          text-white text-[12px] font-bold transition-all
+                          ${isModified ? 'border-amber-500/30 bg-amber-500/5' : 'border-white/5 bg-white/5'}
                         `}
                         style={{ borderLeft: `4px solid ${STAFF_COLORS[staffName]}` }}
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 font-black uppercase tracking-tight">
                           <span>{staffName}</span>
                           {isModified && (
-                            <span className="text-[8px] text-amber-500 font-black uppercase tracking-widest">Modified</span>
+                            <span className="text-[8px] text-amber-500 font-black uppercase tracking-widest bg-amber-500/10 px-1.5 py-0.5 rounded">Modified</span>
                           )}
                         </div>
-                        
-                        {isManagerMode ? (
-                          <div className="flex gap-1 p-0.5 bg-black/20 rounded-lg border border-white/5">
-                            {(['AM', 'PM', 'NT', 'OFF'] as ShiftType[]).map(type => (
-                              <button
-                                key={type}
-                                onClick={() => onOverride?.(dateKey, staffName, type)}
-                                className={`
-                                  px-2 py-1 rounded md:px-2.5 md:py-1.5 text-[7px] md:text-[8px] font-black uppercase tracking-widest transition-all
-                                  ${(overrides[dateKey]?.[staffName] || (shift.id === type && !overrides[dateKey]?.[staffName]))
-                                    ? 'bg-white/10 text-white shadow-sm' 
-                                    : 'text-gray-600 hover:text-gray-400 hover:bg-white/5'}
-                                `}
-                                style={(overrides[dateKey]?.[staffName] === type || (shift.id === type && !overrides[dateKey]?.[staffName])) && type !== 'OFF' 
-                                  ? { backgroundColor: SHIFT_META[type].color + '40', color: SHIFT_META[type].color } 
-                                  : {}}
-                              >
-                                {type}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-500 font-bold uppercase">{shift.id}</span>
-                          </div>
-                        )}
                       </div>
+
+                      {isManagerMode && (
+                        <div className="flex gap-1 p-1 bg-black/20 rounded-xl border border-white/5">
+                          {(['AM', 'PM', 'NT', 'OFF'] as ShiftType[]).map(type => (
+                            <button
+                              key={type}
+                              onClick={() => handleShiftChange(staffName, type)}
+                              className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${
+                                shift.id === type
+                                  ? 'text-white shadow-lg bg-red-600'
+                                  : 'text-gray-500 hover:text-white hover:bg-white/5'
+                              }`}
+                              style={shift.id === type ? { backgroundColor: SHIFT_META[type].color } : {}}
+                            >
+                              {type}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
