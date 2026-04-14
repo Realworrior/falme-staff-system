@@ -8,7 +8,7 @@ import {
   DialogDescription,
   DialogFooter
 } from './ui/dialog';
-import { Upload, FileText, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { STAFF_CONFIG } from '../utils/scheduleGenerator';
 
@@ -108,7 +108,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       const firstLine = lines[0];
       const delimiter = firstLine.includes(';') ? ';' : ',';
 
-      const headers = splitCSVLine(firstLine, delimiter);
+      const headers = splitCSVLine(firstLine, delimiter).filter(h => h.trim() !== '');
       setPreviewHeaders(headers);
       
       const rows = lines.slice(1, 6).map(line => {
@@ -131,8 +131,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         return;
       }
 
-      const delimiter = lines[0].includes(';') ? ';' : ',';
-      const headers = splitCSVLine(lines[0], delimiter);
+      const headers = splitCSVLine(lines[0], delimiter).filter(h => h.trim() !== '');
       const staffIndices: { name: string; index: number }[] = [];
       const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
 
@@ -181,7 +180,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#0a0a0f] border-white/5 text-white max-w-4xl p-0 overflow-hidden rounded-[32px]">
+      <DialogContent className="bg-[#0a0a0f] border-white/5 text-white max-w-7xl w-[98vw] p-0 overflow-hidden rounded-[32px]">
         <div className="p-8 border-b border-white/5 bg-black/40">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
@@ -189,7 +188,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
               Advanced Matrix Import
             </DialogTitle>
             <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2">
-              Sync Operational Data with Quoted Comma Support
+              Sync Operational Data with Atomic Override support
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -273,13 +272,13 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
                 <div className="space-y-2">
                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Live Grid Preview</p>
                    {/* FIXED SCROLL CONTAINER */}
-                   <div className="relative group/scroll bg-black/40 border border-white/5 rounded-2xl">
-                      <div className="overflow-x-auto overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                    <div className="relative group/scroll bg-black/40 border border-white/5 rounded-2xl">
+                      <div className="overflow-x-auto overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-red-600 scrollbar-track-white/5">
                         <table className="w-full text-left whitespace-nowrap table-auto min-w-max">
                           <thead className="sticky top-0 z-10">
                             <tr className="bg-[#0f0f17] text-gray-400 uppercase tracking-widest text-[9px]">
                               {previewHeaders.map((h, i) => (
-                                <th key={i} className={`p-3 border-b border-white/5 ${i === 0 ? 'sticky left-0 bg-[#0f0f17] z-20 w-[120px]' : 'w-[100px]'}`}>{h}</th>
+                                <th key={i} className={`p-4 border-b border-white/10 ${i === 0 ? 'sticky left-0 bg-[#0f0f17] z-20 min-w-[180px]' : 'min-w-[140px]'}`}>{h}</th>
                               ))}
                             </tr>
                           </thead>
@@ -336,9 +335,10 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
              <button 
                onClick={handleProcess}
                disabled={!file}
-               className="order-1 sm:order-2 flex-[2] px-8 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all text-center"
+               className="order-1 sm:order-2 flex-[2] px-8 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all text-center flex items-center justify-center gap-2"
              >
-               Execute Matrix Sync
+               {shouldReplace ? <ShieldAlert size={14} className="text-white animate-pulse" /> : <Upload size={14} />}
+               {shouldReplace ? 'Execute Full Wipe & Sync' : 'Execute Matrix Sync'}
              </button>
            </div>
         </div>

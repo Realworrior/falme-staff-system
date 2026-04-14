@@ -26,6 +26,7 @@ import {
 import { useFirebaseData } from '../../hooks/useFirebase';
 import { exportScheduleToCSV, downloadCSV } from './utils/RotaExportUtility';
 
+// v4.5 - Atomic Sync Optimization
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1));
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
@@ -78,14 +79,38 @@ export default function App() {
 
   const handleBulkImport = async (data: Record<string, Record<string, string>>, shouldReplace: boolean = false) => {
     const entries = Object.entries(data);
-    
-    if (shouldReplace) {
-      // Wipe the existing dates first
-      await Promise.all(entries.map(([date]) => deleteRecord(date)));
-    }
+    if (entries.length === 0) return;
 
-    // Update with new data
-    await Promise.all(entries.map(([date, staffOverrides]) => updateRecord(date, staffOverrides)));
+    const updates: Record<string, any> = {};
+
+    entries.forEach(([date, staffOverrides]) => {
+      // If replacing, we don't care about old data, but Firebase update merges by default.
+      // So for each date, we need to decide if we wipe it.
+      // Firebase doesn't allow a single update call to 'replace' a whole node if we are targeting child paths,
+      // but we can target the node itself.
+      
+      const path = `rotaOverrides/${date}`;
+      if (shouldReplace) {
+        // We set the entire node to the new values, effectively wiping old ones
+        updates[path] = staffOverrides;
+      } else {
+        // We merge into the node
+        Object.entries(staffOverrides).forEach(([staff, shift]) => {
+          updates[`${path}/${staff}`] = shift;
+        });
+      }
+    });
+
+    try {
+      // Use the raw firebase 'update' to perform the multi-path atomic update
+      const { update: fbUpdate, ref: fbRef } = await import('firebase/database');
+      const { db } = await import('../../firebase');
+      await fbUpdate(fbRef(db), updates);
+      showToast('Rota specialized update complete', 'success');
+    } catch (err) {
+      console.error('Bulk import error:', err);
+      showToast('Import failed', 'error');
+    }
   };
 
   const handleExport = () => {
