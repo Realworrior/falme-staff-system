@@ -26,13 +26,6 @@ import {
 } from './utils/scheduleGenerator';
 import { useFirebaseData } from '../../hooks/useFirebase';
 import { ImportModal } from './components/ImportModal';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription 
-} from './components/ui/dialog';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1)); // April 2026
@@ -41,7 +34,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'schedule' | 'analytics'>('schedule');
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isDayDetailsOpen, setIsDayDetailsOpen] = useState(false);
 
   // Fetch Overrides from Firebase
   const { data: rawOverrides, updateRecord } = useFirebaseData('rotaOverrides', {});
@@ -82,11 +74,6 @@ export default function App() {
   const handleNextMonth = () => {
     setCurrentDate(new Date(year, month + 1, 1));
     setSelectedDate(null);
-  };
-
-  const handleDayClick = (date: Date) => {
-    setSelectedDate(date);
-    setIsDayDetailsOpen(true);
   };
 
   const handleOverride = async (date: string, staff: string, type: string) => {
@@ -296,28 +283,32 @@ export default function App() {
 
         {/* Content */}
         {activeTab === 'schedule' ? (
-          <div className="items-start">
+          <div className="w-full">
             {/* Calendar */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="w-full print:col-span-3"
             >
-              <div className="bg-[#0f0f17] border border-white/5 rounded-3xl shadow-xl p-3 md:p-6 print:bg-white print:text-black print:border-black">
-                <div className="flex items-center justify-between mb-4 md:mb-6 print:mb-2">
-                  <h2 className="text-xl md:text-2xl text-white print:text-black" style={{ fontFamily: 'var(--font-display)' }}>
-                    Monthly Calendar
-                  </h2>
-                  <div className="flex items-center gap-2 print:hidden">
-                    <div className="text-[9px] font-black uppercase tracking-widest text-gray-600">Dynamic Cell Density</div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <div className="bg-[#0f0f17] border border-white/5 rounded-[40px] shadow-2xl p-4 md:p-10 print:bg-white print:text-black print:border-black">
+                <div className="flex items-center justify-between mb-8 md:mb-12 print:mb-4">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-black text-white print:text-black uppercase tracking-tighter font-heading">
+                      Monthly Operations Matrix
+                    </h2>
+                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] mt-1 print:hidden">Global Resource Synchronization</p>
+                  </div>
+                  <div className="flex items-center gap-3 print:hidden">
+                    <div className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">Dynamic Scaling Active</div>
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                   </div>
                 </div>
                 <ScheduleCalendar
                   schedule={schedule}
                   selectedStaff={selectedStaff}
-                  onDayClick={handleDayClick}
+                  onDayClick={(date) => {
+                    setSelectedDate(date);
+                  }}
                 />
               </div>
             </motion.div>
@@ -333,15 +324,16 @@ export default function App() {
         )}
 
         {/* Shift Details Modal */}
-        <Dialog open={isDayDetailsOpen} onOpenChange={setIsDayDetailsOpen}>
-          <DialogContent className="bg-[#0a0a0f] border-white/5 text-white p-0 overflow-hidden rounded-[32px] max-w-lg">
-            <ShiftMates
+        <Dialog open={!!selectedDate} onOpenChange={(open) => !open && setSelectedDate(null)}>
+          <DialogContent className="bg-transparent border-none shadow-none max-w-2xl p-0">
+             <ShiftMates
                selectedDate={selectedDate}
                schedule={schedule}
                selectedStaff={selectedStaff}
                isManagerMode={isManagerMode}
                onOverride={handleOverride}
                overrides={overrides}
+               onClose={() => setSelectedDate(null)}
              />
           </DialogContent>
         </Dialog>

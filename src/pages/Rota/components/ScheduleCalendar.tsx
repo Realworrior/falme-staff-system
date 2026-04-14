@@ -58,7 +58,7 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
               transition={{ delay: index * 0.005 }}
               onClick={() => onDayClick(day.date)}
               className={`
-                min-h-[140px] md:min-h-[200px] h-auto border rounded-2xl p-2 md:p-3 cursor-pointer transition-all relative group/day
+                min-h-[140px] md:min-h-[200px] h-auto border rounded-3xl p-3 md:p-5 cursor-pointer transition-all relative group/day
                 ${isSelected 
                   ? 'border-red-500 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.1)]' 
                   : 'border-white/5 bg-white/2 hover:border-white/10 hover:bg-white/5'}
@@ -66,18 +66,18 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
               `}
             >
               <div className="flex flex-col">
-                <div className="text-[10px] md:text-sm font-bold opacity-40 mb-2">
+                <div className="text-[10px] md:text-base font-black opacity-20 mb-3">
                   {format(day.date, 'd')}
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {shifts.map(s => (
-                    <div key={s.id} className="space-y-1">
-                      <div className="flex items-center gap-1.5 opacity-60">
-                        <div className={`w-1 h-1 rounded-full ${s.color}`} />
-                        <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest">{s.id}</span>
+                    <div key={s.id} className="space-y-1.5 transition-all">
+                      <div className="flex items-center gap-2 opacity-50">
+                        <div className={`w-1.5 h-1.5 rounded-full ${s.color} shadow-sm`} />
+                        <span className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.2em]">{s.id}</span>
                       </div>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1.5">
                         {s.staff.map((staffName, idx) => {
                           const isStaffSelected = selectedStaff === staffName || !selectedStaff;
                           if (!isStaffSelected) return null;
@@ -85,11 +85,10 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
                           return (
                             <div
                               key={`${staffName}-${idx}`}
-                              className="text-white px-1.5 py-1 rounded text-[7px] md:text-[9.5px] font-black leading-tight shadow-sm whitespace-normal break-words text-center"
+                              className="text-white px-2 py-1 md:px-3 md:py-1.5 rounded-xl text-[7px] md:text-[11px] font-black leading-tight shadow-lg whitespace-normal break-words"
                               style={{ 
                                 backgroundColor: STAFF_COLORS[staffName],
-                                opacity: selectedStaff === staffName ? 1 : 0.9,
-                                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                                opacity: selectedStaff === staffName ? 1 : 0.95
                               }}
                               title={`${staffName} - ${s.id}`}
                             >
