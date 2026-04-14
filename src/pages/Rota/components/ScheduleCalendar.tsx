@@ -43,15 +43,12 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
             ? Object.values(day.shifts).some(shift => shift.includes(selectedStaff))
             : false;
 
-          // Collect all staff with their shifts for this day
-          const allStaffShifts: Array<{ name: string; shift: string }> = [];
-          Object.entries(day.shifts).forEach(([shiftType, staffList]) => {
-            staffList.forEach(staffName => {
-              if (!selectedStaff || staffName === selectedStaff) {
-                allStaffShifts.push({ name: staffName, shift: shiftType });
-              }
-            });
-          });
+          // Group staff by shift
+          const shifts = [
+            { id: 'AM', label: 'A', color: 'bg-[#FF6B35]', staff: day.shifts.AM },
+            { id: 'PM', label: 'P', color: 'bg-[#4ECDC4]', staff: day.shifts.PM },
+            { id: 'NT', label: 'N', color: 'bg-[#6366F1]', staff: day.shifts.NT },
+          ].filter(s => s.staff.length > 0);
 
           return (
             <motion.div
@@ -61,28 +58,45 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
               transition={{ delay: index * 0.005 }}
               onClick={() => onDayClick(day.date)}
               className={`
-                aspect-square border rounded-2xl p-1 md:p-2 cursor-pointer transition-all overflow-hidden relative group/day
+                min-h-[140px] md:min-h-[180px] h-auto border rounded-2xl p-2 md:p-3 cursor-pointer transition-all relative group/day
                 ${isSelected 
                   ? 'border-red-500 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.1)]' 
                   : 'border-white/5 bg-white/2 hover:border-white/10 hover:bg-white/5'}
                 ${!selectedStaff ? 'opacity-100' : isSelected ? 'opacity-100' : 'opacity-20'}
               `}
             >
-              <div className="h-full flex flex-col">
-                <div className="text-[10px] md:text-sm mb-1 flex-shrink-0">
+              <div className="flex flex-col">
+                <div className="text-[10px] md:text-sm font-bold opacity-40 mb-2">
                   {format(day.date, 'd')}
                 </div>
 
-                {/* Staff Names */}
-                <div className="flex-1 flex flex-col gap-[2px] md:gap-1 overflow-hidden">
-                  {allStaffShifts.map((item, idx) => (
-                    <div
-                      key={`${item.name}-${idx}`}
-                      className="flex-shrink-0 text-white px-1 py-[2px] md:py-0.5 rounded text-[7px] md:text-[9px] leading-tight truncate"
-                      style={{ backgroundColor: STAFF_COLORS[item.name] }}
-                      title={`${item.name} - ${item.shift}`}
-                    >
-                      {item.name}
+                <div className="flex flex-col gap-3">
+                  {shifts.map(s => (
+                    <div key={s.id} className="space-y-1">
+                      <div className="flex items-center gap-1.5 opacity-60">
+                        <div className={`w-1 h-1 rounded-full ${s.color}`} />
+                        <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest">{s.id}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {s.staff.map((staffName, idx) => {
+                          const isStaffSelected = selectedStaff === staffName || !selectedStaff;
+                          if (!isStaffSelected) return null;
+
+                          return (
+                            <div
+                              key={`${staffName}-${idx}`}
+                              className="text-white px-1.5 py-0.5 md:py-1 rounded text-[7px] md:text-[9px] font-bold leading-tight truncate shadow-sm"
+                              style={{ 
+                                backgroundColor: STAFF_COLORS[staffName],
+                                opacity: selectedStaff === staffName ? 1 : 0.9
+                              }}
+                              title={`${staffName} - ${s.id}`}
+                            >
+                              {staffName}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   ))}
                 </div>

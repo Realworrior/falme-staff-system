@@ -33,6 +33,7 @@ const Tickets = () => {
   // Auth State
   const [auth, setAuth] = useState({ isAuth: false, role: 'Staff' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All'); // All, Pending, In Progress, Resolved
   const [modalOpen, setModalOpen] = useState(false);
   const { data: templates } = useFirebaseData('supportTemplates', []);
   const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
@@ -126,14 +127,22 @@ const Tickets = () => {
     const q = searchQuery.toLowerCase();
     let result = tickets;
     
-    // Dept role might see everything, Staff might only see their categories or specific types
-    // For now, let's filter by search
+    // Status Filter logic
+    if (statusFilter !== 'All') {
+      result = result.filter(t => t.status === statusFilter);
+    }
+
     return result.filter(t => {
       const cat = t.category || t.type || 'General Enquiry';
       const searchStr = (cat + (t.phone || '') + (t.id || '') + (t.title || '')).toLowerCase();
       return searchStr.includes(q);
     }).sort((a, b) => (b.created || 0) - (a.created || 0));
-  }, [tickets, searchQuery]);
+  }, [tickets, searchQuery, statusFilter]);
+
+  const handleUpdateStatus = (ticketId, newStatus) => {
+    updateRecord(ticketId, { status: newStatus });
+    showToast(`Ticket marked as ${newStatus}`, 'success');
+  };
 
   const handleCreate = () => {
     if (!form.title && !form.category) return showToast('Details required', 'error');
@@ -261,12 +270,29 @@ const Tickets = () => {
           </div>
 
           <div className="bg-[#0f0f17] rounded-[40px] border border-white/5 shadow-2xl overflow-hidden">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/20">
+            <div className="p-8 border-b border-white/5 flex flex-col md:flex-row items-center justify-between bg-black/20 gap-4">
               <div className="flex items-center gap-3">
                 <Filter size={18} className="text-red-500" />
                 <h2 className="text-lg font-black text-white font-heading uppercase tracking-tighter">Ticket Feed</h2>
               </div>
-              <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">{filteredTickets.length} Tickets Found</span>
+              
+              <div className="flex bg-black/40 p-1 rounded-2xl border border-white/5">
+                {['All', 'Pending', 'In Progress', 'Resolved'].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                      statusFilter === s 
+                        ? 'bg-red-600/10 text-red-500 border border-red-500/20' 
+                        : 'text-gray-500 hover:text-white'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">{filteredTickets.length} Found</span>
             </div>
             
             <div className="no-scrollbar">
@@ -340,6 +366,15 @@ const Tickets = () => {
                         </td>
                         <td className="py-6 px-8 text-right">
                           <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
+                             {ticket.status !== 'Resolved' && (
+                               <button 
+                                 title="Mark as Resolved"
+                                 className="p-2.5 bg-emerald-500/5 border border-emerald-500/10 text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all shadow-xl"
+                                 onClick={() => handleUpdateStatus(ticket.firebaseKey || ticket.id, 'Resolved')}
+                               >
+                                 <CheckCircle2 size={16} />
+                               </button>
+                             )}
                              <button className="p-2.5 bg-white/5 border border-white/5 text-gray-500 hover:text-white hover:border-white/10 rounded-xl transition-all shadow-xl"><Eye size={16} /></button>
                              <button className="p-2.5 bg-red-500/5 border border-red-500/10 text-gray-700 hover:text-red-500 hover:border-red-500/20 rounded-xl transition-all shadow-xl" onClick={() => deleteRecord(ticket.firebaseKey || ticket.id)}><Trash2 size={16} /></button>
                           </div>
@@ -390,6 +425,14 @@ const Tickets = () => {
                           <span className="text-gray-400 font-black text-xs uppercase tracking-[0.2em]">{ticket.status}</span>
                         </div>
                         <div className="flex gap-3">
+                           {ticket.status !== 'Resolved' && (
+                             <button 
+                               className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all rounded-xl shadow-lg active:scale-95"
+                               onClick={() => handleUpdateStatus(ticket.firebaseKey || ticket.id, 'Resolved')}
+                             >
+                               <CheckCircle2 size={16} />
+                             </button>
+                           )}
                            <button className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all rounded-xl shadow-lg active:scale-95"><Eye size={16} /></button>
                            <button className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all rounded-xl shadow-lg active:scale-95" onClick={() => deleteRecord(ticket.firebaseKey || ticket.id)}><Trash2 size={16} /></button>
                         </div>

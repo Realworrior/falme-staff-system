@@ -80,8 +80,8 @@ export function getStaffShift(staff: StaffMember, date: Date, baseDate: Date): S
   };
 }
 
-// Generate full schedule for a month
-export function generateMonthSchedule(year: number, month: number): DailySchedule[] {
+// Generate full schedule for a month with optional overrides
+export function generateMonthSchedule(year: number, month: number, overrides: Record<string, Record<string, ShiftType>> = {}): DailySchedule[] {
   const baseDate = new Date(2026, 0, 1); // Reference date for cycle calculation
   const monthStart = startOfMonth(new Date(year, month));
   const monthEnd = endOfMonth(new Date(year, month));
@@ -89,15 +89,20 @@ export function generateMonthSchedule(year: number, month: number): DailySchedul
   const schedule: DailySchedule[] = [];
 
   for (let date = monthStart; date <= monthEnd; date = addDays(date, 1)) {
+    const dateKey = format(date, 'yyyy-MM-dd');
+    const dayOverrides = overrides[dateKey] || {};
+    
     const dailyShifts: DailySchedule = {
       date: new Date(date),
       shifts: { AM: [], PM: [], NT: [] },
     };
 
     STAFF_CONFIG.forEach(staff => {
-      const shift = getStaffShift(staff, date, baseDate);
-      if (shift.type !== 'OFF') {
-        dailyShifts.shifts[shift.type].push(staff.name);
+      // Use override if exists, otherwise generate algorithmically
+      const shiftType = dayOverrides[staff.name] || getStaffShift(staff, date, baseDate).type;
+      
+      if (shiftType !== 'OFF' && (shiftType === 'AM' || shiftType === 'PM' || shiftType === 'NT')) {
+        dailyShifts.shifts[shiftType].push(staff.name);
       }
     });
 
@@ -107,53 +112,42 @@ export function generateMonthSchedule(year: number, month: number): DailySchedul
   return schedule;
 }
 
-// Get all shifts for a specific staff member in a month
-export function getStaffMonthSchedule(staffName: string, year: number, month: number): Shift[] {
-  const staff = STAFF_CONFIG.find(s => s.name === staffName);
-  if (!staff) return [];
-
-  const baseDate = new Date(2026, 0, 1);
-  const monthStart = startOfMonth(new Date(year, month));
-  const monthEnd = endOfMonth(new Date(year, month));
-
-  const shifts: Shift[] = [];
-
-  for (let date = monthStart; date <= monthEnd; date = addDays(date, 1)) {
-    shifts.push(getStaffShift(staff, date, baseDate));
-  }
-
-  return shifts;
+// Get current shift type based on hour of day
+export function getCurrentShiftType(): ShiftType {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 14) return 'AM';
+  if (hour >= 14 && hour < 22) return 'PM';
+  return 'NT';
 }
 
-// Calculate analytics for the month
-export interface MonthlyAnalytics {
-  staffStats: {
-    name: string;
-    totalShifts: number;
-    amShifts: number;
-    pmShifts: number;
-    ntShifts: number;
-  }[];
-  dailyMetrics: {
-    date: Date;
-    amCount: number;
-    pmCount: number;
-    ntCount: number;
-  }[];
-}
-
-export function calculateMonthlyAnalytics(year: number, month: number): MonthlyAnalytics {
-  const schedule = generateMonthSchedule(year, month);
+// Calculate analytics for the month with overrides
+export function calculateMonthlyAnalytics(year: number, month: number, overrides: Record<string, Record<string, ShiftType>> = {}): MonthlyAnalytics {
+  const schedule = generateMonthSchedule(year, month, overrides);
 
   // Calculate staff stats
   const staffStats = STAFF_CONFIG.map(staff => {
-    const shifts = getStaffMonthSchedule(staff.name, year, month);
+    const baseDate = new Date(2026, 0, 1);
+    const monthStart = startOfMonth(new Date(year, month));
+    const monthEnd = endOfMonth(new Date(year, month));
+    
+    let total = 0, am = 0, pm = 0, nt = 0;
+    
+    for (let date = monthStart; date <= monthEnd; date = addDays(date, 1)) {
+      const dateKey = format(date, 'yyyy-MM-dd');
+      const type = (overrides[dateKey] && overrides[dateKey][staff.name]) 
+        || getStaffShift(staff, date, baseDate).type;
+        
+      if (type === 'AM') { am++; total++; }
+      else if (type === 'PM') { pm++; total++; }
+      else if (type === 'NT') { nt++; total++; }
+    }
+
     return {
       name: staff.name,
-      totalShifts: shifts.filter(s => s.type !== 'OFF').length,
-      amShifts: shifts.filter(s => s.type === 'AM').length,
-      pmShifts: shifts.filter(s => s.type === 'PM').length,
-      ntShifts: shifts.filter(s => s.type === 'NT').length,
+      totalShifts: total,
+      amShifts: am,
+      pmShifts: pm,
+      ntShifts: nt,
     };
   });
 
