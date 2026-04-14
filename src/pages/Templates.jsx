@@ -35,7 +35,11 @@ import {
   BadgePercent,
   Gamepad2,
   Hourglass,
-  Wallet
+  Wallet,
+  Trophy,
+  Stamp,
+  UserCog,
+  ShieldAlert
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
@@ -54,6 +58,20 @@ const getCategoryIcon = (category, size = 18, baseClass = "") => {
   if (!category) return <div className={`text-red-500 flex items-center justify-center ${baseClass}`}><LayoutGrid size={size} /></div>;
   const name = category.toLowerCase();
   
+  // Specific User Requests
+  if (name.includes('sport') || name.includes('bet')) {
+    return <div className={`text-orange-600 drop-shadow-[0_0_8px_rgba(234,88,12,0.5)] flex items-center justify-center ${baseClass}`}><Trophy size={size} /></div>;
+  }
+  if (name.includes('promot')) {
+    return <div className={`text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] flex items-center justify-center ${baseClass}`}><Stamp size={size} /></div>;
+  }
+  if (name.includes('account manage')) {
+    return <div className={`text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] flex items-center justify-center ${baseClass}`}><UserCog size={size} /></div>;
+  }
+  if (name.includes('responsib') || name.includes('18+') || name.includes('gamble aware') || name.includes('gaming')) {
+    return <div className={`text-rose-600 drop-shadow-[0_0_8px_rgba(225,29,72,0.5)] flex items-center justify-center ${baseClass}`}><ShieldAlert size={size} /></div>;
+  }
+
   // AI / Automation
   if (name.includes('ai') || name.includes('bot') || name.includes('auto')) {
     return <div className={`text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.4)] flex items-center justify-center ${baseClass}`}><BrainCircuit size={size} /></div>;
