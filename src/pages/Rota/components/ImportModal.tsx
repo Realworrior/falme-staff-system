@@ -25,6 +25,22 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
   const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
   const [previewRows, setPreviewRows] = useState<string[][]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [shouldReplace, setShouldReplace] = useState(false);
+
+  // Helper to split CSV line respecting double quotes
+  const splitCSVLine = (line: string, delimiter: string) => {
+    if (delimiter === ';') return line.split(';').map(v => v.trim());
+    
+    // Regex for comma split only if outside quotes
+    const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+    return line.split(regex).map(v => {
+      let trimmed = v.trim();
+      if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+        trimmed = trimmed.substring(1, trimmed.length - 1);
+      }
+      return trimmed;
+    });
+  };
 
   const normalizeDate = (raw: string): string | null => {
     if (!raw) return null;
@@ -71,15 +87,14 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       const lines = text.split('\n').map(l => l.trim()).filter(l => l);
       if (lines.length < 1) return;
 
-      // Detection: Comma or Semicolon?
       const firstLine = lines[0];
       const delimiter = firstLine.includes(';') ? ';' : ',';
 
-      const headers = firstLine.split(delimiter).map(h => h.trim());
+      const headers = splitCSVLine(firstLine, delimiter);
       setPreviewHeaders(headers);
       
       const rows = lines.slice(1, 6).map(line => {
-        return line.split(delimiter).map(v => v.trim());
+        return splitCSVLine(line, delimiter);
       });
       setPreviewRows(rows);
     };
@@ -99,12 +114,13 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       }
 
       const delimiter = lines[0].includes(';') ? ';' : ',';
-      const headers = lines[0].split(delimiter).map(h => h.trim());
+      const headers = splitCSVLine(lines[0], delimiter);
       const staffIndices: { name: string; index: number }[] = [];
       const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
 
+      // Map columns to staff members
       headers.forEach((h, i) => {
-        if (i === 0) return;
+        if (i === 0) return; // Column A is date
         if (validStaffNames.includes(h.toLowerCase())) {
           const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
           if (properName) staffIndices.push({ name: properName, index: i });
@@ -115,7 +131,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
       const invalidEntries: string[] = [];
 
       lines.slice(1).forEach((line, lineIdx) => {
-        const values = line.split(delimiter).map(v => v.trim());
+        const values = splitCSVLine(line, delimiter);
         const rawDate = values[0];
         const dateKey = normalizeDate(rawDate);
 
@@ -138,7 +154,9 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         return;
       }
 
-      onImport(result);
+      // Pass the mode along with data if needed, or handle in App.tsx
+      // For simplicity, we'll wrap result with metadata if App.tsx supports it
+      (onImport as any)(result, shouldReplace); 
       onClose();
       setFile(null);
       setPreviewRows([]);
@@ -153,10 +171,10 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
           <DialogHeader>
             <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
               <Upload className="text-red-500" />
-              Matrix Schedule Import
+              Advanced Matrix Import
             </DialogTitle>
             <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2">
-              Synchronize Operational Grid Data
+              Sync Operational Data with Quoted Comma Support
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -184,8 +202,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
               <div className="text-center">
                 <p className="text-sm font-bold">Drop CSV file here or click to browse</p>
                 <div className="mt-2 text-[9px] text-gray-600 uppercase tracking-widest font-black flex flex-col gap-1">
-                   <span>Row 1: Names (Headers) | Column A: Dates</span>
-                   <span>Format: Date, Chris, Faye, Joyce...</span>
+                   <span>Handles Dates like "Wed, 1" (Matrix Format)</span>
+                   <span>Supports Comma and Semicolon delimiters</span>
                 </div>
               </div>
             </div>
@@ -193,7 +211,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
+              className="space-y-6"
             >
               <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
                 <div className="flex items-center gap-3">
@@ -213,39 +231,68 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
                 </button>
               </div>
 
+              {/* Advanced Options */}
+              <div className="p-4 bg-red-600/5 border border-red-500/10 rounded-2xl">
+                 <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldReplace ? 'bg-red-500 border-red-500' : 'border-white/20 bg-black/40'}`}>
+                       <input 
+                         type="checkbox" 
+                         className="hidden" 
+                         checked={shouldReplace} 
+                         onChange={(e) => setShouldReplace(e.target.checked)} 
+                       />
+                       {shouldReplace && <CheckCircle2 size={12} className="text-white" />}
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-red-400 transition-colors">
+                          Replace Existing Shifts
+                       </span>
+                       <span className="text-[8px] text-gray-500 uppercase tracking-tighter">
+                          Wipe all manual overrides for the dates in this file before import
+                       </span>
+                    </div>
+                 </label>
+              </div>
+
               {previewRows.length > 0 && (
                 <div className="space-y-2">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Grid Preview (Matrix Format)</p>
-                   <div className="bg-black/40 border border-white/5 rounded-2xl overflow-x-auto">
-                      <table className="w-full text-left whitespace-nowrap">
-                        <thead>
-                          <tr className="bg-white/5 text-gray-400 uppercase tracking-widest text-[9px]">
-                            {previewHeaders.map((h, i) => (
-                              <th key={i} className="p-3 border-b border-white/5">{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                          {previewRows.map((row, i) => (
-                            <tr key={i} className="text-gray-300 text-[10px]">
-                              {row.map((val, j) => (
-                                <td key={j} className={`p-3 ${j === 0 ? 'font-black text-white bg-white/2' : ''}`}>
-                                  {j === 0 ? val : (
-                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black ${
-                                      val.toUpperCase() === 'AM' ? 'bg-orange-500/10 text-orange-400' :
-                                      val.toUpperCase() === 'PM' ? 'bg-emerald-500/10 text-emerald-400' :
-                                      val.toUpperCase() === 'NT' ? 'bg-indigo-500/10 text-indigo-400' :
-                                      'bg-gray-500/10 text-gray-500'
-                                    }`}>
-                                      {val || '-'}
-                                    </span>
-                                  )}
-                                </td>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Live Grid Preview</p>
+                   {/* FIXED SCROLL CONTAINER */}
+                   <div className="relative group/scroll bg-black/40 border border-white/5 rounded-2xl">
+                      <div className="overflow-x-auto overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                        <table className="w-full text-left whitespace-nowrap table-fixed min-w-[800px]">
+                          <thead className="sticky top-0 z-10">
+                            <tr className="bg-[#0f0f17] text-gray-400 uppercase tracking-widest text-[9px]">
+                              {previewHeaders.map((h, i) => (
+                                <th key={i} className={`p-3 border-b border-white/5 ${i === 0 ? 'sticky left-0 bg-[#0f0f17] z-20 w-[120px]' : 'w-[100px]'}`}>{h}</th>
                               ))}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {previewRows.map((row, i) => (
+                              <tr key={i} className="text-gray-300 text-[10px]">
+                                {row.map((val, j) => (
+                                  <td key={j} className={`p-3 ${j === 0 ? 'sticky left-0 bg-[#12121a] font-black text-white border-r border-white/5' : ''}`}>
+                                    {j === 0 ? val : (
+                                      <span className={`px-2 py-0.5 rounded text-[8px] font-black ${
+                                        val?.toUpperCase() === 'AM' ? 'bg-orange-500/10 text-orange-400' :
+                                        val?.toUpperCase() === 'PM' ? 'bg-emerald-500/10 text-emerald-400' :
+                                        val?.toUpperCase() === 'NT' ? 'bg-indigo-500/10 text-indigo-400' :
+                                        val?.toUpperCase() === 'OFF' ? 'bg-red-500/10 text-red-500' :
+                                        'bg-gray-500/10 text-gray-500'
+                                      }`}>
+                                        {val || '-'}
+                                      </span>
+                                    )}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Visual hint for horizontal scroll */}
+                      <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-black/20 to-transparent pointer-events-none rounded-r-2xl" />
                    </div>
                 </div>
               )}
@@ -273,7 +320,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
                disabled={!file}
                className="flex-1 px-6 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all"
              >
-               Sync Grid Data
+               Execute Matrix Sync
              </button>
            </DialogFooter>
         </div>

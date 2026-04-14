@@ -35,7 +35,7 @@ export default function App() {
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  const { data: rawOverrides, updateRecord } = useFirebaseData('rotaOverrides', {});
+  const { data: rawOverrides, updateRecord, deleteRecord } = useFirebaseData('rotaOverrides', {});
 
   const overrides = useMemo(() => {
     if (rawOverrides && typeof rawOverrides === 'object' && !Array.isArray(rawOverrides)) {
@@ -62,8 +62,16 @@ export default function App() {
     await updateRecord(date, { [staff]: type });
   };
 
-  const handleBulkImport = async (data: Record<string, Record<string, string>>) => {
-    await Promise.all(Object.entries(data).map(([date, staffOverrides]) => updateRecord(date, staffOverrides)));
+  const handleBulkImport = async (data: Record<string, Record<string, string>>, shouldReplace: boolean = false) => {
+    const entries = Object.entries(data);
+    
+    if (shouldReplace) {
+      // Wipe the existing dates first
+      await Promise.all(entries.map(([date]) => deleteRecord(date)));
+    }
+
+    // Update with new data
+    await Promise.all(entries.map(([date, staffOverrides]) => updateRecord(date, staffOverrides)));
   };
 
   const handleExport = () => {
