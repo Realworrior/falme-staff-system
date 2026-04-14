@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
@@ -27,7 +27,10 @@ import {
   RotateCcw,
   Tag,
   ThumbsUp,
-  User
+  User,
+  HandCoins,
+  ServerCrash,
+  PhoneCall
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
@@ -41,41 +44,75 @@ import {
   Tooltip
 } from '@mui/material';
 
-// Helper for dynamic icons
-const getCategoryIcon = (category, size = 16, className = "") => {
-  if (!category) return <Folder size={size} className={className} />;
+// Helper for dynamic icons with vibrant emotional colors
+const getCategoryIcon = (category, size = 18, baseClass = "") => {
+  if (!category) return <div className={`text-red-500 flex items-center justify-center ${baseClass}`}><LayoutGrid size={size} /></div>;
   const name = category.toLowerCase();
   
+  // Deposit match as requested
+  if (name.includes('deposit') || name.includes('fund')) {
+    return <div className={`text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)] flex items-center justify-center ${baseClass}`}><HandCoins size={size} /></div>;
+  }
   // Billing / Payment
-  if (name.includes('bill') || name.includes('pay') || name.includes('financ') || name.includes('invoice')) return <CreditCard size={size} className={className} />;
-  // Tech / Engineering
-  if (name.includes('tech') || name.includes('bug') || name.includes('fix') || name.includes('dev') || name.includes('error')) return <Terminal size={size} className={className} />;
+  if (name.includes('bill') || name.includes('pay') || name.includes('financ') || name.includes('invoice')) {
+    return <div className={`text-green-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.4)] flex items-center justify-center ${baseClass}`}><CreditCard size={size} /></div>;
+  }
+  // Tech / Engineering (Server crash or terminal)
+  if (name.includes('tech') || name.includes('bug') || name.includes('fix') || name.includes('dev') || name.includes('error')) {
+    return <div className={`text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)] flex items-center justify-center ${baseClass}`}><ServerCrash size={size} /></div>;
+  }
   // Account / User
-  if (name.includes('account') || name.includes('user') || name.includes('profile') || name.includes('login')) return <User size={size} className={className} />;
+  if (name.includes('account') || name.includes('user') || name.includes('profile') || name.includes('login')) {
+    return <div className={`text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)] flex items-center justify-center ${baseClass}`}><User size={size} /></div>;
+  }
   // Orders / Shipping
-  if (name.includes('order') || name.includes('ship') || name.includes('track') || name.includes('deliver') || name.includes('pack')) return <Package size={size} className={className} />;
-  if (name.includes('cart') || name.includes('shop')) return <ShoppingCart size={size} className={className} />;
+  if (name.includes('order') || name.includes('ship') || name.includes('track') || name.includes('deliver') || name.includes('pack')) {
+    return <div className={`text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.4)] flex items-center justify-center ${baseClass}`}><Package size={size} /></div>;
+  }
+  if (name.includes('cart') || name.includes('shop')) {
+    return <div className={`text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.4)] flex items-center justify-center ${baseClass}`}><ShoppingCart size={size} /></div>;
+  }
   // Booking / Appointment
-  if (name.includes('book') || name.includes('appoint') || name.includes('schedul') || name.includes('time')) return <Calendar size={size} className={className} />;
+  if (name.includes('book') || name.includes('appoint') || name.includes('schedul') || name.includes('time')) {
+    return <div className={`text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.4)] flex items-center justify-center ${baseClass}`}><Calendar size={size} /></div>;
+  }
   // Refunds / Returns
-  if (name.includes('refund') || name.includes('return') || name.includes('cancel')) return <RotateCcw size={size} className={className} />;
+  if (name.includes('refund') || name.includes('return') || name.includes('cancel')) {
+    return <div className={`text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)] flex items-center justify-center ${baseClass}`}><RotateCcw size={size} /></div>;
+  }
   // Sales / Promo
-  if (name.includes('promo') || name.includes('offer') || name.includes('discount') || name.includes('sale')) return <Tag size={size} className={className} />;
+  if (name.includes('promo') || name.includes('offer') || name.includes('discount') || name.includes('sale')) {
+    return <div className={`text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)] flex items-center justify-center ${baseClass}`}><Tag size={size} /></div>;
+  }
   // Security / Privacy
-  if (name.includes('sec') || name.includes('auth') || name.includes('pass') || name.includes('verif')) return <Shield size={size} className={className} />;
+  if (name.includes('sec') || name.includes('auth') || name.includes('pass') || name.includes('verif')) {
+    return <div className={`text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.4)] flex items-center justify-center ${baseClass}`}><Shield size={size} /></div>;
+  }
   // Communications
-  if (name.includes('chat') || name.includes('msg') || name.includes('message') || name.includes('email')) return <MessageSquare size={size} className={className} />;
-  if (name.includes('call') || name.includes('phone') || name.includes('contact')) return <Phone size={size} className={className} />;
+  if (name.includes('chat') || name.includes('msg') || name.includes('message') || name.includes('email')) {
+    return <div className={`text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.4)] flex items-center justify-center ${baseClass}`}><MessageSquare size={size} /></div>;
+  }
+  if (name.includes('call') || name.includes('phone') || name.includes('contact')) {
+    return <div className={`text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)] flex items-center justify-center ${baseClass}`}><PhoneCall size={size} /></div>;
+  }
   // Support / Help
-  if (name.includes('help') || name.includes('support') || name.includes('faq') || name.includes('question')) return <HelpCircle size={size} className={className} />;
-  if (name.includes('fast') || name.includes('quick') || name.includes('urgent')) return <Zap size={size} className={className} />;
+  if (name.includes('help') || name.includes('support') || name.includes('faq') || name.includes('question')) {
+    return <div className={`text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)] flex items-center justify-center ${baseClass}`}><HelpCircle size={size} /></div>;
+  }
+  if (name.includes('fast') || name.includes('quick') || name.includes('urgent')) {
+    return <div className={`text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)] flex items-center justify-center ${baseClass}`}><Zap size={size} /></div>;
+  }
   // Feedback
-  if (name.includes('feed') || name.includes('review') || name.includes('rate') || name.includes('complaint')) return <ThumbsUp size={size} className={className} />;
+  if (name.includes('feed') || name.includes('review') || name.includes('rate') || name.includes('complaint')) {
+    return <div className={`text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.4)] flex items-center justify-center ${baseClass}`}><ThumbsUp size={size} /></div>;
+  }
   // Docs / Templates
-  if (name.includes('doc') || name.includes('temp') || name.includes('info') || name.includes('policy')) return <FileText size={size} className={className} />;
+  if (name.includes('doc') || name.includes('temp') || name.includes('info') || name.includes('policy')) {
+    return <div className={`text-slate-300 drop-shadow-[0_0_8px_rgba(203,213,225,0.4)] flex items-center justify-center ${baseClass}`}><FileText size={size} /></div>;
+  }
   
-  // Custom Fallback (Generates an alphabetic icon based on char if needed, or default folder)
-  return <Folder size={size} className={className} />;
+  // Default to a folder
+  return <div className={`text-gray-400 flex items-center justify-center ${baseClass}`}><Folder size={size} /></div>;
 };
 
 const Templates = () => {
@@ -86,13 +123,8 @@ const Templates = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ title: '', standardText: '', empathyText: '' });
   
-  // Collapse mode toggle (true = expanded text, false = collapsed icon rail)
-  const [catSidebarOpen, setCatSidebarOpen] = useState(false);
-
-  // Default to expanded on desktop initially, collapsed on mobile
-  useEffect(() => {
-    setCatSidebarOpen(window.innerWidth >= 1024);
-  }, []);
+  // Collapse mode toggle: Default navigation displays all categories (expanded)
+  const [catSidebarOpen, setCatSidebarOpen] = useState(true);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
