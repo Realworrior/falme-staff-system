@@ -10,16 +10,16 @@ const AppShell = ({ children }) => {
     <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative">
-        <div className="flex-1 overflow-auto flex flex-col transition-all duration-500 pb-20">
-          <AnimatePresence mode="popLayout">
+        <div className="flex-1 overflow-auto flex flex-col pb-20">
+          <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
+              initial={{ opacity: 0, x: 5 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -5 }}
               transition={{ 
-                duration: 0.5, 
-                ease: [0.23, 1, 0.32, 1] 
+                duration: 0.3, 
+                ease: "easeInOut" 
               }}
               className="flex-1 w-full flex flex-col"
             >

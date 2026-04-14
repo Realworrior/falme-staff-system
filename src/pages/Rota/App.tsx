@@ -35,20 +35,34 @@ export default function App() {
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  const { data: rawOverrides, updateRecord, deleteRecord } = useFirebaseData('rotaOverrides', {});
+  const [isReady, setIsReady] = useState(false);
+  const { data: rawOverrides, loading, updateRecord, deleteRecord } = useFirebaseData('rotaOverrides', {});
+
+  useState(() => {
+    const timer = setTimeout(() => setIsReady(true), 150);
+    return () => clearTimeout(timer);
+  });
 
   const overrides = useMemo(() => {
+    if (!isReady) return {};
     if (rawOverrides && typeof rawOverrides === 'object' && !Array.isArray(rawOverrides)) {
       return rawOverrides as Record<string, Record<string, any>>;
     }
     return {};
-  }, [rawOverrides]);
+  }, [rawOverrides, isReady]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const schedule = useMemo(() => generateMonthSchedule(year, month, overrides), [year, month, overrides]);
-  const analytics = useMemo(() => calculateMonthlyAnalytics(year, month, overrides), [year, month, overrides]);
+  const schedule = useMemo(() => {
+    if (!isReady) return [];
+    return generateMonthSchedule(year, month, overrides);
+  }, [year, month, overrides, isReady]);
+
+  const analytics = useMemo(() => {
+    if (!isReady) return null;
+    return calculateMonthlyAnalytics(year, month, overrides);
+  }, [year, month, overrides, isReady]);
 
   const handlePrevMonth = () => { setCurrentDate(new Date(year, month - 1, 1)); setSelectedDate(null); };
   const handleNextMonth = () => { setCurrentDate(new Date(year, month + 1, 1)); setSelectedDate(null); };
@@ -92,6 +106,22 @@ export default function App() {
       }
     }
   };
+
+  if (loading || !isReady) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-20 min-h-[60vh] bg-background">
+        <div className="w-16 h-16 relative">
+          <div className="absolute inset-0 border-4 border-white/5 rounded-full" />
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 border-4 border-red-500 border-t-transparent rounded-full"
+          />
+        </div>
+        <p className="mt-6 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 animate-pulse">Synchronizing Team Matrix</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-3 md:p-6 print:p-0">

@@ -25,13 +25,18 @@ import { useToast } from '../context/ToastContext';
 const SlotTracker = () => {
   const { data: logs, loading, createRecord, deleteRecord, setAllData } = useFirebaseData('aviatorLogs', []);
   const { showToast } = useToast();
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const [isReady, setIsReady] = useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsReady(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Sorting logs by timestamp (newest first)
   const sortedLogs = useMemo(() => {
+    if (!isReady) return [];
     return [...logs].sort((a, b) => b.ts - a.ts);
-  }, [logs]);
+  }, [logs, isReady]);
 
   // Pagination logic
   const paginatedLogs = useMemo(() => {
@@ -52,6 +57,7 @@ const SlotTracker = () => {
   };
 
   const chartData = useMemo(() => {
+    if (!isReady) return [];
     const days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (6 - i)); return d;
     });
@@ -64,7 +70,23 @@ const SlotTracker = () => {
         slot2: logs.filter(r => r.ts >= start && r.ts < end && (r.type === 'Slot 2' || r.type === 'Both')).length,
       };
     });
-  }, [logs]);
+  }, [logs, isReady]);
+
+  if (loading || !isReady) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-20 min-h-[60vh]">
+        <div className="w-16 h-16 relative">
+          <div className="absolute inset-0 border-4 border-white/5 rounded-full" />
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 border-4 border-red-500 border-t-transparent rounded-full"
+          />
+        </div>
+        <p className="mt-6 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 animate-pulse">Analyzing Performance Data</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto">

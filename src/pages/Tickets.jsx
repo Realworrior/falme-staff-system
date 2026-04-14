@@ -107,6 +107,13 @@ const Tickets = () => {
     setForm(newForm);
   };
 
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsReady(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleLogin = (role) => {
     setAuth({ isAuth: true, role });
     showToast(`Authenticated as ${role}`, 'success');
@@ -124,6 +131,7 @@ const Tickets = () => {
   ]), [tickets]);
 
   const filteredTickets = useMemo(() => {
+    if (!isReady) return [];
     const q = searchQuery.toLowerCase();
     let result = tickets;
     
@@ -137,7 +145,7 @@ const Tickets = () => {
       const searchStr = (cat + (t.phone || '') + (t.id || '') + (t.title || '')).toLowerCase();
       return searchStr.includes(q);
     }).sort((a, b) => (b.created || 0) - (a.created || 0));
-  }, [tickets, searchQuery, statusFilter]);
+  }, [tickets, searchQuery, statusFilter, isReady]);
 
   const handleUpdateStatus = (ticketId, newStatus) => {
     updateRecord(ticketId, { status: newStatus });
@@ -189,6 +197,22 @@ const Tickets = () => {
 
   if (!auth.isAuth) {
     return <TicketAuth onLogin={handleLogin} />;
+  }
+
+  if (loading || !isReady) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-20">
+        <div className="w-16 h-16 relative">
+          <div className="absolute inset-0 border-4 border-white/5 rounded-full" />
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 border-4 border-red-500 border-t-transparent rounded-full"
+          />
+        </div>
+        <p className="mt-6 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 animate-pulse">Syncing Operational Data</p>
+      </div>
+    );
   }
 
   return (
