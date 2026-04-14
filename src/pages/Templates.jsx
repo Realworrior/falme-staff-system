@@ -4,14 +4,23 @@ import {
   Plus, 
   Search, 
   Copy, 
-  Edit2, 
   Trash2, 
   MessageCircle,
-  ChevronRight,
   ArrowLeft,
   LayoutGrid,
   Filter,
-  X
+  X,
+  CreditCard,
+  Wrench,
+  HelpCircle,
+  FileText,
+  MessageSquare,
+  Shield,
+  Zap,
+  Folder,
+  Phone,
+  ShoppingCart,
+  Menu
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
@@ -21,12 +30,27 @@ import {
   DialogTitle, 
   DialogContent, 
   DialogActions, 
-  TextField,
-  Tooltip
+  TextField
 } from '@mui/material';
 
+// Helper for dynamic icons
+const getCategoryIcon = (category, size = 16, className = "") => {
+  if (!category) return <Folder size={size} className={className} />;
+  const name = category.toLowerCase();
+  if (name.includes('bill') || name.includes('payment') || name.includes('finance') || name.includes('pay')) return <CreditCard size={size} className={className} />;
+  if (name.includes('tech') || name.includes('bug') || name.includes('fix') || name.includes('error')) return <Wrench size={size} className={className} />;
+  if (name.includes('help') || name.includes('support') || name.includes('faq')) return <HelpCircle size={size} className={className} />;
+  if (name.includes('doc') || name.includes('temp') || name.includes('info')) return <FileText size={size} className={className} />;
+  if (name.includes('chat') || name.includes('msg') || name.includes('message')) return <MessageSquare size={size} className={className} />;
+  if (name.includes('sec') || name.includes('auth') || name.includes('pass')) return <Shield size={size} className={className} />;
+  if (name.includes('fast') || name.includes('quick') || name.includes('urgent')) return <Zap size={size} className={className} />;
+  if (name.includes('call') || name.includes('phone') || name.includes('contact')) return <Phone size={size} className={className} />;
+  if (name.includes('order') || name.includes('shop') || name.includes('cart')) return <ShoppingCart size={size} className={className} />;
+  return <Folder size={size} className={className} />;
+};
+
 const Templates = () => {
-  const { data, loading, setAllData } = useFirebaseData('supportTemplates', []);
+  const { data, loading } = useFirebaseData('supportTemplates', []);
   const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -41,7 +65,9 @@ const Templates = () => {
 
   const handleMobileCategorySelect = (cat) => {
     setSelectedCategory(cat);
-    setCatSidebarOpen(false);
+    if(window.innerWidth < 1024) {
+      setCatSidebarOpen(false);
+    }
   };
 
   const categories = useMemo(() => {
@@ -67,26 +93,77 @@ const Templates = () => {
   }, [data, selectedCategory, searchQuery]);
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-full">
-      {/* 1. Contextual Category Sidebar (Desktop Only) */}
-      <aside className="hidden lg:flex flex-col w-72 bg-sidebar/30 border-r border-white/5 p-6 space-y-8 sticky top-0 h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">Navigation Library</h2>
-          <Filter size={12} className="text-gray-700" />
-        </div>
-        
-        <nav className="space-y-2">
+    <div className="flex flex-row min-h-full">
+      {/* Dim Overlay for Mobile Expanded Sidebar */}
+      <AnimatePresence>
+        {catSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={() => setCatSidebarOpen(false)}
+            className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[80]"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Unified Responsive Category Sidebar */}
+      <aside 
+        className={`flex flex-col bg-[#0a0a12] lg:bg-sidebar/30 border-r border-white/5 sticky top-0 h-[calc(100vh-80px)] overflow-hidden shrink-0 transition-all duration-300 z-[90] ${
+          catSidebarOpen 
+            ? 'w-[280px] fixed lg:relative shadow-2xl lg:shadow-none left-0' 
+            : 'w-[75px] lg:w-72 relative'
+        }`}
+      >
+        <div className={`flex items-center pt-6 pb-4 border-b border-white/5 transition-all ${
+          catSidebarOpen ? 'px-5 justify-between' : 'px-0 justify-center lg:px-6 lg:justify-between'
+        }`}>
+          {/* Header Label (hidden on mobile when collapsed) */}
+          <div className={`items-center gap-2.5 ${catSidebarOpen ? 'flex' : 'hidden lg:flex'}`}>
+            <div className="w-8 h-8 rounded-xl accent-gradient flex items-center justify-center shadow-lg shadow-red-500/20 shrink-0">
+              <Filter size={14} className="text-white" />
+            </div>
+            <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Library</h2>
+          </div>
+          
+          {/* Mobile Toggle Button */}
           <button 
-            onClick={() => setSelectedCategory(null)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${
-              !selectedCategory 
-                ? "bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/5 rotate-[-1deg]" 
-                : "text-gray-500 hover:text-white hover:bg-white/5"
+            onClick={() => setCatSidebarOpen(!catSidebarOpen)}
+            className={`p-2 text-gray-500 hover:text-white bg-white/5 rounded-xl border border-white/5 transition-all active:scale-95 lg:hidden flex-shrink-0 ${
+              !catSidebarOpen && 'mt-1'
             }`}
           >
-            <LayoutGrid size={16} className={!selectedCategory ? "text-red-500" : "group-hover:text-red-400"} />
-            <span className="flex-1 text-sm font-bold text-left">All Entries</span>
-            <ChevronRight size={14} className={`transition-opacity ${!selectedCategory ? "opacity-100" : "opacity-0"}`} />
+            {catSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto py-4 space-y-2 custom-scrollbar px-3">
+          <button 
+            onClick={() => handleMobileCategorySelect(null)}
+            className={`w-full flex items-center gap-3 py-3 rounded-2xl transition-all duration-300 group relative ${
+              !selectedCategory 
+                ? "bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/5 lg:rotate-[-1deg]" 
+                : "text-gray-500 hover:text-white hover:bg-white/5"
+            } ${catSidebarOpen ? 'px-4' : 'px-0 justify-center lg:px-4 lg:justify-start'}`}
+            title="All Entries"
+          >
+            <div className="shrink-0 flex items-center justify-center">
+              <LayoutGrid size={18} className={!selectedCategory ? "text-red-500" : "group-hover:text-red-400"} />
+            </div>
+            <span className={`flex-1 text-sm font-bold text-left truncate transition-all ${
+              catSidebarOpen ? 'block' : 'hidden lg:block'
+            }`}>
+              All Entries
+            </span>
+            {!selectedCategory && (
+               <motion.div layoutId="activeCat" className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full ${
+                 catSidebarOpen ? 'block' : 'hidden lg:block'
+               }`} />
+            )}
+             {!selectedCategory && !catSidebarOpen && (
+               <motion.div layoutId="activeCatMobile" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full lg:hidden block" />
+            )}
           </button>
 
           <div className="h-px bg-white/5 my-4" />
@@ -94,139 +171,59 @@ const Templates = () => {
           {categories.map((cat) => (
             <button 
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all duration-300 group relative ${
+              onClick={() => handleMobileCategorySelect(cat)}
+              className={`w-full flex items-center gap-3 py-3 rounded-2xl transition-all duration-300 group relative ${
                 selectedCategory === cat 
-                  ? "bg-white/[0.03] text-white border border-white/10 shadow-2xl" 
+                  ? "bg-white/[0.04] text-white border border-white/10 shadow-xl" 
                   : "text-gray-500 hover:text-white hover:bg-white/5"
-              }`}
+              } ${catSidebarOpen ? 'px-4' : 'px-0 justify-center lg:px-4 lg:justify-start'}`}
+              title={cat}
             >
-              <div className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                selectedCategory === cat ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "bg-white/10 group-hover:bg-white/30"
-              }`} />
-              <span className="flex-1 text-xs font-black uppercase tracking-tight text-left truncate">{cat}</span>
+              <div className="shrink-0 flex items-center justify-center relative">
+                 {getCategoryIcon(cat, 18, selectedCategory === cat ? "text-red-500" : "group-hover:text-gray-300")}
+                 {/* Mini notification dot indicator for desktop collapsed look on mobile */}
+                 {selectedCategory === cat && !catSidebarOpen && (
+                   <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] lg:hidden" />
+                 )}
+              </div>
+              
+              <span className={`flex-1 text-xs font-black uppercase tracking-tight text-left truncate transition-all ${
+                catSidebarOpen ? 'block' : 'hidden lg:block'
+              }`}>
+                {cat}
+              </span>
+
               {selectedCategory === cat && (
-                <motion.div layoutId="activeCat" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full" />
+                <motion.div layoutId="activeCat" className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full ${
+                  catSidebarOpen ? 'block' : 'hidden lg:block'
+                }`} />
+              )}
+               {selectedCategory === cat && !catSidebarOpen && (
+                <motion.div layoutId="activeCatMobile" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full lg:hidden block" />
               )}
             </button>
           ))}
         </nav>
 
-        <div className="mt-auto p-4 rounded-2xl bg-black/20 border border-white/5 italic">
-          <p className="text-[9px] text-gray-700 leading-relaxed font-bold">
-            Select a specific library segment to access optimized synchronization payloads.
-          </p>
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-white/5 mt-auto">
+          <div className={`p-3.5 rounded-2xl bg-black/30 border border-white/5 ${
+            catSidebarOpen ? 'block' : 'hidden lg:block'
+          }`}>
+            <p className="text-[9px] text-gray-600 leading-relaxed font-bold italic">
+              {categories.length} segments available
+            </p>
+          </div>
         </div>
       </aside>
-
-      {/* Mobile Category Sidebar Drawer */}
-      <AnimatePresence>
-        {catSidebarOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              onClick={() => setCatSidebarOpen(false)}
-              className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[80]"
-            />
-            {/* Sidebar Panel */}
-            <motion.aside
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-              className="lg:hidden fixed left-0 top-0 bottom-0 w-72 z-[90] bg-[#0a0a12] border-r border-white/5 flex flex-col shadow-2xl shadow-black/60"
-            >
-              {/* Sidebar Header */}
-              <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-white/5">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl accent-gradient flex items-center justify-center shadow-lg shadow-red-500/20">
-                    <Filter size={14} className="text-white" />
-                  </div>
-                  <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Categories</h2>
-                </div>
-                <button 
-                  onClick={() => setCatSidebarOpen(false)}
-                  className="p-2 text-gray-500 hover:text-white bg-white/5 rounded-xl border border-white/5 transition-all active:scale-95"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* Sidebar Navigation */}
-              <nav className="flex-1 overflow-y-auto p-4 space-y-1.5 custom-scrollbar">
-                <button 
-                  onClick={() => handleMobileCategorySelect(null)}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-                    !selectedCategory 
-                      ? "bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/5" 
-                      : "text-gray-500 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <LayoutGrid size={16} className={!selectedCategory ? "text-red-500" : "group-hover:text-red-400"} />
-                  <span className="flex-1 text-sm font-bold text-left">All Entries</span>
-                  {!selectedCategory && (
-                    <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-                  )}
-                </button>
-
-                <div className="h-px bg-white/5 my-3" />
-
-                {categories.map((cat) => (
-                  <button 
-                    key={cat}
-                    onClick={() => handleMobileCategorySelect(cat)}
-                    className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative ${
-                      selectedCategory === cat 
-                        ? "bg-white/[0.04] text-white border border-white/10 shadow-xl" 
-                        : "text-gray-500 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    <div className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                      selectedCategory === cat ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "bg-white/10 group-hover:bg-white/30"
-                    }`} />
-                    <span className="flex-1 text-xs font-black uppercase tracking-tight text-left truncate">{cat}</span>
-                    {selectedCategory === cat && (
-                      <motion.div layoutId="activeCatMobile" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-600 rounded-r-full" />
-                    )}
-                  </button>
-                ))}
-              </nav>
-
-              {/* Sidebar Footer */}
-              <div className="p-4 border-t border-white/5">
-                <div className="p-3.5 rounded-2xl bg-black/30 border border-white/5">
-                  <p className="text-[9px] text-gray-600 leading-relaxed font-bold italic">
-                    {categories.length} segments available · {selectedCategory ? '1 active' : 'All active'}
-                  </p>
-                </div>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* 2. Main Content Area */}
       <div className="flex-1 min-w-0 flex flex-col p-4 md:p-8 space-y-6">
         {/* Dynamic Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex flex-1 items-center justify-between gap-4 w-full">
-            <div className="flex flex-1 items-center gap-3 min-w-0">
-              {/* Mobile Category Sidebar Toggle */}
-              <button 
-                onClick={() => setCatSidebarOpen(true)}
-                className={`lg:hidden p-3 rounded-2xl border transition-all active:scale-95 shrink-0 ${
-                  selectedCategory 
-                    ? "bg-red-500/10 text-red-500 border-red-500/20 shadow-lg shadow-red-500/10" 
-                    : "text-gray-500 hover:text-white bg-white/5 border-white/5"
-                }`}
-              >
-                <Filter size={18} />
-              </button>
-
+             {/* Header Left Section */}
+            <div className="flex flex-1 items-center gap-4 min-w-0">
               {selectedCategory && (
                 <button 
                   onClick={() => setSelectedCategory(null)}
@@ -241,7 +238,7 @@ const Templates = () => {
                     {selectedCategory || "Global Library"}
                   </h1>
                   {/* Mobile Search Input Icon */}
-                  <div className="sm:hidden relative flex items-center shrink-0">
+                  <div className="sm:hidden relative flex items-center shrink-0 ml-auto">
                     <Search className="absolute left-2.5 w-4 h-4 text-gray-500" />
                     <input 
                       type="text" 
@@ -307,7 +304,7 @@ const Templates = () => {
                     <div className="flex items-center justify-between pb-4 border-b border-white/[0.03]">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5">
-                          <MessageCircle className="w-5 h-5 text-gray-500 group-hover:text-red-500 transition-colors" />
+                          {getCategoryIcon(category.category, 18, "text-gray-500 group-hover:text-red-500 transition-colors")}
                         </div>
                         <div>
                           <h4 className="text-white font-black uppercase tracking-tight text-sm font-heading">{template.title}</h4>
@@ -366,7 +363,7 @@ const Templates = () => {
         </div>
       </div>
 
-      {/* Initialize Record Dialog (Simplified for Revamp) */}
+      {/* Initialize Record Dialog */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ elevation: 0 }}>
         <DialogTitle className="font-heading font-black text-white border-b border-white/5 px-8 py-6 uppercase tracking-tighter">Initialize Segment Record</DialogTitle>
         <DialogContent className="space-y-6 pt-8 px-8 bg-[#0a0a0f]">
