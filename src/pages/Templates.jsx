@@ -84,6 +84,7 @@ const Templates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [newTemplate, setNewTemplate] = useState({ title: '', standardText: '', empathyText: '' });
   
   // Collapse mode toggle (true = expanded text, false = collapsed icon rail)
   const [catSidebarOpen, setCatSidebarOpen] = useState(false);
