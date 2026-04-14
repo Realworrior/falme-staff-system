@@ -17,14 +17,15 @@ import { ScheduleCalendar } from './components/ScheduleCalendar';
 import { ShiftMates } from './components/ShiftMates';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { ImportModal } from './components/ImportModal';
-import {
-  STAFF_CONFIG,
-  STAFF_COLORS,
-  generateMonthSchedule,
+import { 
+  STAFF_CONFIG, 
+  STAFF_COLORS, 
+  generateMonthSchedule, 
   calculateMonthlyAnalytics,
   getCurrentShiftType,
 } from './utils/scheduleGenerator';
 import { useFirebaseData } from '../../hooks/useFirebase';
+import { triggerPrint, exportToCSV } from './utils/ExportUtility';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1));
@@ -35,6 +36,7 @@ export default function App() {
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
+  // ... (useFirebaseData and overrides memo logic same) ...
   const { data: rawOverrides, updateRecord } = useFirebaseData('rotaOverrides', {});
 
   const overrides = useMemo(() => {
@@ -73,6 +75,19 @@ export default function App() {
     await Promise.all(Object.entries(data).map(([date, staffOverrides]) => updateRecord(date, staffOverrides)));
   };
 
+  const handleManagerToggle = () => {
+    if (isManagerMode) {
+      setIsManagerMode(false);
+    } else {
+      const pass = prompt('Enter Manager Password:');
+      if (pass === 'admin') {
+        setIsManagerMode(true);
+      } else {
+        alert('Access Denied');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-3 md:p-6 lg:p-8 print:p-0">
       <div className="max-w-7xl mx-auto">
@@ -95,13 +110,22 @@ export default function App() {
                 <div className="h-1 w-12 bg-red-600 rounded-full mt-2" />
               </div>
             </div>
-            <button
-              onClick={() => window.print()}
-              className="p-4 bg-white/5 border border-white/5 rounded-2xl text-gray-400 hover:text-white transition-all"
-              title="Print schedule"
-            >
-              <Printer size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => exportToCSV(schedule)}
+                className="p-4 bg-white/5 border border-white/5 rounded-2xl text-gray-400 hover:text-white transition-all"
+                title="Export to CSV"
+              >
+                <Upload size={20} className="rotate-180" />
+              </button>
+              <button
+                onClick={triggerPrint}
+                className="p-4 bg-white/5 border border-white/5 rounded-2xl text-gray-400 hover:text-white transition-all"
+                title="Print schedule"
+              >
+                <Printer size={20} />
+              </button>
+            </div>
           </div>
           <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] font-heading mt-4">
             Synchronized Operational Schedule & Resource Analytics
@@ -151,7 +175,7 @@ export default function App() {
           <div className="bg-[#0f0f17] border border-white/5 rounded-3xl p-5 flex items-center justify-between shadow-xl">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => setIsManagerMode(v => !v)}
+                onClick={handleManagerToggle}
                 className={`p-3 rounded-2xl transition-all flex-shrink-0 ${
                   isManagerMode ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'bg-white/5 text-gray-500 hover:bg-white/10'
                 }`}

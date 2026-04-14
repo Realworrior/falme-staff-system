@@ -63,18 +63,29 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
       const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
       
       const result: Record<string, Record<string, string>> = {};
+      const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
+      const invalidEntries: string[] = [];
 
-      rows.slice(1).forEach(row => {
+      rows.slice(1).forEach((row, rowIndex) => {
         const values = row.split(',').map(v => v.trim());
         const date = values[headers.indexOf('date')];
         const staff = values[headers.indexOf('staff')];
         const shift = values[headers.indexOf('shift')];
 
         if (date && staff && shift) {
+          if (!validStaffNames.includes(staff.toLowerCase())) {
+            invalidEntries.push(`Row ${rowIndex + 2}: Invalid personnel "${staff}"`);
+            return;
+          }
           if (!result[date]) result[date] = {};
           result[date][staff] = shift.toUpperCase();
         }
       });
+
+      if (invalidEntries.length > 0) {
+        setError(invalidEntries.slice(0, 3).join('; ') + (invalidEntries.length > 3 ? ` (+${invalidEntries.length - 3} more)` : ''));
+        return;
+      }
 
       onImport(result);
       onClose();
