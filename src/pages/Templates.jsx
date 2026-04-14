@@ -215,7 +215,8 @@ const Templates = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             onClick={() => setCatSidebarOpen(false)}
-            className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[80]"
+            /* Removed background blur and darkening to keep content fully visible */
+            className="lg:hidden fixed inset-0 bg-transparent z-[80]"
           />
         )}
       </AnimatePresence>
