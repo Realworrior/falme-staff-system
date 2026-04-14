@@ -1,11 +1,11 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { DailySchedule, ShiftType, STAFF_COLORS } from '../utils/scheduleGenerator';
-import { Users, Edit2, RotateCcw, Check } from 'lucide-react';
-import { useState } from 'react';
+import { Edit2, X } from 'lucide-react';
 
 interface ShiftMatesProps {
-  selectedDate: Date | null;
+  selectedDate: Date;
   schedule: DailySchedule[];
   selectedStaff: string | null;
   isManagerMode?: boolean;
@@ -14,36 +14,33 @@ interface ShiftMatesProps {
   onClose?: () => void;
 }
 
-const shiftColors = {
-  AM: 'bg-[#FF6B35]',
-  PM: 'bg-[#4ECDC4]',
-  NT: 'bg-[#6366F1]',
-  OFF: 'bg-gray-800'
+const SHIFT_META: Record<string, { label: string; color: string; bg: string; textColor: string }> = {
+  AM: { label: 'AM — Morning', color: '#FF6B35', bg: 'bg-[#FF6B35]/10', textColor: 'text-[#FF6B35]' },
+  PM: { label: 'PM — Afternoon', color: '#4ECDC4', bg: 'bg-[#4ECDC4]/10', textColor: 'text-[#4ECDC4]' },
+  NT: { label: 'NT — Night', color: '#6366F1', bg: 'bg-[#6366F1]/10', textColor: 'text-[#6366F1]' },
 };
 
-export function ShiftMates({ 
-  selectedDate, 
-  schedule, 
-  selectedStaff, 
-  isManagerMode, 
-  onOverride, 
+export function ShiftMates({
+  selectedDate,
+  schedule,
+  selectedStaff,
+  isManagerMode,
+  onOverride,
   overrides = {},
-  onClose 
+  onClose,
 }: ShiftMatesProps) {
   const [editingStaff, setEditingStaff] = useState<string | null>(null);
-
-  if (!selectedDate) return null;
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
   const daySchedule = schedule.find(d => format(d.date, 'yyyy-MM-dd') === dateKey);
 
-  if (!daySchedule) return null;
-
-  const shiftsForDay: Array<{ type: ShiftType; staff: string[] }> = [
-    { type: 'AM', staff: daySchedule.shifts.AM },
-    { type: 'PM', staff: daySchedule.shifts.PM },
-    { type: 'NT', staff: daySchedule.shifts.NT },
-  ].filter(shift => shift.staff.length > 0);
+  const shifts = daySchedule
+    ? [
+        { id: 'AM' as ShiftType, staff: daySchedule.shifts.AM },
+        { id: 'PM' as ShiftType, staff: daySchedule.shifts.PM },
+        { id: 'NT' as ShiftType, staff: daySchedule.shifts.NT },
+      ].filter(s => s.staff.length > 0)
+    : [];
 
   const handleShiftChange = (staff: string, type: ShiftType) => {
     onOverride?.(dateKey, staff, type);
@@ -51,133 +48,135 @@ export function ShiftMates({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="bg-[#0a0a0f] border border-white/10 rounded-[40px] p-8 md:p-10 shadow-[0_0_50px_rgba(0,0,0,1)] relative overflow-hidden"
-    >
-      {/* Background Glow */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-red-600 shadow-[0_0_20px_rgba(220,38,38,1)]" />
-      
-      <div className="mb-10 flex items-center justify-between">
+    <div className="bg-[#0f0f17] border border-white/10 rounded-[32px] shadow-2xl overflow-hidden">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-4 border-b border-white/5 flex items-start justify-between gap-4">
         <div>
-          <h3 className="mb-2 text-3xl font-black text-white uppercase tracking-tighter font-heading">
-            {format(selectedDate, 'EEEE, MMM d')}
+          <p className="text-[9px] font-black uppercase tracking-[0.25em] text-gray-500 mb-1">Team Allocation</p>
+          <h3 className="text-2xl font-black text-white uppercase tracking-tighter font-heading leading-tight">
+            {format(selectedDate, 'EEEE')}
           </h3>
-          <div className="flex items-center gap-3">
-             <p className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 font-heading">Personnel Allocation Index</p>
-             {isManagerMode && (
-               <div className="px-2 py-0.5 rounded-full bg-red-600/20 border border-red-500/30 text-red-500 text-[9px] font-black uppercase tracking-widest">
-                 Live Edit
-               </div>
-             )}
-          </div>
+          <p className="text-sm text-gray-400 font-bold">{format(selectedDate, 'MMMM d, yyyy')}</p>
         </div>
-        <button 
-          onClick={onClose}
-          className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-all active:scale-95"
-        >
-          <X className="w-6 h-6" />
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {isManagerMode && (
+            <div className="px-2 py-1 rounded-lg bg-red-600/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest">
+              Edit Mode
+            </div>
+          )}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-8 max-h-[70vh] overflow-y-auto pr-4 no-scrollbar">
-        {shiftsForDay.map(shift => (
-          <motion.div
-            key={shift.type}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
-          >
-            <div className="flex items-center gap-4">
-              <div className={`${shiftColors[shift.type as keyof typeof shiftColors]} w-4 h-4 rounded-full shadow-lg shadow-white/5`} />
-              <div className="text-[12px] font-black uppercase tracking-[0.4em] text-gray-400">
-                {shift.type} Operational Window
+      {/* Shift blocks */}
+      <div className="p-6 space-y-5">
+        {shifts.length === 0 && (
+          <div className="py-12 text-center opacity-30">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em]">No Assignments</p>
+            <p className="text-[9px] mt-1 text-gray-500">This date has no personnel assigned</p>
+          </div>
+        )}
+
+        {shifts.map(shift => {
+          const meta = SHIFT_META[shift.id];
+          return (
+            <div key={shift.id} className={`rounded-2xl p-4 ${meta.bg} border border-white/5`}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: meta.color }} />
+                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${meta.textColor}`}>
+                  {meta.label}
+                </span>
+                <span className="ml-auto text-[9px] text-gray-500 font-bold">{shift.staff.length} staff</span>
+              </div>
+
+              <div className="space-y-2">
+                {shift.staff.map(staffName => {
+                  if (selectedStaff && selectedStaff !== staffName) return null;
+                  const isModified = !!overrides[dateKey]?.[staffName];
+                  const isEditing = editingStaff === staffName;
+
+                  return (
+                    <div key={staffName} className="relative">
+                      <div
+                        className={`
+                          flex items-center justify-between px-4 py-3 rounded-xl border
+                          text-white text-[12px] font-bold transition-all group/card
+                          ${isModified ? 'border-amber-500/30 bg-amber-500/5' : 'border-white/5 bg-white/5 hover:bg-white/8'}
+                        `}
+                        style={{ borderLeft: `4px solid ${STAFF_COLORS[staffName]}` }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span>{staffName}</span>
+                          {isModified && (
+                            <span className="text-[8px] text-amber-500 font-black uppercase tracking-widest">Modified</span>
+                          )}
+                        </div>
+                        {isManagerMode && !isEditing && (
+                          <button
+                            onClick={() => setEditingStaff(staffName)}
+                            className="p-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity bg-white/10 hover:bg-white/20 rounded-lg text-gray-400 hover:text-white"
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                        )}
+                        {isManagerMode && isEditing && (
+                          <button
+                            onClick={() => setEditingStaff(null)}
+                            className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-gray-400 hover:text-white"
+                          >
+                            <X size={12} />
+                          </button>
+                        )}
+                      </div>
+
+                      <AnimatePresence>
+                        {isEditing && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            className="mt-1 flex gap-1 p-1 bg-[#1a1a2e] rounded-xl border border-white/10"
+                          >
+                            {(['AM', 'PM', 'NT'] as ShiftType[]).map(type => (
+                              <button
+                                key={type}
+                                onClick={() => handleShiftChange(staffName, type)}
+                                className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                                  shift.id === type
+                                    ? 'text-white shadow-lg'
+                                    : 'text-gray-500 hover:text-white hover:bg-white/5'
+                                }`}
+                                style={shift.id === type ? { backgroundColor: SHIFT_META[type].color } : {}}
+                              >
+                                {type}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-8">
-              {shift.staff.map(staff => {
-                const isModified = overrides[dateKey]?.[staff];
-                const isEditing = editingStaff === staff;
-
-                return (
-                  <div key={staff} className="relative">
-                    <div
-                      className={`
-                        px-5 py-4 rounded-2xl transition-all text-white text-[13px] font-black border border-white/5 flex items-center justify-between group/staff
-                        ${selectedStaff === staff ? 'bg-white/10 border-white/20' : 'bg-white/2 hover:bg-white/5 shadow-xl'}
-                        ${isModified ? 'border-amber-500/30 bg-amber-500/5' : ''}
-                      `}
-                      style={{ borderLeft: `6px solid ${STAFF_COLORS[staff]}` }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="tracking-tighter">{staff}</span>
-                        {isModified && (
-                          <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        {isManagerMode && !isEditing && (
-                          <button 
-                            onClick={() => setEditingStaff(staff)}
-                            className="p-2 opacity-30 group-hover/staff:opacity-100 transition-all hover:bg-white/10 rounded-xl text-gray-400 hover:text-red-500"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                        )}
-                        {selectedStaff === staff && !isEditing && (
-                          <div className="w-2 h-2 rounded-full bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)]" />
-                        )}
-                      </div>
-                    </div>
-
-                    <AnimatePresence>
-                      {isEditing && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="absolute inset-0 z-50 bg-[#16161f] rounded-2xl border border-white/10 flex items-center p-2 gap-2"
-                        >
-                          {(['AM', 'PM', 'NT', 'OFF'] as ShiftType[]).map((type) => (
-                            <button
-                              key={type}
-                              onClick={() => handleShiftChange(staff, type)}
-                              className={`flex-1 h-full rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                shift.type === type 
-                                  ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' 
-                                  : 'hover:bg-white/5 text-gray-600 hover:text-white'
-                              }`}
-                            >
-                              {type}
-                            </button>
-                          ))}
-                          <button 
-                            onClick={() => setEditingStaff(null)}
-                            className="p-2 text-gray-500 hover:text-white"
-                          >
-                            <X size={20} />
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        ))}
+          );
+        })}
       </div>
 
       {isManagerMode && (
-         <div className="mt-8 pt-6 border-t border-white/5">
-            <p className="text-[10px] text-gray-600 font-black uppercase tracking-[0.3em] italic text-center">
-               Synchronized Operational Adjustments Node Active
-            </p>
-         </div>
+        <div className="px-6 pb-5">
+          <p className="text-[8px] text-gray-600 font-black uppercase tracking-[0.2em] italic text-center">
+            Changes sync to Firebase in real-time
+          </p>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 }

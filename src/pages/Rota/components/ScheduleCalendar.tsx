@@ -8,46 +8,54 @@ interface ScheduleCalendarProps {
   onDayClick: (date: Date) => void;
 }
 
+const SHIFT_COLORS: Record<string, string> = {
+  AM: '#FF6B35',
+  PM: '#4ECDC4',
+  NT: '#6366F1',
+};
+
 export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: ScheduleCalendarProps) {
   if (schedule.length === 0) return null;
 
   const firstDay = schedule[0].date;
-  const startDay = getDay(firstDay);
+  const startDay = getDay(firstDay); // 0=Sun
 
-  // Create array of days including empty slots for alignment
-  const calendarDays = [];
-  for (let i = 0; i < startDay; i++) {
-    calendarDays.push(null);
-  }
-  calendarDays.push(...schedule);
+  // Pad the start with empty slots
+  const calendarSlots: (DailySchedule | null)[] = [
+    ...Array(startDay).fill(null),
+    ...schedule,
+  ];
 
   return (
     <div className="w-full">
-      {/* Calendar Header */}
-      <div className="grid grid-cols-7 gap-1 md:gap-2 mb-4 md:mb-6">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="text-center text-[9px] font-black uppercase tracking-widest text-gray-500">
-            {day}
+      {/* Day headers */}
+      <div className="grid grid-cols-7 gap-1 mb-3">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+          <div key={d} className="text-center text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-600 py-1">
+            {d}
           </div>
         ))}
       </div>
 
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1.5 md:gap-3 auto-rows-max">
-        {calendarDays.map((day, index) => {
+      {/* Calendar grid — each row auto-sizes to content */}
+      <div className="grid grid-cols-7 gap-1 md:gap-2">
+        {calendarSlots.map((day, index) => {
           if (!day) {
-            return <div key={`empty-${index}`} className="min-h-[140px] md:min-h-[200px]" />;
+            return <div key={`empty-${index}`} />;
           }
 
-          const isSelected = selectedStaff
-            ? Object.values(day.shifts).some(shift => shift.includes(selectedStaff))
+          const isToday = format(day.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+          const hasSelectedStaff = selectedStaff
+            ? Object.values(day.shifts).some(arr => arr.includes(selectedStaff))
             : false;
 
-          // Group staff by shift
-          const shifts = [
-            { id: 'AM', label: 'A', color: 'bg-[#FF6B35]', staff: day.shifts.AM },
-            { id: 'PM', label: 'P', color: 'bg-[#4ECDC4]', staff: day.shifts.PM },
-            { id: 'NT', label: 'N', color: 'bg-[#6366F1]', staff: day.shifts.NT },
+          const dimmed = selectedStaff && !hasSelectedStaff;
+
+          // Collect shifts in order, filtered if a staff member is selected
+          const displayShifts = [
+            { id: 'AM', staff: day.shifts.AM.filter(s => !selectedStaff || s === selectedStaff) },
+            { id: 'PM', staff: day.shifts.PM.filter(s => !selectedStaff || s === selectedStaff) },
+            { id: 'NT', staff: day.shifts.NT.filter(s => !selectedStaff || s === selectedStaff) },
           ].filter(s => s.staff.length > 0);
 
           return (
@@ -55,51 +63,58 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick }: Schedu
               key={day.date.toISOString()}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.005 }}
+              transition={{ delay: index * 0.004, duration: 0.2 }}
               onClick={() => onDayClick(day.date)}
               className={`
-                min-h-[140px] md:min-h-[200px] h-auto border rounded-3xl p-3 md:p-5 cursor-pointer transition-all relative group/day
-                ${isSelected 
-                  ? 'border-red-500 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.1)]' 
-                  : 'border-white/5 bg-white/2 hover:border-white/10 hover:bg-white/5'}
-                ${!selectedStaff ? 'opacity-100' : isSelected ? 'opacity-100' : 'opacity-20'}
+                relative rounded-xl md:rounded-2xl cursor-pointer transition-all duration-200
+                border p-1.5 md:p-2.5
+                ${isToday ? 'border-red-500/50 bg-red-500/5 shadow-[0_0_12px_rgba(239,68,68,0.08)]' : ''}
+                ${!isToday && hasSelectedStaff ? 'border-white/20 bg-white/5' : ''}
+                ${!isToday && !hasSelectedStaff && !dimmed ? 'border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]' : ''}
+                ${dimmed ? 'border-white/[0.03] bg-transparent opacity-30' : ''}
               `}
             >
-              <div className="flex flex-col">
-                <div className="text-[10px] md:text-base font-black opacity-20 mb-3">
-                  {format(day.date, 'd')}
-                </div>
+              {/* Date number */}
+              <div className={`text-[10px] md:text-xs font-black mb-1.5 ${isToday ? 'text-red-500' : 'text-gray-500'}`}>
+                {format(day.date, 'd')}
+                {isToday && <span className="ml-1 text-[7px] uppercase tracking-widest">Today</span>}
+              </div>
 
-                <div className="flex flex-col gap-4">
-                  {shifts.map(s => (
-                    <div key={s.id} className="space-y-1.5 transition-all">
-                      <div className="flex items-center gap-2 opacity-50">
-                        <div className={`w-1.5 h-1.5 rounded-full ${s.color} shadow-sm`} />
-                        <span className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.2em]">{s.id}</span>
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        {s.staff.map((staffName, idx) => {
-                          const isStaffSelected = selectedStaff === staffName || !selectedStaff;
-                          if (!isStaffSelected) return null;
-
-                          return (
-                            <div
-                              key={`${staffName}-${idx}`}
-                              className="text-white px-2 py-1 md:px-3 md:py-1.5 rounded-xl text-[7px] md:text-[11px] font-black leading-tight shadow-lg whitespace-normal break-words"
-                              style={{ 
-                                backgroundColor: STAFF_COLORS[staffName],
-                                opacity: selectedStaff === staffName ? 1 : 0.95
-                              }}
-                              title={`${staffName} - ${s.id}`}
-                            >
-                              {staffName}
-                            </div>
-                          );
-                        })}
-                      </div>
+              {/* Shift groups */}
+              <div className="flex flex-col gap-2">
+                {displayShifts.map(shift => (
+                  <div key={shift.id}>
+                    {/* Shift label */}
+                    <div className="flex items-center gap-1 mb-1">
+                      <div
+                        className="w-1 h-1 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: SHIFT_COLORS[shift.id] }}
+                      />
+                      <span
+                        className="text-[6px] md:text-[7px] font-black uppercase tracking-widest"
+                        style={{ color: SHIFT_COLORS[shift.id] }}
+                      >
+                        {shift.id}
+                      </span>
                     </div>
-                  ))}
-                </div>
+
+                    {/* Staff name pills */}
+                    <div className="flex flex-col gap-[3px]">
+                      {shift.staff.map(name => (
+                        <div
+                          key={name}
+                          className="rounded-[4px] md:rounded-[6px] px-1 md:px-1.5 py-[2px] md:py-1 text-white leading-tight"
+                          style={{ backgroundColor: STAFF_COLORS[name] ?? '#555' }}
+                          title={`${name} — ${shift.id}`}
+                        >
+                          <span className="text-[7px] md:text-[9px] font-bold block whitespace-normal break-words">
+                            {name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </motion.div>
           );
