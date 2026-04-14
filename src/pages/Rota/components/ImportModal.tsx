@@ -131,6 +131,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         return;
       }
 
+      const delimiter = lines[0].includes(';') ? ';' : ',';
       const headers = splitCSVLine(lines[0], delimiter).filter(h => h.trim() !== '');
       const staffIndices: { name: string; index: number }[] = [];
       const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
