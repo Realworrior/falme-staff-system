@@ -43,10 +43,10 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
   const { data: rawOverrides, loading, updateRecord, deleteRecord } = useFirebaseData('rotaOverrides', {});
 
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setIsReady(true), 150);
     return () => clearTimeout(timer);
-  });
+  }, []);
 
   const overrides = useMemo(() => {
     if (!isReady || !rawOverrides) return {};

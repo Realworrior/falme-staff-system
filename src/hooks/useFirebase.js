@@ -13,26 +13,40 @@ export const useFirebaseData = (path, initialValue = []) => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        if (!path) return;
+
         const dataRef = ref(db, path);
         setLoading(true);
 
         const unsubscribe = onValue(dataRef, (snapshot) => {
-            const val = snapshot.val();
-            // Convert objects to arrays if needed for lists
-            if (val && typeof val === 'object' && !Array.isArray(val)) {
-                const list = Object.entries(val).map(([key, item]) => ({
-                    firebaseKey: key,
-                    id: key,
-                    ...item
-                }));
-                setData(list);
-            } else if (Array.isArray(val)) {
-                const list = val.map((item, idx) => (typeof item === 'object' && item !== null ? { ...item, firebaseKey: idx.toString() } : item));
-                setData(list);
-            } else {
-                setData(val || initialValue);
+            try {
+                const val = snapshot.val();
+                
+                if (val === null) {
+                    setData(initialValue);
+                } else if (typeof val === 'object' && !Array.isArray(val)) {
+                    const list = Object.entries(val).map(([key, item]) => ({
+                        firebaseKey: key,
+                        id: key,
+                        ...(typeof item === 'object' ? item : { value: item })
+                    }));
+                    setData(list);
+                } else if (Array.isArray(val)) {
+                    const list = val.map((item, idx) => 
+                        (typeof item === 'object' && item !== null) 
+                            ? { ...item, firebaseKey: idx.toString() } 
+                            : { value: item, firebaseKey: idx.toString() }
+                    );
+                    setData(list);
+                } else {
+                    setData(val);
+                }
+            } catch (err) {
+                console.error("Data processing error:", err);
+                setError(err);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         }, (err) => {
             console.error(`Firebase error at ${path}:`, err);
             setError(err);

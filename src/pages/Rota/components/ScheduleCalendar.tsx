@@ -52,12 +52,15 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
 
           const dimmed = selectedStaff && !hasSelectedStaff;
 
-          // Collect shifts in order, filtered if a staff member is selected
+          // Collect shifts: if a staff is selected, show the ENTIRE shift they belong to (Shift Mates)
           const displayShifts = [
-            { id: 'AM', staff: day.shifts.AM.filter(s => !selectedStaff || s === selectedStaff) },
-            { id: 'PM', staff: day.shifts.PM.filter(s => !selectedStaff || s === selectedStaff) },
-            { id: 'NT', staff: day.shifts.NT.filter(s => !selectedStaff || s === selectedStaff) },
-          ].filter(s => s.staff.length > 0);
+            { id: 'AM', staff: day.shifts.AM },
+            { id: 'PM', staff: day.shifts.PM },
+            { id: 'NT', staff: day.shifts.NT },
+          ].filter(s => {
+            if (!selectedStaff) return s.staff.length > 0;
+            return s.staff.includes(selectedStaff);
+          });
 
           return (
             <motion.div

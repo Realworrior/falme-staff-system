@@ -6,14 +6,55 @@ import {
   Ticket, 
   ShieldCheck,
   ArrowUpRight,
-  Clock
+  Clock,
+  Users
 } from 'lucide-react';
 import { useFirebaseData } from '../hooks/useFirebase';
+import { 
+  generateMonthSchedule, 
+  getCurrentShiftType,
+  STAFF_COLORS 
+} from './Rota/utils/scheduleGenerator';
 
 const Dashboard = () => {
   const { data: templates } = useFirebaseData('supportTemplates', []);
   const { data: logs } = useFirebaseData('aviatorLogs', []);
   const { data: tickets } = useFirebaseData('supportTickets', []);
+  const { data: rawOverrides } = useFirebaseData('rotaOverrides', {});
+
+  // Convert rawOverrides to mapped format if needed (consistent with App.tsx)
+  const overrides = useMemo(() => {
+    if (!rawOverrides) return {};
+    if (Array.isArray(rawOverrides)) {
+      const mapped = {};
+      rawOverrides.forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+          const { firebaseKey, id, ...rest } = item;
+          if (firebaseKey || id) mapped[firebaseKey || id] = rest;
+        }
+      });
+      return mapped;
+    }
+    return rawOverrides;
+  }, [rawOverrides]);
+
+  const onDutyInfo = useMemo(() => {
+    const today = new Date();
+    const currentShift = getCurrentShiftType();
+    const schedule = generateMonthSchedule(today.getFullYear(), today.getMonth(), overrides);
+    const todaySchedule = schedule.find(d => 
+      d.date.getDate() === today.getDate() && 
+      d.date.getMonth() === today.getMonth() && 
+      d.date.getFullYear() === today.getFullYear()
+    );
+
+    const onDutyNames = todaySchedule?.shifts[currentShift] || [];
+    return {
+      count: onDutyNames.length,
+      names: onDutyNames,
+      shift: currentShift
+    };
+  }, [overrides]);
 
   const metrics = useMemo(() => {
     // Calculate total templates across all categories
@@ -22,6 +63,14 @@ const Dashboard = () => {
     const activeTicketsCount = tickets.filter(t => t.status !== 'Resolved').length;
 
     return [
+      { 
+        label: "Team on Duty", 
+        value: onDutyInfo.count, 
+        detail: `${onDutyInfo.shift} Shift: ${onDutyInfo.names.join(', ') || 'None'}`, 
+        icon: Users, 
+        color: "from-indigo-600 to-violet-500",
+        shadow: "shadow-indigo-500/20"
+      },
       { 
         label: "Library Assets", 
         value: totalTemplates, 
@@ -45,17 +94,9 @@ const Dashboard = () => {
         icon: Ticket, 
         color: "from-amber-500 to-yellow-400",
         shadow: "shadow-amber-500/20"
-      },
-      { 
-        label: "System Health", 
-        value: "100%", 
-        detail: "Operational", 
-        icon: ShieldCheck, 
-        color: "from-emerald-600 to-teal-500",
-        shadow: "shadow-emerald-500/20"
-      },
+      }
     ];
-  }, [templates, logs, tickets]);
+  }, [templates, logs, tickets, onDutyInfo]);
 
   const recentActivities = useMemo(() => {
     const combined = [
