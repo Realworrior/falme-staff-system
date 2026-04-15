@@ -9,7 +9,7 @@ import {
   Clock,
   Users
 } from 'lucide-react';
-import { useFirebaseData } from '../hooks/useFirebase';
+import { useGlobalData } from '../context/FirebaseDataContext';
 import { 
   generateMonthSchedule, 
   getCurrentShiftType,
@@ -17,10 +17,10 @@ import {
 } from './Rota/utils/scheduleGenerator';
 
 const Dashboard = () => {
-  const { data: templates } = useFirebaseData('supportTemplates', []);
-  const { data: logs } = useFirebaseData('aviatorLogs', []);
-  const { data: tickets } = useFirebaseData('supportTickets', []);
-  const { data: rawOverrides } = useFirebaseData('rotaOverrides', {});
+  const { templates, logs, tickets, overrides: rawOverrides, loading } = useGlobalData();
+
+  // Derived loading state for the whole dashboard
+  const isInitialLoading = loading.templates || loading.logs || loading.tickets;
 
   // Convert rawOverrides to mapped format if needed (consistent with App.tsx)
   const overrides = useMemo(() => {

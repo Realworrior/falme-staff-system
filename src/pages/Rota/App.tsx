@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
@@ -23,7 +23,7 @@ import {
   calculateMonthlyAnalytics,
   getCurrentShiftType,
 } from './utils/scheduleGenerator';
-import { useFirebaseData } from '../../hooks/useFirebase';
+import { useGlobalData } from '../../context/FirebaseDataContext';
 import { exportScheduleToCSV, downloadCSV } from './utils/RotaExportUtility';
 import { useToast } from '../../context/ToastContext';
 import { ref, update, set } from 'firebase/database';
@@ -41,7 +41,8 @@ export default function App() {
   const { showToast } = useToast();
 
   const [isReady, setIsReady] = useState(false);
-  const { data: rawOverrides, loading, updateRecord, deleteRecord } = useFirebaseData('rotaOverrides', {});
+  const { overrides: rawOverrides, loading: globalLoading, actions } = useGlobalData();
+  const loading = globalLoading.overrides;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsReady(true), 150);
@@ -90,7 +91,7 @@ export default function App() {
   };
 
   const handleOverride = async (date: string, staff: string, type: string) => {
-    await updateRecord(date, { [staff]: type });
+    await actions.updateRecord('rotaOverrides', date, { [staff]: type });
   };
 
   const handleBulkImport = async (data: Record<string, Record<string, string>>, shouldReplace: boolean = false) => {

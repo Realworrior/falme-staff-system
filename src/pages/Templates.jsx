@@ -1,47 +1,3 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Copy, 
-  Trash2, 
-  MessageCircle,
-  ArrowLeft,
-  LayoutGrid,
-  Filter,
-  X,
-  CreditCard,
-  Wrench,
-  HelpCircle,
-  FileText,
-  MessageSquare,
-  Shield,
-  Zap,
-  Folder,
-  Phone,
-  ShoppingCart,
-  Menu,
-  Terminal,
-  Calendar,
-  Package,
-  RotateCcw,
-  Tag,
-  ThumbsUp,
-  User,
-  HandCoins,
-  ServerCrash,
-  PhoneCall,
-  BrainCircuit,
-  BadgePercent,
-  Gamepad2,
-  Hourglass,
-  Wallet,
-  Trophy,
-  Stamp,
-  UserCog,
-  ShieldAlert
-} from 'lucide-react';
-import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
 import KeywordHighlighter from '../components/KeywordHighlighter';
 import { 
@@ -52,6 +8,40 @@ import {
   TextField,
   Tooltip
 } from '@mui/material';
+
+// Helper for dynamic colors based on category
+const getCategoryColor = (category) => {
+  if (!category) return "text-red-500";
+  const name = category.toLowerCase();
+  
+  if (name.includes('sport') || name.includes('bet')) return "text-orange-500";
+  if (name.includes('promot')) return "text-red-500";
+  if (name.includes('account manage')) return "text-amber-500";
+  if (name.includes('responsib') || name.includes('18+') || name.includes('gamble aware') || name.includes('gaming')) return "text-rose-500";
+  if (name.includes('ai') || name.includes('bot') || name.includes('auto')) return "text-cyan-400";
+  if (name.includes('cashback') || name.includes('cash back') || name.includes('bonus')) return "text-rose-400";
+  if (name.includes('casino') || name.includes('game') || name.includes('crash') || name.includes('play')) return "text-fuchsia-500";
+  if (name.includes('patience') || name.includes('wait') || name.includes('delay') || name.includes('time')) return "text-orange-400";
+  if (name.includes('withdraw') || name.includes('payout') || name.includes('cashout')) return "text-indigo-400";
+  if (name.includes('deposit') || name.includes('fund')) return "text-emerald-400";
+  if (name.includes('bill') || name.includes('pay') || name.includes('financ') || name.includes('invoice')) return "text-green-500";
+  if (name.includes('tech') || name.includes('bug') || name.includes('fix') || name.includes('dev') || name.includes('error')) return "text-orange-500";
+  if (name.includes('account') || name.includes('user') || name.includes('profile') || name.includes('login')) return "text-blue-400";
+  if (name.includes('order') || name.includes('ship') || name.includes('track') || name.includes('deliver') || name.includes('pack')) return "text-purple-400";
+  if (name.includes('cart') || name.includes('shop')) return "text-pink-400";
+  if (name.includes('book') || name.includes('appoint') || name.includes('schedul')) return "text-indigo-400";
+  if (name.includes('refund') || name.includes('return') || name.includes('cancel')) return "text-rose-500";
+  if (name.includes('promo') || name.includes('offer') || name.includes('discount') || name.includes('sale')) return "text-yellow-400";
+  if (name.includes('sec') || name.includes('auth') || name.includes('pass') || name.includes('verif')) return "text-teal-400";
+  if (name.includes('chat') || name.includes('msg') || name.includes('message') || name.includes('email')) return "text-sky-400";
+  if (name.includes('call') || name.includes('phone') || name.includes('contact')) return "text-cyan-400";
+  if (name.includes('help') || name.includes('support') || name.includes('faq') || name.includes('question')) return "text-amber-400";
+  if (name.includes('fast') || name.includes('quick') || name.includes('urgent')) return "text-yellow-500";
+  if (name.includes('feed') || name.includes('review') || name.includes('rate') || name.includes('complaint')) return "text-fuchsia-400";
+  if (name.includes('doc') || name.includes('temp') || name.includes('info') || name.includes('policy')) return "text-slate-300";
+  
+  return "text-gray-400";
+};
 
 // Helper for dynamic icons with vibrant emotional colors
 const getCategoryIcon = (category, size = 18, baseClass = "") => {
@@ -66,7 +56,7 @@ const getCategoryIcon = (category, size = 18, baseClass = "") => {
     return <div className={`text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] flex items-center justify-center ${baseClass}`}><Stamp size={size} /></div>;
   }
   if (name.includes('account manage')) {
-    return <div className={`text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] flex items-center justify-center ${baseClass}`}><UserCog size={size} /></div>;
+    return <div className={`text-amber-500 drop-shadow-[1_1_8px_rgba(245,158,11,0.5)] flex items-center justify-center ${baseClass}`}><UserCog size={size} /></div>;
   }
   if (name.includes('responsib') || name.includes('18+') || name.includes('gamble aware') || name.includes('gaming')) {
     return <div className={`text-rose-600 drop-shadow-[0_0_8px_rgba(225,29,72,0.5)] flex items-center justify-center ${baseClass}`}><ShieldAlert size={size} /></div>;
@@ -158,8 +148,55 @@ const getCategoryIcon = (category, size = 18, baseClass = "") => {
   return <div className={`text-gray-400 flex items-center justify-center ${baseClass}`}><Folder size={size} /></div>;
 };
 
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Plus, 
+  Search, 
+  Copy, 
+  Trash2, 
+  MessageCircle,
+  ArrowLeft,
+  LayoutGrid,
+  Filter,
+  X,
+  CreditCard,
+  Wrench,
+  HelpCircle,
+  FileText,
+  MessageSquare,
+  Shield,
+  Zap,
+  Folder,
+  Phone,
+  ShoppingCart,
+  Menu,
+  Terminal,
+  Calendar,
+  Package,
+  RotateCcw,
+  Tag,
+  ThumbsUp,
+  User,
+  HandCoins,
+  ServerCrash,
+  PhoneCall,
+  BrainCircuit,
+  BadgePercent,
+  Gamepad2,
+  Hourglass,
+  Wallet,
+  Trophy,
+  Stamp,
+  UserCog,
+  ShieldAlert
+} from 'lucide-react';
+
+import { useGlobalData } from '../context/FirebaseDataContext';
+
 const Templates = () => {
-  const { data, loading, setAllData } = useFirebaseData('supportTemplates', []);
+  const { templates: data, loading: globalLoading, actions } = useGlobalData();
+  const loading = globalLoading.templates;
   const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -236,7 +273,7 @@ const Templates = () => {
     }
 
     try {
-      await setAllData(updatedData);
+      await actions.setAllData('supportTemplates', updatedData);
       setModalOpen(false);
       setNewTemplate({ category: '', title: '', standardText: '', empathyText: '' });
       showToast('Record deployed successfully', 'success');
@@ -260,7 +297,7 @@ const Templates = () => {
       }
 
       try {
-        await setAllData(updatedData);
+        await actions.setAllData('supportTemplates', updatedData);
         showToast('Record purged', 'success');
       } catch (err) {
         showToast('Failed to delete', 'error');
@@ -484,12 +521,13 @@ const Templates = () => {
                           {getCategoryIcon(category.category, 18, "text-gray-500 group-hover:text-red-500 transition-colors")}
                         </div>
                         <div>
-                          <h4 className="text-white font-black uppercase tracking-tight text-sm font-heading">{template.title}</h4>
+                          <h4 className={`font-black uppercase tracking-tight text-sm font-heading ${getCategoryColor(category.category)}`}>
+                            {template.title}
+                          </h4>
                           <span className="text-[9px] text-gray-600 font-black uppercase tracking-widest">{category.category}</span>
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <button className="p-2 text-gray-700 hover:text-white transition-all opacity-0 group-hover:opacity-100" onClick={() => handleCopy(template.title)}><Copy size={16} /></button>
                         <button 
                           onClick={() => handleDelete(category.category, template.title)}
                           className="p-2 text-gray-700 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
@@ -507,7 +545,7 @@ const Templates = () => {
                           className="relative p-5 rounded-2xl bg-black/40 border border-white/[0.02] hover:bg-black/60 transition-all group/resp cursor-pointer overflow-hidden shadow-sm hover:shadow-red-500/5"
                           onClick={() => handleCopy(resp.text)}
                         >
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center justify-between mb-3 min-h-[24px]">
                             <span className={`px-2.5 py-1 text-[8px] uppercase tracking-[0.2em] font-black rounded border ${
                               resp.type === 'Standard' 
                                 ? 'bg-blue-500/5 text-blue-400 border-blue-500/10' 
@@ -515,9 +553,15 @@ const Templates = () => {
                             }`}>
                               {resp.type}
                             </span>
-                            <div className="w-6 h-1 bg-white/5 rounded-full" />
+                            <motion.div 
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className="p-1.5 rounded-lg bg-white/5 text-gray-500 group-hover/resp:text-white transition-colors border border-white/5 shadow-inner"
+                            >
+                              <Copy size={12} />
+                            </motion.div>
                           </div>
-                          <div className="text-gray-500 text-xs md:text-sm leading-relaxed font-medium">
+                          <div className="text-gray-500 group-hover/resp:text-gray-300 transition-colors text-xs md:text-sm leading-relaxed font-medium">
                             <KeywordHighlighter text={resp.text} />
                           </div>
                           

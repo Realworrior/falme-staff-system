@@ -19,15 +19,20 @@ import {
   RefreshCw,
   AlertCircle
 } from 'lucide-react';
-import { useFirebaseData } from '../hooks/useFirebase';
+import { useGlobalData } from '../context/FirebaseDataContext';
 import { useToast } from '../context/ToastContext';
 
 const SlotTracker = () => {
-  const { data: logs, loading, createRecord, deleteRecord, setAllData } = useFirebaseData('aviatorLogs', []);
+  const { logs, loading: globalLoading, actions } = useGlobalData();
+  const loading = globalLoading.logs;
   const { showToast } = useToast();
   const [isReady, setIsReady] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const handleCreateRecord = (record) => actions.createRecord('aviatorLogs', record);
+  const handleDeleteRecord = (id) => actions.deleteRecord('aviatorLogs', id);
+  const handleSetAllData = (data) => actions.setAllData('aviatorLogs', data);
 
   React.useEffect(() => {
     const timer = setTimeout(() => setIsReady(true), 150);
@@ -49,7 +54,7 @@ const SlotTracker = () => {
   const totalPages = Math.ceil(sortedLogs.length / itemsPerPage);
 
   const logFailure = (type) => {
-    createRecord({ 
+    handleCreateRecord({ 
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`, 
       ts: Date.now(), 
       type,
@@ -242,7 +247,7 @@ const SlotTracker = () => {
                     <td className="py-4 px-6 text-gray-400 font-bold text-xs font-mono">{new Date(log.ts).toLocaleTimeString('en-GB')}</td>
                     <td className="py-4 px-6 text-right">
                       <button 
-                        onClick={() => deleteRecord(log.firebaseKey || log.id)}
+                        onClick={() => handleDeleteRecord(log.firebaseKey || log.id)}
                         className="p-1.5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={14} />
@@ -291,7 +296,7 @@ const SlotTracker = () => {
                       </div>
                     </div>
                     <button 
-                      onClick={() => deleteRecord(log.firebaseKey || log.id)}
+                      onClick={() => window.confirm('Permanently wipe all logs?') && handleSetAllData([])}
                       className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/10 transition-all bg-white/5"
                     >
                       <Trash2 size={16} />

@@ -5,7 +5,6 @@ import {
   CheckCircle2, AlertTriangle, User, Shield, Briefcase, 
   Image as ImageIcon, Upload, ChevronRight, ArrowLeft, Zap
 } from 'lucide-react';
-import { useFirebaseData } from '../hooks/useFirebase';
 import { useToast } from '../context/ToastContext';
 import TicketAuth from '../components/TicketAuth';
 import { 
@@ -27,7 +26,8 @@ const MERCHANTS = ["METAPAY", "FALMEBET"];
 const URGENCY_LEVELS = ["Low", "Normal", "High", "Critical"];
 
 const Tickets = () => {
-  const { data: tickets, loading, createRecord, deleteRecord, setAllData } = useFirebaseData('supportTickets', []);
+  const { tickets, templates, loading: globalLoading, actions } = useGlobalData();
+  const loading = globalLoading.tickets;
   const { showToast } = useToast();
   
   // Auth State
@@ -35,9 +35,12 @@ const Tickets = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); // All, Pending, In Progress, Resolved
   const [modalOpen, setModalOpen] = useState(false);
-  const { data: templates } = useFirebaseData('supportTemplates', []);
   const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
   const [suggestedResponses, setSuggestedResponses] = useState([]);
+
+  const handleUpdateRecord = (id, updates) => actions.updateRecord('supportTickets', id, updates);
+  const handleCreateRecord = (record) => actions.createRecord('supportTickets', record);
+  const handleDeleteRecord = (id) => actions.deleteRecord('supportTickets', id);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -148,7 +151,7 @@ const Tickets = () => {
   }, [tickets, searchQuery, statusFilter, isReady]);
 
   const handleUpdateStatus = (ticketId, newStatus) => {
-    updateRecord(ticketId, { status: newStatus });
+    handleUpdateRecord(ticketId, { status: newStatus });
     showToast(`Ticket marked as ${newStatus}`, 'success');
   };
 
@@ -180,7 +183,7 @@ const Tickets = () => {
       }
     }
 
-    createRecord(payload);
+    handleCreateRecord(payload);
     setModalOpen(false);
     resetForm();
     showToast('Ticket created successfully!', 'success');
@@ -458,7 +461,7 @@ const Tickets = () => {
                              </button>
                            )}
                            <button className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all rounded-xl shadow-lg active:scale-95"><Eye size={16} /></button>
-                           <button className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all rounded-xl shadow-lg active:scale-95" onClick={() => deleteRecord(ticket.firebaseKey || ticket.id)}><Trash2 size={16} /></button>
+                           <button className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all rounded-xl shadow-lg active:scale-95" onClick={() => handleDeleteRecord(ticket.firebaseKey || ticket.id)}><Trash2 size={16} /></button>
                         </div>
                       </div>
 
