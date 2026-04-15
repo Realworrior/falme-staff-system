@@ -326,8 +326,8 @@ const Templates = () => {
       <aside 
         className={`flex flex-col bg-[#0a0a12] lg:bg-sidebar/30 border-r border-white/5 sticky top-0 h-[calc(100vh-80px)] overflow-hidden shrink-0 transition-all duration-300 z-[90] ${
           catSidebarOpen 
-            ? 'w-[280px] fixed lg:relative left-0 shadow-none' 
-            : 'w-[75px] relative shadow-none'
+            ? 'w-[280px] fixed lg:sticky left-0 shadow-none' 
+            : 'w-[75px] sticky shadow-none'
         }`}
       >
         <div className={`flex items-center pt-6 pb-4 border-b border-white/5 transition-all ${
