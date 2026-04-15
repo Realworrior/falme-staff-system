@@ -6,6 +6,7 @@ import {
   Image as ImageIcon, Upload, ChevronRight, ArrowLeft, Zap
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { useGlobalData } from '../context/FirebaseDataContext';
 import TicketAuth from '../components/TicketAuth';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, 
