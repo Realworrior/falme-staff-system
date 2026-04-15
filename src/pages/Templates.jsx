@@ -1,3 +1,49 @@
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Plus, 
+  Search, 
+  Copy, 
+  Trash2, 
+  MessageCircle,
+  ArrowLeft,
+  LayoutGrid,
+  Filter,
+  X,
+  CreditCard,
+  Wrench,
+  HelpCircle,
+  FileText,
+  MessageSquare,
+  Shield,
+  Zap,
+  Folder,
+  Phone,
+  ShoppingCart,
+  Menu,
+  Terminal,
+  Calendar,
+  Package,
+  RotateCcw,
+  Tag,
+  ThumbsUp,
+  User,
+  HandCoins,
+  ServerCrash,
+  PhoneCall,
+  BrainCircuit,
+  BadgePercent,
+  Gamepad2,
+  Hourglass,
+  Wallet,
+  Trophy,
+  Stamp,
+  UserCog,
+  ShieldAlert
+} from 'lucide-react';
+
+import { useGlobalData } from '../context/FirebaseDataContext';
+
 import { useToast } from '../context/ToastContext';
 import KeywordHighlighter from '../components/KeywordHighlighter';
 import { 
@@ -147,52 +193,6 @@ const getCategoryIcon = (category, size = 18, baseClass = "") => {
   // Default to a folder
   return <div className={`text-gray-400 flex items-center justify-center ${baseClass}`}><Folder size={size} /></div>;
 };
-
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Copy, 
-  Trash2, 
-  MessageCircle,
-  ArrowLeft,
-  LayoutGrid,
-  Filter,
-  X,
-  CreditCard,
-  Wrench,
-  HelpCircle,
-  FileText,
-  MessageSquare,
-  Shield,
-  Zap,
-  Folder,
-  Phone,
-  ShoppingCart,
-  Menu,
-  Terminal,
-  Calendar,
-  Package,
-  RotateCcw,
-  Tag,
-  ThumbsUp,
-  User,
-  HandCoins,
-  ServerCrash,
-  PhoneCall,
-  BrainCircuit,
-  BadgePercent,
-  Gamepad2,
-  Hourglass,
-  Wallet,
-  Trophy,
-  Stamp,
-  UserCog,
-  ShieldAlert
-} from 'lucide-react';
-
-import { useGlobalData } from '../context/FirebaseDataContext';
 
 const Templates = () => {
   const { templates: data, loading: globalLoading, actions } = useGlobalData();

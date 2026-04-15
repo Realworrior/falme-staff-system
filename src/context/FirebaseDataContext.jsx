@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ref, onValue, set, push, remove } from 'firebase/database';
+import { ref, onValue, set, push, remove, update } from 'firebase/database';
 import { db } from '../firebase';
 
 const FirebaseDataContext = createContext();
@@ -73,7 +73,7 @@ export const FirebaseDataProvider = ({ children }) => {
   // Generic Update Methods
   const updateRecord = async (path, recordId, updates) => {
     const recordRef = ref(db, `${path}/${recordId}`);
-    return set(recordRef, updates);
+    return update(recordRef, updates);
   };
 
   const createRecord = async (path, record) => {
