@@ -26,6 +26,8 @@ const SlotTracker = () => {
   const { data: logs, loading, createRecord, deleteRecord, setAllData } = useFirebaseData('aviatorLogs', []);
   const { showToast } = useToast();
   const [isReady, setIsReady] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   React.useEffect(() => {
     const timer = setTimeout(() => setIsReady(true), 150);

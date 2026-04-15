@@ -7,11 +7,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 
 const ContextSidebar = ({ title, items = [], activeItem, onItemClick, bottomActions = [] }) => {
-  const { isSidebarCollapsed, isMobileSidebarOpen, toggleSidebar, closeMobileSidebar } = useNavigation();
+  const { isSidebarCollapsed, isMobileSidebarOpen, toggleSidebar } = useNavigation();
 
   const handleClick = (id) => {
     onItemClick(id);
-    closeMobileSidebar();
   };
 
   return (
