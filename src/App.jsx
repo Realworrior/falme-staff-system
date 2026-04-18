@@ -7,6 +7,9 @@ import Templates from './pages/Templates';
 import Tickets from './pages/Tickets';
 import SlotTracker from './pages/SlotTracker';
 import Rota from './pages/Rota/App';
+import Resources from './pages/Resources';
+
+
 
 // Maintain the MUI theme for underlying MUI components (like Dialogs) 
 // but ensure it aligns with the new design's core palette.
@@ -73,6 +76,9 @@ function App() {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/slots" element={<SlotTracker />} />
           <Route path="/rota" element={<Rota />} />
+          <Route path="/resources" element={<Resources />} />
+
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>

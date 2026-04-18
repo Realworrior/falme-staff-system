@@ -6,8 +6,10 @@ import {
   Activity, 
   Ticket,
   CalendarDays,
-  ExternalLink
+  ExternalLink,
+  BookOpen
 } from 'lucide-react';
+
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -21,7 +23,10 @@ const BottomNav = ({ className }) => {
     { path: '/slots', label: 'Aviator', icon: Activity },
     { path: '/tickets', label: 'Tickets', icon: Ticket },
     { path: '/rota', label: 'Rota', icon: CalendarDays },
+    { path: '/resources', label: 'Resources', icon: BookOpen },
   ];
+
+
 
   return (
     <motion.div
