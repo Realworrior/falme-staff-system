@@ -3170,25 +3170,14 @@ export default function Resources() {
           borderBottom: "1px solid rgba(255,255,255,0.07)",
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center gap-2 md:gap-6">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center justify-center gap-2 md:gap-6">
 
-          {/* Logo */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
-              style={{ background: "#22c55e", color: "#000" }}
-            >
-              B
-            </div>
-            <span className="text-white/70 text-sm tracking-wide hidden sm:inline">
-              betfalme<span className="text-white/30">.ke</span>
-            </span>
-          </div>
+
 
 
           {/* Section switcher */}
           <div
-            className="flex gap-1 rounded-xl p-1 ml-2"
+            className="flex gap-1 rounded-xl p-1"
             style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
@@ -3237,13 +3226,7 @@ export default function Resources() {
             ))}
           </div>
 
-          {/* Right meta - Hidden on small mobile */}
-          <div className="ml-auto hidden sm:flex items-center gap-3 text-xs text-white/25 shrink-0">
-            <span>v2.0 · April 2026</span>
-            <span className="px-2 py-0.5 rounded-full border border-white/10 text-white/30">
-              Internal Use Only
-            </span>
-          </div>
+
         </div>
       </div>
 
