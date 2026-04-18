@@ -2997,7 +2997,8 @@ function AgentManualView() {
       </div>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-6 pt-10 pb-20">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 md:pt-10 pb-20">
+
         {/* Section header */}
         <div
           className="flex items-center gap-4 mb-8 rounded-2xl px-6 py-5 border"
@@ -3106,7 +3107,8 @@ function MarketGuideView() {
       </div>
 
       {/* Sport hero strip */}
-      <div className="max-w-7xl mx-auto px-6 pt-6 pb-2 flex items-center gap-3">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
+
         <div className="text-3xl">{sport.icon}</div>
         <div>
           <div
@@ -3122,7 +3124,8 @@ function MarketGuideView() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-6 pt-6 pb-20">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20">
+
         {sport.categories.map((cat) => (
           <CategorySection
             key={cat.id}
@@ -3167,7 +3170,8 @@ export default function Resources() {
           borderBottom: "1px solid rgba(255,255,255,0.07)",
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 h-[57px] flex items-center gap-6">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center gap-2 md:gap-6">
+
           {/* Logo */}
           <div className="flex items-center gap-2.5 shrink-0">
             <div
@@ -3176,10 +3180,11 @@ export default function Resources() {
             >
               B
             </div>
-            <span className="text-white/70 text-sm tracking-wide">
+            <span className="text-white/70 text-sm tracking-wide hidden sm:inline">
               betfalme<span className="text-white/30">.ke</span>
             </span>
           </div>
+
 
           {/* Section switcher */}
           <div
@@ -3232,8 +3237,8 @@ export default function Resources() {
             ))}
           </div>
 
-          {/* Right meta */}
-          <div className="ml-auto flex items-center gap-3 text-xs text-white/25 shrink-0">
+          {/* Right meta - Hidden on small mobile */}
+          <div className="ml-auto hidden sm:flex items-center gap-3 text-xs text-white/25 shrink-0">
             <span>v2.0 · April 2026</span>
             <span className="px-2 py-0.5 rounded-full border border-white/10 text-white/30">
               Internal Use Only
@@ -3241,6 +3246,7 @@ export default function Resources() {
           </div>
         </div>
       </div>
+
 
       {/* ── Views ── */}
       {section === "guide" && <MarketGuideView />}

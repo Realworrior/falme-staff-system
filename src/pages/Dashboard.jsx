@@ -120,7 +120,8 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto">
+    <div className="p-4 md:p-8 md:px-12 space-y-6 md:space-y-10 w-full mx-auto">
+
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -142,7 +143,8 @@ const Dashboard = () => {
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+
       >
         {metrics.map((stat) => (
           <motion.div

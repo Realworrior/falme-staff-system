@@ -9,8 +9,6 @@ import SlotTracker from './pages/SlotTracker';
 import Rota from './pages/Rota/App';
 import Resources from './pages/Resources';
 
-
-
 // Maintain the MUI theme for underlying MUI components (like Dialogs) 
 // but ensure it aligns with the new design's core palette.
 export const theme = createTheme({
@@ -37,7 +35,7 @@ export const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          backgroundImage: 'none', // Removed grid, now handled by CSS classes
+          backgroundImage: 'none',
           scrollbarWidth: 'thin',
         },
       },
@@ -77,7 +75,6 @@ function App() {
           <Route path="/slots" element={<SlotTracker />} />
           <Route path="/rota" element={<Rota />} />
           <Route path="/resources" element={<Resources />} />
-
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
