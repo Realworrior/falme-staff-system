@@ -31,7 +31,7 @@ export const STAFF_CONFIG: StaffMember[] = [
   { name: 'Joyce', type: 'NT_ROTATION', cycleOffset: 2 },
   { name: 'Chris', type: 'NT_ROTATION', cycleOffset: 3 },
   { name: 'Terry', type: 'NT_ROTATION', cycleOffset: 4 },
-  { name: 'pauline', type: 'NT_ROTATION', cycleOffset: 5 },
+  { name: 'Pauline', type: 'NT_ROTATION', cycleOffset: 5 },
   { name: 'Sylvia', type: 'NT_ROTATION', cycleOffset: 6 },
 
   // 2 AM rotation workers (5-day streak: AM·AM·AM·AM·AM, then 2 days off)
@@ -46,7 +46,7 @@ export const STAFF_COLORS: Record<string, string> = {
   'Joyce': '#10B981',     // Green
   'Chris': '#F59E0B',     // Amber
   'Terry': '#3B82F6',     // Blue
-  'pauline': '#EF4444',   // Red
+  'Pauline': '#EF4444',   // Red
   'Sylvia': '#14B8A6',    // Teal
   'Linda': '#8B5A00',     // Brown
   'Nickson': '#6366F1',   // Indigo
