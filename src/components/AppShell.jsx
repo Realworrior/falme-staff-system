@@ -10,18 +10,16 @@ const AppShell = ({ children }) => {
     <div className="relative h-screen w-full bg-background text-foreground overflow-hidden flex flex-col">
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden relative">
-        <AnimatePresence>
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="min-h-full w-full flex flex-col pb-24"
+            className="w-full pb-32"
           >
             {children}
           </motion.div>
-        </AnimatePresence>
       </div>
 
       {/* Global Bottom Navigation */}

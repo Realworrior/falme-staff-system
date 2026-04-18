@@ -153,7 +153,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-3 md:p-6 print:p-0">
+    <div className="w-full bg-background p-3 md:p-6 print:p-0">
       <div className="max-w-7xl mx-auto">
 
         {/* Compact Header & Navigation */}
