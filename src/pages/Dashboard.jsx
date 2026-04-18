@@ -143,14 +143,14 @@ const Dashboard = () => {
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6"
 
       >
         {metrics.map((stat) => (
           <motion.div
             key={stat.label}
             variants={item}
-            className="bg-[#0f0f17] rounded-3xl p-6 border border-white/5 hover:border-white/10 transition-all duration-500 group shadow-xl"
+            className="bg-[#0f0f17] rounded-3xl p-4 md:p-6 border border-white/5 hover:border-white/10 transition-all duration-500 group shadow-xl"
           >
             <div className="flex items-start justify-between mb-6">
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center ${stat.shadow} shadow-lg group-hover:scale-110 transition-transform duration-500`}>

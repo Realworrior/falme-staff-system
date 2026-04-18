@@ -233,10 +233,10 @@ export default function App() {
         </AnimatePresence>
 
         {/* Personnel Filter Row */}
-        <div className="mb-6 flex flex-wrap gap-2 print:hidden backdrop-blur-md bg-white/[0.02] p-3 rounded-2xl border border-white/[0.03]">
+        <div className="mb-6 flex overflow-x-auto no-scrollbar gap-2 print:hidden backdrop-blur-md bg-white/[0.02] p-3 rounded-2xl border border-white/[0.03]">
           <button
             onClick={() => setSelectedStaff(null)}
-            className={`px-4 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all ${
+            className={`px-4 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shrink-0 ${
               !selectedStaff ? 'accent-gradient text-white shadow-lg' : 'bg-white/5 text-gray-500 hover:text-white'
             }`}
           >
@@ -246,7 +246,7 @@ export default function App() {
             <button
               key={staff.name}
               onClick={() => setSelectedStaff(staff.name)}
-              className={`px-3 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all ${
+              className={`px-3 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shrink-0 ${
                 selectedStaff === staff.name ? 'text-white border' : 'text-gray-500 bg-white/2 hover:text-gray-300'
               }`}
               style={{
