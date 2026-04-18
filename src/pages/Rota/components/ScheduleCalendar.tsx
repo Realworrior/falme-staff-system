@@ -95,9 +95,12 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
               </div>
 
               {/* Shift groups */}
-              <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-2">
                 {displayShifts.map(shift => (
-                  <div key={shift.id}>
+                  <div 
+                    key={shift.id}
+                    className={shift.id === 'NT' ? "md:col-span-2" : "col-span-1"}
+                  >
                     {/* Shift label */}
                     <div className="flex items-center gap-1 mb-1">
                       <div
