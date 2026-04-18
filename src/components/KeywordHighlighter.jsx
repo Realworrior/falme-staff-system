@@ -21,7 +21,7 @@ const HIGHLIGHTS = [
 
   // Supplementary (safely wrapped with ?:)
   { keyword: /\b(?:Betfront)\b/gi, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20 shadow-sm shadow-blue-500/5' },
-  { keyword: /\b(?:Quickie)\b/gi, color: 'text-red-400 bg-red-500/10 border-red-500/20' },
+  { keyword: /\b(?:Betmfalme)\b/gi, color: 'text-red-400 bg-red-500/10 border-red-500/20' },
   { keyword: /\b(?:Urgent|Critical)\b/gi, color: 'text-rose-400 bg-rose-500/10 border-rose-500/20 uppercase tracking-widest text-[8px]' },
   { keyword: /\b(?:Pending)\b/gi, color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
   { keyword: /\b(?:Slot [12])\b/gi, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },

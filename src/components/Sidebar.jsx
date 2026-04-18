@@ -41,7 +41,7 @@ const Sidebar = ({ className }) => {
             <Zap className="text-white w-6 h-6 fill-current" />
           </div>
           <div>
-            <h1 className="font-heading font-black text-white text-xl tracking-tighter leading-none group-hover:tracking-normal transition-all">QUICKIE</h1>
+            <h1 className="font-heading font-black text-white text-xl tracking-tighter leading-none group-hover:tracking-normal transition-all">BETMFALME</h1>
             <p className="text-[9px] uppercase tracking-[0.3em] text-gray-500 font-black mt-1">v4.0.0 Enterprise</p>
           </div>
         </div>
