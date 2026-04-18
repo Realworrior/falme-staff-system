@@ -153,8 +153,8 @@ export default function App() {
   }
 
   return (
-    <div className="w-full bg-background p-3 md:p-6 print:p-0">
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full bg-background px-1 md:px-3 py-6 print:p-0">
+      <div className="max-w-[1600px] mx-auto">
 
         {/* Compact Header & Navigation */}
         <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
