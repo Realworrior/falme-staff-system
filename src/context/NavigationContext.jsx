@@ -3,9 +3,14 @@ import React, { createContext, useContext, useState } from 'react';
 const NavigationContext = createContext();
 
 export const NavigationProvider = ({ children }) => {
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
-        localStorage.getItem('betmfalme_sidebar_collapsed') === 'true'
-    );
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        try {
+            return localStorage.getItem('betmfalme_sidebar_collapsed') === 'true';
+        } catch (e) {
+            console.warn("localStorage is not available", e);
+            return false;
+        }
+    });
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
@@ -14,7 +19,11 @@ export const NavigationProvider = ({ children }) => {
         } else {
             const newState = !isSidebarCollapsed;
             setIsSidebarCollapsed(newState);
-            localStorage.setItem('betmfalme_sidebar_collapsed', newState);
+            try {
+                localStorage.setItem('betmfalme_sidebar_collapsed', newState.toString());
+            } catch (e) {
+                console.error("Failed to save sidebar state", e);
+            }
         }
     };
 

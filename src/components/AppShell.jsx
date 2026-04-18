@@ -12,7 +12,7 @@ const AppShell = ({ children }) => {
       <main className="flex-1 flex flex-col min-w-0 relative overflow-x-hidden">
         <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col pb-20">
 
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, x: 5 }}
