@@ -7,31 +7,25 @@ const AppShell = ({ children }) => {
   const location = useLocation();
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 relative overflow-x-hidden">
-        <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col pb-20">
+    <div className="relative h-screen w-full bg-background text-foreground overflow-hidden flex flex-col">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden relative">
+        <AnimatePresence>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="min-h-full w-full flex flex-col pb-24"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-          <AnimatePresence>
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, x: 5 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -5 }}
-              transition={{ 
-                duration: 0.3, 
-                ease: "easeInOut" 
-              }}
-              className="flex-1 w-full flex flex-col"
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Global Footer Navigation (Universal across all devices & routes) */}
-        <BottomNav className="flex" />
-      </main>
+      {/* Global Bottom Navigation */}
+      <BottomNav className="z-50" />
     </div>
   );
 };
