@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format, getDay } from 'date-fns';
 import { motion } from 'framer-motion';
+import { Clock } from 'lucide-react';
 import { DailySchedule, STAFF_COLORS } from '../utils/scheduleGenerator';
 
 interface ScheduleCalendarProps {
@@ -10,10 +11,25 @@ interface ScheduleCalendarProps {
   overrides?: Record<string, Record<string, string>>;
 }
 
-const SHIFT_COLORS: Record<string, string> = {
-  AM: '#FF6B35',
-  PM: '#4ECDC4',
-  NT: '#6366F1',
+const SHIFT_CONFIG: Record<string, { label: string, time: string, color: string, bg: string }> = {
+  AM: { 
+    label: 'AM', 
+    time: '06:00 - 14:00', 
+    color: '#2DD4BF', 
+    bg: 'rgba(45, 212, 191, 0.15)' 
+  },
+  PM: { 
+    label: 'PM', 
+    time: '14:00 - 22:00', 
+    color: '#60A5FA', 
+    bg: 'rgba(96, 165, 250, 0.15)' 
+  },
+  NT: { 
+    label: 'NT', 
+    time: '22:00 - 06:00', 
+    color: '#FBBF24', 
+    bg: 'rgba(251, 191, 36, 0.15)' 
+  },
 };
 
 export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, overrides = {} }: ScheduleCalendarProps) {
@@ -116,51 +132,46 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
               </div>
 
               {/* Shift groups */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:gap-x-2 gap-y-1">
-                {displayShifts.map(shift => (
-                  <div 
-                    key={shift.id}
-                    className={`
-                      ${shift.id === 'NT' ? "md:col-span-2" : "col-span-1"}
-                      p-1.5 rounded-xl transition-colors
-                    `}
-                    style={{ 
-                      backgroundColor: 
-                        shift.id === 'AM' ? 'rgba(16, 185, 129, 0.06)' : 
-                        shift.id === 'PM' ? 'rgba(6, 182, 212, 0.06)' : 
-                        'rgba(245, 158, 11, 0.08)'
-                    }}
-                  >
-                    {/* Shift label */}
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <div
-                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: SHIFT_COLORS[shift.id] }}
-                      />
-                      <span
-                        className="text-[6px] md:text-[8px] font-black uppercase tracking-widest opacity-80"
-                        style={{ color: SHIFT_COLORS[shift.id] }}
-                      >
-                        {shift.id}
-                      </span>
-                    </div>
-                    {/* Staff name pills */}
-                    <div className="flex flex-col gap-[3px] w-full min-w-0">
-                      {shift.staff.map(name => (
-                        <div
-                          key={name}
-                          className="w-full rounded-[4px] md:rounded-[6px] px-1 md:px-2 py-[2px] md:py-1 text-white leading-tight shadow-sm"
-                          style={{ backgroundColor: STAFF_COLORS[name] ?? '#555' }}
-                          title={`${name} — ${shift.id}`}
-                        >
-                          <span className="text-[6px] md:text-[9px] font-bold block truncate w-full">
-                            {getDisplayName(name)}
+              <div className="flex flex-col gap-0.5 mt-1 overflow-hidden rounded-xl border border-white/5">
+                {displayShifts.map((shift, sIdx) => {
+                  const config = SHIFT_CONFIG[shift.id];
+                  return (
+                    <div 
+                      key={shift.id}
+                      className="p-1.5 transition-all relative group"
+                      style={{ backgroundColor: config.bg }}
+                    >
+                      {/* Shift label & Time */}
+                      <div className="flex items-center justify-between mb-1.5 px-0.5">
+                        <div className="flex items-center gap-1">
+                          <Clock size={8} style={{ color: config.color }} className="opacity-70" />
+                          <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest" style={{ color: config.color }}>
+                            {shift.id}
                           </span>
                         </div>
-                      ))}
+                        <span className="text-[5px] md:text-[7px] text-white/30 font-bold whitespace-nowrap">
+                          {!mobileMode && config.time}
+                        </span>
+                      </div>
+
+                      {/* Staff name pills - horizontal wrapping */}
+                      <div className="flex flex-wrap gap-1 w-full">
+                        {shift.staff.map(name => (
+                          <div
+                            key={name}
+                            className="rounded-full px-1.5 md:px-2.5 py-[1px] md:py-0.5 text-white leading-tight shadow-sm border border-white/10"
+                            style={{ backgroundColor: STAFF_COLORS[name] ?? '#555' }}
+                            title={`${name} — ${shift.id}`}
+                          >
+                            <span className="text-[6px] md:text-[8px] font-black tracking-tight whitespace-nowrap">
+                              {getDisplayName(name)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           );
