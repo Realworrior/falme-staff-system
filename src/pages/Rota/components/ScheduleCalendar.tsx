@@ -16,19 +16,19 @@ const SHIFT_CONFIG: Record<string, { label: string, time: string, color: string,
     label: 'AM', 
     time: '06:00 - 14:00', 
     color: '#2DD4BF', 
-    bg: 'rgba(45, 212, 191, 0.15)' 
+    bg: 'rgba(45, 212, 191, 0.06)' 
   },
   PM: { 
     label: 'PM', 
     time: '14:00 - 22:00', 
     color: '#60A5FA', 
-    bg: 'rgba(96, 165, 250, 0.15)' 
+    bg: 'rgba(96, 165, 250, 0.06)' 
   },
   NT: { 
     label: 'NT', 
     time: '22:00 - 06:00', 
     color: '#FBBF24', 
-    bg: 'rgba(251, 191, 36, 0.15)' 
+    bg: 'rgba(251, 191, 36, 0.08)' 
   },
 };
 
@@ -167,20 +167,26 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
                           <div
                             key={name}
                             className={`
-                              rounded-full px-2 py-1 md:py-1 
+                              rounded-full px-1 md:px-2 py-0.5 md:py-1 
                               flex items-center justify-center shadow-sm
                               ${dimmed ? 'opacity-20' : 'opacity-100'}
                             `}
                             style={{ 
-                              backgroundColor: `${STAFF_COLORS[name]}e6`, // subtle transparency
+                              backgroundColor: `${STAFF_COLORS[name]}e6`, // solid staff colors
                               width: shift.staff.length === 1 ? '100%' : 'auto',
-                              minWidth: '20px'
+                              minWidth: '15px'
                             }}
                             title={`${name} — ${shift.id}`}
                           >
                             <span 
-                              className="font-black tracking-tighter text-center text-white truncate leading-none"
-                              style={{ fontSize: mobileMode ? '8px' : '10px' }}
+                              className={`
+                                font-black tracking-tighter text-center text-white leading-none
+                                ${mobileMode ? '' : 'truncate'}
+                              `}
+                              style={{ 
+                                fontSize: mobileMode ? '8px' : '10px',
+                                letterSpacing: mobileMode ? '-0.05em' : 'normal'
+                              }}
                             >
                               {getDisplayName(name)}
                             </span>
