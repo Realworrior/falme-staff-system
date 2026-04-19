@@ -66,7 +66,7 @@ function getAMRotationShift(dayInCycle: number): ShiftType {
 
 // Generate shift for a specific staff member on a specific date
 export function getStaffShift(staff: StaffMember, date: Date, baseDate: Date): Shift {
-  const daysSinceBase = Math.floor((date.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysSinceBase = Math.round((date.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
   const dayInCycle = (daysSinceBase + staff.cycleOffset) % 7;
 
   const type = staff.type === 'NT_ROTATION'
@@ -98,8 +98,11 @@ export function generateMonthSchedule(year: number, month: number, overrides: Re
     };
 
     STAFF_CONFIG.forEach(staff => {
-      // Use override if exists, otherwise generate algorithmically
-      const shiftType = dayOverrides[staff.name] || getStaffShift(staff, date, baseDate).type;
+      // Use override if exists (case-insensitive), otherwise generate algorithmically
+      const staffOverrideKey = Object.keys(dayOverrides).find(
+        k => k.toLowerCase() === staff.name.toLowerCase()
+      );
+      const shiftType = (staffOverrideKey ? dayOverrides[staffOverrideKey] : undefined) || getStaffShift(staff, date, baseDate).type;
       
       if (shiftType !== 'OFF' && (shiftType === 'AM' || shiftType === 'PM' || shiftType === 'NT')) {
         dailyShifts.shifts[shiftType].push(staff.name);
@@ -134,7 +137,11 @@ export function calculateMonthlyAnalytics(year: number, month: number, overrides
     
     for (let date = monthStart; date <= monthEnd; date = addDays(date, 1)) {
       const dateKey = format(date, 'yyyy-MM-dd');
-      const type = (overrides[dateKey] && overrides[dateKey][staff.name]) 
+      const dayOverrides = overrides[dateKey] || {};
+      const staffOverrideKey = Object.keys(dayOverrides).find(
+        k => k.toLowerCase() === staff.name.toLowerCase()
+      );
+      const type = (staffOverrideKey ? dayOverrides[staffOverrideKey] : undefined)
         || getStaffShift(staff, date, baseDate).type;
         
       if (type === 'AM') { am++; total++; }
