@@ -117,9 +117,16 @@ export function generateMonthSchedule(year: number, month: number, overrides: Re
 
 // Get current shift type based on hour of day
 export function getCurrentShiftType(): ShiftType {
-  const hour = new Date().getHours();
-  if (hour >= 6 && hour < 14) return 'AM';
-  if (hour >= 14 && hour < 22) return 'PM';
+  const now = new Date();
+  const hour = now.getHours();
+  const minutes = now.getMinutes();
+  const timeValue = hour + minutes / 60;
+
+  // AM: 07:30 - 15:30 (15.5)
+  if (timeValue >= 7.5 && timeValue < 15.5) return 'AM';
+  // PM: 15:30 - 22:30 (22.5)
+  if (timeValue >= 15.5 && timeValue < 22.5) return 'PM';
+  // NT: 22:30 - 07:30
   return 'NT';
 }
 

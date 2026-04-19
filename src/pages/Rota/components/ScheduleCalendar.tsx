@@ -14,19 +14,19 @@ interface ScheduleCalendarProps {
 const SHIFT_CONFIG: Record<string, { label: string, time: string, color: string, bg: string }> = {
   AM: { 
     label: 'AM', 
-    time: '06:00 - 14:00', 
+    time: '07:30 - 15:30', 
     color: '#2DD4BF', 
     bg: 'rgba(45, 212, 191, 0.06)' 
   },
   PM: { 
     label: 'PM', 
-    time: '14:00 - 22:00', 
+    time: '15:30 - 22:30', 
     color: '#60A5FA', 
     bg: 'rgba(96, 165, 250, 0.06)' 
   },
   NT: { 
     label: 'NT', 
-    time: '22:00 - 06:00', 
+    time: '22:30 - 07:30', 
     color: '#FBBF24', 
     bg: 'rgba(251, 191, 36, 0.08)' 
   },

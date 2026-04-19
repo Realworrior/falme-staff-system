@@ -17,21 +17,21 @@ interface ShiftMatesProps {
 const SHIFT_META: Record<string, { label: string; time: string; color: string; bg: string; textColor: string }> = {
   AM: { 
     label: 'AM', 
-    time: '06:00 - 14:00', 
+    time: '07:30 - 15:30', 
     color: '#2DD4BF', 
     bg: 'rgba(45, 212, 191, 0.2)', 
     textColor: 'text-[#2DD4BF]' 
   },
   PM: { 
     label: 'PM', 
-    time: '14:00 - 22:00', 
+    time: '15:30 - 22:30', 
     color: '#60A5FA', 
     bg: 'rgba(96, 165, 250, 0.2)', 
     textColor: 'text-[#60A5FA]' 
   },
   NT: { 
     label: 'NT', 
-    time: '22:00 - 06:00', 
+    time: '22:30 - 07:30', 
     color: '#FBBF24', 
     bg: 'rgba(251, 191, 36, 0.25)', 
     textColor: 'text-[#FBBF24]' 
