@@ -167,7 +167,7 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
                           <div
                             key={name}
                             className={`
-                              rounded-full px-1.5 py-[0.5px] md:py-0.5 
+                              rounded-full px-2 py-1 md:py-1 
                               flex items-center justify-center shadow-sm
                               ${dimmed ? 'opacity-20' : 'opacity-100'}
                             `}
@@ -180,7 +180,7 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
                           >
                             <span 
                               className="font-black tracking-tighter text-center text-white truncate leading-none"
-                              style={{ fontSize: mobileMode ? '5px' : '7.5px' }}
+                              style={{ fontSize: mobileMode ? '8px' : '10px' }}
                             >
                               {getDisplayName(name)}
                             </span>
