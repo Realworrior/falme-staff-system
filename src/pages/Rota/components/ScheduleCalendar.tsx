@@ -131,39 +131,46 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
                 )}
               </div>
 
-              {/* Shift groups */}
-              <div className="flex flex-col gap-0.5 mt-1 overflow-hidden rounded-xl border border-white/5">
-                {displayShifts.map((shift, sIdx) => {
+              {/* Shift groups - Adaptive Grid Layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 mt-1.5 overflow-hidden rounded-xl">
+                {displayShifts.map((shift) => {
                   const config = SHIFT_CONFIG[shift.id];
+                  // If on tablet (sm:grid-cols-2), NT spans both columns for balance
+                  const isNT = shift.id === 'NT';
+                  
                   return (
                     <div 
                       key={shift.id}
-                      className="p-1.5 transition-all relative group"
+                      className={`
+                        p-1 md:p-1.5 transition-all relative flex flex-col
+                        ${isNT ? "sm:col-span-2 lg:col-span-1" : "col-span-1"}
+                      `}
                       style={{ backgroundColor: config.bg }}
                     >
                       {/* Shift label & Time */}
-                      <div className="flex items-center justify-between mb-1.5 px-0.5">
+                      <div className="flex items-center justify-between mb-1 px-0.5">
                         <div className="flex items-center gap-1">
-                          <Clock size={8} style={{ color: config.color }} className="opacity-70" />
-                          <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest" style={{ color: config.color }}>
+                          <Clock size={7} style={{ color: config.color }} className="opacity-60" />
+                          <span className="text-[6px] md:text-[7px] font-black uppercase tracking-wider" style={{ color: config.color }}>
                             {shift.id}
                           </span>
                         </div>
-                        <span className="text-[5px] md:text-[7px] text-white/30 font-bold whitespace-nowrap">
-                          {!mobileMode && config.time}
-                        </span>
+                        {!mobileMode && (
+                          <span className="hidden lg:block text-[5px] text-white/20 font-bold whitespace-nowrap uppercase">
+                            {config.time.split(' - ')[0]}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Staff name pills - horizontal wrapping */}
-                      <div className="flex flex-wrap gap-1 w-full">
+                      {/* Staff name pills - Reduced Padding */}
+                      <div className="flex flex-wrap gap-0.5 w-full">
                         {shift.staff.map(name => (
                           <div
                             key={name}
-                            className="rounded-full px-1.5 md:px-2.5 py-[1px] md:py-0.5 text-white leading-tight shadow-sm border border-white/10"
+                            className="rounded-full px-1 py-[0.5px] text-white leading-none shadow-sm border border-white/5"
                             style={{ backgroundColor: STAFF_COLORS[name] ?? '#555' }}
-                            title={`${name} — ${shift.id}`}
                           >
-                            <span className="text-[6px] md:text-[8px] font-black tracking-tight whitespace-nowrap">
+                            <span className="text-[5.5px] md:text-[7.5px] font-black tracking-tighter whitespace-nowrap">
                               {getDisplayName(name)}
                             </span>
                           </div>
