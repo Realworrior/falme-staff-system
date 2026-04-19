@@ -120,28 +120,36 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
                 {displayShifts.map(shift => (
                   <div 
                     key={shift.id}
-                    className={shift.id === 'NT' ? "md:col-span-2" : "col-span-1"}
+                    className={`
+                      ${shift.id === 'NT' ? "md:col-span-2" : "col-span-1"}
+                      p-1.5 rounded-xl transition-colors
+                    `}
+                    style={{ 
+                      backgroundColor: 
+                        shift.id === 'AM' ? 'rgba(16, 185, 129, 0.06)' : 
+                        shift.id === 'PM' ? 'rgba(6, 182, 212, 0.06)' : 
+                        'rgba(245, 158, 11, 0.08)'
+                    }}
                   >
                     {/* Shift label */}
-                    <div className="flex items-center gap-1 mb-0.5">
+                    <div className="flex items-center gap-1.5 mb-1.5">
                       <div
-                        className="w-1 h-1 rounded-full flex-shrink-0"
+                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: SHIFT_COLORS[shift.id] }}
                       />
                       <span
-                        className="text-[5px] md:text-[7px] font-black uppercase tracking-widest"
+                        className="text-[6px] md:text-[8px] font-black uppercase tracking-widest opacity-80"
                         style={{ color: SHIFT_COLORS[shift.id] }}
                       >
                         {shift.id}
                       </span>
                     </div>
-
                     {/* Staff name pills */}
-                    <div className="flex flex-col gap-[2px] w-full min-w-0">
+                    <div className="flex flex-col gap-[3px] w-full min-w-0">
                       {shift.staff.map(name => (
                         <div
                           key={name}
-                          className="w-full rounded-[3px] md:rounded-[6px] px-0.5 md:px-1.5 py-[1px] md:py-1 text-white leading-tight shadow-sm"
+                          className="w-full rounded-[4px] md:rounded-[6px] px-1 md:px-2 py-[2px] md:py-1 text-white leading-tight shadow-sm"
                           style={{ backgroundColor: STAFF_COLORS[name] ?? '#555' }}
                           title={`${name} — ${shift.id}`}
                         >
