@@ -138,14 +138,47 @@ export default function App() {
 
       if (staffShiftType !== 'OFF' && staffShiftType !== 'LEAVE') {
         const dateStr = format(daySchedule.date, "yyyyMMdd");
-        const endDate = new Date(daySchedule.date);
-        endDate.setDate(endDate.getDate() + 1);
+        
+        let startTime = "";
+        let endTime = "";
+        let shiftTitle = "";
+        let endDayDate = new Date(daySchedule.date);
+
+        if (staffShiftType === 'AM') {
+          startTime = `${dateStr}T073000`;
+          endTime = `${dateStr}T153000`;
+          shiftTitle = '🌅 AM Shift (07:30 - 15:30)';
+        } else if (staffShiftType === 'PM') {
+          startTime = `${dateStr}T153000`;
+          endTime = `${dateStr}T223000`;
+          shiftTitle = '🌇 PM Shift (15:30 - 22:30)';
+        } else if (staffShiftType === 'NT') {
+          startTime = `${dateStr}T223000`;
+          endDayDate.setDate(endDayDate.getDate() + 1);
+          endTime = `${format(endDayDate, "yyyyMMdd")}T073000`;
+          shiftTitle = '🌙 NT Shift (22:30 - 07:30)';
+        }
+
+        // Get coworkers on the same shift
+        // @ts-ignore
+        const shiftMatesList = daySchedule.shifts[staffShiftType];
+        const shiftMates = (shiftMatesList || []).filter(name => name !== selectedStaff);
+        const shiftMatesText = shiftMates.length > 0 ? shiftMates.join(', ') : 'Working solo';
 
         icsContent += `BEGIN:VEVENT\n`;
-        icsContent += `DTSTART;VALUE=DATE:${dateStr}\n`;
-        icsContent += `DTEND;VALUE=DATE:${format(endDate, "yyyyMMdd")}\n`;
-        icsContent += `SUMMARY:Falme Shift (${staffShiftType})\n`;
-        icsContent += `DESCRIPTION:Shift for ${selectedStaff} - Type: ${staffShiftType}\n`;
+        icsContent += `DTSTART:${startTime}\n`;
+        icsContent += `DTEND:${endTime}\n`;
+        icsContent += `SUMMARY:Falme: ${shiftTitle}\n`;
+        icsContent += `LOCATION:Falme Workplace\n`;
+        icsContent += `DESCRIPTION:⭐ Premium Rota Sync\\n\\n🔹 Shift Type: ${staffShiftType}\\n👥 Co-workers on duty: ${shiftMatesText}\\n\\nHave a great shift!\n`;
+        
+        // 30 minute reminder
+        icsContent += `BEGIN:VALARM\n`;
+        icsContent += `TRIGGER:-PT30M\n`;
+        icsContent += `ACTION:DISPLAY\n`;
+        icsContent += `DESCRIPTION:Falme Shift starts in 30 minutes! (${shiftMatesText} also joining)\\n`;
+        icsContent += `END:VALARM\n`;
+        
         icsContent += `END:VEVENT\n`;
       }
     });
