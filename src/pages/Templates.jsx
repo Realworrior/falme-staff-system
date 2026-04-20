@@ -237,6 +237,7 @@ const Templates = () => {
   }, [data]);
 
   const filteredData = useMemo(() => {
+    if (!data) return [];
     let result = data;
     
     // Global AI Agent skips specific category filtering to scan the whole DB
@@ -245,14 +246,25 @@ const Templates = () => {
     }
     
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.map(cat => ({
-        ...cat,
-        templates: (cat.templates || []).filter(tpl => 
-          tpl.title.toLowerCase().includes(q) || 
-          tpl.responses?.some(r => r.text.toLowerCase().includes(q))
-        )
-      })).filter(cat => cat.templates.length > 0);
+      const q = searchQuery.toLowerCase().trim();
+      const searchWords = q.split(/\s+/).filter(w => w.length > 2);
+
+      result = result.map(cat => {
+        const catNameMatches = cat.category.toLowerCase().includes(q);
+        const filteredTemplates = (cat.templates || []).filter(tpl => {
+          const title = (tpl.title || "").toLowerCase();
+          const responsesText = (tpl.responses || []).map(r => (r.text || "").toLowerCase()).join(" ");
+          
+          // Match if query is in title, category (if broad), or any response
+          const titleMatch = title.includes(q);
+          const responseMatch = responsesText.includes(q);
+          const wordMatch = searchWords.length > 0 && searchWords.some(w => title.includes(w) || responsesText.includes(w));
+          
+          return titleMatch || responseMatch || wordMatch || catNameMatches;
+        });
+
+        return { ...cat, templates: filteredTemplates };
+      }).filter(cat => cat.templates && cat.templates.length > 0);
     }
     return result;
   }, [data, selectedCategory, searchQuery]);
