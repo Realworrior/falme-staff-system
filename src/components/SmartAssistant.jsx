@@ -64,24 +64,86 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
     setTimeout(() => {
       const q = query.toLowerCase();
       
-      // Simple logic: Look for matches in the knowledge base
+      // Theme Detection
+      const isRG = q.includes('addiction') || q.includes('block') || q.includes('draining') || q.includes('limit') || q.includes('responsible');
+      const isFin = q.includes('money') || q.includes('withdraw') || q.includes('deposit') || q.includes('refund');
+      
+      // Search KB
       const matches = knowledgeBase.filter(k => 
         k.title.toLowerCase().includes(q) || 
         k.category.toLowerCase().includes(q) || 
         k.content.toLowerCase().includes(q)
       );
 
-      let response;
-      if (matches.length > 0) {
+      let variations = [];
+      
+      if (isRG) {
+        variations = [
+          {
+            type: "Empathetic & Caring",
+            text: "I am truly sorry to hear that you're feeling this way. Your well-being is our priority. I will immediately help you with the self-exclusion process so you can take the necessary break for your mental health."
+          },
+          {
+            type: "Action-Oriented (Immediate)",
+            text: "Understood. I have initiated the permanent self-exclusion protocol for account 0742115006. Please note that once blocked for responsible gaming reasons, this action cannot be reversed. Shall I proceed?"
+          },
+          {
+            type: "Professional / Compliance",
+            text: "Thank you for reaching out. In accordance with our Responsible Gaming policy, we are processing your request to block account 0742115006 due to gambling concerns. We also recommend contacting support organizations like Responsible Gambling Kenya for further assistance."
+          }
+        ];
+      } else if (matches.length > 0) {
         const top = matches[0];
-        response = `Based on our ${top.category} repository, for "${top.title}", you should use this approach: \n\n${top.source.responses?.[0]?.text}\n\nWould you like me to refine this for a specific tone?`;
+        const base = top.source.responses?.[0]?.text || "No text available.";
+        variations = [
+          { type: "Standard Professional", text: base },
+          { type: "Empathetic Variant", text: "I understand your concern. " + base },
+          { type: "Concise Variant", text: base.slice(0, 150) + "..." }
+        ];
       } else {
-        response = "I couldn't find a direct match in our current templates. However, generally for such queries, we recommend maintaining professional empathy. Should I draft a custom response for you based on our branding guidelines?";
+        variations = [
+          {
+            type: "General Assistance",
+            text: "I couldn't find a specific template for this, but I recommend this professional approach: 'Hello, thank you for contacting us. I'm looking into your request regarding " + query + " right now.'"
+          },
+          {
+            type: "Empathetic Approach",
+            text: "I understand this is important to you. While I check our specialized procedures for " + query + ", please allow me a moment to ensure I provide the most accurate information."
+          },
+          {
+            type: "Fallback Professional",
+            text: "Our team is processing requests similar to yours. Regarding " + query + ", may I ask for your account details so I can provide a tailored solution?"
+          }
+        ];
       }
 
-      setChat(prev => [...prev, { role: 'assistant', content: response }]);
+      const responseContent = (
+        <div className="space-y-4 pt-2">
+          <p className="text-white/50 text-[10px] uppercase font-black tracking-widest bg-white/5 px-3 py-1 rounded-full w-fit">Falme AI Generated Variants</p>
+          {variations.map((v, i) => (
+            <div key={i} className="bg-white/[0.03] border border-white/5 rounded-xl p-3 hover:bg-white/[0.05] transition-all group relative">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">{v.type}</span>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(v.text);
+                    // could trigger a toast here if passed via props
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1 bg-white/5 rounded-md hover:bg-red-500 text-white transition-all shadow-xl"
+                >
+                  <Copy size={10} />
+                </button>
+              </div>
+              <p className="text-[10.5px] leading-relaxed text-gray-300 font-medium whitespace-pre-wrap">{v.text}</p>
+            </div>
+          ))}
+          <p className="text-[9px] text-gray-500 italic mt-2">💡 Select a variant above to copy and use in your response.</p>
+        </div>
+      );
+
+      setChat(prev => [...prev, { role: 'assistant', content: responseContent }]);
       setIsTyping(false);
-    }, 1200);
+    }, 1500);
   };
 
   return (
@@ -145,9 +207,12 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   <div className={`max-w-[80%] p-4 rounded-2xl text-[11px] leading-relaxed font-medium ${
                     msg.role === 'user' 
                       ? 'bg-red-600/10 text-white border border-red-500/20 rounded-tr-none' 
-                      : 'bg-white/5 text-gray-300 border border-white/5 rounded-tl-none font-bold'
+                      : 'bg-white/5 text-gray-300 border border-white/5 rounded-tl-none font-bold overflow-hidden'
                   }`}>
-                    {msg.content.split('\n').map((line, i) => <p key={i} className={i > 0 ? 'mt-2 border-l-2 border-red-500/30 pl-3 italic' : ''}>{line}</p>)}
+                    {typeof msg.content === 'string' 
+                      ? msg.content.split('\n').map((line, i) => <p key={i} className={i > 0 ? 'mt-2 border-l-2 border-red-500/30 pl-3 italic' : ''}>{line}</p>)
+                      : msg.content
+                    }
                   </div>
                 </div>
               ))}
