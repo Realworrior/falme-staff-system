@@ -604,13 +604,19 @@ const Templates = () => {
                             <div 
                               key={tpl.title}
                               onClick={() => handleCopy(tpl.responses?.[0]?.text)}
-                              className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-red-500/20 transition-all group cursor-pointer"
+                              className="p-6 rounded-[24px] bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] hover:border-red-500/40 hover:shadow-2xl hover:shadow-red-500/10 transition-all group cursor-pointer relative overflow-hidden"
                             >
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-black text-white truncate uppercase tracking-tight">{tpl.title}</span>
-                                <Copy size={12} className="text-gray-700 group-hover:text-red-500" />
+                              <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.02] to-transparent pointer-events-none" />
+                              <div className="flex items-center justify-between mb-4 relative z-10">
+                                <div className="flex flex-col">
+                                  <span className="text-[12px] font-black text-white uppercase tracking-tight group-hover:text-red-400 transition-colors">{tpl.title}</span>
+                                  <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-0.5">{cat.category}</span>
+                                </div>
+                                <div className="p-2 rounded-xl bg-white/5 text-gray-500 group-hover:text-white transition-colors">
+                                  <Copy size={14} />
+                                </div>
                               </div>
-                              <p className="text-[11px] text-gray-600 line-clamp-2 leading-relaxed">
+                              <p className="text-[12px] text-gray-300 font-medium line-clamp-3 leading-relaxed relative z-10">
                                 {tpl.responses?.[0]?.text}
                               </p>
                             </div>
