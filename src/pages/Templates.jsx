@@ -540,27 +540,46 @@ const Templates = () => {
             </div>
             
             <div className="flex-1 overflow-hidden min-h-[500px]">
-               {/* Use the existing SmartAssistant but in 'embedded' mode/props if we wanted, 
-                   but for simplicity here, we'll just encourage using the floating assistant or 
-                   inform that the AI Search is active globally */}
-               <div className="p-12 space-y-8 flex flex-col items-center justify-center h-full text-center max-w-2xl mx-auto">
+               <div className="p-12 space-y-12 flex flex-col items-center justify-center h-full text-center max-w-3xl mx-auto">
                  <div className="space-y-4">
-                   <h3 className="text-2xl font-black text-white tracking-tight">How can I assist your workflow today?</h3>
+                   <h3 className="text-3xl font-black text-white tracking-tight leading-tight">How can I assist your workflow today?</h3>
                    <p className="text-gray-500 text-sm leading-relaxed">
-                     I am directly connected to your operational database. Type any keywords, common client questions, or emotional cues into the global search bar below or use the floating assistant in the bottom right.
+                     I am directly connected to your operational database. Type any keywords, common client questions, or emotional cues below to retrieve the human-centric response variants.
                    </p>
                  </div>
                  
-                 <div className="grid grid-cols-2 gap-4 w-full">
+                 {/* Interactive Type Box */}
+                 <div className="w-full relative group">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                       <Search size={22} className="text-gray-700 group-focus-within:text-red-500 transition-colors" />
+                       <div className="w-px h-5 bg-white/5" />
+                    </div>
+                    <input 
+                      type="text"
+                      className="w-full bg-black/40 border border-white/5 rounded-[24px] py-6 pl-20 pr-32 text-lg text-white font-medium focus:outline-none focus:border-red-500/50 focus:ring-4 focus:ring-red-500/5 transition-all placeholder-gray-700 shadow-2xl"
+                      placeholder="Search for resolution steps, payment rules, or account issues..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 py-2.5 px-6 rounded-2xl accent-gradient text-white font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform active:scale-95">
+                      Retrieve <Sparkles size={14} />
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
                     {[
-                      { label: 'Responsible Gaming', icon: ShieldAlert },
-                      { label: 'Technical Issues', icon: ServerCrash },
-                      { label: 'Financial Steps', icon: CreditCard },
-                      { label: 'Account Security', icon: UserCog }
+                      { label: 'Payment Errors', icon: CreditCard, query: 'deposit error' },
+                      { label: 'Addiction Help', icon: ShieldAlert, query: 'draining me' },
+                      { label: 'Account Delete', icon: UserCog, query: 'delete account' },
+                      { label: 'System Crashes', icon: ServerCrash, query: 'bet failed' }
                     ].map(feat => (
-                      <div key={feat.label} className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col items-center gap-3 hover:bg-white/[0.05] transition-all cursor-pointer group">
-                        <feat.icon size={20} className="text-gray-600 group-hover:text-red-500 transition-colors" />
-                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{feat.label}</span>
+                      <div 
+                        key={feat.label} 
+                        onClick={() => setSearchQuery(feat.query)}
+                        className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col items-center gap-4 hover:bg-white/[0.05] hover:border-red-500/30 transition-all cursor-pointer group"
+                      >
+                        <feat.icon size={22} className="text-gray-700 group-hover:text-red-500 transition-colors" />
+                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">{feat.label}</span>
                       </div>
                     ))}
                  </div>

@@ -22,8 +22,8 @@ const BottomNav = ({ className }) => {
     { path: '/templates', label: 'Templates', icon: FileText },
     { path: '/slots', label: 'Aviator', icon: Activity },
     { path: '/tickets', label: 'Tickets', icon: Ticket },
-    { path: '/rota', label: 'Rota', icon: CalendarDays },
-    { path: '/resources', label: 'Resources', icon: BookOpen },
+    { path: '/rota', label: 'Rota', icon: CalendarDays, isNew: true },
+    { path: '/resources', label: 'Resources', icon: BookOpen, isNew: true },
   ];
 
 
@@ -54,11 +54,14 @@ const BottomNav = ({ className }) => {
         >
           {({ isActive }) => (
             <>
-              <div className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/0 group-hover:bg-white/5 transition-colors">
+              <div className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/0 group-hover:bg-white/5 transition-colors relative">
                 <item.icon className={cn(
                   "w-5 h-5 transition-transform",
                   isActive ? "drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : ""
                 )} />
+                {item.isNew && (
+                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-600 rounded-full border border-[#0a0a0f] shadow-sm animate-pulse" />
+                )}
               </div>
               <span className={cn(
                 "text-[8px] font-black uppercase tracking-wider transition-all",
