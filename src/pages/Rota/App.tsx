@@ -144,92 +144,66 @@ export default function App() {
     setIsSendingEmail(true);
 
     try {
-      const nowStamp = format(new Date(), "yyyyMMdd'T'HHmmss'Z'");
-      let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Falme staff system//Rota//EN\r\n";
-
-      schedule.forEach(daySchedule => {
-        let staffShiftType = 'OFF';
-        if (daySchedule.shifts.AM.includes(selectedStaff!)) staffShiftType = 'AM';
-        else if (daySchedule.shifts.PM.includes(selectedStaff!)) staffShiftType = 'PM';
-        else if (daySchedule.shifts.NT.includes(selectedStaff!)) staffShiftType = 'NT';
-
-        if (staffShiftType !== 'OFF' && staffShiftType !== 'LEAVE') {
-          const dateStr = format(daySchedule.date, "yyyyMMdd");
-          
-          let startTime = "";
-          let endTime = "";
-          let shiftTitle = "";
-          let endDayDate = new Date(daySchedule.date);
-
-          if (staffShiftType === 'AM') {
-            startTime = `${dateStr}T073000`;
-            endTime = `${dateStr}T153000`;
-            shiftTitle = '🌅 AM Shift (07:30 - 15:30)';
-          } else if (staffShiftType === 'PM') {
-            startTime = `${dateStr}T153000`;
-            endTime = `${dateStr}T223000`;
-            shiftTitle = '🌇 PM Shift (15:30 - 22:30)';
-          } else if (staffShiftType === 'NT') {
-            startTime = `${dateStr}T223000`;
-            endDayDate.setDate(endDayDate.getDate() + 1);
-            endTime = `${format(endDayDate, "yyyyMMdd")}T073000`;
-            shiftTitle = '🌙 NT Shift (22:30 - 07:30)';
-          }
-
-          // @ts-ignore
-          const shiftMatesList = daySchedule.shifts[staffShiftType];
-          const shiftMates = (shiftMatesList || []).filter(name => name !== selectedStaff);
-          const shiftMatesText = shiftMates.length > 0 ? shiftMates.join(', ') : 'Working solo';
-
-          icsContent += `BEGIN:VEVENT\r\n`;
-          icsContent += `UID:${dateStr}-${staffShiftType}-${selectedStaff!.replace(/\s+/g, '')}@falme.local\r\n`;
-          icsContent += `DTSTAMP:${nowStamp}\r\n`;
-          icsContent += `DTSTART:${startTime}\r\n`;
-          icsContent += `DTEND:${endTime}\r\n`;
-          icsContent += `SUMMARY:Falme: ${shiftTitle}\r\n`;
-          icsContent += `LOCATION:Falme Workplace\r\n`;
-          icsContent += `DESCRIPTION:⭐ Premium Rota Sync\\n\\n🔹 Shift Type: ${staffShiftType}\\n👥 Co-workers on duty: ${shiftMatesText}\\n\\nHave a great shift!\r\n`;
-          
-          icsContent += `BEGIN:VALARM\r\n`;
-          icsContent += `TRIGGER:-PT30M\r\n`;
-          icsContent += `ACTION:DISPLAY\r\n`;
-          icsContent += `DESCRIPTION:Falme Shift starts in 30 minutes! (${shiftMatesText} also joining)\r\n`;
-          icsContent += `END:VALARM\r\n`;
-          
-          icsContent += `END:VEVENT\r\n`;
-        }
-      });
-
-      icsContent += "END:VCALENDAR\r\n";
-
-      // Base64 encode the ics file properly to pass as attachment payload to EmailJS
+      const icsContent = generateICSContent();
+      
       const base64Data = btoa(unescape(encodeURIComponent(icsContent)));
       const fileDataUri = `data:text/calendar;charset=utf-8;base64,${base64Data}`;
-
-      const templateParams = {
-        to_email: userEmail,
-        staff_name: selectedStaff,
-        month: format(currentDate, 'MMM yyyy'),
-        attachment: fileDataUri, // Standard mapped EmailJS Attachment field parsing
-        ics_content: fileDataUri, // Fallback variable mapping
-        message: "Your premium Falme schedule sync file is attached! Download the file and tap on it to add it to your Apple/Google/Outlook Calendar."
-      };
 
       await emailjs.send(
         'service_0o0jqak', 
         'template_ycf6b1s', 
-        templateParams, 
+        {
+          to_email: userEmail,
+          staff_name: selectedStaff,
+          reply_to: "falme-staff@system.local",
+          attachment: fileDataUri, 
+          ics_content: fileDataUri,
+          message: "Your premium Falme schedule sync file is attached! Download the file and tap on it to add it to your Apple/Google/Outlook Calendar."
+        }, 
         'wOtZkUT4QoW_MzUGh'
       );
 
       showToast(`Calendar sent directly to ${userEmail}!`, 'success');
       setIsEmailModalOpen(false);
       setUserEmail('');
-    } catch (err) {
-      console.error(err);
-      showToast('Transmission failed. Ensure your EmailJS template accepts attachments.', 'error');
+    } catch (err: any) {
+      console.error("EmailJS Error:", err);
+      // Surface exact EmailJS error text to the UI to hint if attachment isn't mapped
+      const errorMsg = err?.text || 'Review Dashboard Attachment Variable mapping';
+      showToast(`Email API failed: ${errorMsg}`, 'error');
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  const handleNativeShare = async () => {
+    const icsContent = generateICSContent();
+    const fileName = `Falme_Rota_${selectedStaff!.replace(/\s+/g, '_')}_${format(currentDate, 'MMM_yyyy')}.ics`;
+    const file = new File([icsContent], fileName, { type: 'text/calendar' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: 'Falme Rota Calendar',
+          text: `Here is the shift schedule for ${selectedStaff}.`,
+          files: [file]
+        });
+        showToast('Shared successfully!', 'success');
+        setIsEmailModalOpen(false);
+      } catch (err) {
+        console.error('Share rejected or failed:', err);
+      }
+    } else {
+      // Fallback: Desktop native download (opens straight in Outlook/Apple Calendar)
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast(`Calendar downloaded for ${selectedStaff}`, 'success');
+      setIsEmailModalOpen(false);
     }
   };
 
@@ -551,6 +525,16 @@ export default function App() {
                   >
                     {isSendingEmail ? 'Dispatching...' : 'Sync via Email'}
                   </button>
+                  
+                  <div className="pt-4 border-t border-white/5 w-full">
+                    <button 
+                      type="button"
+                      onClick={handleNativeShare}
+                      className="w-full bg-white/5 hover:bg-white/10 text-gray-300 py-3 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] transition-all border border-white/10 flex items-center justify-center gap-2"
+                    >
+                      <Upload size={14} className="text-gray-400" /> Share directly to App
+                    </button>
+                  </div>
                 </form>
               </motion.div>
             </>
