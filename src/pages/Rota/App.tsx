@@ -165,7 +165,12 @@ export default function App() {
         const shiftMates = (shiftMatesList || []).filter(name => name !== selectedStaff);
         const shiftMatesText = shiftMates.length > 0 ? shiftMates.join(', ') : 'Working solo';
 
+        const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        const safeStaffName = selectedStaff.replace(/\s+/g, '');
+
         icsContent += `BEGIN:VEVENT\n`;
+        icsContent += `UID:${dateStr}-${staffShiftType}-${safeStaffName}@falmesystem.com\n`;
+        icsContent += `DTSTAMP:${dtStamp}\n`;
         icsContent += `DTSTART:${startTime}\n`;
         icsContent += `DTEND:${endTime}\n`;
         icsContent += `SUMMARY:Falme: ${shiftTitle}\n`;
@@ -176,7 +181,7 @@ export default function App() {
         icsContent += `BEGIN:VALARM\n`;
         icsContent += `TRIGGER:-PT30M\n`;
         icsContent += `ACTION:DISPLAY\n`;
-        icsContent += `DESCRIPTION:Falme Shift starts in 30 minutes! (${shiftMatesText} also joining)\\n`;
+        icsContent += `DESCRIPTION:Falme Shift starts in 30 minutes! (${shiftMatesText} also joining)\n`;
         icsContent += `END:VALARM\n`;
         
         icsContent += `END:VEVENT\n`;
