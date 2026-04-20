@@ -67,9 +67,9 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
   return (
     <div className="w-full">
       {/* Day headers */}
-      <div className="grid grid-cols-7 gap-1 mb-3">
+      <div className="grid grid-cols-7 gap-1 mb-1.5 border-b border-white/[0.03]">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-          <div key={d} className="text-center text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-600 py-1">
+          <div key={d} className="text-center text-[8px] md:text-[9px] font-black uppercase tracking-widest text-gray-600 pb-1">
             {mobileMode ? d[0] : d}
           </div>
         ))}

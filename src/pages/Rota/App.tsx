@@ -35,7 +35,6 @@ export default function App() {
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'schedule' | 'analytics'>('schedule');
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { showToast } = useToast();
@@ -259,35 +258,9 @@ export default function App() {
           ))}
         </div>
 
-        {/* Tab Nav */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.15 }}
-          className="mb-8 flex gap-4 border-b border-white/5 print:hidden"
-        >
-          {[
-            { key: 'schedule', label: 'Schedule Matrix', icon: CalendarIcon },
-            { key: 'analytics', label: 'Impact Analytics', icon: TrendingUp },
-          ].map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => setActiveTab(key as any)}
-              className={`pb-4 px-2 transition-all relative ${activeTab === key ? 'text-white' : 'text-gray-600 hover:text-gray-400'}`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Icon size={16} className={activeTab === key ? 'text-red-500' : ''} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] font-heading">{label}</span>
-              </div>
-              {activeTab === key && (
-                <motion.div layoutId="activeTab" className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)]" />
-              )}
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Main Content */}
-        {activeTab === 'schedule' ? (
+        {/* Main Unified Content */}
+        <div className="space-y-12">
+          {/* Monthly Schedule Section */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <div className="bg-[#0f0f17] border border-white/5 rounded-3xl shadow-2xl p-4 md:p-8 print:bg-white">
               <div className="flex items-center justify-between mb-6 md:mb-8 print:mb-4">
@@ -296,14 +269,14 @@ export default function App() {
                     Monthly Schedule
                   </h2>
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mt-1 print:hidden">
-                    Tap a date to view team allocation
+                    Personnel Assignment View
                   </p>
                 </div>
                 <div className="flex items-center gap-3 print:hidden">
                   {[
-                    { id: 'AM', color: '#FF6B35' },
-                    { id: 'PM', color: '#4ECDC4' },
-                    { id: 'NT', color: '#6366F1' },
+                    { id: 'AM', color: '#2DD4BF' },
+                    { id: 'PM', color: '#60A5FA' },
+                    { id: 'NT', color: '#FBBF24' },
                   ].map(s => (
                     <div key={s.id} className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
@@ -327,22 +300,37 @@ export default function App() {
               transition={{ delay: 0.4 }}
               className="mt-6 bg-[#0f0f17] border border-white/5 rounded-3xl p-4 md:p-6 shadow-xl print:hidden"
             >
-              <h3 className="mb-4 text-white text-sm font-black uppercase tracking-widest">Staff Color Legend</h3>
+              <h3 className="mb-4 text-white text-xs font-black uppercase tracking-widest">Staff Color Legend</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                 {STAFF_CONFIG.map(staff => (
                   <div key={staff.name} className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg flex-shrink-0" style={{ backgroundColor: STAFF_COLORS[staff.name] }} />
-                    <span className="text-sm text-gray-300 truncate">{staff.name}</span>
+                    <div className="w-5 h-5 rounded-lg flex-shrink-0" style={{ backgroundColor: STAFF_COLORS[staff.name] }} />
+                    <span className="text-xs text-gray-400 font-bold truncate">{staff.name}</span>
                   </div>
                 ))}
               </div>
             </motion.div>
           </motion.div>
-        ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+
+          {/* Impact Analysis Section (Moved to Bottom) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="pt-12 border-t border-white/5"
+          >
+            <div className="mb-8">
+              <h2 className="text-2xl font-black text-white uppercase tracking-tighter font-heading">
+                Impact Analysis
+              </h2>
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mt-1">
+                Operational Performance & Allocation Metrics
+              </p>
+            </div>
             <AnalyticsDashboard analytics={analytics} />
           </motion.div>
-        )}
+        </div>
 
         {/* Shift Detail Modal (popup on date click) */}
         <AnimatePresence>

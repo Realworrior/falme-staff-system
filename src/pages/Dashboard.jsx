@@ -238,10 +238,6 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
-            
-            <button className="w-full mt-6 py-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:bg-white/10 hover:text-white transition-all">
-              Manage Full Schedule Matrix
-            </button>
           </div>
 
           {/* System Health / Tickets Snippet */}
