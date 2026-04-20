@@ -131,15 +131,21 @@ export default function App() {
     let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Falme staff system//Rota//EN\n";
 
     schedule.forEach(daySchedule => {
-      const staffShift = daySchedule.shifts.find(s => s.staffName === selectedStaff);
-      if (staffShift && staffShift.shift !== 'OFF' && staffShift.shift !== 'LEAVE') {
-        const dateStr = format(daySchedule.day, "yyyyMMdd");
+      let staffShiftType = 'OFF';
+      if (daySchedule.shifts.AM.includes(selectedStaff)) staffShiftType = 'AM';
+      else if (daySchedule.shifts.PM.includes(selectedStaff)) staffShiftType = 'PM';
+      else if (daySchedule.shifts.NT.includes(selectedStaff)) staffShiftType = 'NT';
+
+      if (staffShiftType !== 'OFF' && staffShiftType !== 'LEAVE') {
+        const dateStr = format(daySchedule.date, "yyyyMMdd");
+        const endDate = new Date(daySchedule.date);
+        endDate.setDate(endDate.getDate() + 1);
+
         icsContent += `BEGIN:VEVENT\n`;
         icsContent += `DTSTART;VALUE=DATE:${dateStr}\n`;
-        // Add 1 day for DTEND as it is exclusive for all-day events
-        icsContent += `DTEND;VALUE=DATE:${format(new Date(daySchedule.day.getTime() + 86400000), "yyyyMMdd")}\n`;
-        icsContent += `SUMMARY:Falme Shift (${staffShift.shift})\n`;
-        icsContent += `DESCRIPTION:Shift for ${selectedStaff} - Type: ${staffShift.shift}\n`;
+        icsContent += `DTEND;VALUE=DATE:${format(endDate, "yyyyMMdd")}\n`;
+        icsContent += `SUMMARY:Falme Shift (${staffShiftType})\n`;
+        icsContent += `DESCRIPTION:Shift for ${selectedStaff} - Type: ${staffShiftType}\n`;
         icsContent += `END:VEVENT\n`;
       }
     });
