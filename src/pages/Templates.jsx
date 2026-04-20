@@ -205,8 +205,8 @@ const Templates = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ category: '', title: '', standardText: '', empathyText: '' });
   
-  // Collapse mode toggle: Default navigation displays all categories (expanded)
-  const [catSidebarOpen, setCatSidebarOpen] = useState(true);
+  // Collapse mode toggle: Default navigation displays all categories (expanded) only on large screens
+  const [catSidebarOpen, setCatSidebarOpen] = useState(window.innerWidth > 1024);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -546,7 +546,7 @@ const Templates = () => {
                     </div>
                     <input 
                       type="text"
-                      className="w-full bg-black/40 border border-white/5 rounded-[24px] py-6 pl-20 pr-32 text-lg text-white font-medium focus:outline-none focus:border-red-500/50 focus:ring-4 focus:ring-red-500/5 transition-all placeholder-gray-700 shadow-2xl"
+                      className="w-full bg-black/40 border border-white/5 rounded-[24px] py-4 sm:py-6 pl-12 sm:pl-20 pr-16 sm:pr-40 text-sm sm:text-lg text-white font-medium focus:outline-none focus:border-red-500/50 focus:ring-4 focus:ring-red-500/5 transition-all placeholder-gray-700 shadow-2xl"
                       placeholder="Search for resolution steps, payment rules, or account issues..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -556,9 +556,9 @@ const Templates = () => {
                         if(!searchQuery) showToast('Please enter a query', 'info');
                         // Results will render below due to state change
                       }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 py-2.5 px-6 rounded-2xl accent-gradient text-white font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform active:scale-95"
+                      className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-3 sm:py-2.5 sm:px-6 rounded-xl sm:rounded-2xl accent-gradient text-white font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform active:scale-95"
                     >
-                      Retrieve <Sparkles size={14} />
+                      <span className="hidden sm:inline">Retrieve</span> <Sparkles size={14} />
                     </button>
                  </div>
 
