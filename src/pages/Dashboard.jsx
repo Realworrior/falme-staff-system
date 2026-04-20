@@ -30,6 +30,7 @@ import {
   getCurrentShiftType,
   STAFF_COLORS 
 } from './Rota/utils/scheduleGenerator';
+import { isSameDay, subDays } from 'date-fns';
 
 const Dashboard = () => {
   const { templates, logs, tickets, overrides: rawOverrides, loading } = useGlobalData();
@@ -52,17 +53,30 @@ const Dashboard = () => {
   const onDutyInfo = useMemo(() => {
     const today = new Date();
     const currentShift = getCurrentShiftType();
+    
+    // Check if we are in the morning rollover period of NT shift (00:00 - 07:30)
+    const hour = today.getHours();
+    const minutes = today.getMinutes();
+    const timeValue = hour + minutes / 60;
+    const isNTRollover = timeValue < 7.5;
+
     const schedule = generateMonthSchedule(today.getFullYear(), today.getMonth(), overrides);
-    const todaySchedule = schedule.find(d => 
-      d.date.getDate() === today.getDate() && 
-      d.date.getMonth() === today.getMonth() && 
-      d.date.getFullYear() === today.getFullYear()
-    );
+    const todaySchedule = schedule.find(d => isSameDay(d.date, today));
+
+    let displayNT = todaySchedule?.shifts.NT || [];
+
+    if (isNTRollover) {
+      // The current NT shift started YESTERDAY. Fetch yesterday's schedule.
+      const yesterday = subDays(today, 1);
+      const yesterdayScheduleArray = generateMonthSchedule(yesterday.getFullYear(), yesterday.getMonth(), overrides);
+      const yesterdaySchedule = yesterdayScheduleArray.find(d => isSameDay(d.date, yesterday));
+      displayNT = yesterdaySchedule?.shifts.NT || [];
+    }
 
     return {
       AM: todaySchedule?.shifts.AM || [],
       PM: todaySchedule?.shifts.PM || [],
-      NT: todaySchedule?.shifts.NT || [],
+      NT: displayNT,
       current: currentShift
     };
   }, [overrides]);
