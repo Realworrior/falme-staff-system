@@ -68,16 +68,33 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
       const isRG = q.includes('addiction') || q.includes('block') || q.includes('draining') || q.includes('limit') || q.includes('responsible');
       const isFin = q.includes('money') || q.includes('withdraw') || q.includes('deposit') || q.includes('refund');
       
-      // Search KB for SOPs
-      const matches = knowledgeBase.filter(k => 
-        k.title.toLowerCase().includes(q) || 
-        k.category.toLowerCase().includes(q) || 
-        k.content.toLowerCase().includes(q)
-      );
+      // High-Precision Scoring Engine
+      const scoredMatches = knowledgeBase.map(k => {
+        let score = 0;
+        const title = k.title.toLowerCase();
+        const content = k.content.toLowerCase();
+        
+        // Weighting Logic
+        if (title === q) score += 100; // Exact title match
+        if (title.includes(q)) score += 50; // Partial title match
+        if (q.includes(title)) score += 30; // Inverse title match
+        
+        // Keyword density in content
+        const words = q.split(' ');
+        words.forEach(w => {
+           if (w.length > 3) {
+             if (title.includes(w)) score += 10;
+             if (content.includes(w)) score += 5;
+           }
+        });
+        
+        return { ...k, score };
+      })
+      .filter(m => m.score > 0)
+      .sort((a, b) => b.score - a.score);
 
       let variations = [];
-      
-      const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('remove') || q.includes('how to') || q.includes('steps');
+      const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('remove') || q.includes('how to') || q.includes('steps') || q.includes('procedure');
 
       if (isRG) {
         variations = [
@@ -94,41 +111,42 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
             text: "In accordance with our regulatory requirements and Responsible Gaming policy, we are processing your request to block account " + (q.match(/\d+/) || "") + ". We advise you to uninstall any betting applications and consider contacting support services like Responsible Gambling Kenya."
           }
         ];
-      } else if (matches.length > 0) {
-        const top = matches[0];
-        const base = top.source.responses?.[0]?.text || "No text available.";
+      } else if (scoredMatches.length > 0) {
+        const top = scoredMatches[0];
+        // Pull actual responses if available
+        const standardResp = top.source.responses?.find(r => r.type === 'Standard')?.text || top.source.responses?.[0]?.text || "Standard response text not found.";
+        const empathyResp = top.source.responses?.find(r => r.type === 'Empathy')?.text || "I understand your concern and am here to help.";
         
         // Simulating "Learning from Template" and adjusting tone/grammar
-        const refinedBase = base.charAt(0).toUpperCase() + base.slice(1);
+        const refinedBase = standardResp.charAt(0).toUpperCase() + standardResp.slice(1);
         
         variations = [
           { 
-            type: "Smart Refined (Grammar Corrected)", 
+            type: "Smart Refined (" + top.title + ")", 
             text: refinedBase.replace(/can't/g, "cannot").replace(/don't/g, "do not") 
           },
           { 
-            type: "Empathetic Variant", 
-            text: "I completely understand your request regarding " + top.title + ". " + refinedBase 
+            type: "Empathetic Support", 
+            text: empathyResp 
           },
           { 
-            type: "Concise Actionable", 
-            text: "To address your request: " + (proceduralMatch ? "Please follow these steps: \n1. Login to your profile\n2. Navigate to Settings\n3. Select " + top.title + "\n4. Confirm your choice." : refinedBase) 
+            type: "Direct Instructions", 
+            text: proceduralMatch ? "Per our guidelines for " + top.title + ": \n1. Login to your account profile\n2. Navigate to the " + top.category + " section\n3. Select '" + top.title + "'\n4. Follow the on-screen prompts to confirm." : refinedBase 
           }
         ];
       } else {
-        // ... (existing fallback variations)
         variations = [
           {
             type: "Intelligent Suggestion",
-            text: "I couldn't find an exact SOP match. Based on standard support guidelines for " + query + ", I suggest: 'Hello, I've received your request and I'm currently checking our database to provide you with the correct steps. Thank you for your patience.'"
+            text: "I couldn't find an exact SOP match for '" + query + "'. Based on standard procedures, please verify the client's account details and check the " + (isFin ? "Finance" : "General") + " manual for current steps."
           },
           {
-            type: "Empathy-First Approach",
-            text: "I understand this is an important matter for you. While I look into the specific procedures for " + query + ", could you please provide any additional details so I can assist you more effectively?"
+            type: "Search Tip",
+            text: "Try searching for simpler keywords like 'Withdrawal', 'Account Recovery', or 'Deposit Error' to find the exact manual match."
           },
           {
-            type: "Standard Support Response",
-            text: "Thank you for reaching out. I'm escalating your query regarding " + query + " to ensure you receive a comprehensive solution. I'll provide an update here shortly."
+            type: "Baseline Empathy",
+            text: "I understand you need help with " + query + ". I'm checking with the supervisor for the most up-to-date SOP on this matter. One moment please."
           }
         ];
       }
