@@ -40,8 +40,7 @@ import {
   Stamp,
   UserCog,
   ShieldAlert,
-  Sparkles,
-  Heart
+  Sparkles
 } from 'lucide-react';
 
 import { useGlobalData } from '../context/FirebaseDataContext';
@@ -404,7 +403,7 @@ const Templates = () => {
                   ? 'flex-1 text-sm font-black text-left truncate block opacity-100' 
                   : 'hidden opacity-0'
               }`}>
-                Falme AI Agent
+                Falme AI
               </span>
 
               {selectedCategory === 'AI_AGENT' && (
@@ -479,19 +478,8 @@ const Templates = () => {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-3">
                   <h1 className="text-xl sm:text-3xl font-black text-white font-heading tracking-tighter uppercase leading-none truncate">
-                    {selectedCategory || "Global Library"}
+                    {selectedCategory === 'AI_AGENT' ? "Falme AI" : (selectedCategory || "Global Library")}
                   </h1>
-                  {/* Mobile Search Input Icon */}
-                  <div className="sm:hidden relative flex items-center shrink-0 ml-auto">
-                    <Search className="absolute left-2.5 w-4 h-4 text-gray-500" />
-                    <input 
-                      type="text" 
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="w-9 h-9 focus:w-36 transition-all duration-300 bg-white/5 border border-white/10 rounded-full pl-8 pr-3 text-white text-[10px] focus:bg-[#0f0f17] outline-none placeholder-transparent focus:placeholder-gray-600 focus:ring-1 focus:ring-red-500/50"
-                      placeholder="Search..."
-                    />
-                  </div>
                 </div>
                 <p className="hidden sm:block text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mt-2 italic decoration-red-500/20 underline">
                   {selectedCategory ? "Contextual Segment Active" : "Operational Core Index"}
@@ -518,21 +506,7 @@ const Templates = () => {
           </button>
         </div>
 
-        {/* Advanced Search (Desktop Only) */}
-        <div className="hidden sm:block relative group">
-          <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-2">
-             <Search className="w-5 h-5 text-gray-700 group-focus-within:text-red-500 transition-colors" />
-             <div className="w-px h-4 bg-white/5" />
-             <Sparkles size={14} className="text-red-500/50 animate-pulse" />
-          </div>
-          <input
-            type="text"
-            placeholder="AI-Powered knowledge retrieval search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-24 pr-6 py-5 bg-[#0f0f17] border border-white/5 rounded-3xl text-white placeholder-gray-700 focus:outline-none focus:border-white/10 focus:ring-4 focus:ring-red-500/5 transition-all shadow-2xl"
-          />
-        </div>
+        {/* Removed redundant top search bar per user request */}
 
         {/* Templates Display Grid or AI Agent View */}
         {selectedCategory === 'AI_AGENT' ? (
@@ -549,7 +523,7 @@ const Templates = () => {
                   <BrainCircuit size={24} className="text-red-500" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white uppercase tracking-tighter">Embedded Knowledge Agent</h2>
+                  <h2 className="text-xl font-black text-white uppercase tracking-tighter">Falme AI</h2>
                   <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5 animate-pulse">Now processing context from {data.length} segments</p>
                 </div>
               </div>
@@ -599,38 +573,43 @@ const Templates = () => {
                         <button onClick={() => setSearchQuery('')} className="text-[9px] font-bold text-red-500 uppercase hover:underline">Clear Search</button>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-6">
                         {filteredData.map(cat => (
                           cat.templates.map(tpl => (
-                            <div 
-                              key={tpl.title}
-                              onClick={() => handleCopy(tpl.responses?.[0]?.text)}
-                              className="p-6 rounded-[32px] bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] hover:border-red-500/40 hover:shadow-2xl hover:shadow-red-500/10 transition-all group cursor-pointer relative overflow-hidden flex flex-col gap-4"
-                            >
-                              <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.03] to-transparent pointer-events-none" />
-                              
-                              <div className="flex items-start justify-between relative z-10 w-full">
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-2">
-                                     <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-                                     <span className="text-[14px] font-black text-white uppercase tracking-tighter leading-none group-hover:text-red-400 transition-colors">{tpl.title}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[7px] text-gray-500 font-black uppercase tracking-widest border border-white/5 italic">
-                                      {cat.category}
-                                    </span>
-                                    <span className="text-[7px] font-black text-rose-500/60 uppercase tracking-[0.2em] flex items-center gap-1">
-                                       <Heart size={8} fill="currentColor" /> Emotional Grounding
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="p-2.5 rounded-2xl bg-black/40 text-gray-500 group-hover:text-white transition-all shadow-inner border border-white/5">
-                                  <Copy size={16} />
-                                </div>
+                            <div key={tpl.title} className="space-y-4">
+                              {/* Parent Title Banner */}
+                              <div className="flex items-center gap-3 px-2">
+                                <span className="text-[13px] md:text-sm font-black text-white uppercase tracking-tight">{tpl.title}</span>
+                                <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                                  <div className="w-1 h-1 bg-gray-600 rounded-full" /> {cat.category}
+                                </span>
                               </div>
-
-                              <div className="text-[13px] text-gray-300 font-medium leading-relaxed relative z-10 bg-black/20 p-4 rounded-2xl border border-white/[0.02]">
-                                <KeywordHighlighter text={tpl.responses?.[0]?.text || ""} />
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {tpl.responses?.map((resp, rIndex) => (
+                                  <div 
+                                    key={rIndex}
+                                    onClick={() => handleCopy(resp.text)}
+                                    className="p-5 md:p-6 rounded-[24px] bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] hover:border-red-500/40 hover:shadow-2xl hover:shadow-red-500/10 transition-all group cursor-pointer relative overflow-hidden"
+                                  >
+                                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.02] to-transparent pointer-events-none" />
+                                    <div className="flex items-center justify-between mb-4 relative z-10">
+                                      <span className={`px-2.5 py-1 text-[8px] uppercase tracking-[0.2em] font-black rounded border ${
+                                        resp.type === 'Standard' 
+                                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+                                          : 'bg-pink-500/10 text-pink-400 border-pink-500/20'
+                                      }`}>
+                                        {resp.type}
+                                      </span>
+                                      <div className="p-2 rounded-xl bg-white/5 text-gray-500 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                                        <Copy size={14} />
+                                      </div>
+                                    </div>
+                                    <div className="text-[13px] text-gray-200 font-medium whitespace-pre-wrap leading-relaxed relative z-10">
+                                      <KeywordHighlighter text={resp.text} />
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           ))
