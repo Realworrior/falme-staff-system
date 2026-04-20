@@ -37,7 +37,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
   // Flattened knowledge for local "AI" search
   const knowledgeBase = useMemo(() => {
     const flat = [];
-    templates.forEach(cat => {
+    templates?.forEach(cat => {
       cat.templates?.forEach(tpl => {
         flat.push({
           type: 'template',
@@ -48,7 +48,6 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
         });
       });
     });
-    // Add logic for resources if needed
     return flat;
   }, [templates]);
 
