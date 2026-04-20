@@ -72,10 +72,15 @@ const Sidebar = ({ className }) => {
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={cn(
-                    "w-5 h-5 transition-all duration-500",
-                    isActive ? "text-red-500 scale-110" : "group-hover:text-gray-300"
-                  )} />
+                  <div className="relative">
+                    <item.icon className={cn(
+                      "w-5 h-5 transition-all duration-500",
+                      isActive ? "text-red-500 scale-110" : "group-hover:text-gray-300"
+                    )} />
+                    {item.isNew && (
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-[#0a0a0f] shadow-sm animate-pulse" />
+                    )}
+                  </div>
                   <div className="flex-1 flex items-center gap-2 overflow-hidden">
                     <span className={cn(
                       "font-bold text-sm tracking-tight transition-all duration-500 truncate",
