@@ -145,20 +145,17 @@ export default function App() {
 
     try {
       const icsContent = generateICSContent();
-      
-      const base64Data = btoa(unescape(encodeURIComponent(icsContent)));
-      const fileDataUri = `data:text/calendar;charset=utf-8;base64,${base64Data}`;
 
+      // Passing raw ICS text so Apple Mail/Outlook can organically parse it into an 'Add' button, 
+      // avoiding EmailJS free-tier strict attachment rejection policies.
       await emailjs.send(
         'service_0o0jqak', 
         'template_ycf6b1s', 
         {
-          to_email: userEmail,
+          to_email: userEmail, // Standard
+          email: userEmail,    // Fallback
           staff_name: selectedStaff,
-          reply_to: "falme-staff@system.local",
-          attachment: fileDataUri, 
-          ics_content: fileDataUri,
-          message: "Your premium Falme schedule sync file is attached! Download the file and tap on it to add it to your Apple/Google/Outlook Calendar."
+          message: `Hello ${selectedStaff},\n\nYour premium Falme schedule is ready. If your mail client supports it, an 'Add to Calendar' button will appear automatically.\n\nOtherwise, just save the block below as a .ics file:\n\n${icsContent}`
         }, 
         'wOtZkUT4QoW_MzUGh'
       );
