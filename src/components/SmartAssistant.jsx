@@ -68,7 +68,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
       const concepts = {
         frustration: q.includes('frustrat') || q.includes('angry') || q.includes('upset') || q.includes('mad') || q.includes('annoyed'),
         termination: q.includes('delete') || q.includes('close') || q.includes('remove') || q.includes('quit') || q.includes('stop'),
-        finance: q.includes('money') || q.includes('withdraw') || q.includes('deposit') || q.includes('cash') || q.includes('payout'),
+        finance: q.includes('money') || q.includes('withdraw') || q.includes('deposit') || q.includes('cash') || q.includes('payout') || q.includes('mpesa'),
         tech: q.includes('crash') || q.includes('error') || q.includes('bug') || q.includes('slow') || q.includes('login')
       };
 
@@ -80,85 +80,95 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
         const title = k.title.toLowerCase();
         const content = k.content.toLowerCase();
         
-        if (title === q) score += 100;
-        if (title.includes(q)) score += 50;
+        // Exact Match Bonus
+        if (title === q) score += 500;
         
-        // Semantic keywords
-        if (concepts.termination && title.includes('account')) score += 40;
-        if (concepts.finance && title.includes('withdraw')) score += 40;
-        if (concepts.frustration && k.category.includes('Empathy')) score += 30;
-
+        // Logical Priority weighting
+        if (concepts.termination && title.includes('account')) score += 300;
+        if (concepts.termination && title.includes('delete')) score += 200;
+        if (q.includes('delete') && title.includes('account')) score += 250;
+        
+        if (title.includes(q)) score += 100;
+        if (q.includes(title)) score += 80;
+        
+        // Semantic keyword density
         const words = q.split(' ');
         words.forEach(w => {
-           if (w.length > 3) {
-             if (title.includes(w)) score += 10;
-             if (content.includes(w)) score += 5;
+           if (w.length > 2) {
+             if (title.includes(w)) score += 50;
+             if (content.includes(w)) score += 10;
            }
         });
         
+        // Specific Mpesa / Finance dampening if 'account' is also mentioned
+        if (q.includes('account') && title.includes('mpesa')) score -= 100;
+
         return { ...k, score };
       })
-      .filter(m => m.score > 0)
+      .filter(m => m.score > 20)
       .sort((a, b) => b.score - a.score);
 
       let variations = [];
+      const topMatches = scoredMatches.slice(0, 2); // Take top 2 for disambiguation
       const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('how to') || q.includes('steps') || concepts.termination;
 
       if (isRG) {
         variations = [
           {
             type: "Human Empathy",
-            text: "I can really feel how stressful this has been for you. Please, take a deep breath—I'm going to help you secure your account right now. I'm initiating the permanent block for 0742115006 immediately so you don't have to worry about it anymore. You're making the right choice for your sanity."
+            text: "I can really feel how stressful this has been for you. Please, take a deep breath—I'm going to help you secure your account right now. I'm initiating the permanent block for 0742115006 immediately so you don't have to worry about it anymore."
           },
           {
             type: "Direct Assistance",
-            text: "I'm on it. I've started the process to permanently close account 0742115006 for you. Once I finalize this on my end, the account will be inaccessible. Do you want me to double-check if there are any remaining funds we need to handle before the final lock?"
+            text: "I'm on it. I've started the process to permanently handle account 0742115006 for you. Once I finalize this, the account will be inaccessible. We prioritize your safe gaming experience."
           },
           {
             type: "Professional Support",
-            text: "I understand the urgency here. I am currently applying a permanent self-exclusion to account 0742115006 as per your request. For your own safety, I recommend removing the app from your devices. We take these matters very seriously and I'm here if you need anything else during this transition."
+            text: "Account 0742115006 is being moved to our permanent exclusion list following your request. For your own well-being, I strongly recommend removing our platform apps from your device."
           }
         ];
-      } else if (scoredMatches.length > 0) {
-        const top = scoredMatches[0];
-        const standardResp = top.source.responses?.find(r => r.type === 'Standard')?.text || top.source.responses?.[0]?.text || "";
-        const empathyResp = top.source.responses?.find(r => r.type === 'Empathy')?.text || "";
+      } else if (topMatches.length > 0) {
+        const primary = topMatches[0];
+        const secondary = topMatches.length > 1 && topMatches[1].score > (primary.score * 0.4) ? topMatches[1] : null;
+
+        const getHumanResp = (m) => {
+          const std = m.source.responses?.find(r => r.type === 'Standard')?.text || m.source.responses?.[0]?.text || "";
+          const emp = m.source.responses?.find(r => r.type === 'Empathy')?.text || "";
+          return { std, emp, title: m.title, category: m.category };
+        };
+
+        const pData = getHumanResp(primary);
+        const sData = secondary ? getHumanResp(secondary) : null;
         
-        // Humanization Layer
-        const intro = concepts.frustration ? "I'm incredibly sorry for the hassle. " : "I'd be happy to help you with that! ";
-        
+        const intro = concepts.frustration ? "I'm incredibly sorry for the hassle. " : "I found what you need! ";
+        const transition = secondary ? "\n\nI also found a related procedure for " + secondary.title + " just in case:" : "";
+
         variations = [
           { 
-            type: "Human Conversational", 
-            text: intro + (empathyResp || standardResp) + " I'll make sure this is handled smoothly for you."
+            type: "Recommended (Human)", 
+            text: intro + (pData.emp || pData.std) + " I'm handling this for you right now." + (sData ? "\n\n(Note: I also have the " + sData.title + " instructions if that fits better.)" : "")
           },
           { 
-            type: "Direct Agent Response", 
-            text: proceduralMatch 
-              ? "I've got the steps right here for you. To get " + top.title + " sorted, just login to your hub, go to the " + top.category + " section, and select '" + top.title + "'. It only takes a minute, but I'll stay right here if you hit any snags."
-              : standardResp 
+            type: "Step-by-Step Resolution", 
+            text: (proceduralMatch 
+              ? "I've got the steps right here. To get " + primary.title + " sorted, login to your profile, navigate to " + primary.category + ", and select '" + primary.title + "'. " 
+              : pData.std) + (sData ? "\n\n--- Also " + sData.title + " ---\n" + sData.std : "")
           },
           { 
-            type: "High-Polished Professional", 
-            text: "Thank you for reaching out. Regarding your request for " + top.title + ", I have confirmed the procedure. " + standardResp.replace(/can't/g, "cannot").replace(/don't/g, "do not")
+            type: "Direct SOP Copy", 
+            text: pData.std + (sData ? "\n\nAlternative: " + sData.std : "")
           }
         ];
       } else {
-        // Creative Human Fallback
+        // ... fallback
         variations = [
           {
             type: "Helpful Human",
-            text: concepts.frustration 
-              ? "I hear you, and it sounds like things haven't been easy. I'm personally looking through our guides to find the fastest way to fix this for you. Could you give me just one more detail about what happened so I can get it right?"
-              : "I'm digging into our system right now to find the best answer for " + query + ". I want to make sure I give you the most accurate help possible. Just a moment while I pull that up."
+            text: "I'm looking into " + query + " for you right now. I want to make sure I give you the most accurate answer from our guides, so I'm just double-checking a couple of things. I'll have that for you in just a second!"
           },
           {
-            type: "Supportive Agent",
-            text: "I'm so sorry for any confusion. I'm checking with my team to see how we usually handle " + query + " because I want to make sure we treat this with the priority it deserves. I'll be back with an answer in seconds."
-          },
-          {
-            type: "Professional Assurance",
-            text: "I appreciate your patience while I look into this. I'm reviewing our internal procedures for " + query + " to give you a definitive solution. I won't leave you hangin'—I'll have a clear path forward for you momentarily."
+            type: "Professional Agent",
+            text: "I'm reviewing our internal procedures regarding " + query + " to ensure I provide a definitive solution. I won't leave you hangin'—I'll have a clear path forward for you momentarily."
           }
         ];
       }
