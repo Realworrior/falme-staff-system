@@ -64,9 +64,15 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
     setTimeout(() => {
       const q = query.toLowerCase();
       
-      // Theme Detection
-      const isRG = q.includes('addiction') || q.includes('block') || q.includes('draining') || q.includes('limit') || q.includes('responsible');
-      const isFin = q.includes('money') || q.includes('withdraw') || q.includes('deposit') || q.includes('refund');
+      // conceptMapper - Mapping feelings/actions to template concepts
+      const concepts = {
+        frustration: q.includes('frustrat') || q.includes('angry') || q.includes('upset') || q.includes('mad') || q.includes('annoyed'),
+        termination: q.includes('delete') || q.includes('close') || q.includes('remove') || q.includes('quit') || q.includes('stop'),
+        finance: q.includes('money') || q.includes('withdraw') || q.includes('deposit') || q.includes('cash') || q.includes('payout'),
+        tech: q.includes('crash') || q.includes('error') || q.includes('bug') || q.includes('slow') || q.includes('login')
+      };
+
+      const isRG = q.includes('addiction') || q.includes('block') || q.includes('draining') || q.includes('limit') || q.includes('responsible') || (concepts.frustration && concepts.termination);
       
       // High-Precision Scoring Engine
       const scoredMatches = knowledgeBase.map(k => {
@@ -74,12 +80,14 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
         const title = k.title.toLowerCase();
         const content = k.content.toLowerCase();
         
-        // Weighting Logic
-        if (title === q) score += 100; // Exact title match
-        if (title.includes(q)) score += 50; // Partial title match
-        if (q.includes(title)) score += 30; // Inverse title match
+        if (title === q) score += 100;
+        if (title.includes(q)) score += 50;
         
-        // Keyword density in content
+        // Semantic keywords
+        if (concepts.termination && title.includes('account')) score += 40;
+        if (concepts.finance && title.includes('withdraw')) score += 40;
+        if (concepts.frustration && k.category.includes('Empathy')) score += 30;
+
         const words = q.split(' ');
         words.forEach(w => {
            if (w.length > 3) {
@@ -94,59 +102,60 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
       .sort((a, b) => b.score - a.score);
 
       let variations = [];
-      const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('remove') || q.includes('how to') || q.includes('steps') || q.includes('procedure');
+      const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('how to') || q.includes('steps') || concepts.termination;
 
       if (isRG) {
         variations = [
           {
-            type: "Empathetic (SOP Aligned)",
-            text: "I am truly sorry to hear that you're feeling this way. Your well-being is our priority. I will immediately help you with the self-exclusion process so you can take the necessary break for your mental health. Shall I proceed with blocking account " + (q.match(/\d+/) || "associated with your number") + "?"
+            type: "Extreme Empathy (RG Detected)",
+            text: "I can hear how much this is affecting you, and I want to support you in taking a step back immediately. Your mental and financial health come first. I am initiating the permanent block for account " + (q.match(/\d+/) || "associated with your request") + " now. Please stay strong; you've made the right choice."
           },
           {
-            type: "Action-Oriented (Direct Steps)",
-            text: "Understood. Based on our Responsible Gaming SOP, I have initiated the permanent self-exclusion protocol. To finalize, please confirm your identity. Once blocked, this action is final and account " + (q.match(/\d+/) || "") + " cannot be reopened."
+            type: "Tactical Response",
+            text: "Understood. I am applying the self-exclusion policy to your account. This will prevent any further access to Aviator and all other games on our platform. The block is effective immediately. Do you have any pending withdrawals I should expedite before we finalize?"
           },
           {
-            type: "Professional (Compliance)",
-            text: "In accordance with our regulatory requirements and Responsible Gaming policy, we are processing your request to block account " + (q.match(/\d+/) || "") + ". We advise you to uninstall any betting applications and consider contacting support services like Responsible Gambling Kenya."
+            type: "Professional / Safety",
+            text: "Account " + (q.match(/\d+/) || "") + " is being flagged for immediate closure following your request for responsible gaming assistance. Please reach out to our dedicated support line for further mental health resources. We are here to ensure a safe environment for all our users."
           }
         ];
       } else if (scoredMatches.length > 0) {
         const top = scoredMatches[0];
-        // Pull actual responses if available
         const standardResp = top.source.responses?.find(r => r.type === 'Standard')?.text || top.source.responses?.[0]?.text || "Standard response text not found.";
         const empathyResp = top.source.responses?.find(r => r.type === 'Empathy')?.text || "I understand your concern and am here to help.";
         
-        // Simulating "Learning from Template" and adjusting tone/grammar
         const refinedBase = standardResp.charAt(0).toUpperCase() + standardResp.slice(1);
         
         variations = [
           { 
-            type: "Smart Refined (" + top.title + ")", 
-            text: refinedBase.replace(/can't/g, "cannot").replace(/don't/g, "do not") 
+            type: "Smart Creative (Refined " + top.title + ")", 
+            text: (concepts.frustration ? "I truly apologize for the frustration this has caused. " : "") + refinedBase 
           },
           { 
-            type: "Empathetic Support", 
-            text: empathyResp 
+            type: "Deep Empathy Mode", 
+            text: "I'm so sorry you're going through this. I've analyzed your situation regarding " + top.title + " and I want to make this as easy as possible for you. " + empathyResp 
           },
           { 
-            type: "Direct Instructions", 
-            text: proceduralMatch ? "Per our guidelines for " + top.title + ": \n1. Login to your account profile\n2. Navigate to the " + top.category + " section\n3. Select '" + top.title + "'\n4. Follow the on-screen prompts to confirm." : refinedBase 
+            type: "Step-by-Step Resolution", 
+            text: proceduralMatch ? "I've found the correct SOP for you. Please proceed as follows: \n1. Login to your Hub\n2. Navigate to " + top.category + "\n3. Identify the '" + top.title + "' option\n4. Follow the prompt. I'll stay with you until it's done." : refinedBase 
           }
         ];
       } else {
+        // Creative Fallback Logic
         variations = [
           {
-            type: "Intelligent Suggestion",
-            text: "I couldn't find an exact SOP match for '" + query + "'. Based on standard procedures, please verify the client's account details and check the " + (isFin ? "Finance" : "General") + " manual for current steps."
+            type: "Creative AI Support",
+            text: concepts.frustration 
+              ? "I'm genuinely sorry to hear you're feeling frustrated. I am currently searching our entire Knowledge Base to find a solution that will resolve your complaint immediately. Could you please tell me more about what triggered this so I can be as accurate as possible?"
+              : "I'm on it! I'm scanning our support matrix for '" + query + "' to give you the most efficient answer. In the meantime, I have alerted a senior agent to look into your specific account case."
           },
           {
-            type: "Search Tip",
-            text: "Try searching for simpler keywords like 'Withdrawal', 'Account Recovery', or 'Deposit Error' to find the exact manual match."
+            type: "Contextual Empathy",
+            text: "It sounds like you're dealing with a difficult situation regarding " + query + ". I want to help turn this around for you. While I fetch the exact steps, I want to reassure you that we will get this resolved today."
           },
           {
-            type: "Baseline Empathy",
-            text: "I understand you need help with " + query + ". I'm checking with the supervisor for the most up-to-date SOP on this matter. One moment please."
+            type: "Professional Posture",
+            text: "Thank you for your patience. I am reviewing our internal documentation to find the specific policy regarding " + query + ". I prioritize your request and will have a structured outcome for you in just a moment."
           }
         ];
       }
