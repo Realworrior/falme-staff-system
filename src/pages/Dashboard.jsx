@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+// AI Knowledge Integration Active
 import { motion } from 'framer-motion';
 import { 
   FileText, 
