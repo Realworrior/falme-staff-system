@@ -638,22 +638,6 @@ const Templates = () => {
             </AnimatePresence>
           </div>
         )}
-                </motion.div>
-              ))
-            ))}
-          </AnimatePresence>
-
-          {filteredData.length === 0 && !loading && (
-            <div className="col-span-full py-40 text-center space-y-4">
-              <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center mx-auto border border-white/5 text-gray-700">
-                <Search size={32} />
-              </div>
-              <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] font-heading italic underline decoration-red-500/20">
-                No synchronized data matches the current query
-              </p>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Initialize Record Dialog */}
