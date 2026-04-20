@@ -54,10 +54,11 @@ const Dashboard = () => {
     const today = new Date();
     const currentShift = getCurrentShiftType();
     
-    // Check if we are in the morning rollover period of NT shift (00:00 - 07:30)
+    // Check if we are in the morning rollover period of NT shift (00:00 - 07:30:00)
     const hour = today.getHours();
     const minutes = today.getMinutes();
-    const timeValue = hour + minutes / 60;
+    const seconds = today.getSeconds();
+    const timeValue = hour + minutes / 60 + seconds / 3600;
     const isNTRollover = timeValue < 7.5;
 
     const schedule = generateMonthSchedule(today.getFullYear(), today.getMonth(), overrides);

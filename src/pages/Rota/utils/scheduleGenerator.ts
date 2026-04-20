@@ -120,7 +120,8 @@ export function getCurrentShiftType(): ShiftType {
   const now = new Date();
   const hour = now.getHours();
   const minutes = now.getMinutes();
-  const timeValue = hour + minutes / 60;
+  const seconds = now.getSeconds();
+  const timeValue = hour + minutes / 60 + seconds / 3600;
 
   // AM: 07:30 - 15:30 (15.5)
   if (timeValue >= 7.5 && timeValue < 15.5) return 'AM';
