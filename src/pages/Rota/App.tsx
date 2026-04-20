@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import emailjs from '@emailjs/browser';
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,21 +11,8 @@ import {
   Upload,
   Clock,
   X,
-  Mail,
-  Send,
-  Download,
-  Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
-import emailjs from '@emailjs/browser';
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  TextField,
-  Tooltip
-} from '@mui/material';
 import { ScheduleCalendar } from './components/ScheduleCalendar';
 import { ShiftMates } from './components/ShiftMates';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
@@ -50,9 +38,9 @@ export default function App() {
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [staffEmail, setStaffEmail] = useState('');
-  const [isSending, setIsSending] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const { showToast } = useToast();
 
   const [isReady, setIsReady] = useState(false);
@@ -143,110 +131,105 @@ export default function App() {
       showToast('Please select a specific staff member first', 'info');
       return;
     }
-    setEmailModalOpen(true);
+    setIsEmailModalOpen(true);
   };
 
-  const generateICS = () => {
-    const nowStamp = format(new Date(), "yyyyMMdd'T'HHmmss'Z'");
-    let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Falme staff system//Rota//EN\r\n";
-
-    schedule.forEach(daySchedule => {
-      let staffShiftType = 'OFF';
-      if (daySchedule.shifts.AM.includes(selectedStaff)) staffShiftType = 'AM';
-      else if (daySchedule.shifts.PM.includes(selectedStaff)) staffShiftType = 'PM';
-      else if (daySchedule.shifts.NT.includes(selectedStaff)) staffShiftType = 'NT';
-
-      if (staffShiftType !== 'OFF' && staffShiftType !== 'LEAVE') {
-        const dateStr = format(daySchedule.date, "yyyyMMdd");
-        let startTime = "";
-        let endTime = "";
-        let shiftTitle = "";
-        let endDayDate = new Date(daySchedule.date);
-
-        if (staffShiftType === 'AM') {
-          startTime = `${dateStr}T073000`;
-          endTime = `${dateStr}T153000`;
-          shiftTitle = '🌅 AM Shift (07:30 - 15:30)';
-        } else if (staffShiftType === 'PM') {
-          startTime = `${dateStr}T153000`;
-          endTime = `${dateStr}T223000`;
-          shiftTitle = '🌇 PM Shift (15:30 - 22:30)';
-        } else if (staffShiftType === 'NT') {
-          startTime = `${dateStr}T223000`;
-          endDayDate.setDate(endDayDate.getDate() + 1);
-          endTime = `${format(endDayDate, "yyyyMMdd")}T073000`;
-          shiftTitle = '🌙 NT Shift (22:30 - 07:30)';
-        }
-
-        // @ts-ignore
-        const shiftMatesList = daySchedule.shifts[staffShiftType];
-        const shiftMates = (shiftMatesList || []).filter(name => name !== selectedStaff);
-        const shiftMatesText = shiftMates.length > 0 ? shiftMates.join(', ') : 'Working solo';
-
-        icsContent += `BEGIN:VEVENT\r\n`;
-        icsContent += `UID:${dateStr}-${staffShiftType}-${selectedStaff?.replace(/\s+/g, '')}@falme.local\r\n`;
-        icsContent += `DTSTAMP:${nowStamp}\r\n`;
-        icsContent += `DTSTART:${startTime}\r\n`;
-        icsContent += `DTEND:${endTime}\r\n`;
-        icsContent += `SUMMARY:Falme: ${shiftTitle}\r\n`;
-        icsContent += `LOCATION:Falme Workplace\r\n`;
-        icsContent += `DESCRIPTION:⭐ Premium Rota Sync\\n\\n🔹 Shift Type: ${staffShiftType}\\n👥 Co-workers on duty: ${shiftMatesText}\\n\\nHave a great shift!\r\n`;
-        
-        icsContent += `BEGIN:VALARM\r\n`;
-        icsContent += `TRIGGER:-PT30M\r\n`;
-        icsContent += `ACTION:DISPLAY\r\n`;
-        icsContent += `DESCRIPTION:Falme Shift starts in 30 minutes! (${shiftMatesText} also joining)\r\n`;
-        icsContent += `END:VALARM\r\n`;
-        
-        icsContent += `END:VEVENT\r\n`;
-      }
-    });
-
-    icsContent += "END:VCALENDAR\r\n";
-    return icsContent;
-  };
-
-  const downloadFile = () => {
-    const icsContent = generateICS();
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `Falme_Rota_${selectedStaff}_${format(currentDate, 'MMM_yyyy')}.ics`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast(`Download started!`, 'success');
-    setEmailModalOpen(false);
-  };
-
-  const sendToEmail = async () => {
-    if (!staffEmail || !staffEmail.includes('@')) {
-      showToast('Please enter a valid email', 'error');
+  const handleSendEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userEmail) {
+      showToast('Please enter an email address', 'error');
       return;
     }
 
-    setIsSending(true);
-    const icsContent = generateICS();
+    setIsSendingEmail(true);
 
     try {
+      const nowStamp = format(new Date(), "yyyyMMdd'T'HHmmss'Z'");
+      let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Falme staff system//Rota//EN\r\n";
+
+      schedule.forEach(daySchedule => {
+        let staffShiftType = 'OFF';
+        if (daySchedule.shifts.AM.includes(selectedStaff!)) staffShiftType = 'AM';
+        else if (daySchedule.shifts.PM.includes(selectedStaff!)) staffShiftType = 'PM';
+        else if (daySchedule.shifts.NT.includes(selectedStaff!)) staffShiftType = 'NT';
+
+        if (staffShiftType !== 'OFF' && staffShiftType !== 'LEAVE') {
+          const dateStr = format(daySchedule.date, "yyyyMMdd");
+          
+          let startTime = "";
+          let endTime = "";
+          let shiftTitle = "";
+          let endDayDate = new Date(daySchedule.date);
+
+          if (staffShiftType === 'AM') {
+            startTime = `${dateStr}T073000`;
+            endTime = `${dateStr}T153000`;
+            shiftTitle = '🌅 AM Shift (07:30 - 15:30)';
+          } else if (staffShiftType === 'PM') {
+            startTime = `${dateStr}T153000`;
+            endTime = `${dateStr}T223000`;
+            shiftTitle = '🌇 PM Shift (15:30 - 22:30)';
+          } else if (staffShiftType === 'NT') {
+            startTime = `${dateStr}T223000`;
+            endDayDate.setDate(endDayDate.getDate() + 1);
+            endTime = `${format(endDayDate, "yyyyMMdd")}T073000`;
+            shiftTitle = '🌙 NT Shift (22:30 - 07:30)';
+          }
+
+          // @ts-ignore
+          const shiftMatesList = daySchedule.shifts[staffShiftType];
+          const shiftMates = (shiftMatesList || []).filter(name => name !== selectedStaff);
+          const shiftMatesText = shiftMates.length > 0 ? shiftMates.join(', ') : 'Working solo';
+
+          icsContent += `BEGIN:VEVENT\r\n`;
+          icsContent += `UID:${dateStr}-${staffShiftType}-${selectedStaff!.replace(/\s+/g, '')}@falme.local\r\n`;
+          icsContent += `DTSTAMP:${nowStamp}\r\n`;
+          icsContent += `DTSTART:${startTime}\r\n`;
+          icsContent += `DTEND:${endTime}\r\n`;
+          icsContent += `SUMMARY:Falme: ${shiftTitle}\r\n`;
+          icsContent += `LOCATION:Falme Workplace\r\n`;
+          icsContent += `DESCRIPTION:⭐ Premium Rota Sync\\n\\n🔹 Shift Type: ${staffShiftType}\\n👥 Co-workers on duty: ${shiftMatesText}\\n\\nHave a great shift!\r\n`;
+          
+          icsContent += `BEGIN:VALARM\r\n`;
+          icsContent += `TRIGGER:-PT30M\r\n`;
+          icsContent += `ACTION:DISPLAY\r\n`;
+          icsContent += `DESCRIPTION:Falme Shift starts in 30 minutes! (${shiftMatesText} also joining)\r\n`;
+          icsContent += `END:VALARM\r\n`;
+          
+          icsContent += `END:VEVENT\r\n`;
+        }
+      });
+
+      icsContent += "END:VCALENDAR\r\n";
+
+      // Base64 encode the ics file properly to pass as attachment payload to EmailJS
+      const base64Data = btoa(unescape(encodeURIComponent(icsContent)));
+      const fileDataUri = `data:text/calendar;charset=utf-8;base64,${base64Data}`;
+
+      const templateParams = {
+        to_email: userEmail,
+        staff_name: selectedStaff,
+        month: format(currentDate, 'MMM yyyy'),
+        attachment: fileDataUri, // Standard mapped EmailJS Attachment field parsing
+        ics_content: fileDataUri, // Fallback variable mapping
+        message: "Your premium Falme schedule sync file is attached! Download the file and tap on it to add it to your Apple/Google/Outlook Calendar."
+      };
+
       await emailjs.send(
-        'service_0o0jqak',
-        'template_ycf6b1s',
-        {
-          to_email: staffEmail,
-          staff_name: selectedStaff,
-          month: format(currentDate, 'MMMM yyyy'),
-          ics_content: icsContent, // Your template should use this variable
-        },
+        'service_0o0jqak', 
+        'template_ycf6b1s', 
+        templateParams, 
         'wOtZkUT4QoW_MzUGh'
       );
-      showToast('Calendar link sent to your email!', 'success');
-      setEmailModalOpen(false);
+
+      showToast(`Calendar sent directly to ${userEmail}!`, 'success');
+      setIsEmailModalOpen(false);
+      setUserEmail('');
     } catch (err) {
-      console.error('Email error:', err);
-      showToast('Failed to send email. Try downloading instead.', 'error');
+      console.error(err);
+      showToast('Transmission failed. Ensure your EmailJS template accepts attachments.', 'error');
     } finally {
-      setIsSending(false);
+      setIsSendingEmail(false);
     }
   };
 
@@ -518,89 +501,61 @@ export default function App() {
           month={month}
         />
 
-        {/* Email Sync Modal */}
-        <Dialog open={emailModalOpen} onClose={() => setEmailModalOpen(false)} maxWidth="xs" fullWidth PaperProps={{ 
-          className: "!rounded-[32px] !bg-[#0a0a0f] !border !border-white/5 !shadow-2xl" 
-        }}>
-          <div className="p-8 space-y-6 relative">
-            <button 
-              onClick={() => setEmailModalOpen(false)}
-              className="absolute top-6 right-6 p-2 text-gray-500 hover:text-white transition-colors"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-xl shadow-blue-500/5">
-                <CalendarIcon size={24} className="text-blue-500" />
-              </div>
-              <div>
-                <DialogTitle className="!p-0 font-heading font-black text-white uppercase tracking-tighter text-xl">
-                  Calendar Sync
-                </DialogTitle>
-                <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest mt-1">Personnel: {selectedStaff}</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-gray-400 text-xs font-medium leading-relaxed">
-                Choose how you'd like to receive your calendar file. You can download it directly or have it sent to your email for easy mobile syncing.
-              </p>
-              
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Email Destination</label>
-                <TextField
-                  autoFocus
-                  placeholder="Enter your email address..."
-                  type="email"
-                  fullWidth
-                  variant="outlined"
-                  value={staffEmail}
-                  onChange={(e) => setStaffEmail(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendToEmail()}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white',
-                      backgroundColor: 'rgba(255,255,255,0.03)',
-                      borderRadius: '16px',
-                      fontSize: '14px',
-                      '& fieldset': { borderColor: 'rgba(255,255,255,0.05)' },
-                      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                      '&.Mui-focused fieldset': { borderColor: '#ef4444' },
-                    },
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button 
-                onClick={downloadFile}
-                className="flex items-center justify-center gap-3 px-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all group"
+        {/* Send Email Modal */}
+        <AnimatePresence>
+          {isEmailModalOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsEmailModalOpen(false)}
+                className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="fixed z-[70] left-1/2 top-1/2 md:top-[30vh] -translate-x-1/2 -translate-y-1/2 md:translate-y-0 w-[90%] max-w-[400px] bg-[#0a0a0f] border border-white/10 p-6 md:p-8 rounded-[32px] shadow-2xl"
               >
-                <Download size={16} className="text-gray-400 group-hover:text-white transition-colors" />
-                Download
-              </button>
-              <button 
-                onClick={sendToEmail}
-                disabled={isSending}
-                className="flex items-center justify-center gap-3 px-4 py-4 rounded-2xl accent-gradient text-white font-black text-[10px] uppercase tracking-widest hover:shadow-2xl hover:shadow-red-500/20 transition-all disabled:opacity-50"
-              >
-                {isSending ? (
-                  <Clock size={16} className="animate-spin" />
-                ) : (
-                  <Mail size={16} />
-                )}
-                {isSending ? 'Sending...' : 'Email Me'}
-              </button>
-            </div>
-            
-            <div className="pt-2 flex items-center justify-center gap-2">
-               <Sparkles size={12} className="text-red-500/50" />
-               <p className="text-[9px] font-black uppercase text-gray-700 tracking-widest italic">Powered by Falme Intelligence</p>
-            </div>
-          </div>
-        </Dialog>
+                <div className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full transition cursor-pointer" onClick={() => setIsEmailModalOpen(false)}>
+                  <X size={16} className="text-gray-400" />
+                </div>
+                
+                <div className="mb-6 flex flex-col items-center justify-center text-center">
+                  <div className="w-14 h-14 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center justify-center mb-4">
+                    <CalendarIcon size={24} className="text-blue-500" />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter">Sync Device Calendar</h3>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2">
+                    Delivering shifts for {selectedStaff}
+                  </p>
+                </div>
+
+                <form onSubmit={handleSendEmail} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] text-white font-black uppercase tracking-widest ml-2 mb-2 block">Personal Email</label>
+                    <input 
+                      type="email" 
+                      required 
+                      value={userEmail}
+                      onChange={(e) => setUserEmail(e.target.value)}
+                      placeholder="e.g. staff@falme.local"
+                      className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-4 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-all placeholder-gray-700"
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={isSendingEmail}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] transition-all disabled:opacity-50 disabled:pointer-events-none mt-4 shadow-lg shadow-blue-500/20"
+                  >
+                    {isSendingEmail ? 'Dispatching...' : 'Sync via Email'}
+                  </button>
+                </form>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
