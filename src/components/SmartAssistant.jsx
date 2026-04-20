@@ -141,34 +141,39 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
         const sData = secondary ? getHumanResp(secondary) : null;
         
         const intro = concepts.frustration ? "I'm incredibly sorry for the hassle. " : "I found what you need! ";
-        const transition = secondary ? "\n\nI also found a related procedure for " + secondary.title + " just in case:" : "";
-
+        
         variations = [
           { 
-            type: "Recommended (Human)", 
-            text: intro + (pData.emp || pData.std) + " I'm handling this for you right now." + (sData ? "\n\n(Note: I also have the " + sData.title + " instructions if that fits better.)" : "")
+            type: "Human Conversational", 
+            intro: intro,
+            text: (pData.emp || pData.std),
+            footer: sData ? "I also have the " + sData.title + " instructions if you need those instead." : "I'm handling this for you right now."
           },
           { 
-            type: "Step-by-Step Resolution", 
-            text: (proceduralMatch 
-              ? "I've got the steps right here. To get " + primary.title + " sorted, login to your profile, navigate to " + primary.category + ", and select '" + primary.title + "'. " 
-              : pData.std) + (sData ? "\n\n--- Also " + sData.title + " ---\n" + sData.std : "")
+            type: "Procedural Resolution", 
+            intro: "I've got the exact steps right here:",
+            text: proceduralMatch 
+              ? "To get " + primary.title + " sorted, login to your profile, navigate to the " + primary.category + " section, and select '" + primary.title + "'. Then follow the on-screen prompts to finalize." 
+              : pData.std,
+            footer: sData ? "Wait, I also found the " + sData.title + " procedure which might be relevant." : "It only takes a minute."
           },
           { 
             type: "Direct SOP Copy", 
-            text: pData.std + (sData ? "\n\nAlternative: " + sData.std : "")
+            intro: "Here is the raw template text:",
+            text: pData.std,
+            footer: ""
           }
         ];
       } else {
-        // ... fallback
+        // Creative Human Fallback
         variations = [
           {
             type: "Helpful Human",
-            text: "I'm looking into " + query + " for you right now. I want to make sure I give you the most accurate answer from our guides, so I'm just double-checking a couple of things. I'll have that for you in just a second!"
-          },
-          {
-            type: "Professional Agent",
-            text: "I'm reviewing our internal procedures regarding " + query + " to ensure I provide a definitive solution. I won't leave you hangin'—I'll have a clear path forward for you momentarily."
+            intro: "I'm searching for you...",
+            text: concepts.frustration 
+              ? "I hear you, and it sounds like things haven't been easy. I'm personally looking through our guides to find the fastest way to fix this for you."
+              : "I'm digging into our system right now to find the best answer for " + query + ". I want to make sure I give you the most accurate help possible.",
+            footer: "Just a moment while I pull that up."
           }
         ];
       }
@@ -192,12 +197,19 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   <Copy size={12} />
                 </button>
               </div>
-              <p className="text-[11px] leading-relaxed text-gray-400 font-medium whitespace-pre-wrap">{v.text}</p>
+              
+              {v.intro && <p className="text-[10px] text-gray-500 italic mb-2 border-l border-red-500/20 pl-2">{v.intro}</p>}
+              
+              <div className="bg-black/20 rounded-xl p-3 border border-white/5 mb-2">
+                <p className="text-[11px] leading-relaxed text-gray-300 font-medium whitespace-pre-wrap">{v.text}</p>
+              </div>
+
+              {v.footer && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-1 opacity-60">{v.footer}</p>}
             </div>
           ))}
           <div className="flex items-center gap-2 mt-4 px-2">
             <Sparkles size={10} className="text-red-500" />
-            <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Grounded in Knowledge Base</p>
+            <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Clean Copy Enabled</p>
           </div>
         </div>
       );
