@@ -107,80 +107,88 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
       if (isRG) {
         variations = [
           {
-            type: "Extreme Empathy (RG Detected)",
-            text: "I can hear how much this is affecting you, and I want to support you in taking a step back immediately. Your mental and financial health come first. I am initiating the permanent block for account " + (q.match(/\d+/) || "associated with your request") + " now. Please stay strong; you've made the right choice."
+            type: "Human Empathy",
+            text: "I can really feel how stressful this has been for you. Please, take a deep breath—I'm going to help you secure your account right now. I'm initiating the permanent block for 0742115006 immediately so you don't have to worry about it anymore. You're making the right choice for your sanity."
           },
           {
-            type: "Tactical Response",
-            text: "Understood. I am applying the self-exclusion policy to your account. This will prevent any further access to Aviator and all other games on our platform. The block is effective immediately. Do you have any pending withdrawals I should expedite before we finalize?"
+            type: "Direct Assistance",
+            text: "I'm on it. I've started the process to permanently close account 0742115006 for you. Once I finalize this on my end, the account will be inaccessible. Do you want me to double-check if there are any remaining funds we need to handle before the final lock?"
           },
           {
-            type: "Professional / Safety",
-            text: "Account " + (q.match(/\d+/) || "") + " is being flagged for immediate closure following your request for responsible gaming assistance. Please reach out to our dedicated support line for further mental health resources. We are here to ensure a safe environment for all our users."
+            type: "Professional Support",
+            text: "I understand the urgency here. I am currently applying a permanent self-exclusion to account 0742115006 as per your request. For your own safety, I recommend removing the app from your devices. We take these matters very seriously and I'm here if you need anything else during this transition."
           }
         ];
       } else if (scoredMatches.length > 0) {
         const top = scoredMatches[0];
-        const standardResp = top.source.responses?.find(r => r.type === 'Standard')?.text || top.source.responses?.[0]?.text || "Standard response text not found.";
-        const empathyResp = top.source.responses?.find(r => r.type === 'Empathy')?.text || "I understand your concern and am here to help.";
+        const standardResp = top.source.responses?.find(r => r.type === 'Standard')?.text || top.source.responses?.[0]?.text || "";
+        const empathyResp = top.source.responses?.find(r => r.type === 'Empathy')?.text || "";
         
-        const refinedBase = standardResp.charAt(0).toUpperCase() + standardResp.slice(1);
+        // Humanization Layer
+        const intro = concepts.frustration ? "I'm incredibly sorry for the hassle. " : "I'd be happy to help you with that! ";
         
         variations = [
           { 
-            type: "Smart Creative (Refined " + top.title + ")", 
-            text: (concepts.frustration ? "I truly apologize for the frustration this has caused. " : "") + refinedBase 
+            type: "Human Conversational", 
+            text: intro + (empathyResp || standardResp) + " I'll make sure this is handled smoothly for you."
           },
           { 
-            type: "Deep Empathy Mode", 
-            text: "I'm so sorry you're going through this. I've analyzed your situation regarding " + top.title + " and I want to make this as easy as possible for you. " + empathyResp 
+            type: "Direct Agent Response", 
+            text: proceduralMatch 
+              ? "I've got the steps right here for you. To get " + top.title + " sorted, just login to your hub, go to the " + top.category + " section, and select '" + top.title + "'. It only takes a minute, but I'll stay right here if you hit any snags."
+              : standardResp 
           },
           { 
-            type: "Step-by-Step Resolution", 
-            text: proceduralMatch ? "I've found the correct SOP for you. Please proceed as follows: \n1. Login to your Hub\n2. Navigate to " + top.category + "\n3. Identify the '" + top.title + "' option\n4. Follow the prompt. I'll stay with you until it's done." : refinedBase 
+            type: "High-Polished Professional", 
+            text: "Thank you for reaching out. Regarding your request for " + top.title + ", I have confirmed the procedure. " + standardResp.replace(/can't/g, "cannot").replace(/don't/g, "do not")
           }
         ];
       } else {
-        // Creative Fallback Logic
+        // Creative Human Fallback
         variations = [
           {
-            type: "Creative AI Support",
+            type: "Helpful Human",
             text: concepts.frustration 
-              ? "I'm genuinely sorry to hear you're feeling frustrated. I am currently searching our entire Knowledge Base to find a solution that will resolve your complaint immediately. Could you please tell me more about what triggered this so I can be as accurate as possible?"
-              : "I'm on it! I'm scanning our support matrix for '" + query + "' to give you the most efficient answer. In the meantime, I have alerted a senior agent to look into your specific account case."
+              ? "I hear you, and it sounds like things haven't been easy. I'm personally looking through our guides to find the fastest way to fix this for you. Could you give me just one more detail about what happened so I can get it right?"
+              : "I'm digging into our system right now to find the best answer for " + query + ". I want to make sure I give you the most accurate help possible. Just a moment while I pull that up."
           },
           {
-            type: "Contextual Empathy",
-            text: "It sounds like you're dealing with a difficult situation regarding " + query + ". I want to help turn this around for you. While I fetch the exact steps, I want to reassure you that we will get this resolved today."
+            type: "Supportive Agent",
+            text: "I'm so sorry for any confusion. I'm checking with my team to see how we usually handle " + query + " because I want to make sure we treat this with the priority it deserves. I'll be back with an answer in seconds."
           },
           {
-            type: "Professional Posture",
-            text: "Thank you for your patience. I am reviewing our internal documentation to find the specific policy regarding " + query + ". I prioritize your request and will have a structured outcome for you in just a moment."
+            type: "Professional Assurance",
+            text: "I appreciate your patience while I look into this. I'm reviewing our internal procedures for " + query + " to give you a definitive solution. I won't leave you hangin'—I'll have a clear path forward for you momentarily."
           }
         ];
       }
 
       const responseContent = (
         <div className="space-y-4 pt-2">
-          <p className="text-white/50 text-[10px] uppercase font-black tracking-widest bg-white/5 px-3 py-1 rounded-full w-fit">Falme AI Generated Variants</p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Suggested Responses</span>
+            <div className="flex-1 h-px bg-white/5" />
+          </div>
           {variations.map((v, i) => (
-            <div key={i} className="bg-white/[0.03] border border-white/5 rounded-xl p-3 hover:bg-white/[0.05] transition-all group relative">
+            <div key={i} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 hover:bg-white/[0.05] transition-all group relative">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">{v.type}</span>
+                <span className="text-[8px] font-black text-red-500/80 uppercase tracking-[0.2em]">{v.type}</span>
                 <button 
                   onClick={() => {
                     navigator.clipboard.writeText(v.text);
-                    // could trigger a toast here if passed via props
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1 bg-white/5 rounded-md hover:bg-red-500 text-white transition-all shadow-xl"
+                  className="p-1.5 bg-white/5 rounded-lg hover:bg-red-500 text-white transition-all shadow-xl"
                 >
-                  <Copy size={10} />
+                  <Copy size={12} />
                 </button>
               </div>
-              <p className="text-[10.5px] leading-relaxed text-gray-300 font-medium whitespace-pre-wrap">{v.text}</p>
+              <p className="text-[11px] leading-relaxed text-gray-400 font-medium whitespace-pre-wrap">{v.text}</p>
             </div>
           ))}
-          <p className="text-[9px] text-gray-500 italic mt-2">💡 Select a variant above to copy and use in your response.</p>
+          <div className="flex items-center gap-2 mt-4 px-2">
+            <Sparkles size={10} className="text-red-500" />
+            <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Grounded in Knowledge Base</p>
+          </div>
         </div>
       );
 
