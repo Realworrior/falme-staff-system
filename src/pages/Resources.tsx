@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { SmartAssistant } from "../components/SmartAssistant";
+import { useGlobalData } from "../context/FirebaseDataContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AppSection = "guide" | "manual";
@@ -3156,6 +3158,7 @@ function MarketGuideView() {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function Resources() {
   const [section, setSection] = useState<AppSection>("guide");
+  const { templates } = useGlobalData();
 
   return (
     <div
@@ -3234,6 +3237,11 @@ export default function Resources() {
       {/* ── Views ── */}
       {section === "guide" && <MarketGuideView />}
       {section === "manual" && <AgentManualView />}
+      
+      {/* Global AI Assistant */}
+      <SmartAssistant templates={templates} />
     </div>
   );
 }
+
+export default Resources;

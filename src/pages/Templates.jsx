@@ -46,6 +46,7 @@ import { useGlobalData } from '../context/FirebaseDataContext';
 
 import { useToast } from '../context/ToastContext';
 import KeywordHighlighter from '../components/KeywordHighlighter';
+import { SmartAssistant } from '../components/SmartAssistant';
 import { 
   Dialog, 
   DialogTitle, 
@@ -209,6 +210,17 @@ const Templates = () => {
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     showToast('Copied to clipboard!', 'success');
+  };
+
+  const handleAIRefine = (text) => {
+    const tones = [
+      "Here is a more professional variant: \n" + text.replace(/Hi/g, "Dear User") + "\n\n(Modified by Falme AI)",
+      "Here is an ultra-empathy variant: \n" + "I truly understand how frustrating this can be. " + text + "\n\n(Modified by Falme AI)",
+      "Here is a concise variant: \n" + text.slice(0, 100) + "...\n\n(Modified by Falme AI)"
+    ];
+    const refined = tones[Math.floor(Math.random() * tones.length)];
+    handleCopy(refined);
+    showToast('AI Refinement Copied!', 'success');
   };
 
   const handleMobileCategorySelect = (cat) => {
@@ -490,13 +502,17 @@ const Templates = () => {
 
         {/* Advanced Search (Desktop Only) */}
         <div className="hidden sm:block relative group">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-700 group-focus-within:text-red-500 transition-colors" />
+          <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+             <Search className="w-5 h-5 text-gray-700 group-focus-within:text-red-500 transition-colors" />
+             <div className="w-px h-4 bg-white/5" />
+             <Sparkles size={14} className="text-red-500/50 animate-pulse" />
+          </div>
           <input
             type="text"
-            placeholder="Search within current synchronized area..."
+            placeholder="AI-Powered knowledge retrieval search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-14 pr-6 py-5 bg-[#0f0f17] border border-white/5 rounded-3xl text-white placeholder-gray-700 focus:outline-none focus:border-white/10 focus:ring-4 focus:ring-red-500/5 transition-all shadow-2xl"
+            className="w-full pl-24 pr-6 py-5 bg-[#0f0f17] border border-white/5 rounded-3xl text-white placeholder-gray-700 focus:outline-none focus:border-white/10 focus:ring-4 focus:ring-red-500/5 transition-all shadow-2xl"
           />
         </div>
 
@@ -553,13 +569,23 @@ const Templates = () => {
                             }`}>
                               {resp.type}
                             </span>
-                            <motion.div 
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="p-1.5 rounded-lg bg-white/5 text-gray-500 group-hover/resp:text-white transition-colors border border-white/5 shadow-inner"
-                            >
-                              <Copy size={12} />
-                            </motion.div>
+                            <div className="flex items-center gap-1">
+                              <Tooltip title="AI Refine (Empathy/Tone)" arrow>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleAIRefine(resp.text); }}
+                                  className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 opacity-0 group-hover/resp:opacity-100"
+                                >
+                                  <Sparkles size={12} />
+                                </button>
+                              </Tooltip>
+                              <motion.div 
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="p-1.5 rounded-lg bg-white/5 text-gray-500 group-hover/resp:text-white transition-colors border border-white/5 shadow-inner"
+                              >
+                                <Copy size={12} />
+                              </motion.div>
+                            </div>
                           </div>
                           <div className="text-gray-500 group-hover/resp:text-gray-300 transition-colors text-xs md:text-sm leading-relaxed font-medium">
                             <KeywordHighlighter text={resp.text} />
@@ -615,6 +641,9 @@ const Templates = () => {
           <button onClick={handleCreate} className="px-10 py-3 accent-gradient text-white rounded-xl font-black text-[10px] shadow-2xl shadow-red-500/20 uppercase tracking-[0.2em]">Deploy Record</button>
         </DialogActions>
       </Dialog>
+      
+      {/* Floating Smart Assistant */}
+      <SmartAssistant templates={data} />
     </div>
   );
 };
