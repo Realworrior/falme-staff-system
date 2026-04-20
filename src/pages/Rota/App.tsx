@@ -122,6 +122,41 @@ export default function App() {
     downloadCSV(csv, fileName);
   };
 
+  const handleExportCalendar = () => {
+    if (!selectedStaff || !schedule.length) {
+      showToast('Please select a specific staff member first', 'info');
+      return;
+    }
+
+    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Falme staff system//Rota//EN\n";
+
+    schedule.forEach(daySchedule => {
+      const staffShift = daySchedule.shifts.find(s => s.staffName === selectedStaff);
+      if (staffShift && staffShift.shift !== 'OFF' && staffShift.shift !== 'LEAVE') {
+        const dateStr = format(daySchedule.day, "yyyyMMdd");
+        icsContent += `BEGIN:VEVENT\n`;
+        icsContent += `DTSTART;VALUE=DATE:${dateStr}\n`;
+        // Add 1 day for DTEND as it is exclusive for all-day events
+        icsContent += `DTEND;VALUE=DATE:${format(new Date(daySchedule.day.getTime() + 86400000), "yyyyMMdd")}\n`;
+        icsContent += `SUMMARY:Falme Shift (${staffShift.shift})\n`;
+        icsContent += `DESCRIPTION:Shift for ${selectedStaff} - Type: ${staffShift.shift}\n`;
+        icsContent += `END:VEVENT\n`;
+      }
+    });
+
+    icsContent += "END:VCALENDAR";
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Falme_Rota_${selectedStaff}_${format(currentDate, 'MMM_yyyy')}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast(`Calendar export ready for ${selectedStaff}!`, 'success');
+  };
+
   const handleManagerToggle = () => {
     if (isManagerMode) {
       setIsManagerMode(false);
@@ -256,6 +291,20 @@ export default function App() {
               {staff.name}
             </button>
           ))}
+          
+          <AnimatePresence>
+            {selectedStaff && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                onClick={handleExportCalendar}
+                className="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shrink-0 shadow-lg shadow-blue-500/10"
+              >
+                <CalendarIcon size={14} /> Sync to Cal
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Main Unified Content */}
