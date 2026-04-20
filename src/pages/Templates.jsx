@@ -561,28 +561,72 @@ const Templates = () => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 py-2.5 px-6 rounded-2xl accent-gradient text-white font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform active:scale-95">
+                    <button 
+                      onClick={() => {
+                        if(!searchQuery) showToast('Please enter a query', 'info');
+                        // Results will render below due to state change
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 py-2.5 px-6 rounded-2xl accent-gradient text-white font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform active:scale-95"
+                    >
                       Retrieve <Sparkles size={14} />
-                    </div>
+                    </button>
                  </div>
 
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                    {[
-                      { label: 'Payment Errors', icon: CreditCard, query: 'deposit error' },
-                      { label: 'Addiction Help', icon: ShieldAlert, query: 'draining me' },
-                      { label: 'Account Delete', icon: UserCog, query: 'delete account' },
-                      { label: 'System Crashes', icon: ServerCrash, query: 'bet failed' }
-                    ].map(feat => (
-                      <div 
-                        key={feat.label} 
-                        onClick={() => setSearchQuery(feat.query)}
-                        className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col items-center gap-4 hover:bg-white/[0.05] hover:border-red-500/30 transition-all cursor-pointer group"
-                      >
-                        <feat.icon size={22} className="text-gray-700 group-hover:text-red-500 transition-colors" />
-                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">{feat.label}</span>
+                 {searchQuery ? (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="w-full space-y-6 text-left"
+                    >
+                      <div className="flex items-center justify-between px-2">
+                        <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Contextual Agent Results</h4>
+                        <button onClick={() => setSearchQuery('')} className="text-[9px] font-bold text-red-500 uppercase hover:underline">Clear Search</button>
                       </div>
-                    ))}
-                 </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {filteredData.map(cat => (
+                          cat.templates.map(tpl => (
+                            <div 
+                              key={tpl.title}
+                              onClick={() => handleCopy(tpl.responses?.[0]?.text)}
+                              className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-red-500/20 transition-all group cursor-pointer"
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-black text-white truncate uppercase tracking-tight">{tpl.title}</span>
+                                <Copy size={12} className="text-gray-700 group-hover:text-red-500" />
+                              </div>
+                              <p className="text-[11px] text-gray-600 line-clamp-2 leading-relaxed">
+                                {tpl.responses?.[0]?.text}
+                              </p>
+                            </div>
+                          ))
+                        ))}
+                        {filteredData.length === 0 && (
+                          <div className="col-span-full py-12 text-center bg-black/20 rounded-3xl border border-white/5">
+                            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">No matching procedural templates found</p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                 ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+                        {[
+                          { label: 'Payment Errors', icon: CreditCard, query: 'deposit error' },
+                          { label: 'Addiction Help', icon: ShieldAlert, query: 'draining me' },
+                          { label: 'Account Delete', icon: UserCog, query: 'delete account' },
+                          { label: 'System Crashes', icon: ServerCrash, query: 'bet failed' }
+                        ].map(feat => (
+                          <div 
+                            key={feat.label} 
+                            onClick={() => setSearchQuery(feat.query)}
+                            className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col items-center gap-4 hover:bg-white/[0.05] hover:border-red-500/30 transition-all cursor-pointer group"
+                          >
+                            <feat.icon size={22} className="text-gray-700 group-hover:text-red-500 transition-colors" />
+                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">{feat.label}</span>
+                          </div>
+                        ))}
+                    </div>
+                 )}
                </div>
             </div>
           </motion.div>
