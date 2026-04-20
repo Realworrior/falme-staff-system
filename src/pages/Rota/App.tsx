@@ -128,7 +128,8 @@ export default function App() {
       return;
     }
 
-    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Falme staff system//Rota//EN\n";
+    const nowStamp = format(new Date(), "yyyyMMdd'T'HHmmss'Z'");
+    let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Falme staff system//Rota//EN\r\n";
 
     schedule.forEach(daySchedule => {
       let staffShiftType = 'OFF';
@@ -165,30 +166,27 @@ export default function App() {
         const shiftMates = (shiftMatesList || []).filter(name => name !== selectedStaff);
         const shiftMatesText = shiftMates.length > 0 ? shiftMates.join(', ') : 'Working solo';
 
-        const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-        const safeStaffName = selectedStaff.replace(/\s+/g, '');
-
-        icsContent += `BEGIN:VEVENT\n`;
-        icsContent += `UID:${dateStr}-${staffShiftType}-${safeStaffName}@falmesystem.com\n`;
-        icsContent += `DTSTAMP:${dtStamp}\n`;
-        icsContent += `DTSTART:${startTime}\n`;
-        icsContent += `DTEND:${endTime}\n`;
-        icsContent += `SUMMARY:Falme: ${shiftTitle}\n`;
-        icsContent += `LOCATION:Falme Workplace\n`;
-        icsContent += `DESCRIPTION:⭐ Premium Rota Sync\\n\\n🔹 Shift Type: ${staffShiftType}\\n👥 Co-workers on duty: ${shiftMatesText}\\n\\nHave a great shift!\n`;
+        icsContent += `BEGIN:VEVENT\r\n`;
+        icsContent += `UID:${dateStr}-${staffShiftType}-${selectedStaff.replace(/\s+/g, '')}@falme.local\r\n`;
+        icsContent += `DTSTAMP:${nowStamp}\r\n`;
+        icsContent += `DTSTART:${startTime}\r\n`;
+        icsContent += `DTEND:${endTime}\r\n`;
+        icsContent += `SUMMARY:Falme: ${shiftTitle}\r\n`;
+        icsContent += `LOCATION:Falme Workplace\r\n`;
+        icsContent += `DESCRIPTION:⭐ Premium Rota Sync\\n\\n🔹 Shift Type: ${staffShiftType}\\n👥 Co-workers on duty: ${shiftMatesText}\\n\\nHave a great shift!\r\n`;
         
         // 30 minute reminder
-        icsContent += `BEGIN:VALARM\n`;
-        icsContent += `TRIGGER:-PT30M\n`;
-        icsContent += `ACTION:DISPLAY\n`;
-        icsContent += `DESCRIPTION:Falme Shift starts in 30 minutes! (${shiftMatesText} also joining)\n`;
-        icsContent += `END:VALARM\n`;
+        icsContent += `BEGIN:VALARM\r\n`;
+        icsContent += `TRIGGER:-PT30M\r\n`;
+        icsContent += `ACTION:DISPLAY\r\n`;
+        icsContent += `DESCRIPTION:Falme Shift starts in 30 minutes! (${shiftMatesText} also joining)\r\n`;
+        icsContent += `END:VALARM\r\n`;
         
-        icsContent += `END:VEVENT\n`;
+        icsContent += `END:VEVENT\r\n`;
       }
     });
 
-    icsContent += "END:VCALENDAR";
+    icsContent += "END:VCALENDAR\r\n";
 
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     const link = document.createElement('a');
