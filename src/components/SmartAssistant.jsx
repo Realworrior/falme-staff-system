@@ -239,6 +239,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
               <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} className="relative">
                 <BrainCircuit size={28} />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-[#12121e] animate-pulse" />
+                <div className="absolute -top-6 -left-6 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full shadow-lg shadow-red-500/40 animate-bounce">NEW</div>
               </motion.div>
             )}
           </AnimatePresence>

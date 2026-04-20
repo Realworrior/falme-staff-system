@@ -23,9 +23,9 @@ const Sidebar = ({ className }) => {
   const { closeMobileSidebar } = useNavigation();
   const navItems = [
     { path: '/', label: 'Overview', icon: LayoutDashboard, tooltip: 'Global monitoring and real-time pulse' },
-    { path: '/rota', label: 'Rota', icon: Calendar, tooltip: 'Staff schedule and shift management' },
+    { path: '/rota', label: 'Rota', icon: Calendar, tooltip: 'Staff schedule and shift management', isNew: true },
     { path: '/templates', label: 'Templates', icon: FileText, tooltip: 'Response templates and AI refinement' },
-    { path: '/resources', label: 'Resources', icon: BookOpen, tooltip: 'Operational manuals and sports guides' },
+    { path: '/resources', label: 'Resources', icon: BookOpen, tooltip: 'Operational manuals and sports guides', isNew: true },
     { path: '/slots', label: 'Aviator', icon: Activity, tooltip: 'Live slot tracker and volatility analysis' },
     { path: '/tickets', label: 'Tickets', icon: Ticket, tooltip: 'Customer issue resolution feed' },
   ];
@@ -76,10 +76,15 @@ const Sidebar = ({ className }) => {
                     "w-5 h-5 transition-all duration-500",
                     isActive ? "text-red-500 scale-110" : "group-hover:text-gray-300"
                   )} />
-                  <span className={cn(
-                    "flex-1 font-bold text-sm tracking-tight transition-all duration-500",
-                    isActive ? "translate-x-1" : "group-hover:translate-x-1"
-                  )}>{item.label}</span>
+                  <div className="flex-1 flex items-center gap-2 overflow-hidden">
+                    <span className={cn(
+                      "font-bold text-sm tracking-tight transition-all duration-500 truncate",
+                      isActive ? "translate-x-1" : "group-hover:translate-x-1"
+                    )}>{item.label}</span>
+                    {item.isNew && (
+                      <span className="bg-gradient-to-r from-red-600 to-orange-500 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full shadow-lg shadow-red-500/40 animate-pulse shrink-0">NEW</span>
+                    )}
+                  </div>
                   <ChevronRight className={cn(
                     "w-4 h-4 transition-all duration-500",
                     isActive ? "text-red-500 opacity-100 rotate-90" : "opacity-0 group-hover:opacity-100 translate-x-1"
