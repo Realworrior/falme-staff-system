@@ -40,7 +40,8 @@ import {
   Stamp,
   UserCog,
   ShieldAlert,
-  Sparkles
+  Sparkles,
+  Heart
 } from 'lucide-react';
 
 import { useGlobalData } from '../context/FirebaseDataContext';
@@ -604,21 +605,33 @@ const Templates = () => {
                             <div 
                               key={tpl.title}
                               onClick={() => handleCopy(tpl.responses?.[0]?.text)}
-                              className="p-6 rounded-[24px] bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] hover:border-red-500/40 hover:shadow-2xl hover:shadow-red-500/10 transition-all group cursor-pointer relative overflow-hidden"
+                              className="p-6 rounded-[32px] bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] hover:border-red-500/40 hover:shadow-2xl hover:shadow-red-500/10 transition-all group cursor-pointer relative overflow-hidden flex flex-col gap-4"
                             >
-                              <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.02] to-transparent pointer-events-none" />
-                              <div className="flex items-center justify-between mb-4 relative z-10">
-                                <div className="flex flex-col">
-                                  <span className="text-[12px] font-black text-white uppercase tracking-tight group-hover:text-red-400 transition-colors">{tpl.title}</span>
-                                  <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-0.5">{cat.category}</span>
+                              <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.03] to-transparent pointer-events-none" />
+                              
+                              <div className="flex items-start justify-between relative z-10 w-full">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-2">
+                                     <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                                     <span className="text-[14px] font-black text-white uppercase tracking-tighter leading-none group-hover:text-red-400 transition-colors">{tpl.title}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[7px] text-gray-500 font-black uppercase tracking-widest border border-white/5 italic">
+                                      {cat.category}
+                                    </span>
+                                    <span className="text-[7px] font-black text-rose-500/60 uppercase tracking-[0.2em] flex items-center gap-1">
+                                       <Heart size={8} fill="currentColor" /> Emotional Grounding
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="p-2 rounded-xl bg-white/5 text-gray-500 group-hover:text-white transition-colors">
-                                  <Copy size={14} />
+                                <div className="p-2.5 rounded-2xl bg-black/40 text-gray-500 group-hover:text-white transition-all shadow-inner border border-white/5">
+                                  <Copy size={16} />
                                 </div>
                               </div>
-                              <p className="text-[12px] text-gray-300 font-medium line-clamp-3 leading-relaxed relative z-10">
-                                {tpl.responses?.[0]?.text}
-                              </p>
+
+                              <div className="text-[13px] text-gray-300 font-medium leading-relaxed relative z-10 bg-black/20 p-4 rounded-2xl border border-white/[0.02]">
+                                <KeywordHighlighter text={tpl.responses?.[0]?.text || ""} />
+                              </div>
                             </div>
                           ))
                         ))}
