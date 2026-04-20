@@ -39,7 +39,8 @@ import {
   Trophy,
   Stamp,
   UserCog,
-  ShieldAlert
+  ShieldAlert,
+  Sparkles
 } from 'lucide-react';
 
 import { useGlobalData } from '../context/FirebaseDataContext';
