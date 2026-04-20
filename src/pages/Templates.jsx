@@ -238,9 +238,12 @@ const Templates = () => {
 
   const filteredData = useMemo(() => {
     let result = data;
-    if (selectedCategory) {
+    
+    // Global AI Agent skips specific category filtering to scan the whole DB
+    if (selectedCategory && selectedCategory !== 'AI_AGENT') {
       result = data.filter(c => c.category === selectedCategory);
     }
+    
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.map(cat => ({
