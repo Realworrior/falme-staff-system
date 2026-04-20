@@ -68,7 +68,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
       const isRG = q.includes('addiction') || q.includes('block') || q.includes('draining') || q.includes('limit') || q.includes('responsible');
       const isFin = q.includes('money') || q.includes('withdraw') || q.includes('deposit') || q.includes('refund');
       
-      // Search KB
+      // Search KB for SOPs
       const matches = knowledgeBase.filter(k => 
         k.title.toLowerCase().includes(q) || 
         k.category.toLowerCase().includes(q) || 
@@ -77,42 +77,58 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
 
       let variations = [];
       
+      const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('remove') || q.includes('how to') || q.includes('steps');
+
       if (isRG) {
         variations = [
           {
-            type: "Empathetic & Caring",
-            text: "I am truly sorry to hear that you're feeling this way. Your well-being is our priority. I will immediately help you with the self-exclusion process so you can take the necessary break for your mental health."
+            type: "Empathetic (SOP Aligned)",
+            text: "I am truly sorry to hear that you're feeling this way. Your well-being is our priority. I will immediately help you with the self-exclusion process so you can take the necessary break for your mental health. Shall I proceed with blocking account " + (q.match(/\d+/) || "associated with your number") + "?"
           },
           {
-            type: "Action-Oriented (Immediate)",
-            text: "Understood. I have initiated the permanent self-exclusion protocol for account 0742115006. Please note that once blocked for responsible gaming reasons, this action cannot be reversed. Shall I proceed?"
+            type: "Action-Oriented (Direct Steps)",
+            text: "Understood. Based on our Responsible Gaming SOP, I have initiated the permanent self-exclusion protocol. To finalize, please confirm your identity. Once blocked, this action is final and account " + (q.match(/\d+/) || "") + " cannot be reopened."
           },
           {
-            type: "Professional / Compliance",
-            text: "Thank you for reaching out. In accordance with our Responsible Gaming policy, we are processing your request to block account 0742115006 due to gambling concerns. We also recommend contacting support organizations like Responsible Gambling Kenya for further assistance."
+            type: "Professional (Compliance)",
+            text: "In accordance with our regulatory requirements and Responsible Gaming policy, we are processing your request to block account " + (q.match(/\d+/) || "") + ". We advise you to uninstall any betting applications and consider contacting support services like Responsible Gambling Kenya."
           }
         ];
       } else if (matches.length > 0) {
         const top = matches[0];
         const base = top.source.responses?.[0]?.text || "No text available.";
+        
+        // Simulating "Learning from Template" and adjusting tone/grammar
+        const refinedBase = base.charAt(0).toUpperCase() + base.slice(1);
+        
         variations = [
-          { type: "Standard Professional", text: base },
-          { type: "Empathetic Variant", text: "I understand your concern. " + base },
-          { type: "Concise Variant", text: base.slice(0, 150) + "..." }
+          { 
+            type: "Smart Refined (Grammar Corrected)", 
+            text: refinedBase.replace(/can't/g, "cannot").replace(/don't/g, "do not") 
+          },
+          { 
+            type: "Empathetic Variant", 
+            text: "I completely understand your request regarding " + top.title + ". " + refinedBase 
+          },
+          { 
+            type: "Concise Actionable", 
+            text: "To address your request: " + (proceduralMatch ? "Please follow these steps: \n1. Login to your profile\n2. Navigate to Settings\n3. Select " + top.title + "\n4. Confirm your choice." : refinedBase) 
+          }
         ];
       } else {
+        // ... (existing fallback variations)
         variations = [
           {
-            type: "General Assistance",
-            text: "I couldn't find a specific template for this, but I recommend this professional approach: 'Hello, thank you for contacting us. I'm looking into your request regarding " + query + " right now.'"
+            type: "Intelligent Suggestion",
+            text: "I couldn't find an exact SOP match. Based on standard support guidelines for " + query + ", I suggest: 'Hello, I've received your request and I'm currently checking our database to provide you with the correct steps. Thank you for your patience.'"
           },
           {
-            type: "Empathetic Approach",
-            text: "I understand this is important to you. While I check our specialized procedures for " + query + ", please allow me a moment to ensure I provide the most accurate information."
+            type: "Empathy-First Approach",
+            text: "I understand this is an important matter for you. While I look into the specific procedures for " + query + ", could you please provide any additional details so I can assist you more effectively?"
           },
           {
-            type: "Fallback Professional",
-            text: "Our team is processing requests similar to yours. Regarding " + query + ", may I ask for your account details so I can provide a tailored solution?"
+            type: "Standard Support Response",
+            text: "Thank you for reaching out. I'm escalating your query regarding " + query + " to ensure you receive a comprehensive solution. I'll provide an update here shortly."
           }
         ];
       }
