@@ -7,22 +7,27 @@ import {
   Ticket, 
   ChevronRight,
   LogOut,
-  Zap
+  Zap,
+  Calendar,
+  BookOpen
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useNavigation } from '../context/NavigationContext';
+import { Tooltip } from '@mui/material';
 
 const cn = (...inputs) => twMerge(clsx(inputs));
 
 const Sidebar = ({ className }) => {
   const { closeMobileSidebar } = useNavigation();
   const navItems = [
-    { path: '/', label: 'Overview', icon: LayoutDashboard },
-    { path: '/templates', label: 'Templates', icon: FileText },
-    { path: '/slots', label: 'Aviator', icon: Activity },
-    { path: '/tickets', label: 'Tickets', icon: Ticket },
+    { path: '/', label: 'Overview', icon: LayoutDashboard, tooltip: 'Global monitoring and real-time pulse' },
+    { path: '/rota', label: 'Rota', icon: Calendar, tooltip: 'Staff schedule and shift management' },
+    { path: '/templates', label: 'Templates', icon: FileText, tooltip: 'Response templates and AI refinement' },
+    { path: '/resources', label: 'Resources', icon: BookOpen, tooltip: 'Operational manuals and sports guides' },
+    { path: '/slots', label: 'Aviator', icon: Activity, tooltip: 'Live slot tracker and volatility analysis' },
+    { path: '/tickets', label: 'Tickets', icon: Ticket, tooltip: 'Customer issue resolution feed' },
   ];
 
   return (
@@ -51,49 +56,50 @@ const Sidebar = ({ className }) => {
       <nav className="flex-1 p-6 space-y-3 overflow-y-auto custom-scrollbar">
         <p className="px-4 text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-4">Core Workspace</p>
         {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onClick={closeMobileSidebar}
-            end={item.path === '/'}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-500 group relative overflow-hidden",
-                isActive
-                  ? "bg-white/[0.03] text-white border border-white/5 shadow-2xl"
-                  : "text-gray-500 hover:text-white hover:bg-white/[0.02]"
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon className={cn(
-                  "w-5 h-5 transition-all duration-500",
-                  isActive ? "text-red-500 scale-110" : "group-hover:text-gray-300"
-                )} />
-                <span className={cn(
-                  "flex-1 font-bold text-sm tracking-tight transition-all duration-500",
-                  isActive ? "translate-x-1" : "group-hover:translate-x-1"
-                )}>{item.label}</span>
-                <ChevronRight className={cn(
-                  "w-4 h-4 transition-all duration-500",
-                  isActive ? "text-red-500 opacity-100 rotate-90" : "opacity-0 group-hover:opacity-100 translate-x-1"
-                )} />
-                
-                {isActive && (
-                  <motion.div 
-                    layoutId="activeNavIndicator"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-red-600 rounded-r-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"
-                  />
-                )}
-                
-                {/* Hover Glow */}
-                {!isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                )}
-              </>
-            )}
-          </NavLink>
+          <Tooltip key={item.path} title={item.tooltip} placement="right" arrow>
+            <NavLink
+              to={item.path}
+              onClick={closeMobileSidebar}
+              end={item.path === '/'}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-500 group relative overflow-hidden",
+                  isActive
+                    ? "bg-white/[0.03] text-white border border-white/5 shadow-2xl"
+                    : "text-gray-500 hover:text-white hover:bg-white/[0.02]"
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon className={cn(
+                    "w-5 h-5 transition-all duration-500",
+                    isActive ? "text-red-500 scale-110" : "group-hover:text-gray-300"
+                  )} />
+                  <span className={cn(
+                    "flex-1 font-bold text-sm tracking-tight transition-all duration-500",
+                    isActive ? "translate-x-1" : "group-hover:translate-x-1"
+                  )}>{item.label}</span>
+                  <ChevronRight className={cn(
+                    "w-4 h-4 transition-all duration-500",
+                    isActive ? "text-red-500 opacity-100 rotate-90" : "opacity-0 group-hover:opacity-100 translate-x-1"
+                  )} />
+                  
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeNavIndicator"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-red-600 rounded-r-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"
+                    />
+                  )}
+                  
+                  {/* Hover Glow */}
+                  {!isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </>
+              )}
+            </NavLink>
+          </Tooltip>
         ))}
       </nav>
 

@@ -13,6 +13,7 @@ import {
   Copy,
   ArrowRight
 } from 'lucide-react';
+import { Tooltip } from '@mui/material';
 
 /**
  * SmartAssistant - A floating AI search and knowledge agent
@@ -222,25 +223,27 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
   return (
     <>
       {/* Floating Toggle Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-16 h-16 rounded-2xl accent-gradient text-white shadow-2xl z-[999] flex items-center justify-center border border-white/20"
-      >
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
-              <X size={28} />
-            </motion.div>
-          ) : (
-            <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} className="relative">
-              <BrainCircuit size={28} />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-[#12121e] animate-pulse" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      <Tooltip title="Falme Knowledge Assistant - Ask me anything about templates or rules" placement="left" arrow>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsOpen(!isOpen)}
+          className="fixed bottom-6 right-6 w-16 h-16 rounded-2xl accent-gradient text-white shadow-2xl z-[999] flex items-center justify-center border border-white/20"
+        >
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+                <X size={28} />
+              </motion.div>
+            ) : (
+              <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} className="relative">
+                <BrainCircuit size={28} />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-[#12121e] animate-pulse" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </Tooltip>
 
       {/* Assistant Panel */}
       <AnimatePresence>
