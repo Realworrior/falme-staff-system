@@ -27,16 +27,33 @@ export const SupabaseDataProvider = ({ children }) => {
     setIsReady(true);
   }, []);
 
+  const tryBothPaths = async (endpoint, options) => {
+    // Attempt 1: Non-prefixed (Standard Supabase pathing)
+    const url1 = `https://kgpcruwlejoougjbeouw.supabase.co/functions/v1/make-server-07e1ed14${endpoint}`;
+    // Attempt 2: Prefixed (Sometimes required by Hono/Supabase combination)
+    const url2 = `https://kgpcruwlejoougjbeouw.supabase.co/functions/v1/make-server-07e1ed14/make-server-07e1ed14${endpoint}`;
+
+    try {
+      let response = await fetch(url1, options);
+      if (response.status === 404) {
+        response = await fetch(url2, options);
+      }
+      return response;
+    } catch (err) {
+      // Final fallback search
+      return await fetch(url2, options);
+    }
+  };
+
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/tickets`, { headers: AUTH_HEADER });
+      const response = await tryBothPaths('/tickets', { headers: AUTH_HEADER });
       if (!response.ok) throw new Error('Failed to fetch tickets');
       const data = await response.json();
       setTickets(data.tickets || []);
     } catch (err) {
       console.error('Fetch error:', err);
-      // Fallback to sample data if API fails but we want the app to look "complete"
       setTickets([]);
       setError(err);
     } finally {
@@ -44,23 +61,18 @@ export const SupabaseDataProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      fetchTickets();
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
-
   const loginWithPhone = async (phone, pin, role) => {
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await tryBothPaths('/login', {
         method: 'POST',
         headers: AUTH_HEADER,
         body: JSON.stringify({ phone, pin, role })
       });
       
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.error('Login failed with status:', response.status);
+        return null;
+      }
       
       const data = await response.json();
       if (data.user) {
@@ -75,9 +87,17 @@ export const SupabaseDataProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      fetchTickets();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
   const createTicket = async (ticketData) => {
     try {
-      const response = await fetch(`${API_URL}/tickets`, {
+      const response = await tryBothPaths('/tickets', {
         method: 'POST',
         headers: AUTH_HEADER,
         body: JSON.stringify(ticketData)
@@ -94,7 +114,7 @@ export const SupabaseDataProvider = ({ children }) => {
 
   const updateTicket = async (id, updates) => {
     try {
-      const response = await fetch(`${API_URL}/tickets/${id}`, {
+      const response = await tryBothPaths(`/tickets/${id}`, {
         method: 'PUT',
         headers: AUTH_HEADER,
         body: JSON.stringify(updates)

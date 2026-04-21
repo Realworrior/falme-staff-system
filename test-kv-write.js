@@ -1,0 +1,22 @@
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = 'https://kgpcruwlejoougjbeouw.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtncGNydXdsZWpvb3VnamJlb3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Njg1NTgsImV4cCI6MjA5MjM0NDU1OH0.FUM24PZZdw1Rg5IYePFx0SKWp_GI6adn7etivCUAfgY'
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+async function testInsert() {
+  console.log('Testing insert into kv_store_07e1ed14...');
+  const { error } = await supabase.from('kv_store_07e1ed14').upsert({
+    key: 'test_connection',
+    value: { status: 'ok' }
+  });
+  
+  if (error) {
+    console.error('Insert failed:', error.message);
+  } else {
+    console.log('Insert successful!');
+  }
+}
+
+testInsert();
