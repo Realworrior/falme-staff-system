@@ -3,9 +3,6 @@ import { supabase } from '../supabaseClient';
 
 const SupabaseDataContext = createContext();
 
-const API_URL = 'https://kgpcruwlejoougjbeouw.supabase.co/functions/v1/make-server-07e1ed14';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
 export const SupabaseDataProvider = ({ children }) => {
   const [tickets, setTickets] = useState([]);
   const [user, setUser] = useState(null);
@@ -13,130 +10,168 @@ export const SupabaseDataProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isReady, setIsReady] = useState(false);
 
-  const AUTH_HEADER = {
-    'Authorization': `Bearer ${supabaseAnonKey}`,
-    'Content-Type': 'application/json'
-  };
-
   useEffect(() => {
-    // 1. Check for stored session (as imported app does)
+    // 1. Check for stored session locally
     const storedUser = localStorage.getItem('betwin_user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    setIsReady(true);
   }, []);
-
-  const tryBothPaths = async (endpoint, options) => {
-    // Attempt 1: Non-prefixed (Standard Supabase pathing)
-    const url1 = `https://kgpcruwlejoougjbeouw.supabase.co/functions/v1/make-server-07e1ed14${endpoint}`;
-    // Attempt 2: Prefixed (Sometimes required by Hono/Supabase combination)
-    const url2 = `https://kgpcruwlejoougjbeouw.supabase.co/functions/v1/make-server-07e1ed14/make-server-07e1ed14${endpoint}`;
-
-    try {
-      let response = await fetch(url1, options);
-      if (response.status === 404) {
-        response = await fetch(url2, options);
-      }
-      return response;
-    } catch (err) {
-      // Final fallback search
-      return await fetch(url2, options);
-    }
-  };
 
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      const response = await tryBothPaths('/tickets', { headers: AUTH_HEADER });
-      if (!response.ok) throw new Error('Failed to fetch tickets');
-      const data = await response.json();
-      setTickets(data.tickets || []);
+      const { data, error } = await supabase
+        .from('tickets')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        setTickets([]);
+      } else {
+        setTickets(data || []);
+      }
     } catch (err) {
-      console.error('Fetch error:', err);
+      console.error('Critical Fetch Error:', err);
       setTickets([]);
       setError(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loginWithPhone = async (phone, pin, role) => {
-    try {
-      const response = await tryBothPaths('/login', {
-        method: 'POST',
-        headers: AUTH_HEADER,
-        body: JSON.stringify({ phone, pin, role })
-      });
-      
-      if (!response.ok) {
-        console.error('Login failed with status:', response.status);
-        return null;
-      }
-      
-      const data = await response.json();
-      if (data.user) {
-        setUser(data.user);
-        localStorage.setItem('betwin_user', JSON.stringify(data.user));
-        return data.user;
-      }
-      return null;
-    } catch (err) {
-      console.error('Login error:', err);
-      return null;
+      setIsReady(true);
     }
   };
 
   useEffect(() => {
-    if (user) {
-      fetchTickets();
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
+    fetchTickets();
+    
+    // Real-time Subscription
+    const subscription = supabase
+      .channel('tickets_channel')
+      .on('postgres_changes', { event: '*', table: 'tickets', schema: 'public' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setTickets(prev => [payload.new, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setTickets(prev => prev.map(t => t.id === payload.new.id ? payload.new : t));
+        } else if (payload.eventType === 'DELETE') {
+          setTickets(prev => prev.filter(t => t.id === payload.old.id));
+        }
+      })
+      .subscribe();
 
-  const createTicket = async (ticketData) => {
-    try {
-      const response = await tryBothPaths('/tickets', {
-        method: 'POST',
-        headers: AUTH_HEADER,
-        body: JSON.stringify(ticketData)
-      });
-      if (!response.ok) throw new Error('Create failed');
-      const data = await response.json();
-      setTickets(prev => [data.ticket, ...prev]);
-      return data.ticket;
-    } catch (err) {
-      console.error('Create error:', err);
-      throw err;
-    }
-  };
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, []);
 
-  const updateTicket = async (id, updates) => {
-    try {
-      const response = await tryBothPaths(`/tickets/${id}`, {
-        method: 'PUT',
-        headers: AUTH_HEADER,
-        body: JSON.stringify(updates)
-      });
-      if (!response.ok) throw new Error('Update failed');
-      const data = await response.json();
-      setTickets(prev => prev.map(t => t.id === id ? data.ticket : t));
-      return data.ticket;
-    } catch (err) {
-      console.error('Update error:', err);
-      throw err;
+  const loginWithPhone = async (phone, pin, role) => {
+    // HARDCODED DEMO CREDENTIALS to bypass DB requirement
+    // Matching 123-456-7890 / 1234
+    // or 098-765-4321 / 4321
+    
+    // Check credentials locally
+    let authUser = null;
+    
+    if (phone === '123-456-7890' && pin === '1234') {
+        authUser = {
+            id: 'staff-demo-id',
+            phone: '123-456-7890',
+            role: 'staff',
+            name: 'Staff Operator'
+        };
+    } else if (phone === '098-765-4321' && pin === '4321') {
+        authUser = {
+            id: 'tech-demo-id',
+            phone: '098-765-4321',
+            role: 'technician',
+            name: 'Technical Ops'
+        };
     }
-  };
-
-  const deleteTicket = async (id) => {
-    // Optimistic delete
-    setTickets(prev => prev.filter(t => t.id !== id));
+    
+    if (authUser && (!role || role === authUser.role)) {
+        setUser(authUser);
+        localStorage.setItem('betwin_user', JSON.stringify(authUser));
+        return authUser;
+    }
+    
+    return null;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('betwin_user');
+  };
+
+  const createTicket = async (ticket) => {
+    // We map frontend structure to the older dbTicket columns 
+    const dbTicket = {
+      ticket_id: ticket.id || `T-${Math.floor(1000 + Math.random() * 9000)}`,
+      category: ticket.category,
+      title: ticket.title,
+      phone: ticket.phone,
+      comments: ticket.description || ticket.comments,
+      amount: ticket.amount ? parseFloat(ticket.amount) : null,
+      time: ticket.time,
+      game: ticket.game,
+      bet_id: ticket.betId,
+      possible_win: ticket.possibleWin,
+      ten_digit_code: ticket.tenDigitCode,
+      merchant: ticket.merchant,
+      token_expired: ticket.tokenExpired,
+      urgency: ticket.urgency,
+      priority: ticket.priority,
+      status: ticket.status || 'open',
+      author: ticket.author || user?.name || 'Customer'
+    };
+
+    const { data, error } = await supabase
+      .from('tickets')
+      .insert([dbTicket])
+      .select();
+
+    if (error) {
+        console.error("Create ticket error:", error.message);
+        throw error;
+    }
+    return data[0];
+  };
+
+  const updateTicket = async (id, updates) => {
+    const dbUpdates = { ...updates };
+    
+    const { data, error } = await supabase
+      .from('tickets')
+      .update(dbUpdates)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+        // Fallback to searching by ticket_id if id is the 6-char code
+        const { data: retryData, error: retryError } = await supabase
+            .from('tickets')
+            .update(dbUpdates)
+            .eq('ticket_id', id)
+            .select();
+        if (retryError) throw retryError;
+        return retryData[0];
+    }
+    return data[0];
+  };
+
+  const deleteTicket = async (id) => {
+    const { error } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+        // Fallback
+        const { error: retryError } = await supabase
+            .from('tickets')
+            .delete()
+            .eq('ticket_id', id);
+        if (retryError) throw retryError;
+    }
   };
 
   const value = {
