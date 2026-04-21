@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://kgpcruwlejoougjbeouw.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtncGNydXdsZWpvb3VnamJlb3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Njg1NTgsImV4cCI6MjA5MjM0NDU1OH0.FUM24PZZdw1Rg5IYePFx0SKWp_GI6adn7etivCUAfgY';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const SupabaseDataContext = createContext();
 
@@ -128,21 +132,42 @@ export const SupabaseDataProvider = ({ children }) => {
       author: ticket.author || user?.name || 'Customer'
     };
 
-    const { data, error } = await supabase
-      .from('tickets')
-      .insert([dbTicket])
-      .select();
+    try {
+        const { data, error } = await supabase
+          .from('tickets')
+          .insert([dbTicket])
+          .select();
 
-    if (error) {
-        // Fallback: If RLS blocks select but allowed insert
-        const { error: insertOnlyError } = await supabase.from('tickets').insert([dbTicket]);
-        if (insertOnlyError) {
-           console.error("Create ticket error:", insertOnlyError.message);
-           throw insertOnlyError;
+        if (error) {
+            // Fallback 1: Insert without select
+            const { error: insertOnlyError } = await supabase.from('tickets').insert([dbTicket]);
+            if (insertOnlyError) throw insertOnlyError;
+            return dbTicket;
         }
-        return dbTicket; // Return our local copy if we can't select
+        return data[0];
+    } catch (err) {
+        // Fallback 2: Raw fetch to bypass library issues
+        console.warn("Supabase-js failed, trying raw fetch...");
+        const response = await fetch(`${supabaseUrl}/rest/v1/tickets`, {
+            method: 'POST',
+            headers: {
+                'apikey': supabaseAnonKey,
+                'Authorization': `Bearer ${supabaseAnonKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(dbTicket)
+        });
+        
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || response.statusText);
+        }
+        
+        const result = await response.json();
+        return result[0];
     }
-    return data[0];
+
   };
 
   const updateTicket = async (id, updates) => {
