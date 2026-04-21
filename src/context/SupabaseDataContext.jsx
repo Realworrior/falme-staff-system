@@ -103,24 +103,28 @@ export const SupabaseDataProvider = ({ children }) => {
   };
 
   const createTicket = async (ticket) => {
-    // We map frontend structure to the older dbTicket columns 
+    let dbStatus = 'Pending';
+    if (ticket.status?.toLowerCase() === 'resolved' || ticket.status?.toLowerCase() === 'closed') {
+        dbStatus = 'Resolved';
+    }
+
     const dbTicket = {
       ticket_id: ticket.id || `T-${Math.floor(1000 + Math.random() * 9000)}`,
-      category: ticket.category,
-      title: ticket.title,
-      phone: ticket.phone,
-      comments: ticket.description || ticket.comments,
+      category: ticket.category || 'General',
+      title: ticket.title || 'Untitled Issue',
+      phone: ticket.phone || null,
+      comments: ticket.description || ticket.comments || 'No description',
       amount: ticket.amount ? parseFloat(ticket.amount) : null,
-      time: ticket.time,
-      game: ticket.game,
-      bet_id: ticket.betId,
-      possible_win: ticket.possibleWin,
-      ten_digit_code: ticket.tenDigitCode,
-      merchant: ticket.merchant,
-      token_expired: ticket.tokenExpired,
-      urgency: ticket.urgency,
-      priority: ticket.priority,
-      status: ticket.status || 'open',
+      time: ticket.time || new Date().toISOString(),
+      game: ticket.game || null,
+      bet_id: ticket.betId || ticket.bet_id || null,
+      possible_win: ticket.possibleWin || null,
+      ten_digit_code: ticket.tenDigitCode || null,
+      merchant: ticket.merchant || null,
+      token_expired: ticket.tokenExpired || false,
+      urgency: ticket.urgency || null,
+      priority: ticket.priority || 'Medium',
+      status: dbStatus,
       author: ticket.author || user?.name || 'Customer'
     };
 
@@ -139,6 +143,11 @@ export const SupabaseDataProvider = ({ children }) => {
   const updateTicket = async (id, updates) => {
     const dbUpdates = { ...updates };
     
+    if (dbUpdates.status) {
+        const s = dbUpdates.status.toLowerCase();
+        dbUpdates.status = (s === 'resolved' || s === 'closed') ? 'Resolved' : 'Pending';
+    }
+    
     const { data, error } = await supabase
       .from('tickets')
       .update(dbUpdates)
@@ -153,10 +162,11 @@ export const SupabaseDataProvider = ({ children }) => {
             .eq('ticket_id', id)
             .select();
         if (retryError) throw retryError;
-        return retryData[0];
+        return retryData ? retryData[0] : null;
     }
-    return data[0];
+    return data ? data[0] : null;
   };
+
 
   const deleteTicket = async (id) => {
     const { error } = await supabase

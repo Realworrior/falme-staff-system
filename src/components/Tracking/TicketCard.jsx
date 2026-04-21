@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, User as UserIcon, AlertCircle } from 'lucide-react';
+import { Clock, User as UserIcon, AlertCircle, Phone, DollarSign, Target, Copy } from 'lucide-react';
 
 const formatDate = (isoString) => {
   if (!isoString) return 'Pending...';
@@ -32,9 +32,14 @@ const priorityColors = {
 };
 
 export function TicketCard({ ticket, onStatusChange, onAssign, userRole, userName }) {
-  // Use status mapping if needed (the existing app used lowercase)
-  const displayStatus = ticket.status?.toLowerCase() || 'open';
+  const s = ticket.status?.toLowerCase();
+  const displayStatus = (s === 'resolved' || s === 'closed') ? 'resolved' : 'open';
   const displayPriority = ticket.priority?.toLowerCase() || 'medium';
+
+  const handleCopy = (text, e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+  };
 
   return (
     <div className="glass rounded-2xl p-6 hover:border-red-500/20 transition-all group relative overflow-hidden">
@@ -55,6 +60,42 @@ export function TicketCard({ ticket, onStatusChange, onAssign, userRole, userNam
           <p className="text-sm text-gray-500 font-medium leading-relaxed line-clamp-2 italic">
             "{ticket.comments || ticket.description || 'No detailed description provided.'}"
           </p>
+
+          <div className="flex flex-wrap gap-2 mt-4">
+            {ticket.phone && (
+              <button 
+                type="button"
+                onClick={(e) => handleCopy(ticket.phone, e)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-black/40 border border-white/5 rounded-lg hover:bg-white/10 transition-colors group/btn shrink-0 active:scale-95"
+              >
+                <Phone className="w-3 h-3 text-red-500/50 group-hover/btn:text-red-500 transition-colors" />
+                <span className="text-[10px] font-mono font-black text-white">{ticket.phone}</span>
+                <Copy className="w-3 h-3 text-gray-600 group-hover/btn:text-white ml-0.5 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+              </button>
+            )}
+            {ticket.amount && (
+              <button 
+                type="button"
+                onClick={(e) => handleCopy(ticket.amount, e)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-black/40 border border-white/5 rounded-lg hover:bg-white/10 transition-colors group/btn shrink-0 active:scale-95"
+              >
+                <DollarSign className="w-3 h-3 text-green-500/50 group-hover/btn:text-green-500 transition-colors" />
+                <span className="text-[10px] font-mono font-black text-white">{ticket.amount}</span>
+                <Copy className="w-3 h-3 text-gray-600 group-hover/btn:text-white ml-0.5 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+              </button>
+            )}
+            {(ticket.bet_id || ticket.betId) && (
+              <button 
+                type="button"
+                onClick={(e) => handleCopy(ticket.bet_id || ticket.betId, e)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-black/40 border border-white/5 rounded-lg hover:bg-white/10 transition-colors group/btn shrink-0 active:scale-95"
+              >
+                <Target className="w-3 h-3 text-purple-500/50 group-hover/btn:text-purple-500 transition-colors" />
+                <span className="text-[10px] font-mono font-black text-white">{ticket.bet_id || ticket.betId}</span>
+                <Copy className="w-3 h-3 text-gray-600 group-hover/btn:text-white ml-0.5 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+              </button>
+            )}
+          </div>
         </div>
         <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border h-fit ${priorityColors[displayPriority]}`}>
           {displayPriority}
