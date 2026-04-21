@@ -67,10 +67,6 @@ export default function Tickets() {
     showToast('Logged out successfully', 'info');
   };
 
-  if (!user) {
-    return <LoginForm onLogin={handleLoginWithPhone} />;
-  }
-
   const filteredTickets = useMemo(() => {
     const q = searchQuery.toLowerCase();
     let result = tickets;
@@ -97,6 +93,11 @@ export default function Tickets() {
     resolved: tickets.filter(t => t.status?.toLowerCase() === 'resolved').length,
     total: tickets.length
   };
+
+  if (!user) {
+    return <LoginForm onLogin={handleLoginWithPhone} />;
+  }
+
 
   const userRole = user.role || 'staff';
 
