@@ -28,10 +28,15 @@ export const SupabaseDataProvider = ({ children }) => {
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        setTickets(data);
+        if (error) {
+          console.error('Supabase fetch error:', error);
+          setTickets([]);
+        } else {
+          setTickets(data || []);
+        }
       } catch (err) {
-        console.error('Error fetching tickets:', err);
+        console.error('Critical Fetch Error:', err);
+        setTickets([]);
         setError(err);
       } finally {
         setLoading(false);
