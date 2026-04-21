@@ -5,6 +5,7 @@ import App from './App.jsx'
 import { NavigationProvider } from './context/NavigationContext'
 import { ToastProvider } from './context/ToastContext'
 import { FirebaseDataProvider } from './context/FirebaseDataContext'
+import { SupabaseDataProvider } from './context/SupabaseDataContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import './index.css'
 
@@ -14,9 +15,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <NavigationProvider>
           <FirebaseDataProvider>
-            <ToastProvider>
-              <App />
-            </ToastProvider>
+            <SupabaseDataProvider>
+              <ToastProvider>
+                <App />
+              </ToastProvider>
+            </SupabaseDataProvider>
           </FirebaseDataProvider>
         </NavigationProvider>
       </BrowserRouter>

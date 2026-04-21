@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useGlobalData } from '../context/FirebaseDataContext';
+import { useSupabaseData } from '../context/SupabaseDataContext';
 import TicketAuth from '../components/TicketAuth';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, 
@@ -27,21 +28,23 @@ const MERCHANTS = ["METAPAY", "FALMEBET"];
 const URGENCY_LEVELS = ["Low", "Normal", "High", "Critical"];
 
 const Tickets = () => {
-  const { tickets, templates, loading: globalLoading, actions } = useGlobalData();
-  const loading = globalLoading.tickets;
+  const { templates, actions: firebaseActions } = useGlobalData();
+  const { tickets, user, loading, actions: supabaseActions } = useSupabaseData();
   const { showToast } = useToast();
   
-  // Auth State
-  const [auth, setAuth] = useState({ isAuth: false, role: 'Staff' });
+  // Local UI State
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); // All, Pending, In Progress, Resolved
   const [modalOpen, setModalOpen] = useState(false);
   const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
   const [suggestedResponses, setSuggestedResponses] = useState([]);
 
-  const handleUpdateRecord = (id, updates) => actions.updateRecord('supportTickets', id, updates);
-  const handleCreateRecord = (record) => actions.createRecord('supportTickets', record);
-  const handleDeleteRecord = (id) => actions.deleteRecord('supportTickets', id);
+  // Derive role from Supabase metadata
+  const userRole = user?.user_metadata?.role || 'Staff'; 
+
+  const handleUpdateRecord = (id, updates) => supabaseActions.updateTicket(id, updates);
+  const handleCreateRecord = (record) => supabaseActions.createTicket(record);
+  const handleDeleteRecord = (id) => supabaseActions.deleteTicket(id);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -118,13 +121,9 @@ const Tickets = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = (role) => {
-    setAuth({ isAuth: true, role });
-    showToast(`Authenticated as ${role}`, 'success');
-  };
-
-  const handleLogout = () => {
-    setAuth({ isAuth: false, role: 'Staff' });
+  const handleLogout = async () => {
+    await supabaseActions.logout();
+    showToast('Logged out successfully', 'success');
   };
 
   const stats = useMemo(() => ([
@@ -146,7 +145,7 @@ const Tickets = () => {
 
     return result.filter(t => {
       const cat = t.category || t.type || 'General Enquiry';
-      const searchStr = (cat + (t.phone || '') + (t.id || '') + (t.title || '')).toLowerCase();
+      const searchStr = (cat + (t.phone || '') + (t.ticket_id || '') + (t.title || '')).toLowerCase();
       return searchStr.includes(q);
     }).sort((a, b) => (b.created || 0) - (a.created || 0));
   }, [tickets, searchQuery, statusFilter, isReady]);
@@ -164,7 +163,7 @@ const Tickets = () => {
       ...form,
       id: newId,
       created: Date.now(),
-      author: auth.role,
+      author: userRole,
       status: 'Pending'
     };
     
@@ -199,8 +198,8 @@ const Tickets = () => {
     });
   };
 
-  if (!auth.isAuth) {
-    return <TicketAuth onLogin={handleLogin} />;
+  if (!user) {
+    return <TicketAuth />;
   }
 
   if (loading || !isReady) {
@@ -229,16 +228,15 @@ const Tickets = () => {
       >
         <div className="flex items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-xl">
-            {auth.role === 'Staff' ? <User className="text-red-500" /> : <Shield className="text-red-500" />}
+            {userRole === 'Staff' ? <User className="text-red-500" /> : <Shield className="text-red-500" />}
           </div>
           <div>
             <div className="flex flex-col md:flex-row md:items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-black text-white font-heading tracking-tighter uppercase">{auth.role} Portal</h1>
+              <h1 className="text-2xl md:text-3xl font-black text-white font-heading tracking-tighter uppercase">{userRole} Portal</h1>
               <span className="w-fit px-2 py-0.5 rounded bg-red-600/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">Active Session</span>
             </div>
             <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2">
-              <Briefcase size={10} />
-              Customer Support System
+              <span className="text-red-500/60 font-mono">{user?.email}</span>
             </p>
           </div>
         </div>
@@ -262,7 +260,7 @@ const Tickets = () => {
 
       {/* Stats Summary (Dept View only show full, Staff might show simplified) */}
       <AnimatePresence>
-        {auth.role === 'Dept' && (
+        {userRole === 'Dept' && (
           <motion.div 
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -348,7 +346,7 @@ const Tickets = () => {
                         <td className="py-6 px-8">
                           <div className="flex flex-col">
                             <span className="text-white font-black uppercase tracking-tight text-sm md:text-base">{ticket.title || "No Summary Provided"}</span>
-                            <span className="text-gray-600 text-[11px] font-mono mt-1 font-bold">UID: #{(ticket.id || '').toUpperCase()}</span>
+                            <span className="text-gray-600 text-[11px] font-mono mt-1 font-bold">UID: #{(ticket.ticket_id || '').toUpperCase()}</span>
                           </div>
                         </td>
                         <td className="py-6 px-8">
@@ -398,13 +396,13 @@ const Tickets = () => {
                                <button 
                                  title="Mark as Resolved"
                                  className="p-2.5 bg-emerald-500/5 border border-emerald-500/10 text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all shadow-xl"
-                                 onClick={() => handleUpdateStatus(ticket.firebaseKey || ticket.id, 'Resolved')}
+                                 onClick={() => handleUpdateStatus(ticket.id, 'Resolved')}
                                >
                                  <CheckCircle2 size={16} />
                                </button>
                              )}
                              <button className="p-2.5 bg-white/5 border border-white/5 text-gray-500 hover:text-white hover:border-white/10 rounded-xl transition-all shadow-xl"><Eye size={16} /></button>
-                             <button className="p-2.5 bg-red-500/5 border border-red-500/10 text-gray-700 hover:text-red-500 hover:border-red-500/20 rounded-xl transition-all shadow-xl" onClick={() => deleteRecord(ticket.firebaseKey || ticket.id)}><Trash2 size={16} /></button>
+                             <button className="p-2.5 bg-red-500/5 border border-red-500/10 text-gray-700 hover:text-red-500 hover:border-red-500/20 rounded-xl transition-all shadow-xl" onClick={() => handleDeleteRecord(ticket.id)}><Trash2 size={16} /></button>
                           </div>
                         </td>
                       </motion.tr>
@@ -434,7 +432,7 @@ const Tickets = () => {
                             <p className="text-white font-black uppercase tracking-tight text-sm truncate">{ticket.title || "No Summary"}</p>
                           )}
                           <p className="text-gray-500 text-[10px] font-mono mt-1 font-bold">
-                            #{(ticket.id || '').toUpperCase()} {ticket.phone && ticket.title ? `• ${ticket.title}` : ''}
+                            #{(ticket.ticket_id || '').toUpperCase()} {ticket.phone && ticket.title ? `• ${ticket.title}` : ''}
                           </p>
                         </div>
                         <span className={`flex-shrink-0 px-2.5 py-1 rounded text-[8px] font-black tracking-widest border h-fit ${
@@ -456,13 +454,13 @@ const Tickets = () => {
                            {ticket.status !== 'Resolved' && (
                              <button 
                                className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all rounded-xl shadow-lg active:scale-95"
-                               onClick={() => handleUpdateStatus(ticket.firebaseKey || ticket.id, 'Resolved')}
+                               onClick={() => handleUpdateStatus(ticket.id, 'Resolved')}
                              >
                                <CheckCircle2 size={16} />
                              </button>
                            )}
                            <button className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all rounded-xl shadow-lg active:scale-95"><Eye size={16} /></button>
-                           <button className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all rounded-xl shadow-lg active:scale-95" onClick={() => handleDeleteRecord(ticket.firebaseKey || ticket.id)}><Trash2 size={16} /></button>
+                           <button className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all rounded-xl shadow-lg active:scale-95" onClick={() => handleDeleteRecord(ticket.id)}><Trash2 size={16} /></button>
                         </div>
                       </div>
 

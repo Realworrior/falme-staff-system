@@ -32,9 +32,14 @@ import {
   STAFF_COLORS 
 } from './Rota/utils/scheduleGenerator';
 import { isSameDay, subDays } from 'date-fns';
+import { useSupabaseData } from '../context/SupabaseDataContext';
 
 const Dashboard = () => {
-  const { templates, logs, tickets, overrides: rawOverrides, loading } = useGlobalData();
+  const { templates, logs, tickets: firebaseTickets, overrides: rawOverrides, loading: firebaseLoading } = useGlobalData();
+  const { tickets: supabaseTickets, loading: supabaseLoading } = useSupabaseData();
+  
+  const tickets = supabaseTickets;
+  const loading = firebaseLoading || supabaseLoading;
 
   const overrides = useMemo(() => {
     if (!rawOverrides) return {};
