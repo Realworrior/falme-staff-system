@@ -134,8 +134,13 @@ export const SupabaseDataProvider = ({ children }) => {
       .select();
 
     if (error) {
-        console.error("Create ticket error:", error.message);
-        throw error;
+        // Fallback: If RLS blocks select but allowed insert
+        const { error: insertOnlyError } = await supabase.from('tickets').insert([dbTicket]);
+        if (insertOnlyError) {
+           console.error("Create ticket error:", insertOnlyError.message);
+           throw insertOnlyError;
+        }
+        return dbTicket; // Return our local copy if we can't select
     }
     return data[0];
   };

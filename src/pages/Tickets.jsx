@@ -49,7 +49,7 @@ export default function Tickets() {
       });
       showToast('Ticket created successfully', 'success');
     } catch (err) {
-      showToast('Failed to create ticket', 'error');
+      showToast(`Creation Failed: ${err.message || 'Unknown Error'}`, 'error');
     }
   };
 
