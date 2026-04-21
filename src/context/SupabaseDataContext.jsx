@@ -71,8 +71,39 @@ export const SupabaseDataProvider = ({ children }) => {
     return data;
   };
 
+  const loginWithPhone = async (phone, pin, role) => {
+    try {
+      const { data, error } = await supabase
+        .from('staff_profiles') // Assumes this table exists
+        .select('*')
+        .eq('phone', phone)
+        .eq('pin', pin)
+        .eq('role', role)
+        .single();
+      
+      if (error || !data) return null;
+      
+      // Persist as the tracking app expects
+      const userData = {
+        id: data.id,
+        phone: data.phone,
+        role: data.role,
+        name: data.name
+      };
+      
+      setUser(userData);
+      localStorage.setItem('betwin_user', JSON.stringify(userData));
+      return userData;
+    } catch (err) {
+      console.error('Login error:', err);
+      return null;
+    }
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    localStorage.removeItem('betwin_user');
   };
 
   const createTicket = async (ticket) => {
@@ -159,6 +190,7 @@ export const SupabaseDataProvider = ({ children }) => {
     error,
     actions: {
       login,
+      loginWithPhone,
       logout,
       createTicket,
       updateTicket,
