@@ -87,7 +87,8 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
 
     const staffId = selectedStaff.toLowerCase().replace(/\s+/g, '-');
     ics.push('BEGIN:VEVENT');
-    ics.push(`UID:falme-rota-${staffId}-${index}-${d}`);
+    // Deterministic UID ensures iOS and other calendars overwrite old events instead of duplicating them
+    ics.push(`UID:falme-rota-${staffId}-${d}-${shiftType}`);
     ics.push(`DTSTAMP:${format(new Date(), 'yyyyMMdd')}T000000Z`);
     ics.push(`SUMMARY:${icon} ${shiftType} Shift | ${selectedStaff}`);
     ics.push(`DTSTART;TZID=Africa/Nairobi:${startStr}`);
