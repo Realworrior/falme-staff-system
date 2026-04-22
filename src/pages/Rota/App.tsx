@@ -345,10 +345,7 @@ export default function App() {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col w-full"
-      style={{ backgroundColor: "#0c1220", fontFamily: "'Inter', system-ui, sans-serif" }}
-    >
+    <div className="flex flex-col w-full">
       {/* ── Top bar ── */}
       <div
         className="flex items-center justify-between px-4 py-3 shrink-0 print:hidden"

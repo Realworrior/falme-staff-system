@@ -104,7 +104,7 @@ export default function Tickets() {
   const userRole = user.role || 'staff';
 
   return (
-    <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto pb-24 min-h-screen">
+    <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto pb-24 md:pb-8 min-h-screen">
       {/* Header section adapted to Dark Theme */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}

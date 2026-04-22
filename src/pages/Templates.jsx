@@ -352,7 +352,7 @@ const Templates = () => {
 
       {/* Unified Responsive & Collapsible Category Sidebar */}
       <aside 
-        className={`flex flex-col bg-[#0a0a12] lg:bg-sidebar/30 border-r border-white/5 sticky top-0 h-[calc(100vh-80px)] overflow-hidden shrink-0 transition-all duration-300 z-[90] ${
+        className={`flex flex-col bg-[#0a0a12] lg:bg-sidebar/30 border-r border-white/5 sticky top-0 h-[calc(100vh-80px)] md:h-screen overflow-hidden shrink-0 transition-all duration-300 z-[90] ${
           catSidebarOpen 
             ? 'w-[280px] fixed lg:sticky left-0 shadow-none' 
             : 'w-[75px] sticky shadow-none'

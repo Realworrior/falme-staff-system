@@ -2999,7 +2999,7 @@ function AgentManualView() {
       </div>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 md:pt-10 pb-20">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 md:pt-10 pb-20 md:pb-8">
 
         {/* Section header */}
         <div
@@ -3126,7 +3126,7 @@ function MarketGuideView() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
 
         {sport.categories.map((cat) => (
           <CategorySection
@@ -3161,10 +3161,7 @@ export default function Resources() {
   const { templates } = useGlobalData();
 
   return (
-    <div
-      className="min-h-screen text-white"
-      style={{ background: "#080d1a" }}
-    >
+    <div className="text-white">
       {/* ── Top Nav ── */}
       <div
         className="sticky top-0 z-50 backdrop-blur-xl"

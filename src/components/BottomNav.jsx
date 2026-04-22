@@ -30,67 +30,79 @@ const BottomNav = ({ className }) => {
 
   return (
     <motion.div
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      exit={{ y: 100 }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       className={cn(
-        "fixed bottom-0 left-0 right-0 h-20 bg-sidebar/80 backdrop-blur-2xl border-t border-white/5 z-[60] px-2 md:px-6 flex items-center justify-around md:justify-center md:gap-16",
+        // Mobile layout (bottom nav)
+        "fixed bottom-0 left-0 right-0 h-20 bg-sidebar/80 backdrop-blur-2xl border-t border-white/5 z-[60] px-2 flex items-center justify-around",
+        // Desktop layout (vertical sidebar)
+        "md:relative md:w-24 md:h-screen md:flex-col md:justify-start md:px-0 md:py-8 md:border-t-0 md:border-r md:bg-[#0a0a0f] md:backdrop-blur-none",
         className
       )}
-
     >
-      {navItems.map((item) => (
-        <NavLink
-          key={item.path}
-          to={item.path}
-          end={item.path === '/'}
-          className={({ isActive }) =>
-            cn(
-              "flex flex-col items-center justify-center gap-1 transition-all duration-500 group relative min-w-[50px] md:min-w-[80px]",
-              isActive ? "text-red-500 scale-105" : "text-gray-500 hover:text-gray-300"
-            )
-          }
-        >
-          {({ isActive }) => (
-            <>
-              <div className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/0 group-hover:bg-white/5 transition-colors relative">
-                <item.icon className={cn(
-                  "w-5 h-5 transition-transform",
-                  isActive ? "drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : ""
-                )} />
-                {item.isNew && (
-                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-600 rounded-full border border-[#0a0a0f] shadow-sm animate-pulse" />
+      <div className="hidden md:flex items-center justify-center mb-12 relative group">
+         <div className="w-12 h-12 rounded-2xl accent-gradient flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.3)] border border-red-500/20 group-hover:scale-110 transition-transform">
+           <Activity className="text-white w-6 h-6" />
+         </div>
+         <div className="absolute -bottom-6 text-[9px] font-black tracking-[0.3em] uppercase text-gray-500">Falme</div>
+      </div>
+
+      <div className="flex flex-row md:flex-col w-full items-center justify-around md:justify-start md:gap-8 flex-1">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            end={item.path === '/'}
+            className={({ isActive }) =>
+              cn(
+                "flex flex-col items-center justify-center gap-1.5 transition-all duration-500 group relative min-w-[50px] md:w-full",
+                isActive ? "text-red-500 scale-105" : "text-gray-500 hover:text-gray-300"
+              )
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <div className={cn(
+                  "w-10 h-10 flex items-center justify-center rounded-xl transition-all relative",
+                  isActive ? "bg-red-500/10 border border-red-500/20 shadow-inner" : "bg-white/0 group-hover:bg-white/5"
+                )}>
+                  <item.icon className={cn(
+                    "w-5 h-5 transition-transform",
+                    isActive ? "drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "group-hover:scale-110"
+                  )} />
+                  {item.isNew && (
+                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-600 rounded-full border border-[#0a0a0f] shadow-sm animate-pulse" />
+                  )}
+                </div>
+                <span className={cn(
+                  "text-[9px] font-black uppercase tracking-wider transition-all",
+                  isActive ? "opacity-100" : "opacity-40 group-hover:opacity-80"
+                )}>
+                  {item.label}
+                </span>
+                
+                {isActive && (
+                  <motion.div 
+                     layoutId="activeBottomNav"
+                     className="absolute -bottom-2 md:-right-0 md:left-auto md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-8 left-1/2 -translate-x-1/2 w-8 h-1 bg-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"
+                  />
                 )}
-              </div>
-              <span className={cn(
-                "text-[8px] font-black uppercase tracking-wider transition-all",
-                isActive ? "opacity-100" : "opacity-40 group-hover:opacity-80"
-              )}>
-                {item.label}
-              </span>
-              
-              {isActive && (
-                <motion.div 
-                   layoutId="activeBottomNav"
-                   className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"
-                />
-              )}
-            </>
-          )}
-        </NavLink>
-      ))}
+              </>
+            )}
+          </NavLink>
+        ))}
+      </div>
 
-
-      {/* Quick Exit Action */}
-      <div className="hidden md:block h-8 w-px bg-white/5 mx-4" />
-      <button 
-        onClick={() => window.history.back()}
-        className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all group"
-      >
-        <ExternalLink size={14} className="text-gray-500 group-hover:text-red-500 transition-colors" />
-        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Back</span>
-      </button>
+      {/* Quick Exit Action (Desktop only) */}
+      <div className="hidden md:flex flex-col items-center gap-4 mt-auto pb-4">
+        <div className="h-px w-8 bg-white/5" />
+        <button 
+          onClick={() => window.history.back()}
+          className="flex flex-col items-center justify-center w-10 h-10 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-red-500/30 transition-all group"
+        >
+          <ExternalLink size={16} className="text-gray-500 group-hover:text-red-500 transition-colors" />
+        </button>
+      </div>
     </motion.div>
   );
 };
