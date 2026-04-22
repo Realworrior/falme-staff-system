@@ -251,7 +251,7 @@ const SlotTracker = () => {
             </thead>
             <tbody>
               <AnimatePresence>
-                {paginatedLogs.map((log) => (
+                {paginatedLogs.map((log, index) => (
                   <motion.tr 
                     key={log.id} 
                     initial={{ opacity: 0 }}
