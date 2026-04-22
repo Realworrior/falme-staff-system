@@ -40,7 +40,16 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
     'PRODID:-//Falme AI//Staff Rota//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:Falme Staff Rota'
+    'X-WR-CALNAME:Falme Staff Rota',
+    'BEGIN:VTIMEZONE',
+    'TZID:Africa/Nairobi',
+    'BEGIN:STANDARD',
+    'DTSTART:19700101T000000',
+    'TZOFFSETFROM:+0300',
+    'TZOFFSETTO:+0300',
+    'TZNAME:EAT',
+    'END:STANDARD',
+    'END:VTIMEZONE'
   ];
 
   // Filter shifts specifically for this staff
@@ -74,8 +83,9 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
       endStr = `${nextDay}T073000`;
     }
 
+    const staffId = selectedStaff.toLowerCase().replace(/\s+/g, '-');
     ics.push('BEGIN:VEVENT');
-    ics.push(`UID:falme-rota-${selectedStaff}-${index}-${d}`);
+    ics.push(`UID:falme-rota-${staffId}-${index}-${d}`);
     ics.push(`DTSTAMP:${format(new Date(), 'yyyyMMdd')}T000000Z`);
     ics.push(`SUMMARY:${icon} ${shiftType} Shift | ${selectedStaff}`);
     ics.push(`DTSTART;TZID=Africa/Nairobi:${startStr}`);
@@ -92,7 +102,7 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
     ics.push('BEGIN:VALARM');
     ics.push('TRIGGER:-PT1H');
     ics.push('ACTION:DISPLAY');
-    ics.push('DESCRIPTION:Reminder: Your ${shiftType} shift starts in 1 hour');
+    ics.push(`DESCRIPTION:Reminder: Your ${shiftType} shift starts in 1 hour`);
     ics.push('END:VALARM');
     
     ics.push('END:VEVENT');
