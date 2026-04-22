@@ -41,6 +41,7 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'X-WR-CALNAME:Falme Staff Rota',
+    'X-WR-TIMEZONE:Africa/Nairobi',
     'BEGIN:VTIMEZONE',
     'TZID:Africa/Nairobi',
     'BEGIN:STANDARD',
@@ -94,6 +95,9 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
     ics.push(`LOCATION:Falme Operations Hub (${shiftType})`);
     ics.push(`DESCRIPTION:SHIFT PERFORMANCE DATA\\n--------------------------\\nType: ${shiftType} (${icon})\\nStaff: ${selectedStaff}\\n\\nTEAM ON THIS SHIFT:\\n- ${[selectedStaff, ...mates].join('\\n- ')}\\n\\nTime: ${shiftType === 'AM' ? '07:30 - 15:30' : shiftType === 'PM' ? '15:30 - 22:30' : '22:30 - 07:30'}\\n\\nGenerated via Falme AI Rota.`);
     ics.push(`CATEGORIES:${shiftType},FalmeRota`);
+    ics.push('STATUS:CONFIRMED');
+    ics.push('TRANSP:OPAQUE');
+    ics.push('PRIORITY:5');
     
     // iOS Specific Coloring
     ics.push(`X-APPLE-CALENDAR-COLOR:${color}`);
@@ -103,7 +107,7 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
     else if (shiftType === 'PM') ics.push('COLOR:DodgerBlue');
     else ics.push('COLOR:Orange');
 
-    // 1-hour Reminder (VALARM) - Optimized for iOS
+    // 1-hour Reminder (VALARM) - Cross Platform Support
     ics.push('BEGIN:VALARM');
     ics.push('TRIGGER:-PT1H');
     ics.push('ACTION:DISPLAY');
