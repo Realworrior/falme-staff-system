@@ -41,7 +41,7 @@ const SlotTracker = () => {
         const parsed = JSON.parse(backup);
         handleSetAllData(parsed);
         showToast('Logs restored from last session backup', 'success');
-      } catch (e) {
+      } catch {
         showToast('Failed to restore backup', 'error');
       }
     } else {
@@ -251,7 +251,7 @@ const SlotTracker = () => {
             </thead>
             <tbody>
               <AnimatePresence>
-                {paginatedLogs.map((log, index) => (
+                {paginatedLogs.map((log) => (
                   <motion.tr 
                     key={log.id} 
                     initial={{ opacity: 0 }}

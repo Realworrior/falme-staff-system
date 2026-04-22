@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Ticket, LayoutDashboard, Filter, LogOut, Search, User, Shield, Briefcase, Zap } from 'lucide-react';
+import { Plus, LayoutDashboard, Filter, Search, User, Shield, Zap } from 'lucide-react';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 import { useToast } from '../context/ToastContext';
 import { TicketCard } from '../components/Tracking/TicketCard';
@@ -28,6 +28,7 @@ export default function Tickets() {
       await actions.updateTicket(id, { status });
       showToast(`Ticket marked as ${status}`, 'success');
     } catch (err) {
+      console.error(err);
       showToast('Status update failed', 'error');
     }
   };
@@ -37,6 +38,7 @@ export default function Tickets() {
       await actions.updateTicket(id, { assignee, status: 'in-progress' });
       showToast(`Assigned to ${assignee}`, 'success');
     } catch (err) {
+      console.error(err);
       showToast('Assignment failed', 'error');
     }
   };
