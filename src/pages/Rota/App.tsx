@@ -430,49 +430,72 @@ export default function App() {
 
         {/* ── Info strips ── */}
         <div
-          className="px-4 py-2 shrink-0 print:hidden"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", backgroundColor: "#0c1220" }}
+          className="px-4 py-4 shrink-0 print:hidden bg-gradient-to-r from-[#0c1220] to-[#0a101e]"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
         >
-          <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
-            <button
-              onClick={() => setSelectedStaff(null)}
-              className="px-2 py-1 rounded"
-              style={{
-                fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                color: !selectedStaff ? "#fff" : "#5c7a9e",
-                backgroundColor: !selectedStaff ? "#4080e8" : "rgba(255,255,255,0.05)",
-                border: "none", cursor: "pointer"
-              }}
-            >
-              Team
-            </button>
-            <div className="w-[1px] h-4 bg-white/10 mx-1"></div>
-            {STAFF_CONFIG.map(staff => (
-              <div 
-                key={staff.name} 
-                className="flex items-center gap-1.5 cursor-pointer rounded px-1.5 py-0.5 hover:bg-white/5 transition"
-                onClick={() => setSelectedStaff(staff.name)}
-                style={{ backgroundColor: selectedStaff === staff.name ? "rgba(255,255,255,0.1)" : "transparent" }}
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex items-center gap-2 px-2 py-1 bg-white/5 rounded-lg border border-white/5 w-fit">
+              <TrendingUp size={12} className="text-gray-500" />
+              <span className="text-[10px] font-black uppercase text-gray-500 tracking-[0.2em]">Filter Personnel:</span>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 items-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedStaff(null)}
+                className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                  !selectedStaff 
+                    ? "bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20" 
+                    : "bg-white/5 text-gray-500 border-white/5 hover:border-white/20 hover:text-gray-300"
+                }`}
               >
-                <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: STAFF_COLORS[staff.name], flexShrink: 0 }} />
-                <span style={{ fontSize: 11, color: selectedStaff === staff.name ? "#fff" : "#8faac8", fontWeight: 500 }}>{staff.name}</span>
-              </div>
-            ))}
-
-            <AnimatePresence>
-              {selectedStaff && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  onClick={handleExportCalendar}
-                  className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/30"
-                  style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}
+                Entire Team
+              </motion.button>
+              
+              <div className="w-[1px] h-4 bg-white/10 mx-1 hidden md:block"></div>
+              
+              {STAFF_CONFIG.map(staff => (
+                <motion.button 
+                  key={staff.name} 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedStaff(staff.name)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border ${
+                    selectedStaff === staff.name 
+                      ? "bg-white/10 border-white/20 text-white shadow-xl" 
+                      : "bg-transparent border-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                  }`}
                 >
-                  <CalendarIcon size={12} /> Sync
+                  <div 
+                    style={{ backgroundColor: STAFF_COLORS[staff.name] }}
+                    className={`w-2 h-2 rounded-full shadow-[0_0_8px] transition-all ${
+                      selectedStaff === staff.name ? "opacity-100" : "opacity-40"
+                    }`}
+                    style={{ 
+                      backgroundColor: STAFF_COLORS[staff.name],
+                      boxShadow: selectedStaff === staff.name ? `0 0 10px ${STAFF_COLORS[staff.name]}80` : 'none'
+                    }}
+                  />
+                  <span className="text-[11px] font-bold tracking-tight">{staff.name}</span>
                 </motion.button>
-              )}
-            </AnimatePresence>
+              ))}
+
+              <AnimatePresence>
+                {selectedStaff && (
+                  <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    onClick={handleExportCalendar}
+                    className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-500/30 group"
+                  >
+                    <CalendarIcon size={14} className="group-hover:rotate-12 transition-transform" /> 
+                    <span className="text-[10px] font-black uppercase tracking-widest">Sync My Rota</span>
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
         <div
