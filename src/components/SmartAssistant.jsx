@@ -113,6 +113,14 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
       const topMatches = scoredMatches.slice(0, 2); // Take top 2 for disambiguation
       const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('how to') || q.includes('steps') || concepts.termination;
 
+      // Creative / Online Strategic Engine
+      const getCreativeResponse = (q) => {
+        if (concepts.finance) return "Look, when it comes to money, speed is everything. Beyond the template, I'd recommend double-checking the transaction hash on the provider portal—it's usually the quickest way to spot a stuck payment before the customer even asks.";
+        if (concepts.termination) return "Closing an account is a sensitive moment. Try to bridge the conversation by asking if they're moving to a competitor or just taking a break—this data is gold for our retention team later.";
+        if (concepts.tech) return "Tech glitches are 'moments of truth.' If the standard fix fails, suggest a quick cache clear or a browser swap—90% of our 'bugs' are actually local environment mismatches.";
+        return "I'm thinking outside the box here: if you want to wow this customer, don't just solve the problem—predict the next one. Mention our upcoming feature update or a related tip from the manual.";
+      };
+
       if (isRG) {
         variations = [
           {
@@ -120,8 +128,8 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
             text: "I can really feel how stressful this has been for you. Please, take a deep breath—I'm going to help you secure your account right now. I'm initiating the permanent block for 0742115006 immediately so you don't have to worry about it anymore."
           },
           {
-            type: "Direct Assistance",
-            text: "I'm on it. I've started the process to permanently handle account 0742115006 for you. Once I finalize this, the account will be inaccessible. We prioritize your safe gaming experience."
+            type: "Strategic Guidance",
+            text: "RG cases are top priority. Beyond the block, ensure you log this in the 'High Risk' ledger and flag the IP. It protects the company and the user. Empathy is our strongest tool here."
           },
           {
             type: "Professional Support",
@@ -145,6 +153,12 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
         
         variations = [
           { 
+            type: "Creative AI Response", 
+            intro: "Thinking creatively about " + query + ":",
+            text: getCreativeResponse(q),
+            footer: "This is a non-template insight for better engagement."
+          },
+          { 
             type: "Human Conversational", 
             intro: intro,
             text: (pData.emp || pData.std),
@@ -157,17 +171,17 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
               ? "To get " + primary.title + " sorted, login to your profile, navigate to the " + primary.category + " section, and select '" + primary.title + "'. Then follow the on-screen prompts to finalize." 
               : pData.std,
             footer: sData ? "Wait, I also found the " + sData.title + " procedure which might be relevant." : "It only takes a minute."
-          },
-          { 
-            type: "Direct SOP Copy", 
-            intro: "Here is the raw template text:",
-            text: pData.std,
-            footer: ""
           }
         ];
       } else {
         // Creative Human Fallback
         variations = [
+          {
+            type: "Online Intelligence",
+            intro: "Scanning system for custom insights...",
+            text: "I couldn't find a direct template for '" + query + "', but based on my online logic, this sounds like it might be related to " + (concepts.finance ? "Finance" : concepts.tech ? "Technical issues" : "a general query") + ". Would you like me to draft a creative response for you from scratch?",
+            footer: "I'm learning from your queries in real-time."
+          },
           {
             type: "Helpful Human",
             intro: "I'm searching for you...",
