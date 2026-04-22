@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { MonthlyAnalytics, STAFF_COLORS } from '../utils/scheduleGenerator';
+import { MonthlyAnalytics, STAFF_COLORS } from '../../utils/Rota/scheduleGenerator';
 import { format } from 'date-fns';
 
 interface AnalyticsDashboardProps {

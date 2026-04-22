@@ -29,7 +29,7 @@ import {
   generateMonthSchedule, 
   getCurrentShiftType,
   STAFF_COLORS 
-} from './Rota/utils/scheduleGenerator';
+} from '../utils/Rota/scheduleGenerator';
 import { isSameDay, subDays } from 'date-fns';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 

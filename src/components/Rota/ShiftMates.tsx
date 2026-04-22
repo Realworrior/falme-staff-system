@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { DailySchedule, ShiftType, STAFF_COLORS } from '../utils/scheduleGenerator';
+import { DailySchedule, ShiftType, STAFF_COLORS } from '../../utils/Rota/scheduleGenerator';
 import { Edit2, X, Clock, Trash2, Plus } from 'lucide-react';
 
 interface ShiftMatesProps {

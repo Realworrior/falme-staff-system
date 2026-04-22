@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Templates from './pages/Templates';
 import Tickets from './pages/Tickets';
 import SlotTracker from './pages/SlotTracker';
-import Rota from './pages/Rota/App';
+import Rota from './pages/Rota';
 import Resources from './pages/Resources';
 
 // Maintain the MUI theme for underlying MUI components (like Dialogs) 

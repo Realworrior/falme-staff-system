@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { format, getDay } from 'date-fns';
-import { STAFF_THEME } from '../utils/scheduleGenerator';
+import { STAFF_THEME } from '../../utils/Rota/scheduleGenerator';
 
 interface ScheduleCalendarProps {
   schedule: any[];

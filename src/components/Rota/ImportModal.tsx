@@ -8,10 +8,10 @@ import {
   DialogTitle, 
   DialogDescription,
   DialogFooter
-} from './ui/dialog';
+} from '../ui/dialog';
 import { Upload, FileText, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { STAFF_CONFIG } from '../utils/scheduleGenerator';
+import { STAFF_CONFIG } from '../../utils/Rota/scheduleGenerator';
 
 interface ImportModalProps {
   isOpen: boolean;

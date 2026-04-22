@@ -13,22 +13,22 @@ import {
   X,
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
-import { ScheduleCalendar } from './components/ScheduleCalendar';
-import { ShiftMates } from './components/ShiftMates';
-import { AnalyticsDashboard } from './components/AnalyticsDashboard';
-import { ImportModal } from './components/ImportModal';
+import { ScheduleCalendar } from '../components/Rota/ScheduleCalendar';
+import { ShiftMates } from '../components/Rota/ShiftMates';
+import { AnalyticsDashboard } from '../components/Rota/AnalyticsDashboard';
+import { ImportModal } from '../components/Rota/ImportModal';
 import { 
   STAFF_CONFIG, 
   STAFF_COLORS, 
   generateMonthSchedule, 
   calculateMonthlyAnalytics,
   getCurrentShiftType,
-} from './utils/scheduleGenerator';
-import { useGlobalData } from '../../context/FirebaseDataContext';
-import { exportScheduleToCSV, downloadCSV } from './utils/RotaExportUtility';
-import { useToast } from '../../context/ToastContext';
+} from '../utils/Rota/scheduleGenerator';
+import { useGlobalData } from '../context/FirebaseDataContext';
+import { exportScheduleToCSV, downloadCSV } from '../utils/Rota/RotaExportUtility';
+import { useToast } from '../context/ToastContext';
 import { ref, update, set } from 'firebase/database';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 
 // Helper to generate the ICS text with icons, mates, and reminders
 const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: any[]) => {
