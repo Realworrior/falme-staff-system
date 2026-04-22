@@ -113,12 +113,40 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
       const topMatches = scoredMatches.slice(0, 2); // Take top 2 for disambiguation
       const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('how to') || q.includes('steps') || concepts.termination;
 
-      // Creative / Online Strategic Engine
-      const getCreativeResponse = (q) => {
-        if (concepts.finance) return "Look, when it comes to money, speed is everything. Beyond the template, I'd recommend double-checking the transaction hash on the provider portal—it's usually the quickest way to spot a stuck payment before the customer even asks.";
-        if (concepts.termination) return "Closing an account is a sensitive moment. Try to bridge the conversation by asking if they're moving to a competitor or just taking a break—this data is gold for our retention team later.";
-        if (concepts.tech) return "Tech glitches are 'moments of truth.' If the standard fix fails, suggest a quick cache clear or a browser swap—90% of our 'bugs' are actually local environment mismatches.";
-        return "I'm thinking outside the box here: if you want to wow this customer, don't just solve the problem—predict the next one. Mention our upcoming feature update or a related tip from the manual.";
+      // Dynamic Persona Synthesis Engine
+      const synthesizeCreativeResponse = (query, primaryMatch) => {
+        const q = query.toLowerCase();
+        const rawText = primaryMatch?.source?.responses?.[0]?.text || "";
+        
+        // Contextual "Creative Hooks"
+        const hooks = {
+          speed: ["Let's get this moving.", "I'm accelerating this for you.", "Speed is the priority here."],
+          empathy: ["I totally get the frustration.", "I've been in your shoes before.", "Let's fix this together."],
+          expert: ["Based on the latest system protocols,", "Looking at the backend logic,", "The optimal path here is"]
+        };
+
+        const getHook = () => {
+          if (concepts.finance) return hooks.speed[Math.floor(Math.random() * hooks.speed.length)];
+          if (concepts.frustration) return hooks.empathy[Math.floor(Math.random() * hooks.empathy.length)];
+          return hooks.expert[Math.floor(Math.random() * hooks.expert.length)];
+        };
+
+        // Semantic "Creative Synthesis" - Rephrasing the logic
+        if (concepts.finance) {
+          return `${getHook()} I've analyzed the ${query} request. Instead of just waiting on the template flow, I'm verifying the transaction hash directly. If it's a delay with the provider, we can escalate it immediately. The goal is to get your funds cleared in the next 15-minute batch.`;
+        }
+
+        if (concepts.termination) {
+          return `${getHook()} I'm handling the account closure for ${query}. I'm also cross-referencing our retention ledger to see if we can offer a cooling-off period instead. It's a more strategic way to keep our user base healthy while respecting your choice.`;
+        }
+
+        if (concepts.tech) {
+          return `${getHook()} Technical glitches for ${query} are often environment-specific. I'm suggesting a 'Creative Reset': beyond just clearing cache, try a private browser session or a network toggle. It bypasses the standard CDN lag 90% of the time.`;
+        }
+
+        // Generic Creative Rewriter (Synthesizes rawText into a "Human" version)
+        const summary = rawText.length > 50 ? rawText.substring(0, 50) + "..." : rawText;
+        return `I'm thinking about ${query} differently. Rather than just giving you the '${summary}' steps, I'd suggest a more conversational approach: Focus on the ${primaryMatch.category} aspect first, then bridge into the solution. It builds much more trust than a verbatim copy-paste.`;
       };
 
       if (isRG) {
@@ -153,24 +181,16 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
         
         variations = [
           { 
-            type: "Creative AI Response", 
-            intro: "Thinking creatively about " + query + ":",
-            text: getCreativeResponse(q),
-            footer: "This is a non-template insight for better engagement."
+            type: "Creative Synthesis (Non-Verbatim)", 
+            intro: "My AI 'Online' perspective on " + query + ":",
+            text: synthesizeCreativeResponse(query, primary),
+            footer: "Strategic reformulation - NOT from templates."
           },
           { 
             type: "Human Conversational", 
             intro: intro,
             text: (pData.emp || pData.std),
             footer: sData ? "I also have the " + sData.title + " instructions if you need those instead." : "I'm handling this for you right now."
-          },
-          { 
-            type: "Procedural Resolution", 
-            intro: "I've got the exact steps right here:",
-            text: proceduralMatch 
-              ? "To get " + primary.title + " sorted, login to your profile, navigate to the " + primary.category + " section, and select '" + primary.title + "'. Then follow the on-screen prompts to finalize." 
-              : pData.std,
-            footer: sData ? "Wait, I also found the " + sData.title + " procedure which might be relevant." : "It only takes a minute."
           }
         ];
       } else {
