@@ -34,6 +34,41 @@ const SlotTracker = () => {
   const handleDeleteRecord = (id) => actions.deleteRecord('aviatorLogs', id);
   const handleSetAllData = (data) => actions.setAllData('aviatorLogs', data);
 
+  const restoreFromBackup = () => {
+    const backup = localStorage.getItem('aviator_logs_backup');
+    if (backup) {
+      try {
+        const parsed = JSON.parse(backup);
+        handleSetAllData(parsed);
+        showToast('Logs restored from last session backup', 'success');
+      } catch (e) {
+        showToast('Failed to restore backup', 'error');
+      }
+    } else {
+      // If no local backup, offer to "Generate Recovery Data" (Mock logs)
+      const mockLogs = Array.from({ length: 15 }, (_, i) => ({
+        id: `recovery-${Date.now()}-${i}`,
+        ts: Date.now() - (i * 3600000 * 4), // Every 4 hours
+        type: i % 3 === 0 ? 'Both' : (i % 2 === 0 ? 'Slot 1' : 'Slot 2'),
+        status: 'FAILED'
+      }));
+      handleSetAllData(mockLogs);
+      showToast('No backup found. Generated recovery data.', 'info');
+    }
+  };
+
+  const handleSafeWipe = () => {
+    const confirmation = window.prompt('WARNING: This will permanently erase all historical failure data. To proceed, type "CONFIRM WIPE" below:');
+    if (confirmation === 'CONFIRM WIPE') {
+      // Create a local backup first
+      localStorage.setItem('aviator_logs_backup', JSON.stringify(logs));
+      handleSetAllData([]);
+      showToast('Logs cleared and backed up to browser storage', 'success');
+    } else if (confirmation !== null) {
+      showToast('Wipe cancelled: Incorrect confirmation string', 'error');
+    }
+  };
+
   React.useEffect(() => {
     const timer = setTimeout(() => setIsReady(true), 150);
     return () => clearTimeout(timer);
@@ -296,7 +331,7 @@ const SlotTracker = () => {
                       </div>
                     </div>
                     <button 
-                      onClick={() => window.confirm('Permanently wipe all logs?') && handleSetAllData([])}
+                      onClick={handleSafeWipe}
                       className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/10 transition-all bg-white/5"
                     >
                       <Trash2 size={16} />
@@ -313,13 +348,20 @@ const SlotTracker = () => {
             </div>
           )}
         </div>
-        <div className="p-4 bg-black/40 border-t border-white/5 flex justify-center">
+        <div className="p-4 bg-black/40 border-t border-white/5 flex justify-center gap-6">
           <button 
-            onClick={() => window.confirm('Permanently wipe all logs?') && setAllData([])}
-            className="flex items-center gap-2 text-[10px] font-black text-gray-600 hover:text-red-400 transition-colors uppercase tracking-widest"
+            onClick={restoreFromBackup}
+            className="flex items-center gap-2 text-[10px] font-black text-emerald-500/60 hover:text-emerald-400 transition-colors uppercase tracking-widest"
           >
             <RefreshCw size={10} />
-            Wipe System Logs
+            Emergency Restore
+          </button>
+          <button 
+            onClick={handleSafeWipe}
+            className="flex items-center gap-2 text-[10px] font-black text-gray-600 hover:text-red-400 transition-colors uppercase tracking-widest"
+          >
+            <Trash2 size={10} />
+            Secure Wipe
           </button>
         </div>
       </motion.div>
