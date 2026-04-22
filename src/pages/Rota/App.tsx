@@ -111,8 +111,11 @@ export default function App() {
   const [isManagerMode, setIsManagerMode] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isManagerLoginOpen, setIsManagerLoginOpen] = useState(false);
+  const [managerPassword, setManagerPassword] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [desktopView, setDesktopView] = useState<"grid" | "list">("grid");
   const { showToast } = useToast();
 
   const [isReady, setIsReady] = useState(false);
@@ -286,13 +289,21 @@ export default function App() {
   const handleManagerToggle = () => {
     if (isManagerMode) {
       setIsManagerMode(false);
+      showToast('Manager controls locked.', 'info');
     } else {
-      const pass = prompt('Enter Manager Password (hint: admin):');
-      if (pass && pass.trim().toLowerCase() === 'admin') {
-        setIsManagerMode(true);
-      } else {
-        alert('Access Denied. The password is "admin"');
-      }
+      setIsManagerLoginOpen(true);
+    }
+  };
+
+  const handleManagerLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (managerPassword.trim().toLowerCase() === 'admin') {
+      setIsManagerMode(true);
+      setIsManagerLoginOpen(false);
+      setManagerPassword('');
+      showToast('Manager controls unlocked.', 'success');
+    } else {
+      showToast('Access Denied. Incorrect password.', 'error');
     }
   };
 
@@ -313,51 +324,76 @@ export default function App() {
   }
 
   return (
-    <div className="w-full bg-background px-1 md:px-3 py-6 print:p-0">
-      <div className="max-w-[1600px] mx-auto">
-
-        {/* Compact Header & Navigation */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl accent-gradient flex items-center justify-center shadow-lg shadow-red-500/20">
-              <CalendarIcon size={20} className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase font-heading leading-tight">
-                Staff Rota
-              </h1>
-              <div className="text-[8px] font-black uppercase tracking-[0.3em] text-red-500">Live Management</div>
-            </div>
+    <div
+      className="min-h-screen flex flex-col w-full"
+      style={{ backgroundColor: "#0c1220", fontFamily: "'Inter', system-ui, sans-serif" }}
+    >
+      {/* ── Top bar ── */}
+      <div
+        className="flex items-center justify-between px-4 py-3 shrink-0 print:hidden"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", backgroundColor: "#0a101e" }}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: 28, height: 28, backgroundColor: "#4080e8" }}>
+            <CalendarIcon size={14} className="text-white" />
           </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-black/40 border border-white/5 p-1 rounded-xl">
-              <button onClick={handlePrevMonth} className="p-2 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-lg transition-all active:scale-95">
-                <ChevronLeft size={16} />
-              </button>
-              <div className="min-w-[120px] text-center px-2">
-                <span className="text-xs font-black text-white uppercase tracking-widest">
-                  {format(currentDate, 'MMMM yyyy')}
-                </span>
-              </div>
-              <button onClick={handleNextMonth} className="p-2 hover:text-white text-gray-500 bg-white/5 hover:bg-white/10 rounded-lg transition-all active:scale-95">
-                <ChevronRight size={16} />
-              </button>
-            </div>
-
-            <button
-              onClick={handleManagerToggle}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all font-black text-[9px] uppercase tracking-widest ${
-                isManagerMode 
-                  ? 'bg-red-600/10 border-red-500/30 text-red-500' 
-                  : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'
-              }`}
-            >
-              {isManagerMode ? <ShieldAlert size={14} /> : <Shield size={14} />}
-              {isManagerMode ? 'Manager ON' : 'Login'}
-            </button>
+          <div>
+            <div style={{ fontSize: 11, color: "#8faac8", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", lineHeight: 1 }}>Personnel Rota</div>
+            <div style={{ fontSize: 9, color: "#4d6080", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.4 }}>Live Management</div>
           </div>
         </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1">
+            <button onClick={handlePrevMonth} className="p-1 hover:text-white text-gray-500 rounded transition-all active:scale-95">
+              <ChevronLeft size={16} />
+            </button>
+            <span style={{ fontSize: 13, color: "#c8d4e8", fontWeight: 600 }}>{format(currentDate, 'MMMM yyyy')}</span>
+            <button onClick={handleNextMonth} className="p-1 hover:text-white text-gray-500 rounded transition-all active:scale-95">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          <button
+            onClick={handleManagerToggle}
+            style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+              padding: "4px 8px",
+              color: isManagerMode ? "#ef4444" : "#5c7a9e",
+              backgroundColor: isManagerMode ? "rgba(239, 68, 68, 0.1)" : "transparent",
+              border: isManagerMode ? "1px solid rgba(239, 68, 68, 0.3)" : "1px solid rgba(255,255,255,0.1)",
+              cursor: "pointer", borderRadius: "8px", display: "flex", gap: "4px", alignItems: "center"
+            }}
+          >
+            {isManagerMode ? <ShieldAlert size={12} /> : <Shield size={12} />}
+            {isManagerMode ? 'Admin' : 'Login'}
+          </button>
+
+          {/* Grid/List toggle — only visible on md+ where grid actually shows */}
+          <div
+            className="hidden md:flex rounded-lg overflow-hidden"
+            style={{ border: "1px solid rgba(255,255,255,0.1)" }}
+          >
+            {(["grid", "list"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setDesktopView(v)}
+                style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                  padding: "4px 12px",
+                  color: desktopView === v ? "#fff" : "#5c7a9e",
+                  backgroundColor: desktopView === v ? "#4080e8" : "transparent",
+                  cursor: "pointer", border: "none",
+                }}
+              >
+                {v === "grid" ? "Grid" : "List"}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[1600px] mx-auto w-full flex-1 flex flex-col min-h-0 print:p-0">
 
         {/* Manager Command Center - Gated Row */}
         <AnimatePresence>
@@ -366,7 +402,7 @@ export default function App() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="mb-6 overflow-hidden"
+              className="px-4 mt-4 overflow-hidden print:hidden"
             >
               <div className="flex flex-wrap items-center gap-3 p-4 bg-red-600/5 border border-red-500/20 rounded-2xl">
                  <div className="flex items-center gap-2 mr-2">
@@ -392,100 +428,83 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Personnel Filter Row */}
-        <div className="mb-6 flex overflow-x-auto no-scrollbar gap-2 print:hidden backdrop-blur-md bg-white/[0.02] p-3 rounded-2xl border border-white/[0.03]">
-          <button
-            onClick={() => setSelectedStaff(null)}
-            className={`px-4 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shrink-0 ${
-              !selectedStaff ? 'accent-gradient text-white shadow-lg' : 'bg-white/5 text-gray-500 hover:text-white'
-            }`}
-          >
-            Team View
-          </button>
-          {STAFF_CONFIG.map(staff => (
+        {/* ── Info strips ── */}
+        <div
+          className="px-4 py-2 shrink-0 print:hidden"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", backgroundColor: "#0c1220" }}
+        >
+          <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
             <button
-              key={staff.name}
-              onClick={() => setSelectedStaff(staff.name)}
-              className={`px-3 py-2 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shrink-0 ${
-                selectedStaff === staff.name ? 'text-white border' : 'text-gray-500 bg-white/2 hover:text-gray-300'
-              }`}
+              onClick={() => setSelectedStaff(null)}
+              className="px-2 py-1 rounded"
               style={{
-                backgroundColor: selectedStaff === staff.name ? STAFF_COLORS[staff.name] : undefined,
-                borderColor: selectedStaff === staff.name ? 'rgba(255,255,255,0.2)' : 'transparent',
+                fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                color: !selectedStaff ? "#fff" : "#5c7a9e",
+                backgroundColor: !selectedStaff ? "#4080e8" : "rgba(255,255,255,0.05)",
+                border: "none", cursor: "pointer"
               }}
             >
-              {staff.name}
+              Team
             </button>
-          ))}
-          
-          <AnimatePresence>
-            {selectedStaff && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                onClick={handleExportCalendar}
-                className="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest shrink-0 shadow-lg shadow-emerald-500/10"
+            <div className="w-[1px] h-4 bg-white/10 mx-1"></div>
+            {STAFF_CONFIG.map(staff => (
+              <div 
+                key={staff.name} 
+                className="flex items-center gap-1.5 cursor-pointer rounded px-1.5 py-0.5 hover:bg-white/5 transition"
+                onClick={() => setSelectedStaff(staff.name)}
+                style={{ backgroundColor: selectedStaff === staff.name ? "rgba(255,255,255,0.1)" : "transparent" }}
               >
-                <CalendarIcon size={14} /> Sync to Cal
-              </motion.button>
-            )}
-          </AnimatePresence>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: STAFF_COLORS[staff.name], flexShrink: 0 }} />
+                <span style={{ fontSize: 11, color: selectedStaff === staff.name ? "#fff" : "#8faac8", fontWeight: 500 }}>{staff.name}</span>
+              </div>
+            ))}
+
+            <AnimatePresence>
+              {selectedStaff && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={handleExportCalendar}
+                  className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/30"
+                  style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}
+                >
+                  <CalendarIcon size={12} /> Sync
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+        <div
+          className="px-4 py-2 shrink-0 print:hidden"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", backgroundColor: "#0a101e" }}
+        >
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {[
+              { label: "AM", time: "07:00–15:00", color: "#3d7ee6" },
+              { label: "PM", time: "15:00–23:00", color: "#28a87c" },
+              { label: "NT", time: "23:00–07:00", color: "#7a56d4" },
+            ].map((s) => (
+              <div key={s.label} className="flex items-center gap-1.5">
+                <div style={{ width: 3, height: 12, borderRadius: 99, backgroundColor: s.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 10, color: "#8faac8", fontWeight: 600 }}>{s.label}</span>
+                <span style={{ fontSize: 9, color: "#3d5070" }}>{s.time}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Main Unified Content */}
-        <div className="space-y-12">
-          {/* Monthly Schedule Section */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            <div className="bg-[#0f0f17] border border-white/5 rounded-3xl shadow-2xl p-4 md:p-8 print:bg-white">
-              <div className="flex items-center justify-between mb-6 md:mb-8 print:mb-4">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter font-heading print:text-black">
-                    Monthly Schedule
-                  </h2>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mt-1 print:hidden">
-                    Personnel Assignment View
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 print:hidden">
-                  {[
-                    { id: 'AM', color: '#2DD4BF' },
-                    { id: 'PM', color: '#60A5FA' },
-                    { id: 'NT', color: '#FBBF24' },
-                  ].map(s => (
-                    <div key={s.id} className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                      <span className="text-[9px] font-black uppercase text-gray-500">{s.id}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <ScheduleCalendar
-                schedule={schedule}
-                selectedStaff={selectedStaff}
-                onDayClick={handleDayClick}
-                overrides={overrides}
-              />
-            </div>
-
-            {/* Legend */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-6 bg-[#0f0f17] border border-white/5 rounded-3xl p-4 md:p-6 shadow-xl print:hidden"
-            >
-              <h3 className="mb-4 text-white text-xs font-black uppercase tracking-widest">Staff Color Legend</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                {STAFF_CONFIG.map(staff => (
-                  <div key={staff.name} className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-lg flex-shrink-0" style={{ backgroundColor: STAFF_COLORS[staff.name] }} />
-                    <span className="text-xs text-gray-400 font-bold truncate">{staff.name}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
+        {/* ── Content ── */}
+        <div className="flex-1 overflow-y-auto px-1 md:px-0">
+          <div className="p-0 md:p-4 print:p-0">
+            <ScheduleCalendar
+              schedule={schedule}
+              selectedStaff={selectedStaff}
+              onDayClick={handleDayClick}
+              overrides={overrides}
+              desktopView={desktopView}
+            />
+          </div>
 
           {/* Impact Analysis Section (Moved to Bottom) */}
           <motion.div 
@@ -634,6 +653,60 @@ export default function App() {
             </>
           )}
         </AnimatePresence>
+
+        {/* Manager Login Modal */}
+        <AnimatePresence>
+          {isManagerLoginOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsManagerLoginOpen(false)}
+                className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="fixed z-[70] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#0a0a0f] border border-red-500/10 p-6 md:p-8 rounded-3xl shadow-2xl"
+              >
+                <div className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full transition cursor-pointer" onClick={() => setIsManagerLoginOpen(false)}>
+                  <X size={16} className="text-gray-400" />
+                </div>
+                
+                <div className="mb-6 flex flex-col items-center justify-center text-center">
+                  <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mb-4">
+                    <ShieldAlert size={24} className="text-red-500" />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter">Manager Access</h3>
+                  <p className="text-[9px] text-gray-500 uppercase tracking-widest font-bold mt-2">
+                    System Configuration
+                  </p>
+                </div>
+
+                <form onSubmit={handleManagerLogin} className="space-y-4">
+                  <input 
+                    type="password" 
+                    required 
+                    autoFocus
+                    value={managerPassword}
+                    onChange={(e) => setManagerPassword(e.target.value)}
+                    placeholder="Enter Access Key..."
+                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3 px-5 text-sm text-center text-white focus:outline-none focus:border-red-500/50 transition-all placeholder-gray-700 tracking-[0.2em]"
+                  />
+                  <button 
+                    type="submit" 
+                    className="w-full bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg shadow-red-500/20 active:scale-95"
+                  >
+                    Unlock Controls
+                  </button>
+                </form>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
       </div>
     </div>
   );

@@ -40,16 +40,30 @@ export const STAFF_CONFIG: StaffMember[] = [
 ].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
 // Color mapping for each staff member
+export type PersonColor = { bg: string; text: string; bar: string };
+
+export const STAFF_THEME: Record<string, PersonColor> = {
+  Ascar:   { bg: "#3d7ee6", text: "#ffffff", bar: "#2f68cc" },
+  Chris:   { bg: "#c88428", text: "#ffffff", bar: "#a86e1e" },
+  Faye:    { bg: "#c84a76", text: "#ffffff", bar: "#aa3860" },
+  Joyce:   { bg: "#28a87c", text: "#ffffff", bar: "#1e8e66" },
+  Linda:   { bg: "#c8a020", text: "#ffffff", bar: "#a88218" },
+  Nickson: { bg: "#7a56d4", text: "#ffffff", bar: "#6244b8" },
+  Pauline: { bg: "#cc4040", text: "#ffffff", bar: "#aa3030" },
+  Sylvia:  { bg: "#1ea8cc", text: "#ffffff", bar: "#168caa" },
+  Terry:   { bg: "#cc6424", text: "#ffffff", bar: "#aa5018" },
+};
+
 export const STAFF_COLORS: Record<string, string> = {
-  'Ascar': '#8B5CF6',     // Purple
-  'Faye': '#EC4899',      // Pink
-  'Joyce': '#10B981',     // Green
-  'Chris': '#F59E0B',     // Amber
-  'Terry': '#3B82F6',     // Blue
-  'Pauline': '#EF4444',   // Red
-  'Sylvia': '#14B8A6',    // Teal
-  'Linda': '#8B5A00',     // Brown
-  'Nickson': '#6366F1',   // Indigo
+  'Ascar': STAFF_THEME.Ascar.bg,
+  'Faye': STAFF_THEME.Faye.bg,
+  'Joyce': STAFF_THEME.Joyce.bg,
+  'Chris': STAFF_THEME.Chris.bg,
+  'Terry': STAFF_THEME.Terry.bg,
+  'Pauline': STAFF_THEME.Pauline.bg,
+  'Sylvia': STAFF_THEME.Sylvia.bg,
+  'Linda': STAFF_THEME.Linda.bg,
+  'Nickson': STAFF_THEME.Nickson.bg,
 };
 
 // Get shift type for NT rotation worker on a specific day
