@@ -26,6 +26,8 @@ import {
 } from 'recharts';
 import { useGlobalData } from '../context/FirebaseDataContext';
 import { 
+  generateMonthSchedule, 
+  getCurrentShiftType,
   STAFF_COLORS 
 } from './Rota/utils/scheduleGenerator';
 import { isSameDay, subDays } from 'date-fns';
