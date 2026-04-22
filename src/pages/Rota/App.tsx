@@ -92,43 +92,9 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
     ics.push(`SUMMARY:${icon} ${shiftType} Shift | ${selectedStaff}`);
     ics.push(`DTSTART;TZID=Africa/Nairobi:${startStr}`);
     ics.push(`DTEND;TZID=Africa/Nairobi:${endStr}`);
+    const teamList = [selectedStaff, ...mates].map(name => `- ${name}`).join('\\n');
     ics.push(`LOCATION:Falme Operations Hub (${shiftType})`);
-    
-    // Construct Description robustly
-    let descLines = [
-      'SHIFT PERFORMANCE DATA',
-      '--------------------------',
-      `Type: ${shiftType} (${icon})`,
-      `Staff: ${selectedStaff}`,
-      '',
-      'TEAM ON THIS SHIFT:'
-    ];
-    
-    const allMates = [selectedStaff, ...mates];
-    allMates.forEach(m => {
-      descLines.push(`- ${m}`);
-    });
-    
-    descLines.push('');
-    descLines.push(`Time: ${shiftType === 'AM' ? '07:30 - 15:30' : shiftType === 'PM' ? '15:30 - 22:30' : '22:30 - 07:30'}`);
-    descLines.push('');
-    descLines.push('Generated via Falme AI Rota.');
-
-    // ICS spec requires literal \n for newlines inside properties
-    const rawDescription = `DESCRIPTION:${descLines.join('\\n')}`;
-    
-    // RFC 5545 Line Folding: Lines longer than 75 characters MUST be folded
-    let foldedDescription = '';
-    for (let i = 0; i < rawDescription.length; i += 74) {
-      if (i > 0) foldedDescription += '\\r\\n ';
-      foldedDescription += rawDescription.substring(i, i + 74);
-    }
-    
-    // Actually, simple push without manual folding is usually handled by the join, 
-    // but the safest approach for iPhone is to just push the \\n separated string
-    // because many JS parsers break if manual CRLF is inserted mid-value incorrectly.
-    ics.push(rawDescription);
-
+    ics.push(`DESCRIPTION:SHIFT PERFORMANCE DATA\\n--------------------------\\nType: ${shiftType} (${icon})\\nStaff: ${selectedStaff}\\n\\nTEAM ON THIS SHIFT:\\n${teamList}\\n\\nTime: ${shiftType === 'AM' ? '07:30 - 15:30' : shiftType === 'PM' ? '15:30 - 22:30' : '22:30 - 07:30'}\\n\\nGenerated via Falme AI Rota.`);
     ics.push(`CATEGORIES:${shiftType},FalmeRota`);
     ics.push('STATUS:CONFIRMED');
     ics.push('TRANSP:OPAQUE');
