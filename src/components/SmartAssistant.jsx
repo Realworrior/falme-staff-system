@@ -44,7 +44,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
           type: 'template',
           title: tpl.title,
           category: cat.category,
-          content: tpl.responses?.map(r => r.text).join(' ') || '',
+          content: `${tpl.title} ${cat.category} ${tpl.triggers?.join(' ') || ''} ${tpl.goal || ''} ${tpl.responses?.map(r => r.text).join(' ') || ''}`,
           source: tpl
         });
       });

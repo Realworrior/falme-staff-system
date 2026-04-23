@@ -695,7 +695,31 @@ const Templates = () => {
                         </div>
                       </div>
                       
-                      <div className="space-y-4">
+                      {/* AI System Meta Info */}
+                        {(template.triggers || template.goal) && (
+                          <div className="mt-4 pt-4 border-t border-white/5 space-y-3">
+                            {template.triggers && (
+                              <div className="flex flex-wrap gap-2">
+                                <span className="text-[10px] uppercase tracking-wider text-gray-500 w-full mb-1 font-bold">Triggers</span>
+                                {template.triggers.map((trigger, idx) => (
+                                  <span key={idx} className="px-2 py-0.5 bg-sidebar/50 border border-white/5 rounded-md text-[11px] text-gray-400 italic">
+                                    "{trigger}"
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {template.goal && (
+                              <div>
+                                <span className="text-[10px] uppercase tracking-wider text-gray-500 block mb-1 font-bold">Agent Goal</span>
+                                <p className="text-xs text-cyan-400/80 bg-cyan-400/5 p-2 rounded-lg border border-cyan-400/10">
+                                  {template.goal}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="mt-6 space-y-4">
                         {template.responses?.map((resp, rIndex) => (
                           <div 
                             key={rIndex} 
