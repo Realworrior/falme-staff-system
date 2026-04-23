@@ -242,24 +242,32 @@ export const SupabaseDataProvider = ({ children }) => {
     }
   };
 
-  const updateRecord = async (table, recordId, updates) => {
-    // Basic mapping from Firebase path (e.g., 'rotaOverrides') to Supabase table
+  const setAllData = async (table, data) => {
     let targetTable = table;
+    if (table === 'supportTemplates') targetTable = 'support_templates';
     if (table === 'rotaOverrides') targetTable = 'rota_overrides';
     
-    // For Rota, recordId is the date (e.g. '2026-04-01')
-    // and updates is { staffName: shiftType }
-    if (targetTable === 'rota_overrides') {
-       // We need to fetch the existing row, or insert if it doesn't exist
-       const { data } = await supabase.from(targetTable).select('*').eq('date', recordId).single();
-       if (data) {
-           return supabase.from(targetTable).update(updates).eq('date', recordId);
-       } else {
-           return supabase.from(targetTable).insert([{ date: recordId, ...updates }]);
-       }
-    }
+    // For bulk set, we delete existing and insert new
+    // Warning: This is a full wipe and replace!
+    await supabase.from(targetTable).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    return supabase.from(targetTable).insert(Array.isArray(data) ? data : [data]);
+  };
+
+  const updateRecord = async (table, recordId, updates) => {
+    let targetTable = table;
+    if (table === 'rotaOverrides') targetTable = 'rota_overrides';
+    if (table === 'supportTemplates') targetTable = 'support_templates';
     
-    return supabase.from(targetTable).update(updates).eq('id', recordId);
+    // Use 'date' for rotaOverrides, 'id' for others
+    const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
+
+    const { data, error } = await supabase.from(targetTable).select('*').eq(idField, recordId).single();
+    
+    if (data) {
+        return supabase.from(targetTable).update(updates).eq(idField, recordId);
+    } else {
+        return supabase.from(targetTable).insert([{ [idField]: recordId, ...updates }]);
+    }
   };
 
   const createRecord = async (table, record) => {
@@ -288,14 +296,14 @@ export const SupabaseDataProvider = ({ children }) => {
     error,
     isReady,
     actions: {
-      loginWithPhone,
-      logout,
-      createTicket,
-      updateTicket,
-      deleteTicket,
-      updateRecord,
-      createRecord,
+      createRecord, 
+      updateRecord, 
       deleteRecord,
+      setAllData,
+      createTicket, 
+      updateTicket, 
+      loginWithPhone, 
+      logout,
       refreshTickets: fetchAllData
     }
   };

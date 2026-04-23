@@ -233,7 +233,9 @@ const Templates = () => {
   };
 
   const categories = useMemo(() => {
-    return data.map(c => c.category).sort();
+    if (!data || !Array.isArray(data)) return [];
+    const unique = new Set(data.map(c => c.category).filter(Boolean));
+    return Array.from(unique).sort();
   }, [data]);
 
   const filteredData = useMemo(() => {
@@ -564,17 +566,23 @@ const Templates = () => {
 
                  {/* Template Category Navigation for Falme AI */}
                  <div className="w-full pt-4">
-                   <div className="flex flex-wrap items-center justify-center gap-2">
-                     {categories.map(cat => (
-                       <button
-                         key={cat}
-                         onClick={() => setSearchQuery(cat)}
-                         className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-red-500/30 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all shadow-lg"
-                       >
-                         {cat}
-                       </button>
-                     ))}
-                   </div>
+                   {categories.length > 0 ? (
+                     <div className="flex flex-wrap items-center justify-center gap-2">
+                       {categories.map(cat => (
+                         <button
+                           key={cat}
+                           onClick={() => setSearchQuery(cat)}
+                           className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-red-500/30 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all shadow-lg"
+                         >
+                           {cat}
+                         </button>
+                       ))}
+                     </div>
+                   ) : (
+                     <div className="py-4 text-center">
+                       <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em] italic">Knowledge Index Synchronizing...</p>
+                     </div>
+                   )}
                  </div>
 
                  {searchQuery ? (

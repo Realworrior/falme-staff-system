@@ -148,22 +148,18 @@ export default function App() {
 
   const overrides = useMemo(() => {
     if (!isReady || !rawOverrides) return {};
+    // SupabaseDataContext already provides this as a map { date: data }
+    // If it happens to be an array (fallback), we map it here
     if (Array.isArray(rawOverrides)) {
-      const mapped: Record<string, Record<string, any>> = {};
+      const mapped: Record<string, any> = {};
       rawOverrides.forEach(item => {
-        if (typeof item === 'object' && item !== null) {
-          if (item.id) {
-            mapped[item.id] = item;
-          }
-        }
+        const id = item.date || item.id;
+        if (id) mapped[id] = item;
       });
       return mapped;
     }
-    if (typeof rawOverrides === 'object') {
-      return rawOverrides as Record<string, Record<string, any>>;
-    }
-    return {};
-  }, [rawOverrides, isReady]);
+    return rawOverrides;
+  }, [isReady, rawOverrides]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();

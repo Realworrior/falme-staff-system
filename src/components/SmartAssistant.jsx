@@ -53,7 +53,9 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
   }, [templates]);
 
   const categories = useMemo(() => {
-    return templates?.map(cat => cat.category).filter(Boolean) || [];
+    if (!templates || !Array.isArray(templates)) return [];
+    const unique = new Set(templates.map(cat => cat.category).filter(Boolean));
+    return Array.from(unique).sort();
   }, [templates]);
 
   const handleSearch = (e) => {
@@ -310,29 +312,29 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
             </div>
 
             {/* Categories */}
-            {categories.length > 0 && (
-              <div className="px-6 py-3 border-b border-white/5 bg-black/20 flex gap-2 overflow-x-auto custom-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      // Trigger search immediately with the category
-                      const fakeEvent = { preventDefault: () => {} };
-                      setQuery(cat);
-                      // Since setQuery is async, we handle it directly
-                      const userMessage = { role: 'user', content: cat };
-                      setChat(prev => [...prev, userMessage]);
-                      setQuery('');
-                      setIsTyping(true);
-                      setTimeout(() => executeSearch(cat), 1500);
-                    }}
-                    className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all whitespace-nowrap"
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="px-6 py-3 border-b border-white/5 bg-black/20">
+              {categories.length > 0 ? (
+                <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        const userMessage = { role: 'user', content: cat };
+                        setChat(prev => [...prev, userMessage]);
+                        setQuery('');
+                        setIsTyping(true);
+                        setTimeout(() => executeSearch(cat), 1500);
+                      }}
+                      className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all whitespace-nowrap"
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest text-center">No categories synchronized</p>
+              )}
+            </div>
 
             {/* Chat Area */}
             <div 
