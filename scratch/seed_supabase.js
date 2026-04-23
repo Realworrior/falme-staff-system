@@ -7,39 +7,53 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const seedData = [
   {
-    category: "Betting Rules",
+    category: "Sports Betting",
     templates: [
       {
-        title: "Settlement Delay",
+        title: "1X2 Market Explained",
         responses: [
-          { type: "Standard", text: "We are currently awaiting official confirmation of the results for this event. Once confirmed, your bet will be settled immediately. Thank you for your patience." },
-          { type: "Empathy", text: "I understand you're eager to see your winnings! Our team is verifying the final score with the official match providers to ensure 100% accuracy. It won't be much longer now." }
+          { type: "Standard", text: "1 represents Home Win, X represents a Draw, and 2 represents an Away Win. This is the most common market in football betting." },
+          { type: "Expert", text: "When betting 1X2, you are predicting the final match result after 90 minutes. 1=Home, X=Draw, 2=Away. It excludes extra time and penalties unless specified." }
         ]
       },
       {
-        title: "Void Bet Explanation",
+        title: "Over/Under 2.5",
         responses: [
-          { type: "Standard", text: "Your bet was voided because the event was cancelled or postponed. The stake has been returned to your balance." },
-          { type: "Empathy", text: "I'm sorry the match didn't go ahead as planned! Since the event was called off, we've refunded your stake in full to your account." }
+          { type: "Standard", text: "Over 2.5 means 3 or more goals are scored. Under 2.5 means 2 or fewer goals are scored in the match." }
         ]
       }
     ]
   },
   {
-    category: "Payments",
+    category: "Withdrawals",
     templates: [
       {
-        title: "M-Pesa Delay",
+        title: "Withdrawal Status: Pending",
         responses: [
-          { type: "Standard", text: "M-Pesa withdrawals usually take up to 24 hours. Please check your transaction history or wait for the SMS confirmation." },
-          { type: "Empathy", text: "I know how important it is to get your funds! M-Pesa is processing a high volume of requests right now, but your payout is in the queue and should arrive shortly." }
+          { type: "Standard", text: "Your withdrawal is currently being processed. It can take up to 24 hours for the funds to reflect in your M-Pesa account." },
+          { type: "Empathy", text: "I understand you're waiting for your winnings! Our finance team is currently processing a batch of requests. You should receive your SMS confirmation shortly." }
         ]
-      },
+      }
+    ]
+  },
+  {
+    category: "Deposits",
+    templates: [
       {
-        title: "Deposit Not Reflecting",
+        title: "Manual Deposit Sync",
         responses: [
-          { type: "Standard", text: "If your deposit hasn't appeared, please provide the transaction code (e.g., M-Pesa Ref) so we can manually sync it." },
-          { type: "Empathy", text: "Don't worry, your funds are safe! Sometimes the network takes a moment to sync. Just send me the transaction reference and I'll track it down for you right now." }
+          { type: "Standard", text: "Please provide your M-Pesa transaction code so we can manually sync your deposit to your account." }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Promotions",
+    templates: [
+      {
+        title: "Welcome Bonus Terms",
+        responses: [
+          { type: "Standard", text: "The Welcome Bonus requires a minimum deposit of 100 KES and must be wagered 3 times on odds of 2.0 or higher." }
         ]
       }
     ]
@@ -48,10 +62,42 @@ const seedData = [
     category: "Account Management",
     templates: [
       {
-        title: "Password Reset",
+        title: "Password Recovery",
         responses: [
-          { type: "Standard", text: "Click on 'Forgot Password' on the login page to receive a reset link via SMS or Email." },
-          { type: "Empathy", text: "Locked out? No problem! Just use the 'Forgot Password' link to get a fresh one sent to your phone instantly." }
+          { type: "Standard", text: "You can recover your password by clicking 'Forgot Password' and entering your registered phone number." }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Casino & Games",
+    templates: [
+      {
+        title: "Aviator History Check",
+        responses: [
+          { type: "Standard", text: "To see your Aviator history, click the 'History' icon (the clock) at the top right corner of the game screen." }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Responsible Gaming",
+    templates: [
+      {
+        title: "Self-Exclusion Policy",
+        responses: [
+          { type: "Standard", text: "If you'd like to take a break, we offer self-exclusion for 24 hours, 7 days, or 30 days. Please confirm your choice." }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Technical Support",
+    templates: [
+      {
+        title: "App Crashing Fix",
+        responses: [
+          { type: "Standard", text: "Please try clearing your browser cache or updating the app to the latest version. If the issue persists, let us know your device model." }
         ]
       }
     ]
@@ -59,12 +105,21 @@ const seedData = [
 ];
 
 async function seed() {
-  console.log('Seeding Supabase support_templates...');
+  console.log('Restoring Original Categories to Supabase...');
+  
+  // Wipe existing data first to ensure no duplicates
+  const { error: deleteError } = await supabase.from('support_templates').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  
+  if (deleteError) {
+    console.error('Error clearing old data:', deleteError);
+    return;
+  }
+
   const { data, error } = await supabase.from('support_templates').insert(seedData);
   if (error) {
     console.error('Error seeding data:', error);
   } else {
-    console.log('Successfully seeded support_templates!');
+    console.log('Successfully restored original categories!');
   }
 }
 
