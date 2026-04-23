@@ -68,7 +68,7 @@ function GridCard({ day, data, isToday, scheduleDate, onClick, hasSelectedStaff,
       <div className="flex flex-1 gap-px px-1.5 pb-1 min-h-0">
         <div className="flex-1 flex flex-col gap-1 min-w-0 overflow-hidden">
           <span style={{ fontSize: 9, color: "#3d7ee6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>AM</span>
-          <div className="flex flex-wrap gap-[3px]">
+          <div className="flex flex-wrap gap-1">
             {data.AM.map((n: string) => <Pill key={n} name={n} size="sm" />)}
           </div>
         </div>
@@ -146,7 +146,7 @@ function MobileCard({ day, data, isToday, scheduleDate, onClick, hasSelectedStaf
           >
             <span
               className="shrink-0"
-              style={{ fontSize: 10, color: "#3d7ee6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", paddingTop: 3, width: 20 }}
+              style={{ fontSize: 10, color: "#3d7ee6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", paddingTop: 3, width: 32 }}
             >
               AM
             </span>
@@ -158,7 +158,7 @@ function MobileCard({ day, data, isToday, scheduleDate, onClick, hasSelectedStaf
           <div className="flex items-start gap-2 px-3 py-2">
             <span
               className="shrink-0"
-              style={{ fontSize: 10, color: "#28a87c", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", paddingTop: 3, width: 20 }}
+              style={{ fontSize: 10, color: "#28a87c", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", paddingTop: 3, width: 32 }}
             >
               PM
             </span>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SmartAssistant } from "../components/SmartAssistant";
-import { useGlobalData } from "../context/FirebaseDataContext";
+import { useSupabaseData } from "../context/SupabaseDataContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AppSection = "guide" | "manual";
@@ -3158,7 +3158,7 @@ function MarketGuideView() {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function Resources() {
   const [section, setSection] = useState<AppSection>("guide");
-  const { templates } = useGlobalData();
+  const { templates } = useSupabaseData();
 
   return (
     <div className="text-white">

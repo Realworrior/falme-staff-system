@@ -43,7 +43,7 @@ import {
   Sparkles
 } from 'lucide-react';
 
-import { useGlobalData } from '../context/FirebaseDataContext';
+import { useSupabaseData } from '../context/SupabaseDataContext';
 
 import { useToast } from '../context/ToastContext';
 import KeywordHighlighter from '../components/KeywordHighlighter';
@@ -197,7 +197,7 @@ const getCategoryIcon = (category, size = 18, baseClass = "") => {
 };
 
 const Templates = () => {
-  const { templates: data, loading: globalLoading, actions } = useGlobalData();
+  const { templates: data, loading: globalLoading, actions } = useSupabaseData();
   const loading = globalLoading.templates;
   const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
@@ -560,6 +560,21 @@ const Templates = () => {
                     >
                       <span className="hidden sm:inline">Retrieve</span> <Sparkles size={14} />
                     </button>
+                 </div>
+
+                 {/* Template Category Navigation for Falme AI */}
+                 <div className="w-full pt-4">
+                   <div className="flex flex-wrap items-center justify-center gap-2">
+                     {categories.map(cat => (
+                       <button
+                         key={cat}
+                         onClick={() => setSearchQuery(cat)}
+                         className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-red-500/30 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all shadow-lg"
+                       >
+                         {cat}
+                       </button>
+                     ))}
+                   </div>
                  </div>
 
                  {searchQuery ? (

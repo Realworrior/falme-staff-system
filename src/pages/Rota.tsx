@@ -24,11 +24,9 @@ import {
   calculateMonthlyAnalytics,
   getCurrentShiftType,
 } from '../utils/Rota/scheduleGenerator';
-import { useGlobalData } from '../context/FirebaseDataContext';
+import { useSupabaseData } from '../context/SupabaseDataContext';
 import { exportScheduleToCSV, downloadCSV } from '../utils/Rota/RotaExportUtility';
 import { useToast } from '../context/ToastContext';
-import { ref, update, set } from 'firebase/database';
-import { db } from '../firebase';
 
 // Helper to generate the ICS text with icons, mates, and reminders
 const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: any[]) => {
@@ -140,7 +138,7 @@ export default function App() {
   const { showToast } = useToast();
 
   const [isReady, setIsReady] = useState(false);
-  const { overrides: rawOverrides, loading: globalLoading, actions } = useGlobalData();
+  const { overrides: rawOverrides, loading: globalLoading, actions } = useSupabaseData();
   const loading = globalLoading.overrides;
 
   useEffect(() => {
@@ -154,9 +152,8 @@ export default function App() {
       const mapped: Record<string, Record<string, any>> = {};
       rawOverrides.forEach(item => {
         if (typeof item === 'object' && item !== null) {
-          const { firebaseKey, id, ...rest } = item;
-          if (firebaseKey || id) {
-            mapped[firebaseKey || id] = rest;
+          if (item.id) {
+            mapped[item.id] = item;
           }
         }
       });
@@ -199,14 +196,7 @@ export default function App() {
 
     try {
       const promises = entries.map(([date, staffOverrides]) => {
-        const dateRef = ref(db, `rotaOverrides/${date}`);
-        if (shouldReplace) {
-          // Atomic full replace for this date node
-          return set(dateRef, staffOverrides);
-        } else {
-          // Atomic merge for specific staff within this date
-          return update(dateRef, staffOverrides);
-        }
+        return actions.updateRecord('rotaOverrides', date, staffOverrides);
       });
       await Promise.all(promises);
       showToast('Rota specialized update complete', 'success');
@@ -457,7 +447,7 @@ export default function App() {
               <span className="text-[10px] font-black uppercase text-gray-500 tracking-[0.2em]">Filter Personnel:</span>
             </div>
             
-            <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex flex-wrap gap-x-4 gap-y-3 items-center">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

@@ -19,11 +19,11 @@ import {
   RefreshCw,
   AlertCircle
 } from 'lucide-react';
-import { useGlobalData } from '../context/FirebaseDataContext';
+import { useSupabaseData } from '../context/SupabaseDataContext';
 import { useToast } from '../context/ToastContext';
 
 const SlotTracker = () => {
-  const { logs, loading: globalLoading, actions } = useGlobalData();
+  const { logs, loading: globalLoading, actions } = useSupabaseData();
   const loading = globalLoading.logs;
   const { showToast } = useToast();
   const [isReady, setIsReady] = useState(false);
@@ -282,7 +282,7 @@ const SlotTracker = () => {
                     <td className="py-4 px-6 text-gray-400 font-bold text-xs font-mono">{new Date(log.ts).toLocaleTimeString('en-GB')}</td>
                     <td className="py-4 px-6 text-right">
                       <button 
-                        onClick={() => handleDeleteRecord(log.firebaseKey || log.id)}
+                        onClick={() => handleDeleteRecord(log.id)}
                         className="p-1.5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={14} />

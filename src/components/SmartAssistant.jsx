@@ -52,6 +52,10 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
     return flat;
   }, [templates]);
 
+  const categories = useMemo(() => {
+    return templates?.map(cat => cat.category).filter(Boolean) || [];
+  }, [templates]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -62,8 +66,11 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
     setIsTyping(true);
 
     // Simulate AI Processing
-    setTimeout(() => {
-      const q = query.toLowerCase();
+    setTimeout(() => executeSearch(query), 1500);
+  };
+
+  const executeSearch = (searchQuery) => {
+      const q = searchQuery.toLowerCase();
       
       // conceptMapper - Mapping feelings/actions to template concepts
       const concepts = {
@@ -251,7 +258,6 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
 
       setChat(prev => [...prev, { role: 'assistant', content: responseContent }]);
       setIsTyping(false);
-    }, 1500);
   };
 
   return (
@@ -262,7 +268,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="fixed bottom-6 right-6 w-16 h-16 rounded-2xl accent-gradient text-white shadow-2xl z-[999] flex items-center justify-center border border-white/20"
+          className="fixed bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl accent-gradient text-white shadow-2xl z-[999] flex items-center justify-center border border-white/20"
         >
           <AnimatePresence mode="wait">
             {isOpen ? (
@@ -287,7 +293,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
             initial={{ opacity: 0, y: 20, scale: 0.95, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: 20, scale: 0.95, filter: 'blur(10px)' }}
-            className="fixed bottom-24 right-6 w-[380px] md:w-[420px] h-[600px] bg-[#0a0a0f] border border-white/10 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[999] flex flex-col overflow-hidden backdrop-blur-xl"
+            className="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-[380px] md:w-[420px] h-[calc(100vh-120px)] sm:h-[600px] max-h-[800px] bg-[#0a0a0f] border border-white/10 rounded-[24px] sm:rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[999] flex flex-col overflow-hidden backdrop-blur-xl"
           >
             {/* Header */}
             <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center gap-4">
@@ -302,6 +308,31 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                 </div>
               </div>
             </div>
+
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div className="px-6 py-3 border-b border-white/5 bg-black/20 flex gap-2 overflow-x-auto custom-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      // Trigger search immediately with the category
+                      const fakeEvent = { preventDefault: () => {} };
+                      setQuery(cat);
+                      // Since setQuery is async, we handle it directly
+                      const userMessage = { role: 'user', content: cat };
+                      setChat(prev => [...prev, userMessage]);
+                      setQuery('');
+                      setIsTyping(true);
+                      setTimeout(() => executeSearch(cat), 1500);
+                    }}
+                    className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all whitespace-nowrap"
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Chat Area */}
             <div 

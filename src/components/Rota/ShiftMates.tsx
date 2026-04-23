@@ -172,7 +172,7 @@ export function ShiftMates({
       {isManagerMode && (
         <div className="px-6 pb-5">
           <p className="text-[8px] text-gray-600 font-black uppercase tracking-[0.2em] italic text-center">
-            Changes sync to Firebase in real-time
+            Changes sync to Supabase in real-time
           </p>
         </div>
       )}

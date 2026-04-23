@@ -9,8 +9,16 @@ const SupabaseDataContext = createContext();
 
 export const SupabaseDataProvider = ({ children }) => {
   const [tickets, setTickets] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [overrides, setOverrides] = useState({});
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({
+    tickets: true,
+    templates: true,
+    logs: true,
+    overrides: true
+  });
   const [error, setError] = useState(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -22,49 +30,69 @@ export const SupabaseDataProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchTickets = async () => {
+  const fetchAllData = async () => {
     try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('tickets')
-        .select('*')
-        .order('created_at', { ascending: false });
+      setLoading({ tickets: true, templates: true, logs: true, overrides: true });
+      
+      const [ticketsRes, templatesRes, logsRes, overridesRes] = await Promise.all([
+        supabase.from('tickets').select('*').order('created_at', { ascending: false }),
+        supabase.from('support_templates').select('*'),
+        supabase.from('aviator_logs').select('*').order('created_at', { ascending: false }),
+        supabase.from('rota_overrides').select('*')
+      ]);
 
-      if (error) {
-        console.error('Supabase fetch error:', error);
-        setTickets([]);
-      } else {
-        setTickets(data || []);
-      }
+      if (ticketsRes.error) console.error('Supabase tickets error:', ticketsRes.error);
+      if (templatesRes.error) console.error('Supabase templates error:', templatesRes.error);
+      if (logsRes.error) console.error('Supabase logs error:', logsRes.error);
+      if (overridesRes.error) console.error('Supabase overrides error:', overridesRes.error);
+
+      setTickets(ticketsRes.data || []);
+      setTemplates(templatesRes.data || []);
+      setLogs(logsRes.data || []);
+      
+      // Convert overrides array to record map for backward compatibility
+      const overridesMap = {};
+      (overridesRes.data || []).forEach(item => {
+        overridesMap[item.date || item.id] = item;
+      });
+      setOverrides(overridesMap);
+
     } catch (err) {
       console.error('Critical Fetch Error:', err);
-      setTickets([]);
       setError(err);
     } finally {
-      setLoading(false);
+      setLoading({ tickets: false, templates: false, logs: false, overrides: false });
       setIsReady(true);
     }
   };
 
   useEffect(() => {
-    fetchTickets();
+    fetchAllData();
     
-    // Real-time Subscription
-    const subscription = supabase
-      .channel('tickets_channel')
+    // Real-time Subscriptions
+    const channels = supabase.channel('custom-all-channel')
       .on('postgres_changes', { event: '*', table: 'tickets', schema: 'public' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setTickets(prev => [payload.new, ...prev]);
-        } else if (payload.eventType === 'UPDATE') {
-          setTickets(prev => prev.map(t => t.id === payload.new.id ? payload.new : t));
-        } else if (payload.eventType === 'DELETE') {
-          setTickets(prev => prev.filter(t => t.id === payload.old.id));
-        }
+        if (payload.eventType === 'INSERT') setTickets(prev => [payload.new, ...prev]);
+        else if (payload.eventType === 'UPDATE') setTickets(prev => prev.map(t => t.id === payload.new.id ? payload.new : t));
+        else if (payload.eventType === 'DELETE') setTickets(prev => prev.filter(t => t.id === payload.old.id));
+      })
+      .on('postgres_changes', { event: '*', table: 'support_templates', schema: 'public' }, () => {
+        supabase.from('support_templates').select('*').then(({data}) => setTemplates(data || []));
+      })
+      .on('postgres_changes', { event: '*', table: 'aviator_logs', schema: 'public' }, () => {
+        supabase.from('aviator_logs').select('*').order('created_at', { ascending: false }).then(({data}) => setLogs(data || []));
+      })
+      .on('postgres_changes', { event: '*', table: 'rota_overrides', schema: 'public' }, () => {
+        supabase.from('rota_overrides').select('*').then(({data}) => {
+          const overridesMap = {};
+          (data || []).forEach(item => overridesMap[item.date || item.id] = item);
+          setOverrides(overridesMap);
+        });
       })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscription);
+      supabase.removeChannel(channels);
     };
   }, []);
 
@@ -214,8 +242,47 @@ export const SupabaseDataProvider = ({ children }) => {
     }
   };
 
+  const updateRecord = async (table, recordId, updates) => {
+    // Basic mapping from Firebase path (e.g., 'rotaOverrides') to Supabase table
+    let targetTable = table;
+    if (table === 'rotaOverrides') targetTable = 'rota_overrides';
+    
+    // For Rota, recordId is the date (e.g. '2026-04-01')
+    // and updates is { staffName: shiftType }
+    if (targetTable === 'rota_overrides') {
+       // We need to fetch the existing row, or insert if it doesn't exist
+       const { data } = await supabase.from(targetTable).select('*').eq('date', recordId).single();
+       if (data) {
+           return supabase.from(targetTable).update(updates).eq('date', recordId);
+       } else {
+           return supabase.from(targetTable).insert([{ date: recordId, ...updates }]);
+       }
+    }
+    
+    return supabase.from(targetTable).update(updates).eq('id', recordId);
+  };
+
+  const createRecord = async (table, record) => {
+    let targetTable = table;
+    if (table === 'supportTemplates') targetTable = 'support_templates';
+    if (table === 'aviatorLogs') targetTable = 'aviator_logs';
+    
+    return supabase.from(targetTable).insert([record]);
+  };
+
+  const deleteRecord = async (table, recordId) => {
+    let targetTable = table;
+    if (table === 'supportTemplates') targetTable = 'support_templates';
+    if (table === 'aviatorLogs') targetTable = 'aviator_logs';
+    
+    return supabase.from(targetTable).delete().eq('id', recordId);
+  };
+
   const value = {
     tickets,
+    templates,
+    logs,
+    overrides,
     user,
     loading,
     error,
@@ -226,7 +293,10 @@ export const SupabaseDataProvider = ({ children }) => {
       createTicket,
       updateTicket,
       deleteTicket,
-      refreshTickets: fetchTickets
+      updateRecord,
+      createRecord,
+      deleteRecord,
+      refreshTickets: fetchAllData
     }
   };
 

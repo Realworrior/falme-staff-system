@@ -24,7 +24,7 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { useGlobalData } from '../context/FirebaseDataContext';
+// Migration to Supabase complete
 import { 
   generateMonthSchedule, 
   getCurrentShiftType,
@@ -34,20 +34,17 @@ import { isSameDay, subDays } from 'date-fns';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 
 const Dashboard = () => {
-  const { templates, logs, tickets: firebaseTickets, overrides: rawOverrides, loading: firebaseLoading } = useGlobalData();
-  const { tickets: supabaseTickets, loading: supabaseLoading } = useSupabaseData();
+  const { templates, logs, tickets, overrides: rawOverrides, loading } = useSupabaseData();
   
-  const tickets = supabaseTickets;
-  const loading = firebaseLoading || supabaseLoading;
-
+  const isSyncing = loading.tickets || loading.templates || loading.logs || loading.overrides;
+  
   const overrides = useMemo(() => {
     if (!rawOverrides) return {};
     if (Array.isArray(rawOverrides)) {
       const mapped = {};
       rawOverrides.forEach(item => {
         if (typeof item === 'object' && item !== null) {
-          const { firebaseKey, id, ...rest } = item;
-          if (firebaseKey || id) mapped[firebaseKey || id] = rest;
+          if (item.id) mapped[item.id] = item;
         }
       });
       return mapped;
