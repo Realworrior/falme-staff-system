@@ -103,19 +103,21 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: S.textPrimary }}>
           {item.title}
         </span>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 4 }}>
           {responses.map(r => (
-            <span key={r.type} 
+            <div key={r.type} 
               className={r.type === 'Standard' ? 'tour-type-standard' : r.type === 'High Empathy' ? 'tour-type-empathy' : 'tour-type-alt'}
               style={{ 
+                display: 'flex', alignItems: 'center', gap: 4,
                 fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
                 color: r.type === 'Standard' ? '#4080e8' : r.type === 'High Empathy' ? '#e84080' : S.orangeText,
-                background: 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: 4,
+                background: 'rgba(255,255,255,0.03)', padding: '3px 8px', borderRadius: 6,
                 border: '1px solid rgba(255,255,255,0.05)'
               }}
             >
+              {r.type === 'Standard' ? <Shield size={8} /> : r.type === 'High Empathy' ? <Heart size={8} /> : <Zap size={8} />}
               {r.type[0]}
-            </span>
+            </div>
           ))}
         </div>
       </button>
@@ -131,22 +133,38 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
           >
             <div style={{ padding: '0 18px 18px', borderTop: `1px solid ${S.border}` }}>
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: 8, margin: '16px 0 12px' }}>
-                {responses.map(r => (
-                  <button
-                    key={r.type}
-                    onClick={() => setActiveType(r.type)}
-                    style={{
-                      padding: '6px 14px', borderRadius: 8, border: `1px solid ${activeType === r.type ? S.orange : S.border}`,
-                      background: activeType === r.type ? S.orangeGlow : 'transparent',
-                      color: activeType === r.type ? S.orangeText : S.textMuted,
-                      fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                    }}
-                  >
-                    {r.type === 'High Empathy' ? <Heart size={12} /> : <MessageSquare size={12} />}
-                    {r.type}
-                  </button>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: '16px 0 16px' }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {responses.map(r => (
+                    <button
+                      key={r.type}
+                      onClick={() => setActiveType(r.type)}
+                      style={{
+                        padding: '8px 16px', borderRadius: 10, border: `1px solid ${activeType === r.type ? S.orange : S.border}`,
+                        background: activeType === r.type ? S.orangeGlow : 'rgba(255,255,255,0.02)',
+                        color: activeType === r.type ? S.orangeText : S.textMuted,
+                        fontSize: 11, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                        transition: 'all 0.2s',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      {r.type === 'High Empathy' ? <Heart size={14} /> : r.type === 'Standard' ? <Shield size={14} /> : <Zap size={14} />}
+                      {r.type === 'High Empathy' ? 'Soft Tone' : r.type === 'Standard' ? 'Direct Tone' : 'Variant'}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Tone Description */}
+                <div style={{ 
+                  fontSize: 10, color: S.textMuted, fontWeight: 500, fontStyle: 'italic',
+                  paddingLeft: 4, display: 'flex', alignItems: 'center', gap: 6 
+                }}>
+                  <div className="w-1 h-1 rounded-full bg-orange-500/50" />
+                  {activeType === 'Standard' && "Standard professional response. Best for neutral inquiries and general procedures."}
+                  {activeType === 'High Empathy' && "Softened language with emotional validation. Use for distressed or frustrated clients."}
+                  {activeType !== 'Standard' && activeType !== 'High Empathy' && `Specialized variation: ${activeType}. Best for specific edge cases.`}
+                </div>
               </div>
 
               {/* Text Area */}
