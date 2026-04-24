@@ -239,39 +239,78 @@ const Dashboard = () => {
           <div className="bg-[#1a1a24] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-sm font-black text-white uppercase tracking-widest">On Duty Now</h3>
-                <p className="text-[10px] text-gray-500 mt-1 uppercase font-black tracking-widest">Live Shift Personnel</p>
+                <h3 className="text-sm font-black text-white uppercase tracking-widest">Shift Operations</h3>
+                <p className="text-[10px] text-gray-500 mt-1 uppercase font-black tracking-widest">Real-time Deployment Status</p>
               </div>
-              <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[8px] font-black uppercase tracking-widest shadow-lg">
-                Active
+              <div className="flex items-center gap-2">
+                 <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[8px] font-black uppercase tracking-widest animate-pulse">
+                   Live Tracking
+                 </div>
               </div>
             </div>
 
             <div className="space-y-6">
               {[
-                { id: 'AM', names: onDutyInfo.AM, color: '#2DD4BF' },
-                { id: 'PM', names: onDutyInfo.PM, color: '#60A5FA' },
-                { id: 'NT', names: onDutyInfo.NT, color: '#FBBF24' },
-              ].map(shift => (
-                <div key={shift.id} className={`p-4 rounded-2xl border transition-all ${onDutyInfo.current === shift.id ? 'bg-white/5 border-white/20 shadow-xl' : 'bg-transparent border-white/5 opacity-40'}`}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: shift.color }} />
-                    <span className="text-[10px] font-black text-white uppercase tracking-widest">{shift.id} Shift</span>
-                    {onDutyInfo.current === shift.id && (
-                      <span className="ml-auto text-[8px] font-black uppercase text-emerald-500 px-2 py-0.5 rounded-lg bg-emerald-500/10">Now</span>
+                { id: 'AM', label: 'Morning Shift', time: '07:30 - 15:30', names: onDutyInfo.AM, color: '#2DD4BF', range: [7.5, 15.5] },
+                { id: 'PM', label: 'Afternoon Shift', time: '15:30 - 22:30', names: onDutyInfo.PM, color: '#60A5FA', range: [15.5, 22.5] },
+                { id: 'NT', label: 'Night Shift', time: '22:30 - 07:30', names: onDutyInfo.NT, color: '#FBBF24', range: [22.5, 31.5] }, // 31.5 = 07:30 next day
+              ].map(shift => {
+                const isCurrent = onDutyInfo.current === shift.id;
+                
+                // Calculate progress for current shift
+                let progress = 0;
+                if (isCurrent) {
+                  const now = new Date();
+                  let currentVal = now.getHours() + now.getMinutes() / 60;
+                  // Handle NT rollover
+                  if (shift.id === 'NT' && currentVal < 7.5) currentVal += 24;
+                  
+                  const start = shift.range[0];
+                  const end = shift.range[1];
+                  progress = Math.min(100, Math.max(0, ((currentVal - start) / (end - start)) * 100));
+                }
+
+                return (
+                  <div key={shift.id} className={`relative p-5 rounded-2xl border transition-all duration-500 ${isCurrent ? 'bg-white/[0.04] border-white/20 shadow-2xl scale-[1.02]' : 'bg-transparent border-white/5 opacity-30 grayscale-[0.5]'}`}>
+                    {isCurrent && (
+                      <div className="absolute top-0 left-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent rounded-full" style={{ width: `${progress}%`, transition: 'width 1s ease-in-out' }} />
                     )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {shift.names.map(name => (
-                      <div key={name} className="px-3 py-1 rounded-full border border-white/10 text-[10px] font-black truncate max-w-[100px]" style={{ backgroundColor: STAFF_COLORS[name] }}>
-                        {name}
+                    
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
+                          <Clock size={16} style={{ color: shift.color }} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                             <span className="text-[11px] font-black text-white uppercase tracking-widest">{shift.label}</span>
+                             {isCurrent && <span className="text-[8px] font-black uppercase text-emerald-500 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">Active</span>}
+                          </div>
+                          <span className="text-[9px] font-bold text-gray-500 tracking-widest">{shift.time}</span>
+                        </div>
                       </div>
-                    ))}
-                    {shift.names.length === 0 && <span className="text-[9px] text-gray-600 italic">No staff assigned</span>}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {shift.names.map(name => (
+                        <div key={name} className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-lg bg-black/40 border border-white/10 group-hover:border-white/20 transition-colors">
+                           <div className="w-4 h-4 rounded-md shadow-sm" style={{ backgroundColor: STAFF_COLORS[name] }} />
+                           <span className="text-[10px] font-black text-white/80">{name}</span>
+                        </div>
+                      ))}
+                      {shift.names.length === 0 && <span className="text-[9px] text-gray-600 italic">No personnel deployed</span>}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+            
+            <button 
+              onClick={() => navigate('/rota')}
+              className="w-full mt-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2"
+            >
+              Full Rota Schedule <ArrowUpRight size={14} />
+            </button>
           </div>
 
           {/* System Health / Tickets Snippet */}
