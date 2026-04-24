@@ -202,6 +202,7 @@ export default function App() {
       });
       
       await Promise.all(promises);
+      await actions.refreshAll();
       showToast(shouldReplace ? 'Rota wipe & sync complete' : 'Rota specialized update complete', 'success');
     } catch (err) {
       console.error('Bulk import error:', err);

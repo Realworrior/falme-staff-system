@@ -312,7 +312,7 @@ export const SupabaseDataProvider = ({ children }) => {
       updateTicket, 
       loginWithPhone, 
       logout,
-      refreshTickets: fetchAllData
+      refreshAll: fetchAllData
     }
   };
 

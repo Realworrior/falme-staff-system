@@ -162,8 +162,11 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
               <Upload className="text-red-500" />
               Advanced Matrix Import
             </DialogTitle>
-            <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2">
-              Sync Operational Data with Atomic Override support
+            <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2 flex items-center justify-between">
+              <span>Sync Operational Data with Atomic Override support</span>
+              <span className="text-red-500/80 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
+                Target: {format(new Date(year, month, 1), 'MMMM yyyy')}
+              </span>
             </DialogDescription>
           </DialogHeader>
         </div>
