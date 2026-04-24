@@ -103,7 +103,7 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: S.textPrimary }}>
           {item.title}
         </span>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end', marginLeft: 'auto' }}>
           {responses.map(r => (
             <div key={r.type} 
               className={r.type === 'Standard' ? 'tour-type-standard' : r.type === 'High Empathy' ? 'tour-type-empathy' : 'tour-type-alt'}
@@ -134,7 +134,7 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
             <div style={{ padding: '0 18px 18px', borderTop: `1px solid ${S.border}` }}>
               {/* Tabs */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: '16px 0 16px' }}>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {responses.map(r => (
                     <button
                       key={r.type}
