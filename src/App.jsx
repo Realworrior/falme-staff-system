@@ -68,7 +68,6 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <TourGuide />
       <AppShell>
         <Routes>
           <Route path="/" element={<Dashboard />} />
