@@ -331,9 +331,17 @@ const Templates = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '16px 24px', borderTop: `1px solid ${S.border}`, background: 'rgba(0,0,0,0.2)'
             }}>
-              <span style={{ fontSize: 11, color: S.textMuted, fontWeight: 500 }}>
-                Supports English, Swahili & Sheng · Detects Sentiment
-              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: 11, color: S.textMuted, fontWeight: 500 }}>
+                  Supports English, Swahili & Sheng · Detects Sentiment
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
+                  <span style={{ fontSize: 9, color: S.orangeText, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    AI Matcher under training: Verify accuracy before use
+                  </span>
+                </div>
+              </div>
               <button
                 onClick={handleAnalyze}
                 disabled={!aiInput.trim() || aiLoading}

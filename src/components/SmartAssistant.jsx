@@ -184,9 +184,15 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
               </div>
               <div>
                 <h3 className="text-sm font-black text-white uppercase tracking-widest font-heading">Falme AI Assistant</h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Active Knowledge Base</span>
+                <div className="flex flex-col gap-1 mt-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest">Active Knowledge Base</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1 h-1 bg-amber-500 rounded-full animate-pulse" />
+                    <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest">AI Under Training · Verify Accuracy</span>
+                  </div>
                 </div>
               </div>
             </div>
