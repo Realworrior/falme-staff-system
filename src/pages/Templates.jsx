@@ -185,7 +185,6 @@ const Templates = () => {
   const { templates: data, loading, error, isReady, actions } = useSupabaseData();
   const { showToast } = useToast();
   
-  const [mode, setMode] = useState('browse'); // 'ai' | 'browse'
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   
@@ -310,178 +309,140 @@ const Templates = () => {
           </div>
         </div>
 
-        {/* MODE TOGGLE */}
-        <div style={{ 
-          display: 'flex', background: S.surface, padding: 4, borderRadius: 14, 
-          width: 'fit-content', border: `1px solid ${S.border}`, marginBottom: 32
-        }}>
-          <button 
-            onClick={() => setMode('ai')}
-            style={{
-              padding: '8px 20px', borderRadius: 10, border: 'none',
-              background: mode === 'ai' ? S.card : 'transparent',
-              color: mode === 'ai' ? S.orangeText : S.textMuted,
-              fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s'
-            }}
-          >
-            <Sparkles size={14} /> AI Matcher
-          </button>
-          <button 
-            onClick={() => setMode('browse')}
-            style={{
-              padding: '8px 20px', borderRadius: 10, border: 'none',
-              background: mode === 'browse' ? S.card : 'transparent',
-              color: mode === 'browse' ? S.orangeText : S.textMuted,
-              fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s'
-            }}
-          >
-            <LayoutGrid size={14} /> Browse All
-          </button>
+        {/* AI MATCHER PANEL */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 40 }}>
+          <div style={{
+            background: S.card, border: `1px solid ${S.border}`,
+            borderRadius: 20, overflow: 'hidden', transition: 'border-color 0.2s'
+          }}>
+            <textarea
+              value={aiInput}
+              onChange={e => setAiInput(e.target.value)}
+              placeholder="Paste the client's message here to analyze emotion and find matching templates..."
+              style={{
+                width: '100%', minHeight: 160, padding: '24px',
+                background: 'transparent', border: 'none', outline: 'none', resize: 'none',
+                color: S.textPrimary, fontSize: 15, lineHeight: 1.6,
+                fontFamily: 'inherit', caretColor: S.orange,
+              }}
+            />
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px 24px', borderTop: `1px solid ${S.border}`, background: 'rgba(0,0,0,0.2)'
+            }}>
+              <span style={{ fontSize: 11, color: S.textMuted, fontWeight: 500 }}>
+                Supports English, Swahili & Sheng · Detects Sentiment
+              </span>
+              <button
+                onClick={handleAnalyze}
+                disabled={!aiInput.trim() || aiLoading}
+                style={{
+                  background: S.orange, color: '#fff', border: 'none', borderRadius: 10,
+                  padding: '10px 24px', fontSize: 12, fontWeight: 800,
+                  cursor: aiInput.trim() ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
+                  textTransform: 'uppercase'
+                }}
+              >
+                {aiLoading ? <RotateCcw size={14} className="animate-spin" /> : <Zap size={14} />}
+                {aiLoading ? 'Analyzing...' : 'Analyze Client Msg'}
+              </button>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {aiResult && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Emotion Indicator */}
+                <div style={{ 
+                  display: 'flex', gap: 12, padding: '12px 16px', borderRadius: 12, 
+                  background: `${aiResult.emotion.color}10`, border: `1px solid ${aiResult.emotion.color}20`
+                }}>
+                  <span style={{ fontSize: 20 }}>{aiResult.emotion.emoji}</span>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: aiResult.emotion.color, textTransform: 'uppercase' }}>
+                      {aiResult.emotion.label} Detected
+                    </div>
+                    <div style={{ fontSize: 11, color: S.textMuted }}>
+                      Language: {aiResult.detectedLanguage.toUpperCase()} · Suggesting {aiResult.suggestedTone} tone
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Suggestion */}
+                {aiResult.aiSuggestion && (
+                  <div style={{ background: `${S.purple}10`, border: `1px solid ${S.purple}30`, borderRadius: 16, padding: 20, marginTop: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <Sparkles size={16} color={S.purple} />
+                      <span style={{ fontSize: 12, fontWeight: 800, color: S.purple, textTransform: 'uppercase' }}>AI Generated Contextual Response</span>
+                    </div>
+                    <div style={{ background: '#000', padding: 16, borderRadius: 12, marginBottom: 12, fontSize: 14, lineHeight: 1.6, color: '#ccc' }}>
+                      {aiResult.aiSuggestion}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <CopyBtn text={aiResult.aiSuggestion} id="ai-gen" copiedId={copiedId} onCopy={handleCopy} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Matches */}
+                <div style={{ marginTop: 24 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: S.textMuted, textTransform: 'uppercase', marginBottom: 12 }}>
+                    {aiResult.matches.length} Template Matches
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {aiResult.matches.map((m, i) => (
+                      <ResponseCard key={i} item={m.item} copiedId={copiedId} onCopy={handleCopy} />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* AI MATCHER PANEL */}
-        <AnimatePresence mode="wait">
-          {mode === 'ai' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: 20 }}
-            >
-              <div style={{
-                background: S.card, border: `1px solid ${S.border}`,
-                borderRadius: 20, overflow: 'hidden', transition: 'border-color 0.2s'
-              }}>
-                <textarea
-                  value={aiInput}
-                  onChange={e => setAiInput(e.target.value)}
-                  placeholder="Paste the client's message here to analyze emotion and find matching templates..."
-                  style={{
-                    width: '100%', minHeight: 160, padding: '24px',
-                    background: 'transparent', border: 'none', outline: 'none', resize: 'none',
-                    color: S.textPrimary, fontSize: 15, lineHeight: 1.6,
-                    fontFamily: 'inherit', caretColor: S.orange,
-                  }}
-                />
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '16px 24px', borderTop: `1px solid ${S.border}`, background: 'rgba(0,0,0,0.2)'
-                }}>
-                  <span style={{ fontSize: 11, color: S.textMuted, fontWeight: 500 }}>
-                    Supports English & Swahili · Detects Sentiment
-                  </span>
-                  <button
-                    onClick={handleAnalyze}
-                    disabled={!aiInput.trim() || aiLoading}
-                    style={{
-                      background: S.orange, color: '#fff', border: 'none', borderRadius: 10,
-                      padding: '10px 24px', fontSize: 12, fontWeight: 800,
-                      cursor: aiInput.trim() ? 'pointer' : 'default',
-                      display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
-                      textTransform: 'uppercase'
-                    }}
-                  >
-                    {aiLoading ? <RotateCcw size={14} className="animate-spin" /> : <Zap size={14} />}
-                    {aiLoading ? 'Analyzing...' : 'Analyze Client Msg'}
-                  </button>
+        {/* BROWSER SECTION */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+             <h2 style={{ fontSize: 18, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0, color: S.textPrimary }}>Browse Categories</h2>
+             <div style={{ flex: 1, height: 1, background: S.border }} />
+          </div>
+
+          {/* SEARCH BAR */}
+          <div style={{ position: 'relative', marginBottom: 24 }}>
+            <Search size={18} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: S.textMuted }} />
+            <input 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Filter by keyword, title, or trigger..."
+              style={{
+                width: '100%', background: S.card, border: `1px solid ${S.border}`,
+                borderRadius: 16, padding: '16px 16px 16px 48px', color: S.textPrimary,
+                fontSize: 14, outline: 'none', transition: 'all 0.2s'
+              }}
+            />
+          </div>
+
+          {/* BROWSE LIST */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            {filteredData.map((cat, idx) => (
+              <div key={idx}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <span style={{ fontSize: 20 }}>{cat.category.split(' ')[0]}</span>
+                  <h3 style={{ fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: S.textSecondary, margin: 0 }}>
+                    {cat.category}
+                  </h3>
+                  <div style={{ flex: 1, height: 1, background: S.border }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {cat.templates.map((tpl, tIdx) => (
+                    <ResponseCard key={tIdx} item={tpl} copiedId={copiedId} onCopy={handleCopy} />
+                  ))}
                 </div>
               </div>
-
-              {aiResult && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ spaceY: 16 }}>
-                  {/* Emotion Indicator */}
-                  <div style={{ 
-                    display: 'flex', gap: 12, padding: '12px 16px', borderRadius: 12, 
-                    background: `${aiResult.emotion.color}10`, border: `1px solid ${aiResult.emotion.color}20`
-                  }}>
-                    <span style={{ fontSize: 20 }}>{aiResult.emotion.emoji}</span>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: aiResult.emotion.color, textTransform: 'uppercase' }}>
-                        {aiResult.emotion.label} Detected
-                      </div>
-                      <div style={{ fontSize: 11, color: S.textMuted }}>
-                        Language: {aiResult.detectedLanguage.toUpperCase()} · Suggesting {aiResult.suggestedTone} tone
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* AI Suggestion */}
-                  {aiResult.aiSuggestion && (
-                    <div style={{ background: `${S.purple}10`, border: `1px solid ${S.purple}30`, borderRadius: 16, padding: 20, marginTop: 16 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                        <Sparkles size={16} color={S.purple} />
-                        <span style={{ fontSize: 12, fontWeight: 800, color: S.purple, textTransform: 'uppercase' }}>AI Generated Contextual Response</span>
-                      </div>
-                      <div style={{ background: '#000', padding: 16, borderRadius: 12, marginBottom: 12, fontSize: 14, lineHeight: 1.6, color: '#ccc' }}>
-                        {aiResult.aiSuggestion}
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                         <CopyBtn text={aiResult.aiSuggestion} id="ai-gen" copiedId={copiedId} onCopy={handleCopy} />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Matches */}
-                  <div style={{ marginTop: 24 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: S.textMuted, textTransform: 'uppercase', marginBottom: 12 }}>
-                      {aiResult.matches.length} Template Matches
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      {aiResult.matches.map((m, i) => (
-                        <ResponseCard key={i} item={m.item} copiedId={copiedId} onCopy={handleCopy} />
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-
-          {mode === 'browse' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {/* SEARCH BAR */}
-              <div style={{ position: 'relative', marginBottom: 24 }}>
-                <Search size={18} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: S.textMuted }} />
-                <input 
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Filter by keyword, title, or trigger..."
-                  style={{
-                    width: '100%', background: S.card, border: `1px solid ${S.border}`,
-                    borderRadius: 16, padding: '16px 16px 16px 48px', color: S.textPrimary,
-                    fontSize: 14, outline: 'none', transition: 'all 0.2s'
-                  }}
-                />
-              </div>
-
-              {/* BROWSE LIST */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-                {filteredData.map((cat, idx) => (
-                  <div key={idx}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                      <span style={{ fontSize: 20 }}>{cat.category.split(' ')[0]}</span>
-                      <h3 style={{ fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: S.textSecondary, margin: 0 }}>
-                        {cat.category}
-                      </h3>
-                      <div style={{ flex: 1, height: 1, background: S.border }} />
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {cat.templates.map((tpl, tIdx) => (
-                        <ResponseCard key={tIdx} item={tpl} copiedId={copiedId} onCopy={handleCopy} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* CREATE DIALOG */}
