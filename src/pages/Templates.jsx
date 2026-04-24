@@ -68,8 +68,7 @@ function CopyBtn({ text, id, copiedId, onCopy, size = 'md' }) {
   );
 }
 
-function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
-  const [expanded, setExpanded] = useState(false);
+function ResponseCard({ item, copiedId, onCopy, expanded, onToggle }) {
   const [activeType, setActiveType] = useState('Standard');
 
   const responses = item.responses || [];
@@ -86,7 +85,7 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
       boxShadow: expanded ? '0 10px 30px -10px rgba(0,0,0,0.5)' : 'none',
     }}>
       <button
-        onClick={() => setExpanded(e => !e)}
+        onClick={onToggle}
         style={{
           width: '100%', display: 'flex', alignItems: 'center',
           gap: 12, padding: '14px 18px',
@@ -217,6 +216,22 @@ const Templates = () => {
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ category: '', title: '', standardText: '', empathyText: '' });
+  
+  // Expansion Logic: Max 3 cards, FIFO
+  const [expandedIds, setExpandedIds] = useState([]);
+
+  const toggleExpand = useCallback((id) => {
+    setExpandedIds(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(i => i !== id);
+      }
+      const next = [...prev, id];
+      if (next.length > 3) {
+        return next.slice(1); // Remove the oldest (first) item
+      }
+      return next;
+    });
+  }, []);
 
   const handleCopy = useCallback((text, id) => {
     navigator.clipboard.writeText(text);
@@ -463,8 +478,15 @@ const Templates = () => {
                   <div style={{ flex: 1, height: 1, background: S.border }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {cat.templates.map((tpl, tIdx) => (
-                    <ResponseCard key={tIdx} item={tpl} copiedId={copiedId} onCopy={handleCopy} />
+                  {cat.templates.map((t, tIdx) => (
+                    <ResponseCard 
+                      key={tIdx} 
+                      item={t} 
+                      copiedId={copiedId} 
+                      onCopy={handleCopy} 
+                      expanded={expandedIds.includes(`${cat.category}-${t.title}`)}
+                      onToggle={() => toggleExpand(`${cat.category}-${t.title}`)}
+                    />
                   ))}
                 </div>
               </div>
