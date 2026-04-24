@@ -12,7 +12,14 @@ export const SupabaseDataProvider = ({ children }) => {
   const [templates, setTemplates] = useState([]);
   const [logs, setLogs] = useState([]);
   const [overrides, setOverrides] = useState({});
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem('betwin_user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (e) {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState({
     tickets: true,
     templates: true,
@@ -22,14 +29,8 @@ export const SupabaseDataProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    // 1. Check for stored session locally
-    const storedUser = localStorage.getItem('betwin_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
+  // Remove the old user useEffect since we now initialize in useState
+  
   const fetchAllData = async () => {
     try {
       setLoading({ tickets: true, templates: true, logs: true, overrides: true });
@@ -50,10 +51,10 @@ export const SupabaseDataProvider = ({ children }) => {
       setTemplates(templatesRes.data || []);
       setLogs(logsRes.data || []);
       
-      // Convert overrides array to record map for backward compatibility
+      // FIX: Extract .shifts from the row for backward compatibility with the app logic
       const overridesMap = {};
       (overridesRes.data || []).forEach(item => {
-        overridesMap[item.date || item.id] = item;
+        overridesMap[item.date || item.id] = item.shifts || {};
       });
       setOverrides(overridesMap);
 
@@ -85,7 +86,8 @@ export const SupabaseDataProvider = ({ children }) => {
       .on('postgres_changes', { event: '*', table: 'rota_overrides', schema: 'public' }, () => {
         supabase.from('rota_overrides').select('*').then(({data}) => {
           const overridesMap = {};
-          (data || []).forEach(item => overridesMap[item.date || item.id] = item);
+          // FIX: Extract .shifts here as well for real-time updates
+          (data || []).forEach(item => overridesMap[item.date || item.id] = item.shifts || {});
           setOverrides(overridesMap);
         });
       })
@@ -261,15 +263,16 @@ export const SupabaseDataProvider = ({ children }) => {
     if (table === 'aviatorLogs') targetTable = 'aviator_logs';
     
     const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
-    const { data } = await supabase.from(targetTable).select('*').eq(idField, recordId).single();
+    const { data: existingRows } = await supabase.from(targetTable).select('*').eq(idField, recordId);
+    const existing = existingRows && existingRows.length > 0 ? existingRows[0] : null;
     
-    if (data) {
+    if (existing) {
         let finalUpdates = updates;
         // Special Handling for Rota JSONB merging (Skip if replace is true)
-        if (targetTable === 'rota_overrides' && updates.shifts && data.shifts && !replace) {
+        if (targetTable === 'rota_overrides' && updates.shifts && existing.shifts && !replace) {
             finalUpdates = {
                 ...updates,
-                shifts: { ...data.shifts, ...updates.shifts }
+                shifts: { ...existing.shifts, ...updates.shifts }
             };
         }
         return supabase.from(targetTable).update(finalUpdates).eq(idField, recordId);
