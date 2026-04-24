@@ -89,13 +89,18 @@ function ResponseCard({ item, copiedId, onCopy, expanded, onToggle }) {
         style={{
           width: '100%', display: 'flex', alignItems: 'center',
           gap: 12, padding: '14px 18px',
-          background: 'transparent', border: 'none', cursor: 'pointer',
+          background: 'transparent', border: 'none', cursor: onToggle.toString() === '() => {}' ? 'default' : 'pointer',
           color: S.textPrimary, textAlign: 'left',
         }}
       >
         <motion.span 
           animate={{ rotate: expanded ? 90 : 0 }}
-          style={{ color: expanded ? S.orangeText : S.textMuted, flexShrink: 0 }}
+          style={{ 
+            color: expanded ? S.orangeText : S.textMuted, 
+            flexShrink: 0,
+            opacity: onToggle.toString() === '() => {}' ? 0 : 1,
+            pointerEvents: onToggle.toString() === '() => {}' ? 'none' : 'auto'
+          }}
         >
           <ChevronRight size={14} />
         </motion.span>
@@ -434,7 +439,14 @@ const Templates = () => {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {aiResult.matches.map((m, i) => (
-                      <ResponseCard key={i} item={m.item} copiedId={copiedId} onCopy={handleCopy} />
+                      <ResponseCard 
+                        key={i} 
+                        item={m.item} 
+                        copiedId={copiedId} 
+                        onCopy={handleCopy} 
+                        expanded={true}
+                        onToggle={() => {}}
+                      />
                     ))}
                   </div>
                 </div>
