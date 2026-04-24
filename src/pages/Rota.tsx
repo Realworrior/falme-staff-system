@@ -138,8 +138,15 @@ export default function App() {
   const { showToast } = useToast();
 
   const [isReady, setIsReady] = useState(false);
-  const { overrides: rawOverrides, loading: globalLoading, actions } = useSupabaseData();
+  const { overrides: rawOverrides, loading: globalLoading, actions, user } = useSupabaseData();
   const loading = globalLoading.overrides;
+
+  // Persistence: If user is logged in, auto-enable manager mode
+  useEffect(() => {
+    if (user && (user.role === 'staff' || user.role === 'technician')) {
+      setIsManagerMode(true);
+    }
+  }, [user]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsReady(true), 150);
@@ -148,17 +155,20 @@ export default function App() {
 
   const overrides = useMemo(() => {
     if (!isReady || !rawOverrides) return {};
-    // SupabaseDataContext already provides this as a map { date: data }
-    // If it happens to be an array (fallback), we map it here
-    if (Array.isArray(rawOverrides)) {
-      const mapped: Record<string, any> = {};
-      rawOverrides.forEach(item => {
-        const id = item.date || item.id;
-        if (id) mapped[id] = item;
-      });
-      return mapped;
-    }
-    return rawOverrides;
+    
+    const mapped: Record<string, any> = {};
+    const items = Array.isArray(rawOverrides) ? rawOverrides : Object.values(rawOverrides);
+    
+    items.forEach((item: any) => {
+      const key = item.date || item.id;
+      if (key) {
+        // If the item has a 'shifts' property (Supabase structure), use that.
+        // Otherwise, use the item itself (Backward compatibility/Direct map).
+        mapped[key] = item.shifts || item;
+      }
+    });
+    
+    return mapped;
   }, [isReady, rawOverrides]);
 
   const year = currentDate.getFullYear();
