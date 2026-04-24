@@ -8,6 +8,7 @@ import Tickets from './pages/Tickets';
 import SlotTracker from './pages/SlotTracker';
 import Rota from './pages/Rota';
 import Resources from './pages/Resources';
+import TourGuide from './components/TourGuide';
 
 // Maintain the MUI theme for underlying MUI components (like Dialogs) 
 // but ensure it aligns with the new design's core palette.
@@ -67,6 +68,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <TourGuide />
       <AppShell>
         <Routes>
           <Route path="/" element={<Dashboard />} />

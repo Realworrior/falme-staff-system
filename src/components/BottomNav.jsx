@@ -37,6 +37,7 @@ const BottomNav = ({ className }) => {
         "fixed bottom-0 left-0 right-0 h-20 bg-sidebar/80 backdrop-blur-2xl border-t border-white/5 z-[60] px-2 flex items-center justify-around",
         // Desktop layout (vertical sidebar)
         "md:relative md:w-24 md:h-screen md:flex-col md:justify-start md:px-0 md:py-8 md:border-t-0 md:border-r md:bg-[#0a0a0f] md:backdrop-blur-none",
+        "tour-nav-bar",
         className
       )}
     >

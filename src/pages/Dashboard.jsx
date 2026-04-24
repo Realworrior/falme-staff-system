@@ -141,7 +141,7 @@ const Dashboard = () => {
           
           {/* Aviator Activity Graph */}
           <div 
-             className="bg-[#0f0f17] border border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden group cursor-pointer transition-all hover:border-white/20"
+             className="bg-[#0f0f17] border border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden group cursor-pointer transition-all hover:border-white/20 tour-aviator-pulse"
              onClick={() => navigate('/slots')}
           >
             <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -191,7 +191,7 @@ const Dashboard = () => {
           {/* Quick Access & Recent Events Split */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
              {/* Quick Access */}
-             <div className="bg-[#0f0f17] border border-white/5 rounded-3xl p-6 shadow-xl">
+             <div className="bg-[#0f0f17] border border-white/5 rounded-3xl p-6 shadow-xl tour-dashboard-shortcuts">
                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
                  Shortcuts
                  <ChevronRight size={14} className="text-gray-600" />
