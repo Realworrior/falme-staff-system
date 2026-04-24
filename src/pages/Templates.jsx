@@ -128,7 +128,7 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
           >
             <div style={{ padding: '0 18px 18px', borderTop: `1px solid ${S.border}` }}>
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: 8, margin: '16px 0 12px' }}>
+              <div className="tour-template-types" style={{ display: 'flex', gap: 8, margin: '16px 0 12px' }}>
                 {responses.map(r => (
                   <button
                     key={r.type}
@@ -331,17 +331,9 @@ const Templates = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '16px 24px', borderTop: `1px solid ${S.border}`, background: 'rgba(0,0,0,0.2)'
             }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 11, color: S.textMuted, fontWeight: 500 }}>
-                  Supports English, Swahili & Sheng · Detects Sentiment
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
-                  <span style={{ fontSize: 9, color: S.orangeText, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    AI Matcher under training: Verify accuracy before use
-                  </span>
-                </div>
-              </div>
+              <span style={{ fontSize: 11, color: S.textMuted, fontWeight: 500 }}>
+                Supports English, Swahili & Sheng · Detects Sentiment
+              </span>
               <button
                 onClick={handleAnalyze}
                 disabled={!aiInput.trim() || aiLoading}
@@ -357,6 +349,14 @@ const Templates = () => {
                 {aiLoading ? 'Analyzing...' : 'Analyze Client Msg'}
               </button>
             </div>
+          </div>
+          
+          <div style={{ 
+            display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px',
+            color: S.orangeText, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em'
+          }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+            AI Matcher under training: some responses may require manual verification
           </div>
 
           <AnimatePresence>

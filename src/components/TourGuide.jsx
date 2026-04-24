@@ -44,6 +44,11 @@ const TourGuide = () => {
       target: '.tour-template-browse',
       content: 'Browse through our extensive library of response templates, organized by category for easy access.',
       placement: 'top',
+    },
+    {
+      target: '.tour-template-types',
+      content: 'Each template comes with different variations: **Standard** (Professional & Direct), **High Empathy** (Warmer & Supportive), and **Alternative** (Phasing options). Choose the one that best fits the conversation context.',
+      placement: 'top',
     }
   ];
 
