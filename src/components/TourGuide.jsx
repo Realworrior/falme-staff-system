@@ -5,11 +5,12 @@ const TourGuide = () => {
   const [run, setRun] = useState(false);
 
   useEffect(() => {
-    // Check if the user has already taken the tour in this session
-    const hasTakenTour = sessionStorage.getItem('falme_tour_completed');
+    // Check if the user has already taken the tour (persist across refreshes and tabs)
+    const hasTakenTour = localStorage.getItem('falme_tour_completed');
     if (!hasTakenTour) {
       // Small delay to ensure the DOM is rendered
-      setTimeout(() => setRun(true), 1500);
+      const timer = setTimeout(() => setRun(true), 2000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -63,12 +64,12 @@ const TourGuide = () => {
   ];
 
   const handleJoyrideCallback = (data) => {
-    const { status } = data;
+    const { status, type } = data;
     const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
     
     if (finishedStatuses.includes(status)) {
       setRun(false);
-      sessionStorage.setItem('falme_tour_completed', 'true');
+      localStorage.setItem('falme_tour_completed', 'true');
     }
   };
 
