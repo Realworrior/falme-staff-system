@@ -254,19 +254,25 @@ export const SupabaseDataProvider = ({ children }) => {
     return supabase.from(targetTable).insert(Array.isArray(data) ? data : [data]);
   };
 
-  const updateRecord = async (table, recordId, updates) => {
+  const updateRecord = async (table, recordId, updates, replace = false) => {
     let targetTable = table;
     if (table === 'rotaOverrides') targetTable = 'rota_overrides';
     if (table === 'supportTemplates') targetTable = 'support_templates';
     if (table === 'aviatorLogs') targetTable = 'aviator_logs';
     
-    // Use 'date' for rotaOverrides, 'id' for others
     const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
-
-    const { data, error } = await supabase.from(targetTable).select('*').eq(idField, recordId).single();
+    const { data } = await supabase.from(targetTable).select('*').eq(idField, recordId).single();
     
     if (data) {
-        return supabase.from(targetTable).update(updates).eq(idField, recordId);
+        let finalUpdates = updates;
+        // Special Handling for Rota JSONB merging (Skip if replace is true)
+        if (targetTable === 'rota_overrides' && updates.shifts && data.shifts && !replace) {
+            finalUpdates = {
+                ...updates,
+                shifts: { ...data.shifts, ...updates.shifts }
+            };
+        }
+        return supabase.from(targetTable).update(finalUpdates).eq(idField, recordId);
     } else {
         return supabase.from(targetTable).insert([{ [idField]: recordId, ...updates }]);
     }

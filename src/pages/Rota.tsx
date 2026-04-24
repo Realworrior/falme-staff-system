@@ -183,7 +183,7 @@ export default function App() {
   };
 
   const handleOverride = async (date: string, staff: string, type: string) => {
-    await actions.updateRecord('rotaOverrides', date, { [staff]: type });
+    await actions.updateRecord('rotaOverrides', date, { shifts: { [staff]: type } });
   };
 
   const handleBulkImport = async (data: Record<string, Record<string, string>>, shouldReplace: boolean = false) => {
@@ -191,11 +191,18 @@ export default function App() {
     if (entries.length === 0) return;
 
     try {
+      if (shouldReplace) {
+        showToast('Replacing existing shifts...', 'info');
+      }
+
       const promises = entries.map(([date, staffOverrides]) => {
-        return actions.updateRecord('rotaOverrides', date, staffOverrides);
+        // We wrap the staffOverrides in the 'shifts' key to match the DB schema
+        // We pass shouldReplace to control whether to merge or overwrite for each day
+        return actions.updateRecord('rotaOverrides', date, { shifts: staffOverrides }, shouldReplace);
       });
+      
       await Promise.all(promises);
-      showToast('Rota specialized update complete', 'success');
+      showToast(shouldReplace ? 'Rota wipe & sync complete' : 'Rota specialized update complete', 'success');
     } catch (err) {
       console.error('Bulk import error:', err);
       showToast('Import failed - check console', 'error');
