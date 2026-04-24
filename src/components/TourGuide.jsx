@@ -46,9 +46,19 @@ const TourGuide = () => {
       placement: 'top',
     },
     {
-      target: '.tour-template-types',
-      content: 'Each template comes with different variations: **Standard** (Professional & Direct), **High Empathy** (Warmer & Supportive), and **Alternative** (Phasing options). Choose the one that best fits the conversation context.',
-      placement: 'top',
+      target: '.tour-type-standard',
+      content: 'Standard (S): A direct, professional response ideal for general queries or neutral interactions.',
+      placement: 'left',
+    },
+    {
+      target: '.tour-type-empathy',
+      content: 'High Empathy (H): Use this for distressed or frustrated clients. It uses softer language and acknowledges their feelings.',
+      placement: 'left',
+    },
+    {
+      target: '.tour-type-alt',
+      content: 'Alternative (A): Specialized variants like "Official Decision" or "Shorter Version" for specific edge cases.',
+      placement: 'left',
     }
   ];
 

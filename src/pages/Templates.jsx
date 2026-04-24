@@ -105,12 +105,15 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
           {responses.map(r => (
-            <span key={r.type} style={{ 
-              fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
-              color: r.type === 'Standard' ? '#4080e8' : '#e84080',
-              background: 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: 4,
-              border: '1px solid rgba(255,255,255,0.05)'
-            }}>
+            <span key={r.type} 
+              className={r.type === 'Standard' ? 'tour-type-standard' : r.type === 'High Empathy' ? 'tour-type-empathy' : 'tour-type-alt'}
+              style={{ 
+                fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+                color: r.type === 'Standard' ? '#4080e8' : r.type === 'High Empathy' ? '#e84080' : S.orangeText,
+                background: 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.05)'
+              }}
+            >
               {r.type[0]}
             </span>
           ))}
@@ -128,7 +131,7 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
           >
             <div style={{ padding: '0 18px 18px', borderTop: `1px solid ${S.border}` }}>
               {/* Tabs */}
-              <div className="tour-template-types" style={{ display: 'flex', gap: 8, margin: '16px 0 12px' }}>
+              <div style={{ display: 'flex', gap: 8, margin: '16px 0 12px' }}>
                 {responses.map(r => (
                   <button
                     key={r.type}
@@ -327,6 +330,11 @@ const Templates = () => {
                 fontFamily: 'inherit', caretColor: S.orange,
               }}
             />
+            <div style={{ padding: '0 24px 16px', marginTop: -8 }}>
+              <p style={{ fontSize: 10, color: S.red, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0, opacity: 0.8 }}>
+                ⚠️ AI is still under training. Some response matches may not be 100% accurate. Please verify before sending.
+              </p>
+            </div>
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '16px 24px', borderTop: `1px solid ${S.border}`, background: 'rgba(0,0,0,0.2)'
@@ -349,14 +357,6 @@ const Templates = () => {
                 {aiLoading ? 'Analyzing...' : 'Analyze Client Msg'}
               </button>
             </div>
-          </div>
-          
-          <div style={{ 
-            display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px',
-            color: S.orangeText, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em'
-          }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-            AI Matcher under training: some responses may require manual verification
           </div>
 
           <AnimatePresence>
