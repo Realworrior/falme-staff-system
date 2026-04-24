@@ -3,34 +3,42 @@
 // SWAHILI / KENYAN SLANG TRANSLATION MAP
 // Maps Swahili & slang terms to English equivalents for matching
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// SWAHILI / KENYAN SLANG TRANSLATION MAP
+// Maps Swahili & slang terms to English equivalents for matching
+// ─────────────────────────────────────────────
 const SWAHILI_MAP = {
+  'doo': ['money', 'funds'],
+  'mula': ['money', 'funds'],
   'pesa': ['money', 'funds', 'amount', 'balance'],
   'pesa yangu': ['my money', 'my funds'],
   'fedha': ['money', 'funds'],
   'hela': ['money', 'cash'],
-  'nirudishie': ['return', 'refund', 'give back', 'rollback'],
-  'nirudisha': ['return', 'refund'],
-  'wapi pesa': ['where is my money', 'where is withdrawal'],
-  'pesa iko wapi': ['where is my money'],
-  'sijapata': ['not received', 'not credited', 'missing'],
-  'bado sijapata': ['still not received', 'pending'],
-  'imekwama': ['stuck', 'pending', 'not processed', 'delayed'],
-  'imeshikwa': ['stuck', 'held', 'restricted'],
-  'nimepoteza': ['lost', 'missing'],
-  'nimepoteza kila kitu': ['lost everything', 'distress'],
-  'yalipotea': ['disappeared', 'missing', 'lost'],
-  'mchezo': ['game', 'casino', 'crash', 'aviator'],
-  'kucheza': ['play', 'bet', 'gaming', 'game'],
-  'akaunti': ['account'],
-  'akaunti yangu': ['my account'],
-  'akanti': ['account'],
-  'naweka': ['deposit', 'deposited', 'sent'],
-  'niliweka': ['deposited', 'sent mpesa'],
-  'natoa': ['withdraw', 'withdrawal'],
-  'kutoa': ['withdraw', 'withdrawal'],
-  'nimekwama': ['stuck', 'pending', 'not processed'],
-  'bonus yangu': ['my bonus', 'referral bonus'],
-  'bonasi': ['bonus', 'cashback', 'promotion'],
+  'nimeosha': ['lost everything', 'rg_distress'],
+  'nimechomeka': ['lost everything', 'rg_distress'],
+  'nisaidie kuwacha': ['self exclusion', 'rg_distress'],
+  'nataka kuacha': ['delete account', 'self exclusion'],
+  'bet ilikataa': ['bet was rejected', 'bet not accepted'],
+  'withdrawal haijaingia': ['withdrawal not received', 'urgent money'],
+  'deposit haikuingia': ['deposit failed', 'urgent money'],
+  'nirudishie': ['refund me', 'give my money back', 'return'],
+  'rudisha doo': ['give me a refund', 'refund demand'],
+  'wezi': ['thieves', 'scammers', 'abusive'],
+  'matapeli': ['thieves', 'scammers', 'abusive'],
+  'saa hii': ['right now', 'fast', 'immediately', 'impatient'],
+  'haraka': ['fast', 'immediately', 'impatient'],
+  'sasa': ['now', 'hello', 'hi'], // Can be greeting or impatient based on context
+  'sielewi': ['i don\'t understand', 'confused'],
+  'niko na shida': ['i have a problem', 'issue'],
+  'niaje': ['hi', 'hello', 'greeting'],
+  'mambo': ['hi', 'hello', 'greeting'],
+  'cashout haikufanya kazi': ['cash out didn\'t work', 'cashout failed'],
+  'bet ilifutwa': ['bet was voided', 'cancelled bet'],
+  'referral yangu': ['my referral', 'referral bonus'],
+  'cashback yangu': ['my cashback', 'where is my cashback'],
+  'hawezi kuingia': ['can\'t access', 'login issue'],
+  'offers gani': ['what offers', 'promotions'],
+  'nitaripoti': ['i\'ll report you', 'lawyer', 'authority', 'threatening'],
   'wameniiba': ['stealing', 'fraud', 'scam', 'thieves'],
   'mnaniiba': ['stealing', 'fraud', 'scam', 'thieves'],
   'waizi': ['thieves', 'fraud', 'steal'],
@@ -39,47 +47,21 @@ const SWAHILI_MAP = {
   'mnanicheza': ['tricking', 'fraud', 'scam'],
   'mbona': ['why', 'reason', 'explain'],
   'kwa nini': ['why', 'reason', 'explain'],
-  'haraka': ['urgent', 'immediately', 'quickly'],
-  'sasa': ['now', 'immediately', 'urgent'],
-  'mara moja': ['immediately', 'right now', 'urgent'],
   'tafadhali': ['please', 'kindly'],
-  'tafadhali nisaidie': ['please help', 'help me'],
   'nisaidie': ['help me', 'please help'],
-  'naomba msaada': ['please help', 'need help', 'help me'],
   'saidia': ['help', 'assist'],
   'nimesahau': ['forgot', 'lost access'],
   'password yangu': ['my password', 'login', 'forgot password'],
   'bado': ['still', 'yet', 'pending'],
-  'imefutwa': ['cancelled', 'voided', 'deleted'],
-  'mechi imeahirishwa': ['match postponed', 'postponed game'],
-  'nimeshinda': ['i won', 'winning', 'won bet'],
   'habari': ['hello', 'hi', 'greeting'],
-  'hujambo': ['hello', 'hi', 'greeting'],
-  'jambo': ['hello', 'hi', 'greeting'],
-  'sema': ['hello', 'speak', 'tell me'],
   'tatizo': ['problem', 'issue', 'error'],
-  'kuna tatizo': ['there is a problem', 'issue'],
   'pesa haikuja': ['money not received', 'payment not received'],
-  'pesa haikuja mpesa': ['withdrawal not received', 'mpesa failed'],
-  'ilitumwa': ['was sent', 'deposited', 'transferred'],
-  'imetumwa': ['was sent', 'deposited', 'transferred'],
-  'inachukua muda': ['taking too long', 'delayed', 'pending'],
   'safaricom tatizo': ['safaricom issue', 'network problem'],
-  'mtandao mbaya': ['network issue', 'connection problem', 'safaricom delay'],
   'asante': ['thank you', 'thanks', 'closing'],
-  'ingia': ['login', 'sign in'],
-  'washa': ['activate', 'reactivate', 'enable'],
   'leo': ['today', 'cashback today'],
-  'cashback leo': ['cashback today', 'will i get cashback'],
-  'futa akaunti': ['delete account', 'close account'],
   'kiasi': ['amount'],
-  'nimepoteza mchezo': ['lost game', 'casino lost'],
-  'round': ['round', 'game round'],
-  'mara ya kwanza': ['first time', 'first withdrawal'],
   'hasara': ['loss', 'lost money', 'chasing losses'],
-  'nirudishie hasara': ['recover losses', 'chasing losses'],
   'pesa zote': ['all money', 'all funds', 'lost everything'],
-  'pesa kidogo': ['low balance', 'below minimum'],
 };
 
 // ─────────────────────────────────────────────
@@ -89,26 +71,33 @@ const ANGRY_WORDS = [
   'stupid', 'useless', 'terrible', 'fraud', 'scam', 'thieves', 'steal', 'stealing',
   'incompetent', 'worst', 'pathetic', 'ridiculous', 'unbelievable', 'rubbish', 'nonsense',
   'idiot', 'fool', 'cheating', 'cheat', 'liar', 'liars', 'robbers',
-  'mbwa', 'ujinga', 'mnaniiba', 'waizi', 'wameniiba', 'mnanicheza',
+  'mbwa', 'ujinga', 'mnaniiba', 'waizi', 'wameniiba', 'mnanicheza', 'matapeli', 'wezi'
 ];
 
 const URGENT_WORDS = [
   'urgent', 'immediately', 'asap', 'right now', 'right away', 'where is my',
-  "where's my", 'quickly', 'fast', 'emergency', 'hurry',
-  'haraka', 'sasa', 'mara moja', 'wapi pesa', 'where is my money',
+  "where's my", 'quickly', 'emergency', 'hurry',
 ];
 
 const DISTRESS_WORDS = [
   'lost everything', 'all my money', 'desperate', 'stressed', "can't stop",
   'addicted', 'problem', 'please help me', 'i need help urgently',
   'nimepoteza kila kitu', 'nimekwama', 'pesa zote', 'tafadhali nisaidie',
-  'depressed', 'suicide', 'cant afford', "can't afford",
+  'depressed', 'suicide', 'cant afford', "can't afford", 'nimeosha', 'nimechomeka', 'nisaidie kuwacha'
 ];
 
 const IMPATIENT_WORDS = [
   'still', 'yet', 'already', 'how long', 'when will', 'waiting',
   'always', 'every time', 'again', 'bado', 'mpaka lini',
-  'inachukua muda',
+  'inachukua muda', 'now', 'fast', 'saa hii', 'haraka'
+];
+
+const THREATENING_WORDS = [
+  'report', 'lawyer', 'authority', 'nitaripoti', 'police', 'sue'
+];
+
+const CONFUSED_WORDS = [
+  'how', 'explain', 'sielewi', 'i don\'t understand', 'confused', 'why'
 ];
 
 export function analyzeClientMessage(input, templatesData) {
@@ -134,7 +123,7 @@ export function analyzeClientMessage(input, templatesData) {
     if (swahiliCount === 0) return 'en';
     const engWords = lower.split(/\s+/).filter(w => w.length > 3);
     const ratio = swahiliCount / Math.max(engWords.length, 1);
-    if (ratio > 0.3) return 'sw';
+    if (ratio > 0.3) return 'sw/mixed';
     return 'mixed';
   };
 
@@ -161,11 +150,11 @@ export function analyzeClientMessage(input, templatesData) {
     const isAllCaps = capsRatio > 0.8 && letters.length > 5;
     
     // Signal: Short repeated messages / "now" / "fast" -> IMPATIENT
-    const isImpatientSignal = (lower.length < 20 && (lower.includes('now') || lower.includes('fast') || lower.includes('hurry'))) || original.split(' ').length < 4;
+    const isImpatientSignal = (lower.length < 20 && (lower.includes('now') || lower.includes('fast') || lower.includes('hurry') || lower.includes('saa hii') || lower.includes('haraka'))) || original.split(' ').length <= 4;
 
     let angryScore = ANGRY_WORDS.filter(w => combined.includes(w)).length * 3
       + (isAllCaps ? 6 : capsRatio > 0.3 ? 2 : 0)
-      + (exclamations > 3 ? 2 : 0);
+      + (exclamations > 2 ? 3 : 0);
 
     let urgentScore = URGENT_WORDS.filter(w => combined.includes(w)).length * 3
       + (isImpatientSignal ? 4 : 0)
@@ -173,47 +162,66 @@ export function analyzeClientMessage(input, templatesData) {
       + (questionMarks > 2 ? 1 : 0);
 
     const distressScore = DISTRESS_WORDS.filter(w => combined.includes(w)).length * 4
-      + (combined.includes('lost everything') || combined.includes('crying') ? 5 : 0);
+      + (combined.includes('lost everything') || combined.includes('crying') || combined.includes('nimeosha') ? 5 : 0);
 
     const impatientScore = IMPATIENT_WORDS.filter(w => combined.includes(w)).length * 2
       + (isImpatientSignal ? 5 : 0)
       + (questionMarks > 1 ? 1 : 0);
 
+    const threateningScore = THREATENING_WORDS.filter(w => combined.includes(w)).length * 4;
+    const confusedScore = CONFUSED_WORDS.filter(w => combined.includes(w)).length * 2 + (questionMarks >= 2 ? 2 : 0);
+
     // Specific Intent Tags from AI AUTO-ROUTING
-    const isRefundDemand = lower.includes('refund') || lower.includes('give me my money back');
-    const isThreatening = lower.includes('report') || lower.includes('lawyer') || lower.includes('authority') || lower.includes('escalate');
-    const isConfused = lower.includes('how do i') || lower.includes('don t understand') || lower.includes('sielewi');
+    const isRefundDemand = lower.includes('refund') || lower.includes('give me my money back') || lower.includes('nirudishie');
+    const isThreatening = threateningScore > 0;
+    const isConfused = confusedScore > 2 || lower.includes('how do i') || lower.includes('sielewi');
     const isFraudPattern = lower.includes('multiple accounts') || lower.includes('bonus abuse');
 
-    const scores = [
-      ['angry', angryScore],
-      ['urgent', urgentScore],
-      ['distress', distressScore],
-      ['impatient', impatientScore],
-      ['neutral', 1],
-    ];
+    // Priority Ladder: RG_DISTRESS > ANGRY > THREATENING > IMPATIENT > CONFUSED > NEUTRAL
+    let finalType = 'neutral';
+    let maxScore = 0;
+    
+    if (distressScore >= 4) { finalType = 'distress'; maxScore = distressScore; }
+    else if (angryScore >= 5) { finalType = 'angry'; maxScore = angryScore; }
+    else if (threateningScore >= 4) { finalType = 'threatening'; maxScore = threateningScore; }
+    else if (impatientScore >= 4) { finalType = 'impatient'; maxScore = impatientScore; }
+    else if (urgentScore >= 4) { finalType = 'urgent'; maxScore = urgentScore; }
+    else if (confusedScore >= 3) { finalType = 'confused'; maxScore = confusedScore; }
+    else {
+        // Fallback to highest score if it didn't trigger priority threshold
+        const scores = [
+            ['angry', angryScore],
+            ['urgent', urgentScore],
+            ['distress', distressScore],
+            ['impatient', impatientScore],
+            ['threatening', threateningScore],
+            ['confused', confusedScore],
+            ['neutral', 1],
+        ];
+        const top = scores.reduce((a, b) => (b[1] > a[1] ? b : a));
+        finalType = top[0];
+        maxScore = top[1];
+    }
 
-    const [topEmotion, topScore] = scores.reduce((a, b) => (b[1] > a[1] ? b : a));
-    const level = topScore >= 6 ? 'high' : topScore >= 3 ? 'medium' : 'low';
+    const level = maxScore >= 6 ? 'high' : maxScore >= 3 ? 'medium' : 'low';
 
     const emotionMeta = {
       angry: { label: 'Angry / Aggressive', emoji: '😤', color: '#ef4444' },
       urgent: { label: 'Urgent / Stressed', emoji: '⚡', color: '#f97316' },
-      distress: { label: 'Distressed', emoji: '😢', color: '#8b5cf6' },
+      distress: { label: 'Distressed (RG Risk)', emoji: '😢', color: '#8b5cf6' },
       impatient: { label: 'Impatient', emoji: '⏰', color: '#eab308' },
       neutral: { label: 'Neutral', emoji: '😐', color: '#6b7280' },
-      rg_risk: { label: 'RG Risk', emoji: '⚠️', color: '#8b5cf6' },
+      threatening: { label: 'Threatening / Escalation', emoji: '⚖️', color: '#ef4444' },
+      confused: { label: 'Confused', emoji: '❓', color: '#3b82f6' }
     };
 
-    let meta = { ...emotionMeta[topEmotion] };
+    let meta = { ...emotionMeta[finalType] };
     
     // Override label for specific routing
-    if (isRefundDemand) { meta.label = 'Refund Demand'; meta.emoji = '💸'; }
-    if (isThreatening) { meta.label = 'Threatening / Escalation'; meta.emoji = '⚖️'; }
-    if (isConfused) { meta.label = 'Confused'; meta.emoji = '❓'; }
+    if (isRefundDemand && finalType === 'neutral') { meta.label = 'Refund Demand'; meta.emoji = '💸'; }
     if (isFraudPattern) { meta.label = 'Fraud Suspicion'; meta.emoji = '🕵️'; }
 
-    return { type: topEmotion, level, ...meta };
+    return { type: finalType, level, ...meta };
   };
 
   const scoreItem = (item, tokens, emotion) => {

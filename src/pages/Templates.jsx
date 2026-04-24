@@ -69,6 +69,7 @@ function CopyBtn({ text, id, copiedId, onCopy, size = 'md' }) {
 }
 
 function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
+  const [expanded, setExpanded] = useState(false);
   const [activeType, setActiveType] = useState('Standard');
 
   const responses = item.responses || [];
@@ -78,18 +79,28 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
 
   return (
     <div style={{
-      border: `1px solid ${S.border}`,
+      border: `1px solid ${expanded ? S.borderHover : S.border}`,
       borderRadius: 12, overflow: 'hidden',
-      background: S.cardHover,
-      boxShadow: '0 4px 15px -5px rgba(0,0,0,0.3)',
-      display: 'flex', flexDirection: 'column'
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      background: expanded ? S.cardHover : S.card,
+      boxShadow: expanded ? '0 10px 30px -10px rgba(0,0,0,0.5)' : 'none',
     }}>
-      <div style={{
-        padding: '14px 18px', borderBottom: `1px solid ${S.border}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'rgba(0,0,0,0.2)'
-      }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: S.orangeText }}>
+      <button
+        onClick={() => setExpanded(e => !e)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center',
+          gap: 12, padding: '14px 18px',
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          color: S.textPrimary, textAlign: 'left',
+        }}
+      >
+        <motion.span 
+          animate={{ rotate: expanded ? 90 : 0 }}
+          style={{ color: expanded ? S.orangeText : S.textMuted, flexShrink: 0 }}
+        >
+          <ChevronRight size={14} />
+        </motion.span>
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: S.textPrimary }}>
           {item.title}
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -104,53 +115,65 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
             </span>
           ))}
         </div>
-      </div>
+      </button>
 
-      <div style={{ padding: '0 18px 18px' }}>
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 8, margin: '16px 0 12px' }}>
-          {responses.map(r => (
-            <button
-              key={r.type}
-              onClick={() => setActiveType(r.type)}
-              style={{
-                padding: '6px 14px', borderRadius: 8, border: `1px solid ${activeType === r.type ? S.orange : S.border}`,
-                background: activeType === r.type ? S.orangeGlow : 'transparent',
-                color: activeType === r.type ? S.orangeText : S.textMuted,
-                fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-              }}
-            >
-              {r.type === 'High Empathy' ? <Heart size={12} /> : <MessageSquare size={12} />}
-              {r.type}
-            </button>
-          ))}
-        </div>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{ padding: '0 18px 18px', borderTop: `1px solid ${S.border}` }}>
+              {/* Tabs */}
+              <div style={{ display: 'flex', gap: 8, margin: '16px 0 12px' }}>
+                {responses.map(r => (
+                  <button
+                    key={r.type}
+                    onClick={() => setActiveType(r.type)}
+                    style={{
+                      padding: '6px 14px', borderRadius: 8, border: `1px solid ${activeType === r.type ? S.orange : S.border}`,
+                      background: activeType === r.type ? S.orangeGlow : 'transparent',
+                      color: activeType === r.type ? S.orangeText : S.textMuted,
+                      fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                    }}
+                  >
+                    {r.type === 'High Empathy' ? <Heart size={12} /> : <MessageSquare size={12} />}
+                    {r.type}
+                  </button>
+                ))}
+              </div>
 
-        {/* Text Area */}
-        <div style={{
-          background: '#08080c', border: `1px solid ${S.border}`,
-          borderRadius: 12, padding: '16px', marginBottom: 12,
-          position: 'relative'
-        }}>
-          <div style={{ fontSize: 13, color: S.textSecondary, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-            <KeywordHighlighter text={activeResp.text} />
-          </div>
-        </div>
-
-        {/* Footer info */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div style={{ spaceY: 8 }}>
-              {item.triggers && item.triggers.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 400 }}>
-                  {item.triggers.map((t, i) => (
-                    <span key={i} style={{ fontSize: 10, color: S.textMuted, fontStyle: 'italic' }}>#{t}</span>
-                  ))}
+              {/* Text Area */}
+              <div style={{
+                background: '#08080c', border: `1px solid ${S.border}`,
+                borderRadius: 12, padding: '16px', marginBottom: 12,
+                position: 'relative'
+              }}>
+                <div style={{ fontSize: 13, color: S.textSecondary, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                  <KeywordHighlighter text={activeResp.text} />
                 </div>
-              )}
-          </div>
-          <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
-        </div>
-      </div>
+              </div>
+
+              {/* Footer info */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div style={{ spaceY: 8 }}>
+                   {item.triggers && item.triggers.length > 0 && (
+                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 400 }}>
+                        {item.triggers.map((t, i) => (
+                          <span key={i} style={{ fontSize: 10, color: S.textMuted, fontStyle: 'italic' }}>#{t}</span>
+                        ))}
+                     </div>
+                   )}
+                </div>
+                <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

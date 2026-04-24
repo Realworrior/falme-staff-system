@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 // AI Knowledge Integration Active
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   FileText, 
   Activity, 
@@ -14,7 +14,9 @@ import {
   Zap,
   Layout,
   Database,
-  Cloud
+  Cloud,
+  Calendar,
+  MessageSquare
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -35,6 +37,7 @@ import { isSameDay, subDays } from 'date-fns';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { templates, logs, tickets, overrides: rawOverrides, loading } = useSupabaseData();
   
   const isSyncing = loading.tickets || loading.templates || loading.logs || loading.overrides;
@@ -104,13 +107,11 @@ const Dashboard = () => {
     return buckets;
   }, [logs]);
 
-  const navigate = useNavigate();
-
   const quickResources = [
-    { name: "Templates", icon: FileText, color: "text-blue-400", bg: "bg-blue-400/10", path: "/templates" },
-    { name: "Rota Schedule", icon: Layout, color: "text-amber-400", bg: "bg-amber-400/10", path: "/rota" },
-    { name: "Live Tickets", icon: Ticket, color: "text-emerald-400", bg: "bg-emerald-400/10", path: "/tickets" },
-    { name: "Resources", icon: Cloud, color: "text-indigo-400", bg: "bg-indigo-400/10", path: "/resources" },
+    { name: "Support Templates", icon: MessageSquare, color: "text-blue-400", bg: "bg-blue-400/10", path: "/templates" },
+    { name: "Tickets Hub", icon: Ticket, color: "text-amber-400", bg: "bg-amber-400/10", path: "/tickets" },
+    { name: "Rota Management", icon: Calendar, color: "text-emerald-400", bg: "bg-emerald-400/10", path: "/rota" },
+    { name: "Aviator Matrix", icon: Activity, color: "text-indigo-400", bg: "bg-indigo-400/10", path: "/slots" },
   ];
 
   return (
@@ -139,7 +140,10 @@ const Dashboard = () => {
         <div className="lg:col-span-8 space-y-6">
           
           {/* Aviator Activity Graph */}
-          <div className="bg-[#0f0f17] border border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
+          <div 
+             className="bg-[#0f0f17] border border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden group cursor-pointer transition-all hover:border-white/20"
+             onClick={() => navigate('/slots')}
+          >
             <div className="absolute top-0 right-0 p-8 opacity-5">
               <Activity size={120} className="text-white" />
             </div>
@@ -151,7 +155,10 @@ const Dashboard = () => {
                 </h3>
                 <p className="text-[10px] text-gray-500 mt-1 uppercase font-black tracking-widest">Global Activity Index</p>
               </div>
-              <select className="bg-white/5 border-none text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-lg px-3 py-1.5 focus:ring-0">
+              <select 
+                 className="bg-white/5 border-none text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-lg px-3 py-1.5 focus:ring-0"
+                 onClick={e => e.stopPropagation()}
+              >
                 <option>Last 24 Hours</option>
                 <option>Last 7 Days</option>
               </select>
