@@ -220,30 +220,38 @@ export function analyzeClientMessage(input, templatesData) {
     let score = 0;
     const matchedKeywords = [];
     const itemKeywords = item.triggers || [];
-    const itemTitle = item.title || '';
-    const itemCategory = item.category || '';
+    const itemTitle = (item.title || '').toLowerCase();
+    const itemCategory = (item.category || '').toLowerCase();
+
+    const GENERIC_WORDS = ['account', 'bet', 'management', 'system', 'issue', 'please', 'kindly', 'assist', 'help'];
 
     for (const token of tokens) {
-      if (token.length < 2) continue;
+      if (token.length < 3) continue;
+      
+      // 1. Check direct triggers (Highest weight)
       for (const kw of itemKeywords) {
         const kwLower = kw.toLowerCase();
         if (kwLower === token) {
-          score += 10;
+          score += 15; // Increased from 10
           if (!matchedKeywords.includes(kw)) matchedKeywords.push(kw);
         } else if (kwLower.includes(token) || token.includes(kwLower)) {
-          score += token.length >= 4 ? 5 : 2;
+          score += token.length >= 5 ? 8 : 3; // Increased from 5/2
           if (!matchedKeywords.includes(kw)) matchedKeywords.push(kw);
         }
       }
-      if (itemTitle.toLowerCase().includes(token)) score += 4;
-      if (itemCategory.toLowerCase().includes(token)) score += 2;
+
+      // 2. Check Title & Category (Lower weight, skip generics)
+      if (!GENERIC_WORDS.includes(token)) {
+        if (itemTitle.includes(token)) score += 5;
+        if (itemCategory.includes(token)) score += 3;
+      }
     }
 
     if (item.emotions?.includes(emotion.type)) {
       score += emotion.level === 'high' ? 5 : emotion.level === 'medium' ? 3 : 1;
     }
 
-    const confidence = score >= 15 ? 'high' : score >= 7 ? 'medium' : 'low';
+    const confidence = score >= 20 ? 'high' : score >= 10 ? 'medium' : 'low';
     return { item, score, matchedKeywords, confidence };
   };
 
