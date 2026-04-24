@@ -43,17 +43,14 @@ const Dashboard = () => {
   const isSyncing = loading.tickets || loading.templates || loading.logs || loading.overrides;
   
   const overrides = useMemo(() => {
-    if (!rawOverrides) return {};
-    if (Array.isArray(rawOverrides)) {
-      const mapped = {};
-      rawOverrides.forEach(item => {
-        if (typeof item === 'object' && item !== null) {
-          if (item.id) mapped[item.id] = item;
-        }
-      });
-      return mapped;
-    }
-    return rawOverrides;
+    if (!rawOverrides || !Array.isArray(rawOverrides)) return {};
+    const mapped = {};
+    rawOverrides.forEach(ov => {
+      if (!ov.date) return;
+      if (!mapped[ov.date]) mapped[ov.date] = {};
+      mapped[ov.date][ov.staff_name] = ov.shift_type;
+    });
+    return mapped;
   }, [rawOverrides]);
 
   const onDutyInfo = useMemo(() => {
