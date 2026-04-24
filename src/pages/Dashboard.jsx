@@ -43,12 +43,16 @@ const Dashboard = () => {
   const isSyncing = loading.tickets || loading.templates || loading.logs || loading.overrides;
   
   const overrides = useMemo(() => {
-    if (!rawOverrides || !Array.isArray(rawOverrides)) return {};
+    if (!rawOverrides) return {};
     const mapped = {};
-    rawOverrides.forEach(ov => {
-      if (!ov.date) return;
-      if (!mapped[ov.date]) mapped[ov.date] = {};
-      mapped[ov.date][ov.staff_name] = ov.shift_type;
+    const items = Array.isArray(rawOverrides) ? rawOverrides : Object.values(rawOverrides);
+    
+    items.forEach(item => {
+      const key = item.date || item.id;
+      if (key) {
+        // Match Rota.tsx logic: use item.shifts if it exists, else the item itself
+        mapped[key] = item.shifts || item;
+      }
     });
     return mapped;
   }, [rawOverrides]);
