@@ -182,7 +182,7 @@ function ResponseCard({ item, copiedId, onCopy, highlight = '' }) {
 // MAIN TEMPLATES COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 const Templates = () => {
-  const { data, loading, error, createTemplate, deleteTemplate } = useSupabaseData();
+  const { templates: data, loading, error, isReady, actions } = useSupabaseData();
   const { showToast } = useToast();
   
   const [mode, setMode] = useState('browse'); // 'ai' | 'browse'
@@ -228,9 +228,13 @@ const Templates = () => {
       responses.push({ type: 'High Empathy', text: newTemplate.empathyText });
     }
 
-    const success = await createTemplate(newTemplate.category, {
-      title: newTemplate.title,
-      responses: responses
+    const success = await actions.createRecord('supportTemplates', {
+      category: newTemplate.category,
+      templates: [{
+        title: newTemplate.title,
+        responses: responses,
+        triggers: [newTemplate.title.toLowerCase()]
+      }]
     });
 
     if (success) {
@@ -241,6 +245,7 @@ const Templates = () => {
   };
 
   const filteredData = useMemo(() => {
+    if (!data) return [];
     if (!searchQuery) return data;
     const q = searchQuery.toLowerCase();
     return data.map(cat => ({
@@ -253,7 +258,7 @@ const Templates = () => {
     })).filter(cat => cat.templates.length > 0);
   }, [data, searchQuery]);
 
-  if (loading) return (
+  if (loading.templates && !isReady) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="text-orange-500">
         <RotateCcw size={40} />
