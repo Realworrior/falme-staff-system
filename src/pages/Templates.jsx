@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Sparkles, Copy, Check, ChevronDown, ChevronRight, 
-  X, Zap, Languages, Heart, MessageSquare, RotateCcw, 
+  X, Zap, Languages, Heart, MessageSquare, RotateCcw, Shield,
   Filter, LayoutGrid, Terminal, Trash2, Edit3, Save, Trash
 } from 'lucide-react';
 import { 
