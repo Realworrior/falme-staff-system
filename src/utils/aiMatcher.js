@@ -3,7 +3,7 @@
 // SWAHILI / KENYAN SLANG TRANSLATION MAP
 // Maps Swahili & slang terms to English equivalents for matching
 // ─────────────────────────────────────────────
-const SWAHILI_MAP: Record<string, string[]> = {
+const SWAHILI_MAP = {
   'pesa': ['money', 'funds', 'amount', 'balance'],
   'pesa yangu': ['my money', 'my funds'],
   'fedha': ['money', 'funds'],
