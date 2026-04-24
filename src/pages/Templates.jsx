@@ -275,7 +275,7 @@ const Templates = () => {
     }}>
       
       {/* HEADER SECTION */}
-      <div style={{ maxWidth: 1000, margin: '0 auto', marginBottom: 40 }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', marginBottom: 40 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{
@@ -310,10 +310,11 @@ const Templates = () => {
         </div>
 
         {/* AI MATCHER PANEL */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 40 }}>
+        <div className="tour-template-ai" style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 40 }}>
           <div style={{
-            background: S.card, border: `1px solid ${S.border}`,
-            borderRadius: 20, overflow: 'hidden', transition: 'border-color 0.2s'
+            background: S.card, border: `1px solid ${S.orange}40`,
+            borderRadius: 20, overflow: 'hidden', transition: 'border-color 0.2s',
+            boxShadow: `0 0 30px ${S.orange}10`,
           }}>
             <textarea
               value={aiInput}
@@ -409,22 +410,23 @@ const Templates = () => {
           </div>
 
           {/* SEARCH BAR */}
-          <div style={{ position: 'relative', marginBottom: 24 }}>
-            <Search size={18} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: S.textMuted }} />
+          <div className="tour-template-search" style={{ position: 'relative', marginBottom: 32 }}>
+            <Search size={18} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: S.orange }} />
             <input 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Filter by keyword, title, or trigger..."
               style={{
-                width: '100%', background: S.card, border: `1px solid ${S.border}`,
-                borderRadius: 16, padding: '16px 16px 16px 48px', color: S.textPrimary,
-                fontSize: 14, outline: 'none', transition: 'all 0.2s'
+                width: '100%', background: S.surface, border: `1px solid ${S.orange}30`,
+                borderRadius: 16, padding: '18px 18px 18px 52px', color: S.textPrimary,
+                fontSize: 14, outline: 'none', transition: 'all 0.2s',
+                boxShadow: `0 4px 20px rgba(0,0,0,0.4)`
               }}
             />
           </div>
 
           {/* BROWSE LIST */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          <div className="tour-template-browse grid grid-cols-1 xl:grid-cols-2 gap-x-8 gap-y-12">
             {filteredData.map((cat, idx) => (
               <div key={idx}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>

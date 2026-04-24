@@ -5,11 +5,11 @@ const TourGuide = () => {
   const [run, setRun] = useState(false);
 
   useEffect(() => {
-    // Check if the user has already taken the tour
-    const hasTakenTour = localStorage.getItem('falme_tour_completed');
+    // Check if the user has already taken the tour in this session
+    const hasTakenTour = sessionStorage.getItem('falme_tour_completed');
     if (!hasTakenTour) {
       // Small delay to ensure the DOM is rendered
-      setTimeout(() => setRun(true), 1000);
+      setTimeout(() => setRun(true), 1500);
     }
   }, []);
 
@@ -31,9 +31,19 @@ const TourGuide = () => {
       placement: 'bottom',
     },
     {
-      target: '.tour-aviator-pulse',
-      content: 'Here you can monitor live platform activity metrics and server logs.',
-      placement: 'left',
+      target: '.tour-template-ai',
+      content: 'Our Advanced AI Matcher! Paste any client message here, and the system will automatically detect the sentiment and suggest the best response template.',
+      placement: 'bottom',
+    },
+    {
+      target: '.tour-template-search',
+      content: 'Looking for something specific? Use the filter to search through all available response categories instantly.',
+      placement: 'top',
+    },
+    {
+      target: '.tour-template-browse',
+      content: 'Browse through our extensive library of response templates, organized by category for easy access.',
+      placement: 'top',
     }
   ];
 
@@ -43,7 +53,7 @@ const TourGuide = () => {
     
     if (finishedStatuses.includes(status)) {
       setRun(false);
-      localStorage.setItem('falme_tour_completed', 'true');
+      sessionStorage.setItem('falme_tour_completed', 'true');
     }
   };
 
