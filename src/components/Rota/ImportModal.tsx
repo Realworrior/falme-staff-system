@@ -31,19 +31,36 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
 
   const normalizeDate = (raw: string): string | null => {
     if (!raw) return null;
-    const clean = raw.trim().replace(/,+/g, ',').replace(/[\u200B-\u200D\uFEFF]/g, '');
+    // Clean weird characters and spaces
+    const clean = raw.trim().replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
     
-    // Check if it's strictly a single day digit like "Wed, 1" or "1"
-    const match = clean.match(/(\d+)/);
-    if (match && !clean.includes('-') && !clean.includes('/')) {
-      const dayNum = parseInt(match[1]);
+    // 1. Check for day numbers (1, 2, 3... or Wed, 1)
+    const dayMatch = clean.match(/^([a-zA-Z]{2,3},?\s*)?(\d{1,2})$/);
+    if (dayMatch) {
+      const dayNum = parseInt(dayMatch[2]);
       if (dayNum >= 1 && dayNum <= 31) {
-        const d = new Date(year, month, dayNum);
-        return format(d, 'yyyy-MM-dd');
+        try {
+          const d = new Date(year, month, dayNum);
+          if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
+        } catch (e) { return null; }
       }
     }
 
+    // 2. Try standard date parsing
     try {
+      // Try to handle DD/MM/YYYY or DD-MM-YYYY specifically for local formats
+      const parts = clean.split(/[-/]/);
+      if (parts.length >= 2) {
+        let d = new Date(clean);
+        // If it looks like DD/MM
+        if (parts.length === 2 || (parts.length === 3 && parts[2].length <= 2)) {
+          const day = parseInt(parts[0]);
+          const monthIdx = parseInt(parts[1]) - 1;
+          d = new Date(year, monthIdx, day);
+        }
+        if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
+      }
+
       const d = new Date(clean);
       if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
     } catch {
@@ -52,90 +69,88 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
     return null;
   };
 
+  const cleanShift = (raw: string) => {
+    if (!raw) return '';
+    const s = raw.trim().toUpperCase();
+    if (s.includes('AM')) return 'AM';
+    if (s.includes('PM')) return 'PM';
+    if (s.includes('NT') || s.includes('NIGHT')) return 'NT';
+    if (s.includes('OFF')) return 'OFF';
+    return '';
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.type !== 'text/csv' && !selectedFile.name.endsWith('.csv')) {
-        setError('Please upload a valid CSV file');
-        return;
-      }
       setFile(selectedFile);
       setError(null);
       parseCSV(selectedFile);
     }
   };
 
-  const cleanShift = (raw: string) => {
-    if (!raw) return '';
-    return raw.replace(/[^a-zA-Z]/g, '').toUpperCase();
-  };
-
   const parseCSV = (file: File) => {
     Papa.parse(file, {
+      skipEmptyLines: 'greedy',
       complete: (results) => {
-        const data = results.data as string[][];
-        if (data.length < 1) return;
+        const data = (results.data as string[][]).filter(row => row.some(cell => cell.trim() !== ''));
+        if (data.length < 1) {
+          setError('File appears to be empty');
+          return;
+        }
         
-        setParsedData(data); // Cache the parsed array memory
-        
-        const headers = data[0].map(h => h?.trim() || '').filter(h => h !== '');
+        setParsedData(data);
+        const headers = data[0].map(h => h?.trim() || ''); // DON'T FILTER, keep indices
         setPreviewHeaders(headers);
         
-        const rows = data.slice(1, 6).filter(row => row.length > 0 && row[0]?.trim() !== '');
-        const formattedRows = rows.map(row => {
-            const arr = new Array(headers.length).fill('');
-            for (let i = 0; i < Math.min(row.length, headers.length); i++) {
-                arr[i] = row[i]?.trim() || '';
-            }
-            return arr;
+        const previewData = data.slice(1, 6).map(row => {
+          const arr = new Array(headers.length).fill('');
+          for (let i = 0; i < Math.min(row.length, headers.length); i++) {
+            arr[i] = row[i]?.trim() || '';
+          }
+          return arr;
         });
-        setPreviewRows(formattedRows);
-      },
-      skipEmptyLines: true
+        setPreviewRows(previewData);
+      }
     });
   };
 
   const handleProcess = () => {
-    if (!parsedData) {
-      setError('Please allow the file to finish parsing before executing.');
+    if (!parsedData || parsedData.length < 2) {
+      setError('No valid data to process');
       return;
     }
 
-    const data = parsedData;
-    if (data.length < 2) {
-      setError('File contains no valid shift data');
-      return;
-    }
-
-    const headers = data[0].map(h => h?.trim() || '');
+    const headers = parsedData[0].map(h => h?.trim().toLowerCase() || '');
     const staffIndices: { name: string; index: number }[] = [];
-    const validStaffNames = STAFF_CONFIG.map(s => s.name.toLowerCase());
-
-    headers.forEach((h, i) => {
-      if (i === 0) return;
-      if (validStaffNames.includes(h.toLowerCase())) {
-        const properName = STAFF_CONFIG.find(s => s.name.toLowerCase() === h.toLowerCase())?.name;
-        if (properName) staffIndices.push({ name: properName, index: i });
+    
+    // Fuzzy match staff names
+    STAFF_CONFIG.forEach(staff => {
+      const lowerName = staff.name.toLowerCase();
+      const index = headers.findIndex(h => h.includes(lowerName) || lowerName.includes(h));
+      if (index > 0) {
+        staffIndices.push({ name: staff.name, index });
       }
     });
 
+    if (staffIndices.length === 0) {
+      setError('Could not identify any staff columns. Ensure headers match staff names.');
+      return;
+    }
+
     const result: Record<string, Record<string, string>> = {};
-    const invalidEntries: string[] = [];
+    const processedDates = new Set<string>();
 
-    data.slice(1).forEach((row, lineIdx) => {
-      if (!row || row.length === 0 || !row[0]?.trim()) return;
+    parsedData.slice(1).forEach((row, lineIdx) => {
+      const rawDate = row[0]?.trim();
+      if (!rawDate) return;
 
-      const rawDate = row[0].trim();
       const dateKey = normalizeDate(rawDate);
+      if (!dateKey) return;
 
-      if (!dateKey) {
-        invalidEntries.push(`Row ${lineIdx + 2}: Invalid date "${rawDate}"`);
-        return;
-      }
-
+      processedDates.add(dateKey);
       staffIndices.forEach(({ name, index }) => {
         const shift = cleanShift(row[index]);
-        if (shift && ['AM', 'PM', 'NT', 'OFF'].includes(shift)) {
+        if (shift) {
           if (!result[dateKey]) result[dateKey] = {};
           result[dateKey][name] = shift;
         }
@@ -143,7 +158,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
     });
 
     if (Object.keys(result).length === 0) {
-      setError(`No valid shift data found. ${invalidEntries.length > 0 ? "Some dates were invalid." : "Ensure staff names exactly match."}`);
+      setError(`Detected ${processedDates.size} dates but no valid shifts (AM/PM/NT/OFF) for the identified staff.`);
       return;
     }
 
