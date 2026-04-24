@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 // AI Knowledge Integration Active
 import { motion } from 'framer-motion';
 import { 
@@ -103,11 +104,13 @@ const Dashboard = () => {
     return buckets;
   }, [logs]);
 
+  const navigate = useNavigate();
+
   const quickResources = [
-    { name: "Documentation", icon: FileText, color: "text-blue-400", bg: "bg-blue-400/10" },
-    { name: "Database Console", icon: Database, color: "text-amber-400", bg: "bg-amber-400/10" },
-    { name: "Asset Library", icon: Layout, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-    { name: "Cloud Management", icon: Cloud, color: "text-indigo-400", bg: "bg-indigo-400/10" },
+    { name: "Templates", icon: FileText, color: "text-blue-400", bg: "bg-blue-400/10", path: "/templates" },
+    { name: "Rota Schedule", icon: Layout, color: "text-amber-400", bg: "bg-amber-400/10", path: "/rota" },
+    { name: "Live Tickets", icon: Ticket, color: "text-emerald-400", bg: "bg-emerald-400/10", path: "/tickets" },
+    { name: "Resources", icon: Cloud, color: "text-indigo-400", bg: "bg-indigo-400/10", path: "/resources" },
   ];
 
   return (
@@ -188,7 +191,11 @@ const Dashboard = () => {
                </h3>
                <div className="grid grid-cols-2 gap-3">
                  {quickResources.map(res => (
-                   <button key={res.name} className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all group">
+                   <button 
+                     key={res.name} 
+                     onClick={() => navigate(res.path)}
+                     className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all group"
+                   >
                      <div className={`w-10 h-10 rounded-xl ${res.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
                        <res.icon size={18} className={res.color} />
                      </div>
