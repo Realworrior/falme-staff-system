@@ -14,6 +14,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Tooltip } from '@mui/material';
+import { analyzeClientMessage } from '../utils/aiMatcher';
 
 /**
  * SmartAssistant - A floating AI search and knowledge agent
@@ -72,188 +73,67 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
   };
 
   const executeSearch = (searchQuery) => {
-      const q = searchQuery.toLowerCase();
+      const result = analyzeClientMessage(searchQuery, templates);
       
-      // conceptMapper - Mapping feelings/actions to template concepts
-      const concepts = {
-        frustration: q.includes('frustrat') || q.includes('angry') || q.includes('upset') || q.includes('mad') || q.includes('annoyed'),
-        termination: q.includes('delete') || q.includes('close') || q.includes('remove') || q.includes('quit') || q.includes('stop'),
-        finance: q.includes('money') || q.includes('withdraw') || q.includes('deposit') || q.includes('cash') || q.includes('payout') || q.includes('mpesa'),
-        tech: q.includes('crash') || q.includes('error') || q.includes('bug') || q.includes('slow') || q.includes('login')
-      };
-
-      const isRG = q.includes('addiction') || q.includes('block') || q.includes('draining') || q.includes('limit') || q.includes('responsible') || (concepts.frustration && concepts.termination);
-      
-      // High-Precision Scoring Engine
-      const scoredMatches = knowledgeBase.map(k => {
-        let score = 0;
-        const title = k.title.toLowerCase();
-        const content = k.content.toLowerCase();
-        
-        // Exact Match Bonus
-        if (title === q) score += 500;
-        
-        // Logical Priority weighting
-        if (concepts.termination && title.includes('account')) score += 300;
-        if (concepts.termination && title.includes('delete')) score += 200;
-        if (q.includes('delete') && title.includes('account')) score += 250;
-        
-        if (title.includes(q)) score += 100;
-        if (q.includes(title)) score += 80;
-        
-        // Semantic keyword density
-        const words = q.split(' ');
-        words.forEach(w => {
-           if (w.length > 2) {
-             if (title.includes(w)) score += 50;
-             if (content.includes(w)) score += 10;
-           }
-        });
-        
-        // Specific Mpesa / Finance dampening if 'account' is also mentioned
-        if (q.includes('account') && title.includes('mpesa')) score -= 100;
-
-        return { ...k, score };
-      })
-      .filter(m => m.score > 20)
-      .sort((a, b) => b.score - a.score);
-
-      let variations = [];
-      const topMatches = scoredMatches.slice(0, 2); // Take top 2 for disambiguation
-      const proceduralMatch = q.includes('delete') || q.includes('close') || q.includes('how to') || q.includes('steps') || concepts.termination;
-
-      // Dynamic Persona Synthesis Engine
-      const synthesizeCreativeResponse = (query, primaryMatch) => {
-        const q = query.toLowerCase();
-        const rawText = primaryMatch?.source?.responses?.[0]?.text || "";
-        
-        // Contextual "Creative Hooks"
-        const hooks = {
-          speed: ["Let's get this moving.", "I'm accelerating this for you.", "Speed is the priority here."],
-          empathy: ["I totally get the frustration.", "I've been in your shoes before.", "Let's fix this together."],
-          expert: ["Based on the latest system protocols,", "Looking at the backend logic,", "The optimal path here is"]
-        };
-
-        const getHook = () => {
-          if (concepts.finance) return hooks.speed[Math.floor(Math.random() * hooks.speed.length)];
-          if (concepts.frustration) return hooks.empathy[Math.floor(Math.random() * hooks.empathy.length)];
-          return hooks.expert[Math.floor(Math.random() * hooks.expert.length)];
-        };
-
-        // Semantic "Creative Synthesis" - Rephrasing the logic
-        if (concepts.finance) {
-          return `${getHook()} I've analyzed the ${query} request. Instead of just waiting on the template flow, I'm verifying the transaction hash directly. If it's a delay with the provider, we can escalate it immediately. The goal is to get your funds cleared in the next 15-minute batch.`;
-        }
-
-        if (concepts.termination) {
-          return `${getHook()} I'm handling the account closure for ${query}. I'm also cross-referencing our retention ledger to see if we can offer a cooling-off period instead. It's a more strategic way to keep our user base healthy while respecting your choice.`;
-        }
-
-        if (concepts.tech) {
-          return `${getHook()} Technical glitches for ${query} are often environment-specific. I'm suggesting a 'Creative Reset': beyond just clearing cache, try a private browser session or a network toggle. It bypasses the standard CDN lag 90% of the time.`;
-        }
-
-        // Generic Creative Rewriter (Synthesizes rawText into a "Human" version)
-        const summary = rawText.length > 50 ? rawText.substring(0, 50) + "..." : rawText;
-        return `I'm thinking about ${query} differently. Rather than just giving you the '${summary}' steps, I'd suggest a more conversational approach: Focus on the ${primaryMatch.category} aspect first, then bridge into the solution. It builds much more trust than a verbatim copy-paste.`;
-      };
-
-      if (isRG) {
-        variations = [
-          {
-            type: "Human Empathy",
-            text: "I can really feel how stressful this has been for you. Please, take a deep breath—I'm going to help you secure your account right now. I'm initiating the permanent block for 0742115006 immediately so you don't have to worry about it anymore."
-          },
-          {
-            type: "Strategic Guidance",
-            text: "RG cases are top priority. Beyond the block, ensure you log this in the 'High Risk' ledger and flag the IP. It protects the company and the user. Empathy is our strongest tool here."
-          },
-          {
-            type: "Professional Support",
-            text: "Account 0742115006 is being moved to our permanent exclusion list following your request. For your own well-being, I strongly recommend removing our platform apps from your device."
-          }
-        ];
-      } else if (topMatches.length > 0) {
-        const primary = topMatches[0];
-        const secondary = topMatches.length > 1 && topMatches[1].score > (primary.score * 0.4) ? topMatches[1] : null;
-
-        const getHumanResp = (m) => {
-          const std = m.source.responses?.find(r => r.type === 'Standard')?.text || m.source.responses?.[0]?.text || "";
-          const emp = m.source.responses?.find(r => r.type === 'Empathy')?.text || "";
-          return { std, emp, title: m.title, category: m.category };
-        };
-
-        const pData = getHumanResp(primary);
-        const sData = secondary ? getHumanResp(secondary) : null;
-        
-        const intro = concepts.frustration ? "I'm incredibly sorry for the hassle. " : "I found what you need! ";
-        
-        variations = [
-          { 
-            type: "Creative Synthesis (Non-Verbatim)", 
-            intro: "My AI 'Online' perspective on " + query + ":",
-            text: synthesizeCreativeResponse(query, primary),
-            footer: "Strategic reformulation - NOT from templates."
-          },
-          { 
-            type: "Human Conversational", 
-            intro: intro,
-            text: (pData.emp || pData.std),
-            footer: sData ? "I also have the " + sData.title + " instructions if you need those instead." : "I'm handling this for you right now."
-          }
-        ];
-      } else {
-        // Creative Human Fallback
-        variations = [
-          {
-            type: "Online Intelligence",
-            intro: "Scanning system for custom insights...",
-            text: "I couldn't find a direct template for '" + query + "', but based on my online logic, this sounds like it might be related to " + (concepts.finance ? "Finance" : concepts.tech ? "Technical issues" : "a general query") + ". Would you like me to draft a creative response for you from scratch?",
-            footer: "I'm learning from your queries in real-time."
-          },
-          {
-            type: "Helpful Human",
-            intro: "I'm searching for you...",
-            text: concepts.frustration 
-              ? "I hear you, and it sounds like things haven't been easy. I'm personally looking through our guides to find the fastest way to fix this for you."
-              : "I'm digging into our system right now to find the best answer for " + query + ". I want to make sure I give you the most accurate help possible.",
-            footer: "Just a moment while I pull that up."
-          }
-        ];
-      }
-
       const responseContent = (
         <div className="space-y-4 pt-2">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Suggested Responses</span>
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+              {result.emotion.emoji} {result.emotion.label} Detected
+            </span>
             <div className="flex-1 h-px bg-white/5" />
           </div>
-          {variations.map((v, i) => (
-            <div key={i} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 hover:bg-white/[0.05] transition-all group relative">
+
+          {/* AI Suggestion if no direct match */}
+          {result.aiSuggestion && (
+            <div className="bg-purple-500/5 border border-purple-500/10 rounded-2xl p-4 group relative">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[8px] font-black text-red-500/80 uppercase tracking-[0.2em]">{v.type}</span>
+                <span className="text-[8px] font-black text-purple-500 uppercase tracking-[0.2em]">Contextual Guidance</span>
                 <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(v.text);
-                  }}
-                  className="p-1.5 bg-white/5 rounded-lg hover:bg-red-500 text-white transition-all shadow-xl"
+                  onClick={() => navigator.clipboard.writeText(result.aiSuggestion)}
+                  className="p-1.5 bg-white/5 rounded-lg hover:bg-purple-500 text-white transition-all shadow-xl"
                 >
                   <Copy size={12} />
                 </button>
               </div>
-              
-              {v.intro && <p className="text-[10px] text-gray-500 italic mb-2 border-l border-red-500/20 pl-2">{v.intro}</p>}
-              
-              <div className="bg-black/20 rounded-xl p-3 border border-white/5 mb-2">
-                <p className="text-[11px] leading-relaxed text-gray-300 font-medium whitespace-pre-wrap">{v.text}</p>
-              </div>
-
-              {v.footer && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-1 opacity-60">{v.footer}</p>}
+              <p className="text-[11px] leading-relaxed text-gray-300 font-medium whitespace-pre-wrap">{result.aiSuggestion}</p>
             </div>
-          ))}
+          )}
+
+          {/* Top Matches */}
+          {result.matches.map((m, i) => {
+            const tone = result.suggestedTone;
+            const resp = m.item.responses.find(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || m.item.responses[0];
+            
+            return (
+              <div key={i} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 hover:bg-white/[0.05] transition-all group relative">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[8px] font-black text-red-500/80 uppercase tracking-[0.2em]">
+                    {m.item.title} ({m.confidence})
+                  </span>
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(resp.text)}
+                    className="p-1.5 bg-white/5 rounded-lg hover:bg-red-500 text-white transition-all shadow-xl"
+                  >
+                    <Copy size={12} />
+                  </button>
+                </div>
+                
+                <div className="bg-black/20 rounded-xl p-3 border border-white/5 mb-2">
+                  <p className="text-[11px] leading-relaxed text-gray-300 font-medium whitespace-pre-wrap">{resp.text}</p>
+                </div>
+                <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-1 opacity-60">
+                  Category: {m.item.category}
+                </p>
+              </div>
+            );
+          })}
+
           <div className="flex items-center gap-2 mt-4 px-2">
             <Sparkles size={10} className="text-red-500" />
-            <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Clean Copy Enabled</p>
+            <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">
+              AI Insight Engine Online ({result.detectedLanguage.toUpperCase()})
+            </p>
           </div>
         </div>
       );
