@@ -246,6 +246,7 @@ export const SupabaseDataProvider = ({ children }) => {
     let targetTable = table;
     if (table === 'supportTemplates') targetTable = 'support_templates';
     if (table === 'rotaOverrides') targetTable = 'rota_overrides';
+    if (table === 'aviatorLogs') targetTable = 'aviator_logs';
     
     // For bulk set, we delete existing and insert new
     // Warning: This is a full wipe and replace!
@@ -257,6 +258,7 @@ export const SupabaseDataProvider = ({ children }) => {
     let targetTable = table;
     if (table === 'rotaOverrides') targetTable = 'rota_overrides';
     if (table === 'supportTemplates') targetTable = 'support_templates';
+    if (table === 'aviatorLogs') targetTable = 'aviator_logs';
     
     // Use 'date' for rotaOverrides, 'id' for others
     const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
