@@ -184,6 +184,10 @@ export function analyzeClientMessage(input, templatesData) {
     if (isAccountIssue && (itemTitle.includes('withdraw') || itemTitle.includes('password') || itemTitle.includes('reset'))) score += 30;
     if (isCashbackIssue && itemTitle.includes('cashback')) score += 30;
 
+    // Language Priority: Boost English over Swahili slightly to ensure English comes first
+    const isSwahiliTemplate = itemTitle.includes('swahili') || itemTitle.includes('slang') || itemTriggers.includes('sheng');
+    if (!isSwahiliTemplate) score += 5; // Slight priority for English
+
     // Penalize unrelated matches for greetings
     if ((isGreeting || isComplexGreeting) && queryTokens.length <= 1) {
       if (!itemTriggers.includes('greeting') && !itemTitle.includes('greeting')) {

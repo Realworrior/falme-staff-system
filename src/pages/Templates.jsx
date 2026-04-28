@@ -173,10 +173,16 @@ function ResponseCard({ item, copiedId, onCopy, expanded, onToggle }) {
 
               {/* Text Area */}
               <div style={{
-                background: '#08080c', border: `1px solid ${S.border}`,
+                background: (activeType?.toLowerCase().includes('swahili') || activeType?.toLowerCase().includes('slang')) ? 'rgba(168, 85, 247, 0.05)' : '#08080c', 
+                border: (activeType?.toLowerCase().includes('swahili') || activeType?.toLowerCase().includes('slang')) ? '1px solid rgba(168, 85, 247, 0.3)' : `1px solid ${S.border}`,
                 borderRadius: 12, padding: '16px', marginBottom: 12,
                 position: 'relative'
               }}>
+                {(activeType?.toLowerCase().includes('swahili') || activeType?.toLowerCase().includes('slang')) && (
+                  <div style={{ position: 'absolute', top: -10, right: 12, background: '#a855f7', color: '#fff', fontSize: 8, fontWeight: 900, padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase' }}>
+                    Localized Variation
+                  </div>
+                )}
                 <div style={{ fontSize: 13, color: S.textSecondary, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
                   <KeywordHighlighter text={activeResp.text} />
                 </div>
@@ -406,15 +412,15 @@ const Templates = () => {
           responses: [
             { 
               type: 'Standard', 
-              text: "Your account deletion request has been received and is currently being processed in the order it was received. Please note that it takes up to 72 hours for our team to manually block all reactivation services, including OTPs. To ensure the process is successful, we kindly ask that you avoid any account activity, such as requesting OTPs or making deposits, during this 72-hour window. We appreciate your cooperation." 
+              text: "Your account deletion request has been successfully received and is currently in our technical queue. We are processing requests in the order they arrive, and yours is now being handled. Please allow up to 72 hours for our team to manually finalize the block on all reactivation features, including OTPs. To ensure there are no delays in your request, please avoid all account activity (deposits or OTP requests) during this processing window." 
             },
             { 
               type: 'High Empathy', 
-              text: "We respect your decision to close your account. For your security, our technical team is currently working to finalize the deletion and manually block reactivation features. This process is handled in the order requests are received and can take up to 72 hours. We strongly recommend staying away from the account during this time - please do not attempt to log in, request OTPs, or deposit funds, as this may reset the deletion timer. Thank you for being with us, and we wish you the very best." 
+              text: "We've received your request to close your account and want to assure you that our technical team is currently processing it in our queue. For your security, this involves a manual 72-hour process to ensure all reactivation services like OTPs are safely blocked. We completely understand the wait, and to keep your processing on track, we kindly ask that you refrain from any account activity, such as depositing or requesting OTPs, until the 72 hours have passed. Thank you for your patience." 
             },
             { 
               type: 'Security Alert', 
-              text: "IMPORTANT: Your account deletion is in progress. Our technical team requires up to 72 hours to manually disable the OTP reactivation feature. To prevent any errors or unintended reactivation, it is CRITICAL that you perform NO activity on the account until this period has passed. This includes avoiding all OTP requests and deposits. We will notify you once the process is fully finalized." 
+              text: "CONFIRMED: Your deletion ticket is now under processing by our technical team. Because we manually block OTP reactivation for your safety, this takes up to 72 hours. IMPORTANT: To prevent your request from being automatically reset by our system, you MUST avoid any and all activity on the account during this time. Please do not request OTPs or attempt deposits until you receive our final confirmation." 
             }
           ],
           triggers: ['delete', 'close', 'deletion', 'deactivating', 'stop betting', 'block my account']
@@ -463,7 +469,7 @@ const Templates = () => {
       if (consolidatedMap[item.category]) {
         // Merge pack items into existing
         item.templates.forEach(newTpl => {
-          const idx = consolidatedMap[item.category].templates.findIndex(t => t.title === newTpl.title);
+          const idx = consolidatedMap[item.category].templates.findIndex(t => t.title.toLowerCase() === newTpl.title.toLowerCase());
           if (idx !== -1) consolidatedMap[item.category].templates[idx] = newTpl;
           else consolidatedMap[item.category].templates.push(newTpl);
         });
