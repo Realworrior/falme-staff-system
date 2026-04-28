@@ -391,7 +391,7 @@ export default function App() {
             {isManagerMode ? 'Admin' : 'Login'}
           </button>
 
-          {/* Grid/List toggle — only visible on md+ where grid actually shows */}
+          {/* Grid/List toggle  -  only visible on md+ where grid actually shows */}
           <div
             className="hidden md:flex rounded-lg overflow-hidden"
             style={{ border: "1px solid rgba(255,255,255,0.1)" }}
@@ -613,6 +613,7 @@ export default function App() {
           onImport={handleBulkImport}
           year={year}
           month={month}
+          allOverrides={overrides}
         />
 
         {/* Send Email Modal */}

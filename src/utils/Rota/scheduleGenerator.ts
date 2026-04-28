@@ -23,20 +23,23 @@ export interface DailySchedule {
   };
 }
 
-// Staff configuration based on the 7-day cycle pattern
-export const STAFF_CONFIG: StaffMember[] = [
-  // 7 NT rotation workers (4-day streak: AM·PM·PM·NT, then 3 days off)
-  { name: 'Ascar', type: 'NT_ROTATION', cycleOffset: 0 },
-  { name: 'Faye', type: 'NT_ROTATION', cycleOffset: 1 },
-  { name: 'Joyce', type: 'NT_ROTATION', cycleOffset: 2 },
-  { name: 'Chris', type: 'NT_ROTATION', cycleOffset: 3 },
-  { name: 'Terry', type: 'NT_ROTATION', cycleOffset: 4 },
-  { name: 'Pauline', type: 'NT_ROTATION', cycleOffset: 5 },
-  { name: 'Sylvia', type: 'NT_ROTATION', cycleOffset: 6 },
+// Balanced 18-day cycle pattern (5 AM, 5 PM, 2 NT, 6 OFF)
+export const CYCLE_18: ShiftType[] = [
+  'AM', 'AM', 'PM', 'PM', 'NT', 'OFF', 'OFF', 'AM', 'OFF', // Part 1: 3 AM, 2 PM
+  'AM', 'AM', 'PM', 'PM', 'NT', 'OFF', 'OFF', 'PM', 'OFF'  // Part 2: 2 AM, 3 PM
+];
 
-  // 2 AM rotation workers (5-day streak: AM·AM·AM·AM·AM, then 2 days off)
-  { name: 'Linda', type: 'AM_ROTATION', cycleOffset: 0 }, // Mon-Fri
-  { name: 'Nickson', type: 'AM_ROTATION', cycleOffset: 2 }, // Wed-Sun
+// Staff configuration with balanced offsets for the 18-day cycle
+export const STAFF_CONFIG: StaffMember[] = [
+  { name: 'Ascar', type: 'NT_ROTATION', cycleOffset: 0 },
+  { name: 'Chris', type: 'NT_ROTATION', cycleOffset: 2 },
+  { name: 'Faye', type: 'NT_ROTATION', cycleOffset: 4 },
+  { name: 'Joyce', type: 'NT_ROTATION', cycleOffset: 6 },
+  { name: 'Linda', type: 'AM_ROTATION', cycleOffset: 8 },
+  { name: 'Nickson', type: 'AM_ROTATION', cycleOffset: 10 },
+  { name: 'Pauline', type: 'NT_ROTATION', cycleOffset: 12 },
+  { name: 'Sylvia', type: 'NT_ROTATION', cycleOffset: 14 },
+  { name: 'Terry', type: 'NT_ROTATION', cycleOffset: 16 },
 ].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
 // Color mapping for each staff member
@@ -66,26 +69,12 @@ export const STAFF_COLORS: Record<string, string> = {
   'Nickson': STAFF_THEME.Nickson.bg,
 };
 
-// Get shift type for NT rotation worker on a specific day
-function getNTRotationShift(dayInCycle: number): ShiftType {
-  const pattern: ShiftType[] = ['AM', 'PM', 'PM', 'NT', 'OFF', 'OFF', 'OFF'];
-  return pattern[dayInCycle % 7];
-}
-
-// Get shift type for AM rotation worker on a specific day
-function getAMRotationShift(dayInCycle: number): ShiftType {
-  const pattern: ShiftType[] = ['AM', 'AM', 'AM', 'AM', 'AM', 'OFF', 'OFF'];
-  return pattern[dayInCycle % 7];
-}
-
 // Generate shift for a specific staff member on a specific date
 export function getStaffShift(staff: StaffMember, date: Date, baseDate: Date): Shift {
   const daysSinceBase = Math.round((date.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
-  const dayInCycle = (daysSinceBase + staff.cycleOffset) % 7;
-
-  const type = staff.type === 'NT_ROTATION'
-    ? getNTRotationShift(dayInCycle)
-    : getAMRotationShift(dayInCycle);
+  // Use the balanced 18-day cycle for everyone
+  const pos = (daysSinceBase + staff.cycleOffset) % 18;
+  const type = CYCLE_18[pos];
 
   return {
     date,

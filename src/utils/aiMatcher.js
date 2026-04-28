@@ -1,11 +1,31 @@
+// ─────────────────────────────────────────────
+// NLP TOKENS & DICTIONARIES
+// ─────────────────────────────────────────────
+
+const STOP_WORDS = new Set([
+  'how', 'are', 'you', 'is', 'the', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 
+  'else', 'when', 'at', 'from', 'by', 'for', 'with', 'about', 'against', 'between', 
+  'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'in', 'on', 
+  'out', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 
+  'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 
+  'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 
+  's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'i', 'me', 'my', 'mine',
+  'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing'
+]);
+
+const GREETINGS = [
+  'hi', 'hello', 'hey', 'niaje', 'mambo', 'sasa', 'habari', 'hujambo', 'wassup', 'yo',
+  'how are you', 'how is it', 'how are things', 'how do you do', 'good morning', 
+  'good afternoon', 'good evening', 'poa', 'vipi', 'sup', 'morning', 'evening'
+];
+
+const CLOSINGS = [
+  'bye', 'goodbye', 'thanks', 'asante', 'thank you', 'be blessed', 'have a nice day',
+  'see you', 'later', 'done', 'that is all', 'shukran', 'okay', 'ok', 'sawa'
+];
 
 // ─────────────────────────────────────────────
 // SWAHILI / KENYAN SLANG TRANSLATION MAP
-// Maps Swahili & slang terms to English equivalents for matching
-// ─────────────────────────────────────────────
-// ─────────────────────────────────────────────
-// SWAHILI / KENYAN SLANG TRANSLATION MAP
-// Maps Swahili & slang terms to English equivalents for matching
 // ─────────────────────────────────────────────
 const SWAHILI_MAP = {
   'doo': ['money', 'funds'],
@@ -27,7 +47,7 @@ const SWAHILI_MAP = {
   'matapeli': ['thieves', 'scammers', 'abusive'],
   'saa hii': ['right now', 'fast', 'immediately', 'impatient'],
   'haraka': ['fast', 'immediately', 'impatient'],
-  'sasa': ['now', 'hello', 'hi'], // Can be greeting or impatient based on context
+  'sasa': ['now', 'hello', 'hi'],
   'sielewi': ['i don\'t understand', 'confused'],
   'niko na shida': ['i have a problem', 'issue'],
   'niaje': ['hi', 'hello', 'greeting'],
@@ -65,238 +85,180 @@ const SWAHILI_MAP = {
 };
 
 // ─────────────────────────────────────────────
-// EMOTION DETECTION
+// EMOTION DETECTION WORDS
 // ─────────────────────────────────────────────
-const ANGRY_WORDS = [
-  'stupid', 'useless', 'terrible', 'fraud', 'scam', 'thieves', 'steal', 'stealing',
-  'incompetent', 'worst', 'pathetic', 'ridiculous', 'unbelievable', 'rubbish', 'nonsense',
-  'idiot', 'fool', 'cheating', 'cheat', 'liar', 'liars', 'robbers',
-  'mbwa', 'ujinga', 'mnaniiba', 'waizi', 'wameniiba', 'mnanicheza', 'matapeli', 'wezi'
-];
+const ANGRY_WORDS = ['stupid', 'useless', 'terrible', 'fraud', 'scam', 'thieves', 'steal', 'stealing', 'incompetent', 'worst', 'pathetic', 'ridiculous', 'idiot', 'cheat', 'liar', 'robbers'];
+const URGENT_WORDS = ['urgent', 'immediately', 'asap', 'right now', 'right away', 'quickly', 'emergency', 'hurry'];
+const DISTRESS_WORDS = ['lost everything', 'all my money', 'desperate', 'stressed', 'addicted', 'suicide', 'cant afford', 'depressed'];
 
-const URGENT_WORDS = [
-  'urgent', 'immediately', 'asap', 'right now', 'right away', 'where is my',
-  "where's my", 'quickly', 'emergency', 'hurry',
-];
-
-const DISTRESS_WORDS = [
-  'lost everything', 'all my money', 'desperate', 'stressed', "can't stop",
-  'addicted', 'problem', 'please help me', 'i need help urgently',
-  'nimepoteza kila kitu', 'nimekwama', 'pesa zote', 'tafadhali nisaidie',
-  'depressed', 'suicide', 'cant afford', "can't afford", 'nimeosha', 'nimechomeka', 'nisaidie kuwacha'
-];
-
-const IMPATIENT_WORDS = [
-  'still', 'yet', 'already', 'how long', 'when will', 'waiting',
-  'always', 'every time', 'again', 'bado', 'mpaka lini',
-  'inachukua muda', 'now', 'fast', 'saa hii', 'haraka'
-];
-
-const THREATENING_WORDS = [
-  'report', 'lawyer', 'authority', 'nitaripoti', 'police', 'sue'
-];
-
-const CONFUSED_WORDS = [
-  'how', 'explain', 'sielewi', 'i don\'t understand', 'confused', 'why'
-];
+// ─────────────────────────────────────────────
+// MAIN AI ENGINE
+// ─────────────────────────────────────────────
 
 export function analyzeClientMessage(input, templatesData) {
-  if (!input.trim()) {
-    return {
-      inputText: input,
-      normalizedText: '',
-      detectedLanguage: 'en',
-      emotion: { type: 'neutral', level: 'low', label: 'Neutral', emoji: '😐', color: '#6b7280' },
-      detectedTopics: [],
+  const lower = input.toLowerCase().trim();
+  
+  if (!lower) {
+    return { 
+      inputText: input, 
+      normalizedText: '', 
+      detectedLanguage: 'en', 
+      emotion: { label: 'Neutral', emoji: '😐', color: '#6b7280' }, 
+      matches: [], 
       suggestedTone: 'standard',
-      matches: [],
+      aiSuggestion: "How can I help you today?",
+      aiReasoning: "Empty input detected."
     };
   }
 
+  // 1. Language & Translation
   const detectLanguage = (text) => {
-    const lower = text.toLowerCase();
     const swahiliWords = Object.keys(SWAHILI_MAP);
     let swahiliCount = 0;
-    for (const word of swahiliWords) {
-      if (lower.includes(word)) swahiliCount++;
-    }
-    if (swahiliCount === 0) return 'en';
-    const engWords = lower.split(/\s+/).filter(w => w.length > 3);
-    const ratio = swahiliCount / Math.max(engWords.length, 1);
-    if (ratio > 0.3) return 'sw/mixed';
-    return 'mixed';
+    for (const word of swahiliWords) if (text.includes(word)) swahiliCount++;
+    return swahiliCount > 0 ? 'mixed' : 'en';
   };
 
-  const translateSwahili = (text) => {
-    let result = text.toLowerCase();
+  const translate = (text) => {
+    let result = text;
     const entries = Object.entries(SWAHILI_MAP).sort((a, b) => b[0].length - a[0].length);
     for (const [sw, enArr] of entries) {
-      if (result.includes(sw)) {
-        result = result.replace(new RegExp(sw, 'gi'), enArr.join(' '));
-      }
+      if (result.includes(sw)) result = result.replace(new RegExp(sw, 'gi'), enArr.join(' '));
     }
     return result;
   };
 
-  const detectEmotion = (original, translated) => {
-    const lower = original.toLowerCase();
-    const combined = lower + ' ' + translated.toLowerCase();
-    const letters = original.replace(/[^a-zA-Z]/g, '');
-    const capsRatio = letters.length > 0 ? (original.replace(/[^A-Z]/g, '').length / letters.length) : 0;
-    const exclamations = (original.match(/!/g) || []).length;
-    const questionMarks = (original.match(/\?/g) || []).length;
+  const lang = detectLanguage(lower);
+  const translated = translate(lower);
+  const combinedText = lower + ' ' + translated;
 
-    // Signal: ALL CAPS throughout message -> ANGRY
-    const isAllCaps = capsRatio > 0.8 && letters.length > 5;
-    
-    // Signal: Short repeated messages / "now" / "fast" -> IMPATIENT
-    const isImpatientSignal = (lower.length < 20 && (lower.includes('now') || lower.includes('fast') || lower.includes('hurry') || lower.includes('saa hii') || lower.includes('haraka'))) || original.split(' ').length <= 4;
+  // 2. Intent Analysis (Greetings / Closings / Specific Phrases)
+  const isGreeting = GREETINGS.some(g => lower === g || lower.startsWith(g + ' ') || lower.includes(' ' + g + ' '));
+  const isClosing = CLOSINGS.some(c => lower === c || lower.startsWith(c + ' ') || lower.includes(' ' + c + ' '));
+  
+  // Specific complex greeting check (e.g., "how are you")
+  const complexGreetings = ['how are you', 'how is it', 'how are things', 'how do you do'];
+  const isComplexGreeting = complexGreetings.some(cg => lower.includes(cg));
 
-    let angryScore = ANGRY_WORDS.filter(w => combined.includes(w)).length * 3
-      + (isAllCaps ? 6 : capsRatio > 0.3 ? 2 : 0)
-      + (exclamations > 2 ? 3 : 0);
-
-    let urgentScore = URGENT_WORDS.filter(w => combined.includes(w)).length * 3
-      + (isImpatientSignal ? 4 : 0)
-      + (exclamations > 1 ? 1 : 0)
-      + (questionMarks > 2 ? 1 : 0);
-
-    const distressScore = DISTRESS_WORDS.filter(w => combined.includes(w)).length * 4
-      + (combined.includes('lost everything') || combined.includes('crying') || combined.includes('nimeosha') ? 5 : 0);
-
-    const impatientScore = IMPATIENT_WORDS.filter(w => combined.includes(w)).length * 2
-      + (isImpatientSignal ? 5 : 0)
-      + (questionMarks > 1 ? 1 : 0);
-
-    const threateningScore = THREATENING_WORDS.filter(w => combined.includes(w)).length * 4;
-    const confusedScore = CONFUSED_WORDS.filter(w => combined.includes(w)).length * 2 + (questionMarks >= 2 ? 2 : 0);
-
-    // Specific Intent Tags from AI AUTO-ROUTING
-    const isRefundDemand = lower.includes('refund') || lower.includes('give me my money back') || lower.includes('nirudishie');
-    const isThreatening = threateningScore > 0;
-    const isConfused = confusedScore > 2 || lower.includes('how do i') || lower.includes('sielewi');
-    const isFraudPattern = lower.includes('multiple accounts') || lower.includes('bonus abuse');
-
-    // Priority Ladder: RG_DISTRESS > ANGRY > THREATENING > IMPATIENT > CONFUSED > NEUTRAL
-    let finalType = 'neutral';
-    let maxScore = 0;
-    
-    if (distressScore >= 4) { finalType = 'distress'; maxScore = distressScore; }
-    else if (angryScore >= 5) { finalType = 'angry'; maxScore = angryScore; }
-    else if (threateningScore >= 4) { finalType = 'threatening'; maxScore = threateningScore; }
-    else if (impatientScore >= 4) { finalType = 'impatient'; maxScore = impatientScore; }
-    else if (urgentScore >= 4) { finalType = 'urgent'; maxScore = urgentScore; }
-    else if (confusedScore >= 3) { finalType = 'confused'; maxScore = confusedScore; }
-    else {
-        // Fallback to highest score if it didn't trigger priority threshold
-        const scores = [
-            ['angry', angryScore],
-            ['urgent', urgentScore],
-            ['distress', distressScore],
-            ['impatient', impatientScore],
-            ['threatening', threateningScore],
-            ['confused', confusedScore],
-            ['neutral', 1],
-        ];
-        const top = scores.reduce((a, b) => (b[1] > a[1] ? b : a));
-        finalType = top[0];
-        maxScore = top[1];
-    }
-
-    const level = maxScore >= 6 ? 'high' : maxScore >= 3 ? 'medium' : 'low';
-
-    const emotionMeta = {
-      angry: { label: 'Angry / Aggressive', emoji: '😤', color: '#ef4444' },
-      urgent: { label: 'Urgent / Stressed', emoji: '⚡', color: '#f97316' },
-      distress: { label: 'Distressed (RG Risk)', emoji: '😢', color: '#8b5cf6' },
-      impatient: { label: 'Impatient', emoji: '⏰', color: '#eab308' },
-      neutral: { label: 'Neutral', emoji: '😐', color: '#6b7280' },
-      threatening: { label: 'Threatening / Escalation', emoji: '⚖️', color: '#ef4444' },
-      confused: { label: 'Confused', emoji: '❓', color: '#3b82f6' }
-    };
-
-    let meta = { ...emotionMeta[finalType] };
-    
-    // Override label for specific routing
-    if (isRefundDemand && finalType === 'neutral') { meta.label = 'Refund Demand'; meta.emoji = '💸'; }
-    if (isFraudPattern) { meta.label = 'Fraud Suspicion'; meta.emoji = '🕵️'; }
-
-    return { type: finalType, level, ...meta };
+  // 3. Emotion Analysis
+  const detectEmotion = (text) => {
+    if (DISTRESS_WORDS.some(w => text.includes(w))) return { type: 'distress', label: 'Distressed (RG)', emoji: '😢', color: '#8b5cf6' };
+    if (ANGRY_WORDS.some(w => text.includes(w))) return { type: 'angry', label: 'Frustrated', emoji: '😤', color: '#ef4444' };
+    if (URGENT_WORDS.some(w => text.includes(w))) return { type: 'urgent', label: 'Urgent', emoji: '⚡', color: '#f97316' };
+    if (isGreeting || isComplexGreeting) return { type: 'greeting', label: 'Friendly', emoji: '👋', color: '#22c55e' };
+    return { type: 'neutral', label: 'Neutral', emoji: '😐', color: '#6b7280' };
   };
 
-  const scoreItem = (item, tokens, emotion) => {
+  const emotion = detectEmotion(combinedText);
+
+  // 4. Advanced Template Matching (NLP-driven)
+  const getTokens = (text) => {
+    return text.replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(t => t.length >= 2 && !STOP_WORDS.has(t));
+  };
+
+  const tokens = getTokens(combinedText);
+  
+  // Specific Scenario Detection
+  const isDepositIssue = lower.includes('deposit') && (lower.includes('not reflecting') || lower.includes('failed') || lower.includes('pending') || lower.includes('reflecting'));
+  const isAccountIssue = lower.includes('withdraw') || lower.includes('password') || lower.includes('reset') || lower.includes('login') || lower.includes('access') || lower.includes('delete') || lower.includes('close') || lower.includes('deactivate');
+  const isCashbackIssue = lower.includes('cashback');
+
+  const scoreItem = (item, queryTokens) => {
     let score = 0;
-    const matchedKeywords = [];
-    const itemKeywords = item.triggers || [];
+    const itemTriggers = (item.triggers || []).map(t => t.toLowerCase());
     const itemTitle = (item.title || '').toLowerCase();
-    const itemCategory = (item.category || '').toLowerCase();
-
-    const GENERIC_WORDS = ['account', 'bet', 'management', 'system', 'issue', 'please', 'kindly', 'assist', 'help'];
-
-    for (const token of tokens) {
-      if (token.length < 3) continue;
-      
-      // 1. Check direct triggers (Highest weight)
-      for (const kw of itemKeywords) {
-        const kwLower = kw.toLowerCase();
-        if (kwLower === token) {
-          score += 15; // Increased from 10
-          if (!matchedKeywords.includes(kw)) matchedKeywords.push(kw);
-        } else if (kwLower.includes(token) || token.includes(kwLower)) {
-          score += token.length >= 5 ? 8 : 3; // Increased from 5/2
-          if (!matchedKeywords.includes(kw)) matchedKeywords.push(kw);
-        }
+    
+    // Exact match boost
+    if (queryTokens.length > 0) {
+      for (const token of queryTokens) {
+        if (itemTriggers.includes(token)) score += 25;
+        else if (itemTriggers.some(t => t.includes(token))) score += 12;
+        if (itemTitle.includes(token)) score += 10;
       }
+    }
+    
+    // Scenario Boosting
+    if (isDepositIssue && (itemTitle.includes('deposit') || itemTriggers.includes('deposit'))) score += 30;
+    if (isAccountIssue && (itemTitle.includes('withdraw') || itemTitle.includes('password') || itemTitle.includes('reset'))) score += 30;
+    if (isCashbackIssue && itemTitle.includes('cashback')) score += 30;
 
-      // 2. Check Title & Category (Lower weight, skip generics)
-      if (!GENERIC_WORDS.includes(token)) {
-        if (itemTitle.includes(token)) score += 5;
-        if (itemCategory.includes(token)) score += 3;
+    // Penalize unrelated matches for greetings
+    if ((isGreeting || isComplexGreeting) && queryTokens.length <= 1) {
+      if (!itemTriggers.includes('greeting') && !itemTitle.includes('greeting')) {
+        score = 0;
       }
     }
 
-    if (item.emotions?.includes(emotion.type)) {
-      score += emotion.level === 'high' ? 5 : emotion.level === 'medium' ? 3 : 1;
-    }
-
-    const confidence = score >= 20 ? 'high' : score >= 10 ? 'medium' : 'low';
-    return { item, score, matchedKeywords, confidence };
+    return score;
   };
-
-  const generateAISuggestion = (emotion, language) => {
-    const greetingSw = language === 'sw' || language === 'mixed' ? 'Karibu 🙂 ' : '';
-    if (emotion.type === 'distress') return `${greetingSw}We sincerely understand how difficult this situation feels 🙏 Please know that we are here to help you through this. Could you kindly share the details of your issue so we can look into it right away?`;
-    if (emotion.type === 'angry') return `${greetingSw}We hear you and we understand your frustration 🙏 We want to resolve this as quickly as possible. Kindly share the specific details of your issue so our team can address this immediately.`;
-    if (emotion.type === 'urgent') return `${greetingSw}We understand this is urgent and we're on it 🔄 Please share your phone number, the amount involved, and the exact time of the transaction so we can prioritize your case.`;
-    return `${greetingSw}Thank you for reaching out. To assist you efficiently, could you please share your registered phone number and a brief description of the issue? We'll look into it right away.`;
-  };
-
-  const lang = detectLanguage(input);
-  const translated = lang !== 'en' ? translateSwahili(input) : input;
-  const combined = input.toLowerCase() + ' ' + translated.toLowerCase();
-  const emotion = detectEmotion(input, translated);
-  const tokens = combined.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length >= 2);
 
   const flatTemplates = [];
   templatesData.forEach(cat => {
     cat.templates.forEach(tpl => {
-      flatTemplates.push({ ...tpl, category: cat.category, categoryShort: cat.category.split(' ').pop() });
+      flatTemplates.push({ ...tpl, category: cat.category });
     });
   });
 
   const scored = flatTemplates
-    .map(item => scoreItem(item, tokens, emotion))
-    .filter(r => r.score > 0)
+    .map(item => ({ item, score: scoreItem(item, tokens) }))
+    .filter(r => r.score >= 20) 
     .sort((a, b) => b.score - a.score);
 
-  const finalMatches = scored.slice(0, 4);
-  const detectedTopics = Array.from(new Set(finalMatches.map(m => m.item.categoryShort)));
-  const suggestedTone = emotion.type === 'angry' || emotion.type === 'distress' || emotion.level === 'high' ? 'highEmpathy' : 'standard';
+  const matches = scored.slice(0, 4);
 
-  let aiSuggestion, aiReasoning;
-  if (finalMatches.length === 0 || finalMatches[0].confidence === 'low') {
-    aiSuggestion = generateAISuggestion(emotion, lang);
-    aiReasoning = `No exact template match found. Generating contextual response based on detected emotion: ${emotion.label}.`;
+  // 5. Contextual AI Suggestion (Copy-Paste Ready for Staff)
+  let aiSuggestion = '';
+  let aiReasoning = '';
+
+  const professionalGreeting = "Hello! 👋 Thank you for reaching out to us. How can we assist you with your Betfalme account today?";
+  const professionalClosing = "You're very welcome! 🙏 We're glad we could help. Have a wonderful day, and feel free to reach out if you have any other questions.";
+
+  if (isDepositIssue) {
+    const depositTpl = matches.find(m => m.item.title.toLowerCase().includes('deposit'))?.item;
+    aiSuggestion = depositTpl 
+      ? `${depositTpl.responses[0].text}\n\nPlease share your MPESA message or transaction code for manual verification.` 
+      : "We're sorry to hear your deposit hasn't reflected yet. Please share your MPESA message or transaction code so we can verify and update your balance immediately.";
+    aiReasoning = "Detected deposit issue. Prioritizing Mpesa message/code request as per protocol.";
+  } else if (isAccountIssue) {
+    const accountTpl = matches.find(m => m.item.title.toLowerCase().includes('deletion'))?.item || matches[0]?.item;
+    
+    if (accountTpl && accountTpl.title.toLowerCase().includes('deletion')) {
+      // Special bundle for Deletion
+      const v = accountTpl.responses;
+      aiSuggestion = `[OPTION 1: STANDARD]\n${v[0].text}\n\n[OPTION 2: HIGH EMPATHY]\n${v[1].text}\n\n[OPTION 3: SECURITY ALERT]\n${v[2].text}\n\nREQUIRED: Please share your registered phone number so we can process the 72-hour manual block immediately.`;
+      aiReasoning = "Security-sensitive: Account Deletion detected. Providing all 3 variations (Standard, Empathy, Alert) to allow agent choice based on client mood.";
+    } else {
+      aiSuggestion = accountTpl 
+        ? `${accountTpl.responses[0].text}\n\nCould you also please share your registered phone number so we can look into this for you?` 
+        : "We'd be happy to help you with that. Could you please share your registered phone number so we can check your account status?";
+      aiReasoning = "Detected account/withdrawal issue. Prioritizing registered phone number request.";
+    }
+  } else if (isCashbackIssue) {
+    const cashbackTpl = matches.find(m => m.item.title.toLowerCase().includes('cashback'))?.item;
+    aiSuggestion = cashbackTpl 
+      ? `${cashbackTpl.responses[0].text}\n\nPlease share your registered phone number so we can check your cashback eligibility and status.` 
+      : "Could you please share your registered phone number? We'll check your cashback status and get back to you immediately.";
+    aiReasoning = "Detected cashback inquiry. Prioritizing phone number request and cashback templates.";
+  } else if (isComplexGreeting || (isGreeting && tokens.length === 0)) {
+    aiSuggestion = professionalGreeting;
+    aiReasoning = "Detected a friendly greeting. Providing a professional opening response for the agent to use.";
+  } else if (isClosing && tokens.length === 0) {
+    aiSuggestion = professionalClosing;
+    aiReasoning = "Detected a closing or gratitude phrase. Providing a polite wrap-up response.";
+  } else if (matches.length > 0) {
+    const topMatch = matches[0].item;
+    aiSuggestion = topMatch.responses[0].text;
+    aiReasoning = `High-confidence match (Score: ${matches[0].score}) for "${topMatch.title}". Providing the standard response directly.`;
+  } else {
+    if (tokens.length > 0) {
+      aiSuggestion = `We understand you're inquiring about ${tokens.join(' and ')}. To help us provide the most accurate assistance, could you please share a bit more detail or your registered phone number? We'll look into this for you immediately!`;
+      aiReasoning = "Identified keywords but no perfect template match. Providing a helpful, conversational probe.";
+    } else {
+      aiSuggestion = "Thank you for reaching out! 👋 To assist you better, could you please share more details about your request or your registered phone number? We're here to help!";
+      aiReasoning = "Low information density in query. Requesting more context from the customer.";
+    }
   }
 
   return {
@@ -304,10 +266,10 @@ export function analyzeClientMessage(input, templatesData) {
     normalizedText: translated,
     detectedLanguage: lang,
     emotion,
-    detectedTopics,
-    suggestedTone,
-    matches: finalMatches,
+    suggestedTone: emotion.type === 'angry' || emotion.type === 'distress' ? 'highEmpathy' : 'standard',
+    matches,
     aiSuggestion,
     aiReasoning,
+    detectedTopics: Array.from(new Set(matches.map(m => m.item.category.split(' ').pop())))
   };
 }

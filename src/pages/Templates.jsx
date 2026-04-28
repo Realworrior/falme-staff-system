@@ -284,6 +284,203 @@ const Templates = () => {
     }
   };
 
+  const handleConsolidate = async () => {
+    if (!data || data.length === 0) return;
+    
+    setAiLoading(true);
+    try {
+      const consolidatedMap = {};
+      
+      data.forEach(record => {
+        // Normalization & Manual Alias Mapping
+        let rawName = record.category || 'General';
+        const upper = rawName.toUpperCase();
+        
+        // Handle specific renames/merges
+        if (upper.includes('SECURITY') || upper.includes('ACCOUNT MANAGEMENT')) rawName = '👤 ACCOUNT MANAGEMENT';
+        else if (upper.includes('WITHDRAWAL')) rawName = '💸 WITHDRAWALS & TRANSACTIONS';
+        else if (upper.includes('DEPOSIT')) rawName = '💰 DEPOSITS — M-PESA';
+        else if (upper.includes('SPORTS BETTING') || upper.includes('DISPUTE')) rawName = '⚽ SPORTS BETTING';
+        else if (upper.includes('GAMES') || upper.includes('CASINO')) rawName = '🎰 CASINO GAMES';
+        else if (upper.includes('HARD CASES')) rawName = '⚖️ HARD CASES';
+        else if (upper.includes('RESPONSIBLE') || upper.includes('THREATENING')) rawName = '🛡️ RESPONSIBLE GAMING';
+        else if (upper.includes('SYSTEM') || upper.includes('UPGRADE') || upper.includes('MAINTENANCE')) rawName = '⚙️ SYSTEM MAINTENANCE';
+
+        const normalizedKey = rawName.replace(/\p{Emoji}/gu, '').trim().toUpperCase();
+        
+        if (!consolidatedMap[normalizedKey]) {
+          consolidatedMap[normalizedKey] = { 
+            category: rawName,
+            templates: [] 
+          };
+        }
+        
+        // If the new record has an emoji and the existing one doesn't, upgrade the display name
+        const hasEmoji = /\p{Emoji}/u.test(rawName);
+        if (hasEmoji && !/\p{Emoji}/u.test(consolidatedMap[normalizedKey].category)) {
+          consolidatedMap[normalizedKey].category = rawName;
+        }
+        
+        // Merge templates from this record into the map
+        record.templates.forEach(tpl => {
+          const exists = consolidatedMap[normalizedKey].templates.some(t => t.title.toLowerCase() === tpl.title.toLowerCase());
+          if (!exists) {
+            consolidatedMap[normalizedKey].templates.push(tpl);
+          }
+        });
+      });
+      
+      const cleanList = Object.values(consolidatedMap);
+      await actions.setAllData('supportTemplates', cleanList);
+      
+      showToast(`Cleaned and consolidated into ${cleanList.length} unique categories!`, 'success');
+      actions.refreshAll();
+    } catch (err) {
+      console.error(err);
+      showToast('Cleanup failed. Please try again.', 'error');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleDeploySystemPack = async () => {
+    const pack = [
+      {
+        category: '💸 WITHDRAWALS & TRANSACTIONS',
+        templates: [{
+          title: 'Mpesa Delay (Withdrawals)',
+          responses: [
+            { type: 'Standard', text: "We are currently experiencing delays with Mpesa withdrawals. Our technical team is working with the provider to resolve this as quickly as possible. We apologize for the inconvenience." },
+            { type: 'High Empathy', text: "I completely understand how frustrating it is to wait for your funds. We're seeing some delays with Mpesa withdrawals right now, and our team is already on it. We appreciate your patience while we get this sorted for you!" }
+          ],
+          triggers: ['mpesa', 'withdrawal', 'delay', 'pending', 'funds', 'withdraw']
+        }]
+      },
+      {
+        category: '💰 DEPOSITS — M-PESA',
+        templates: [{
+          title: 'Mpesa Delay (Deposits)',
+          responses: [
+            { type: 'Standard', text: "Please be informed that there are delays in processing Mpesa deposits. If your deposit hasn't reflected yet, please share your transaction code (MPESA Message) so we can manually verify and update your balance." },
+            { type: 'High Empathy', text: "I'm sorry to hear your deposit hasn't reflected yet. Mpesa is currently having some slight delays. If you can share the Mpesa transaction message, I'll be happy to check that for you right now and help speed things up!" }
+          ],
+          triggers: ['mpesa', 'deposit', 'delay', 'not reflected', 'stuck', 'message']
+        }]
+      },
+      {
+        category: '🎰 CASINO GAMES',
+        templates: [{
+          title: 'Global Aviator Failure',
+          responses: [
+            { type: 'Standard', text: "Aviator is currently unavailable globally due to a technical issue with the game provider. We are monitoring the situation and will restore access as soon as the provider resolves the issue." },
+            { type: 'High Empathy', text: "I'm so sorry, Aviator is currently down for everyone because of an issue on the game provider's side. We know how much you enjoy it, and we're working closely with them to get it back up for you as soon as possible!" }
+          ],
+          triggers: ['aviator', 'failed', 'down', 'broken', 'unavailable', 'global']
+        }]
+      },
+      {
+        category: '⚽ SPORTS BETTING',
+        templates: [{
+          title: 'Sports Betting Inquiries',
+          responses: [
+            { type: 'Standard', text: "We’re currently optimizing our sports betting markets to provide the best possible odds. If you're experiencing issues with a specific match, please share the Match ID." }
+          ],
+          triggers: ['sports', 'betting', 'odds', 'dispute', 'match']
+        }]
+      },
+      {
+        category: '⚙️ SYSTEM MAINTENANCE',
+        templates: [{
+          title: 'System Upgrade (Live Betting)',
+          responses: [
+            { type: 'Standard', text: "We’re currently upgrading our live betting feature to serve you better. We apologize for the inconvenience and will let you know as soon as it’s up and running again." },
+            { type: 'High Empathy', text: "We're currently giving our live betting feature a quick upgrade to make it even better for you! It'll be back online very soon. We apologize for the wait and thanks for hanging in there with us!" }
+          ],
+          triggers: ['upgrade', 'live betting', 'maintenance', 'upgrading', 'down', 'live']
+        }]
+      },
+      {
+        category: '👤 ACCOUNT MANAGEMENT',
+        templates: [{
+          title: 'Account Deletion (72hr Process)',
+          responses: [
+            { 
+              type: 'Standard', 
+              text: "Your account deletion request has been received and is currently being processed in the order it was received. Please note that it takes up to 72 hours for our team to manually block all reactivation services, including OTPs. To ensure the process is successful, we kindly ask that you avoid any account activity, such as requesting OTPs or making deposits, during this 72-hour window. We appreciate your cooperation." 
+            },
+            { 
+              type: 'High Empathy', 
+              text: "We respect your decision to close your account. For your security, our technical team is currently working to finalize the deletion and manually block reactivation features. This process is handled in the order requests are received and can take up to 72 hours. We strongly recommend staying away from the account during this time - please do not attempt to log in, request OTPs, or deposit funds, as this may reset the deletion timer. Thank you for being with us, and we wish you the very best." 
+            },
+            { 
+              type: 'Security Alert', 
+              text: "IMPORTANT: Your account deletion is in progress. Our technical team requires up to 72 hours to manually disable the OTP reactivation feature. To prevent any errors or unintended reactivation, it is CRITICAL that you perform NO activity on the account until this period has passed. This includes avoiding all OTP requests and deposits. We will notify you once the process is fully finalized." 
+            }
+          ],
+          triggers: ['delete', 'close', 'deletion', 'deactivating', 'stop betting', 'block my account']
+        }]
+      },
+      {
+        category: '🛡️ RESPONSIBLE GAMING',
+        templates: [{
+          title: 'Compliance & Safety Protocol',
+          responses: [
+            { type: 'Standard', text: "We take your safety and security seriously. If you're feeling distressed or wish to discuss self-exclusion, we're here to support you with the necessary tools and resources." }
+          ],
+          triggers: ['distress', 'help', 'suicide', 'threatening', 'threat', 'audit', 'compliance']
+        }]
+      },
+      {
+        category: '⚖️ HARD CASES',
+        templates: [{
+          title: 'Refund Review Policy',
+          responses: [
+            { type: 'Standard', text: "Refund requests are subject to strict compliance review. Please provide all relevant documentation and your registered phone number for our audit team to evaluate your case." }
+          ],
+          triggers: ['refund', 'refusal', 'demand', 'hard case', 'legal']
+        }]
+      }
+    ];
+
+    setAiLoading(true);
+    let count = 0;
+    
+    // Perform consolidation first to ensure we have a clean base
+    const currentData = data || [];
+    const consolidatedMap = {};
+    currentData.forEach(r => {
+      if (!consolidatedMap[r.category]) consolidatedMap[r.category] = { category: r.category, templates: [...r.templates] };
+      else {
+        r.templates.forEach(t => {
+          if (!consolidatedMap[r.category].templates.some(et => et.title === t.title)) {
+            consolidatedMap[r.category].templates.push(t);
+          }
+        });
+      }
+    });
+
+    for (const item of pack) {
+      if (consolidatedMap[item.category]) {
+        // Merge pack items into existing
+        item.templates.forEach(newTpl => {
+          const idx = consolidatedMap[item.category].templates.findIndex(t => t.title === newTpl.title);
+          if (idx !== -1) consolidatedMap[item.category].templates[idx] = newTpl;
+          else consolidatedMap[item.category].templates.push(newTpl);
+        });
+      } else {
+        consolidatedMap[item.category] = item;
+      }
+      count++;
+    }
+    
+    const cleanList = Object.values(consolidatedMap);
+    await actions.setAllData('supportTemplates', cleanList);
+    
+    setAiLoading(false);
+    showToast(`Synchronized & Cleaned ${cleanList.length} categories!`, 'success');
+    actions.refreshAll();
+  };
+
   const filteredData = useMemo(() => {
     if (!data) return [];
     if (!searchQuery) return data;
@@ -337,6 +534,30 @@ const Templates = () => {
 
           <div style={{ display: 'flex', gap: 12 }}>
              <button 
+              onClick={handleConsolidate}
+              disabled={aiLoading}
+              style={{
+                background: 'transparent', color: S.textMuted, border: `1px solid ${S.border}`,
+                borderRadius: 12, padding: '10px 20px', fontSize: 11, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                textTransform: 'uppercase', transition: 'all 0.2s'
+              }}
+            >
+              <Trash2 size={14} /> Cleanup Library
+            </button>
+             <button 
+              onClick={handleDeploySystemPack}
+              disabled={aiLoading}
+              style={{
+                background: 'transparent', color: S.orangeText, border: `1px solid ${S.orange}40`,
+                borderRadius: 12, padding: '10px 20px', fontSize: 11, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                textTransform: 'uppercase', transition: 'all 0.2s'
+              }}
+            >
+              <Terminal size={14} /> Deploy Failure Pack
+            </button>
+             <button 
               onClick={() => setModalOpen(true)}
               style={{
                 background: S.orange, color: '#fff', border: 'none',
@@ -350,106 +571,261 @@ const Templates = () => {
           </div>
         </div>
 
-        {/* AI MATCHER PANEL */}
-        <div className="tour-template-ai" style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 40 }}>
-          <div style={{
-            background: S.card, border: `1px solid ${S.orange}40`,
-            borderRadius: 20, overflow: 'hidden', transition: 'border-color 0.2s',
-            boxShadow: `0 0 30px ${S.orange}10`,
-          }}>
-            <textarea
-              value={aiInput}
-              onChange={e => setAiInput(e.target.value)}
-              placeholder="Paste the client's message here to analyze emotion and find matching templates..."
-              style={{
-                width: '100%', minHeight: 160, padding: '24px',
-                background: 'transparent', border: 'none', outline: 'none', resize: 'none',
-                color: S.textPrimary, fontSize: 15, lineHeight: 1.6,
-                fontFamily: 'inherit', caretColor: S.orange,
-              }}
-            />
-            <div style={{ padding: '0 24px 16px', marginTop: -8 }}>
-              <p style={{ fontSize: 10, color: S.red, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0, opacity: 0.8 }}>
-                ⚠️ AI is still under training. Some response matches may not be 100% accurate. Please verify before sending.
-              </p>
+        {/* PREMIUM UNIFIED COMMAND CENTER */}
+        <div className="tour-template-ai" style={{ marginBottom: 60 }}>
+          <div style={{ position: 'relative', zIndex: 10 }}>
+            {/* Intelligence Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ 
+                  padding: '4px 10px', borderRadius: 8, background: `${S.orange}20`, 
+                  border: `1px solid ${S.orange}40`, color: S.orangeText, 
+                  fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em',
+                  display: 'flex', alignItems: 'center', gap: 6
+                }}>
+                  <Sparkles size={10} /> Support Intelligence v2.0
+                </div>
+                {aiLoading && (
+                  <motion.span 
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    style={{ fontSize: 10, color: S.textMuted, fontWeight: 600, textTransform: 'uppercase' }}
+                  >
+                    Analyzing Request...
+                  </motion.span>
+                )}
+              </div>
+              
+              {/* Subtle Disclaimer */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0.6 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: S.green, boxShadow: `0 0 10px ${S.green}` }} />
+                <span style={{ fontSize: 10, color: S.textMuted, fontWeight: 500 }}>AI is in active training mode</span>
+              </div>
             </div>
+
+            {/* Main Command Bar */}
             <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '16px 24px', borderTop: `1px solid ${S.border}`, background: 'rgba(0,0,0,0.2)'
+              background: 'rgba(22, 22, 31, 0.6)',
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${aiInput.length > 20 ? S.orange : S.border}`,
+              borderRadius: 28,
+              padding: '12px',
+              boxShadow: aiInput.length > 20 
+                ? `0 20px 50px -10px ${S.orange}20, inset 0 1px 1px rgba(255,255,255,0.05)` 
+                : '0 20px 40px -15px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8
             }}>
-              <span style={{ fontSize: 11, color: S.textMuted, fontWeight: 500 }}>
-                Supports English, Swahili & Sheng · Detects Sentiment
-              </span>
-              <button
-                onClick={handleAnalyze}
-                disabled={!aiInput.trim() || aiLoading}
-                style={{
-                  background: S.orange, color: '#fff', border: 'none', borderRadius: 10,
-                  padding: '10px 24px', fontSize: 12, fontWeight: 800,
-                  cursor: aiInput.trim() ? 'pointer' : 'default',
-                  display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
-                  textTransform: 'uppercase'
-                }}
-              >
-                {aiLoading ? <RotateCcw size={14} className="animate-spin" /> : <Zap size={14} />}
-                {aiLoading ? 'Analyzing...' : 'Analyze Client Msg'}
-              </button>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '8px 12px' }}>
+                <div style={{ 
+                  marginTop: 8, width: 36, height: 36, borderRadius: 12, 
+                  background: aiInput.length > 20 ? S.orangeGlow : 'rgba(255,255,255,0.03)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.3s'
+                }}>
+                  <Search size={18} color={aiInput.length > 20 ? S.orange : S.textMuted} />
+                </div>
+                
+                <textarea
+                  value={aiInput}
+                  onChange={e => {
+                    setAiInput(e.target.value);
+                    setSearchQuery(e.target.value);
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey && aiInput.length > 10) {
+                      e.preventDefault();
+                      handleAnalyze();
+                    }
+                  }}
+                  placeholder="Ask me to find a template or paste a client's message for deep analysis..."
+                  style={{
+                    flex: 1,
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: 500,
+                    fontFamily: 'inherit',
+                    resize: 'none',
+                    minHeight: aiInput.length > 60 ? 120 : 44,
+                    paddingTop: 8,
+                    lineHeight: 1.5,
+                    caretColor: S.orange
+                  }}
+                />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignSelf: 'stretch', justifyContent: 'space-between' }}>
+                  {aiInput && (
+                    <button 
+                      onClick={() => { setAiInput(''); setSearchQuery(''); setAiResult(null); }}
+                      style={{ 
+                        background: 'rgba(255,255,255,0.05)', border: 'none', color: S.textMuted, 
+                        cursor: 'pointer', padding: 8, borderRadius: 10, alignSelf: 'flex-end',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={handleAnalyze}
+                    disabled={aiInput.length < 10 || aiLoading}
+                    style={{
+                      background: aiInput.length >= 10 ? `linear-gradient(135deg, ${S.orange}, #dc2626)` : 'rgba(255,255,255,0.03)',
+                      color: aiInput.length >= 10 ? '#fff' : S.textMuted,
+                      border: 'none',
+                      borderRadius: 16,
+                      padding: '12px 24px',
+                      fontSize: 12,
+                      fontWeight: 900,
+                      cursor: aiInput.length >= 10 ? 'pointer' : 'default',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      boxShadow: aiInput.length >= 10 ? `0 10px 20px -5px ${S.orange}40` : 'none'
+                    }}
+                  >
+                    {aiLoading ? <RotateCcw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                    {aiLoading ? 'Analyzing' : 'Deep Analysis'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Mode Indicator Footer */}
+              <div style={{ 
+                padding: '12px 20px', borderTop: `1px solid ${S.border}`, 
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center' 
+              }}>
+                <div style={{ display: 'flex', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 4, height: 4, borderRadius: '50%', background: aiInput.length > 0 ? S.orange : S.textMuted }} />
+                    <span style={{ fontSize: 10, color: S.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>Live Filter</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: aiInput.length >= 10 ? 1 : 0.4 }}>
+                    <div style={{ width: 4, height: 4, borderRadius: '50%', background: aiInput.length >= 10 ? S.purple : S.textMuted }} />
+                    <span style={{ fontSize: 10, color: S.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>AI Analysis Ready</span>
+                  </div>
+                </div>
+                <div style={{ fontSize: 9, color: S.textMuted, fontWeight: 500, letterSpacing: '0.02em', fontStyle: 'italic' }}>
+                  * Verify AI matches before deploying to live chat
+                </div>
+              </div>
             </div>
           </div>
 
           <AnimatePresence>
             {aiResult && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {/* Emotion Indicator */}
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0, y: -10 }}
+                style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 20 }}
+              >
+                {/* Result Insights Bar */}
                 <div style={{ 
-                  display: 'flex', gap: 12, padding: '12px 16px', borderRadius: 12, 
-                  background: `${aiResult.emotion.color}10`, border: `1px solid ${aiResult.emotion.color}20`
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12
                 }}>
-                  <span style={{ fontSize: 20 }}>{aiResult.emotion.emoji}</span>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: aiResult.emotion.color, textTransform: 'uppercase' }}>
-                      {aiResult.emotion.label} Detected
+                  <div style={{ 
+                    padding: '16px', borderRadius: 20, background: 'rgba(255,255,255,0.02)', border: `1px solid ${S.border}`,
+                    display: 'flex', alignItems: 'center', gap: 16
+                  }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${aiResult.emotion.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+                      {aiResult.emotion.emoji}
                     </div>
-                    <div style={{ fontSize: 11, color: S.textMuted }}>
-                      Language: {aiResult.detectedLanguage.toUpperCase()} · Suggesting {aiResult.suggestedTone} tone
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: S.textMuted, textTransform: 'uppercase', marginBottom: 2 }}>Detected Emotion</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: aiResult.emotion.color }}>{aiResult.emotion.label}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    padding: '16px', borderRadius: 20, background: 'rgba(255,255,255,0.02)', border: `1px solid ${S.border}`,
+                    display: 'flex', alignItems: 'center', gap: 16
+                  }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${S.purple}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Languages size={18} color={S.purple} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: S.textMuted, textTransform: 'uppercase', marginBottom: 2 }}>Language Context</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: S.purple }}>{aiResult.detectedLanguage.toUpperCase()} MODE</div>
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    padding: '16px', borderRadius: 20, background: 'rgba(255,255,255,0.02)', border: `1px solid ${S.border}`,
+                    display: 'flex', alignItems: 'center', gap: 16
+                  }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${S.orange}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Zap size={18} color={S.orange} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: S.textMuted, textTransform: 'uppercase', marginBottom: 2 }}>Recommended Tone</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: S.orangeText }}>{aiResult.suggestedTone === 'highEmpathy' ? 'High Empathy' : 'Direct / Pro'}</div>
                     </div>
                   </div>
                 </div>
 
-                {/* AI Suggestion */}
+                {/* AI Draft Card */}
                 {aiResult.aiSuggestion && (
-                  <div style={{ background: `${S.purple}10`, border: `1px solid ${S.purple}30`, borderRadius: 16, padding: 20, marginTop: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                      <Sparkles size={16} color={S.purple} />
-                      <span style={{ fontSize: 12, fontWeight: 800, color: S.purple, textTransform: 'uppercase' }}>AI Generated Contextual Response</span>
-                    </div>
-                    <div style={{ background: '#000', padding: 16, borderRadius: 12, marginBottom: 12, fontSize: 14, lineHeight: 1.6, color: '#ccc' }}>
-                      {aiResult.aiSuggestion}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <CopyBtn text={aiResult.aiSuggestion} id="ai-gen" copiedId={copiedId} onCopy={handleCopy} />
+                  <div style={{ 
+                    background: `linear-gradient(165deg, ${S.card}, rgba(139, 92, 246, 0.05))`, 
+                    border: `1px solid ${S.purple}30`, 
+                    borderRadius: 24, padding: '2px',
+                    boxShadow: `0 30px 60px -20px rgba(0,0,0,0.5)`
+                  }}>
+                    <div style={{ background: S.card, borderRadius: 22, padding: 24 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 10, background: S.purple, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Sparkles size={16} color="#fff" />
+                          </div>
+                          <span style={{ fontSize: 13, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                            Recommended Response Draft
+                          </span>
+                        </div>
+                        <CopyBtn text={aiResult.aiSuggestion} id="ai-gen" copiedId={copiedId} onCopy={handleCopy} size="sm" />
+                      </div>
+                      <div style={{ 
+                        background: 'rgba(0,0,0,0.2)', padding: '24px', borderRadius: 20, 
+                        fontSize: 16, lineHeight: 1.7, color: '#e5e7eb',
+                        border: '1px solid rgba(255,255,255,0.03)',
+                        fontStyle: aiResult.detectedLanguage !== 'en' ? 'italic' : 'normal'
+                      }}>
+                        {aiResult.aiSuggestion}
+                      </div>
                     </div>
                   </div>
                 )}
-
-                {/* Matches */}
-                <div style={{ marginTop: 24 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: S.textMuted, textTransform: 'uppercase', marginBottom: 12 }}>
-                    {aiResult.matches.length} Template Matches
+                
+                {aiResult.matches.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, padding: '0 8px' }}>
+                      <div style={{ fontSize: 11, fontWeight: 900, color: S.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                        Structural Matches ({aiResult.matches.length})
+                      </div>
+                      <div style={{ flex: 1, height: 1, background: S.border, opacity: 0.5 }} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 16 }}>
+                      {aiResult.matches.map((m, i) => (
+                        <ResponseCard 
+                          key={i} 
+                          item={m.item} 
+                          copiedId={copiedId} 
+                          onCopy={handleCopy} 
+                          expanded={true}
+                          onToggle={() => {}}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {aiResult.matches.map((m, i) => (
-                      <ResponseCard 
-                        key={i} 
-                        item={m.item} 
-                        copiedId={copiedId} 
-                        onCopy={handleCopy} 
-                        expanded={true}
-                        onToggle={() => {}}
-                      />
-                    ))}
-                  </div>
-                </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -457,39 +833,74 @@ const Templates = () => {
 
         {/* BROWSER SECTION */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-             <h2 style={{ fontSize: 18, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0, color: S.textPrimary }}>Browse Categories</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, padding: '0 8px' }}>
+             <h2 style={{ fontSize: 18, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0, color: S.textPrimary }}>
+               {searchQuery ? 'Search Results' : 'Template Library'}
+             </h2>
              <div style={{ flex: 1, height: 1, background: S.border }} />
-          </div>
-
-          {/* SEARCH BAR */}
-          <div className="tour-template-search" style={{ position: 'relative', marginBottom: 32 }}>
-            <Search size={18} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: S.orange }} />
-            <input 
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Filter by keyword, title, or trigger..."
-              style={{
-                width: '100%', background: S.surface, border: `1px solid ${S.orange}30`,
-                borderRadius: 16, padding: '18px 18px 18px 52px', color: S.textPrimary,
-                fontSize: 14, outline: 'none', transition: 'all 0.2s',
-                boxShadow: `0 4px 20px rgba(0,0,0,0.4)`
-              }}
-            />
           </div>
 
           {/* BROWSE LIST */}
           <div className="tour-template-browse grid grid-cols-1 xl:grid-cols-2 gap-x-8 gap-y-12">
             {filteredData.map((cat, idx) => (
-              <div key={idx}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                  <span style={{ fontSize: 20 }}>{cat.category.split(' ')[0]}</span>
-                  <h3 style={{ fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: S.textSecondary, margin: 0 }}>
-                    {cat.category}
-                  </h3>
-                  <div style={{ flex: 1, height: 1, background: S.border }} />
+              <div key={idx} style={{ 
+                background: 'rgba(255,255,255,0.01)', borderRadius: 24, padding: 24, 
+                border: `1px solid ${S.border}`,
+                transition: 'transform 0.3s'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+                  {/* Safely handle emoji extraction */}
+                  {cat.category.match(/\p{Emoji}/u) ? (
+                    <div style={{ 
+                      width: 44, height: 44, borderRadius: 14, background: 'rgba(255,255,255,0.03)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+                      flexShrink: 0, border: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      {cat.category.match(/\p{Emoji}/u)[0]}
+                    </div>
+                  ) : (
+                    <div style={{ 
+                      width: 44, height: 44, borderRadius: 14, background: `${S.orange}10`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0, border: `1px solid ${S.orange}20`
+                    }}>
+                      <Zap size={20} color={S.orange} />
+                    </div>
+                  )}
+                  
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <h3 style={{ 
+                        fontSize: 15, fontWeight: 900, textTransform: 'uppercase', 
+                        letterSpacing: '0.05em', color: S.textPrimary, margin: 0,
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                      }}>
+                        {cat.category.replace(/\p{Emoji}/u, '').trim()}
+                      </h3>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`Delete entire "${cat.category}" category and all its templates?`)) {
+                            actions.deleteRecord('supportTemplates', cat.id).then(() => actions.refreshAll());
+                          }
+                        }}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444',
+                          padding: '6px', borderRadius: '8px', cursor: 'pointer', display: 'flex',
+                          alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: S.textMuted, textTransform: 'uppercase', marginTop: 4 }}>
+                      {cat.templates.length} Optimized Responses
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {cat.templates.map((t, tIdx) => (
                     <ResponseCard 
                       key={tIdx} 
@@ -503,6 +914,20 @@ const Templates = () => {
                 </div>
               </div>
             ))}
+            {filteredData.length === 0 && (
+              <div style={{ gridColumn: '1 / -1', padding: '100px 0', textAlign: 'center', color: S.textMuted }}>
+                <div style={{ 
+                  width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.02)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px'
+                }}>
+                  <Search size={32} opacity={0.2} />
+                </div>
+                <p style={{ fontSize: 16, fontWeight: 700, color: S.textSecondary }}>No intelligence matches found.</p>
+                <p style={{ fontSize: 13, maxWidth: 400, margin: '8px auto 0', lineHeight: 1.6 }}>
+                  We couldn't find any templates for your query. Try simplifying your search or use the AI Deep Analysis for natural language client messages.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

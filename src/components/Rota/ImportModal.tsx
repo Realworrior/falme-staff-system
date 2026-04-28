@@ -12,6 +12,7 @@ import {
 import { Upload, FileText, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { STAFF_CONFIG } from '../../utils/Rota/scheduleGenerator';
+import { predictMonthRota, validateRota } from '../../utils/Rota/smartPredictor';
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -19,15 +20,19 @@ interface ImportModalProps {
   onImport: (data: Record<string, Record<string, string>>, shouldReplace: boolean) => void;
   year: number;
   month: number;
+  allOverrides?: Record<string, any>;
 }
 
-export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportModalProps) {
+export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrides = {} }: ImportModalProps) {
+  const [activeTab, setActiveTab] = useState<'excel' | 'ai'>('excel');
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<string[][] | null>(null);
   const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
   const [previewRows, setPreviewRows] = useState<string[][]>([]);
   const [error, setError] = useState<string | null>(null);
   const [shouldReplace, setShouldReplace] = useState(false);
+  const [predictionResult, setPredictionResult] = useState<Record<string, Record<string, string>> | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const normalizeDate = (raw: string): string | null => {
     if (!raw) return null;
@@ -168,6 +173,36 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
     setParsedData(null);
     setPreviewRows([]);
   };
+
+  const handlePredict = () => {
+    try {
+      const predicted = predictMonthRota(year, month, allOverrides);
+      setPredictionResult(predicted);
+      
+      const { errors } = validateRota(predicted as any);
+      setValidationErrors(errors);
+      
+      // Setup preview for AI prediction
+      const dates = Object.keys(predicted).sort();
+      const headers = ['Date', ...STAFF_CONFIG.map(s => s.name)];
+      setPreviewHeaders(headers);
+      
+      const previewRows = dates.slice(0, 10).map(date => {
+        return [date, ...STAFF_CONFIG.map(s => predicted[date][s.name])];
+      });
+      setPreviewRows(previewRows);
+      setError(null);
+    } catch (err: any) {
+      setError('Prediction failed: ' + err.message);
+    }
+  };
+
+  const handleApplyPrediction = () => {
+    if (predictionResult) {
+      onImport(predictionResult as any, true); // AI prediction always replaces
+      onClose();
+    }
+  };
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-[#0a0a0f] border-white/5 text-white max-w-7xl w-[98vw] max-h-[92vh] p-0 overflow-hidden rounded-[32px] flex flex-col">
@@ -175,96 +210,146 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
           <DialogHeader>
             <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
               <Upload className="text-red-500" />
-              Advanced Matrix Import
+              Advanced Matrix Sync
             </DialogTitle>
             <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2 flex items-center justify-between">
-              <span>Sync Operational Data with Atomic Override support</span>
+              <span>Operational Data & AI Prediction Support</span>
               <span className="text-red-500/80 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
                 Target: {format(new Date(year, month, 1), 'MMMM yyyy')}
               </span>
             </DialogDescription>
           </DialogHeader>
+
+          {/* Tab Selector */}
+          <div className="flex gap-2 mt-6">
+            <button 
+              onClick={() => { setActiveTab('excel'); setError(null); setPreviewRows([]); }}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'excel' ? 'bg-white/10 text-white border border-white/10' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              Excel Import
+            </button>
+            <button 
+              onClick={() => { setActiveTab('ai'); setError(null); setPreviewRows([]); }}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'ai' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              AI Prediction
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-          {!file ? (
-            <div 
-              className="border-2 border-dashed border-white/10 rounded-3xl p-12 flex flex-col items-center justify-center gap-4 hover:border-red-500/30 transition-all group cursor-pointer relative"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                const droppedFile = e.dataTransfer.files[0];
-                if (droppedFile) handleFileChange({ target: { files: [droppedFile] } } as any);
-              }}
-            >
-              <input 
-                type="file" 
-                accept=".csv" 
-                className="absolute inset-0 opacity-0 cursor-pointer" 
-                onChange={handleFileChange}
-              />
-              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-500 group-hover:scale-110 group-hover:text-red-500 transition-all">
-                <FileText size={32} />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-bold">Drop CSV file here or click to browse</p>
-                <div className="mt-2 text-[9px] text-gray-600 uppercase tracking-widest font-black flex flex-col gap-1">
-                   <span>Handles Dates like "Wed, 1" (Matrix Format)</span>
-                   <span>Supports Comma and Semicolon delimiters</span>
+          {activeTab === 'excel' ? (
+            !file ? (
+              <div 
+                className="border-2 border-dashed border-white/10 rounded-3xl p-12 flex flex-col items-center justify-center gap-4 hover:border-red-500/30 transition-all group cursor-pointer relative"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const droppedFile = e.dataTransfer.files[0];
+                  if (droppedFile) handleFileChange({ target: { files: [droppedFile] } } as any);
+                }}
+              >
+                <input 
+                  type="file" 
+                  accept=".csv" 
+                  className="absolute inset-0 opacity-0 cursor-pointer" 
+                  onChange={handleFileChange}
+                />
+                <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-500 group-hover:scale-110 group-hover:text-red-500 transition-all">
+                  <FileText size={32} />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-bold">Drop CSV file here or click to browse</p>
+                  <div className="mt-2 text-[9px] text-gray-600 uppercase tracking-widest font-black flex flex-col gap-1">
+                     <span>Handles Dates like "Wed, 1" (Matrix Format)</span>
+                     <span>Supports Comma and Semicolon delimiters</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-emerald-500/20 text-emerald-500 rounded-lg">
+                      <CheckCircle2 size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold">{file.name}</p>
+                      <p className="text-[10px] text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => { setFile(null); setPreviewRows([]); }}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-500"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Advanced Options */}
+                <div className="p-4 bg-white/2 border border-white/10 rounded-2xl">
+                   <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldReplace ? 'bg-red-500 border-red-500 shadow-lg shadow-red-500/20' : 'border-white/20 bg-black/40'}`}>
+                         <input 
+                           type="checkbox" 
+                           className="hidden" 
+                           checked={shouldReplace} 
+                           onChange={(e) => setShouldReplace(e.target.checked)} 
+                         />
+                         {shouldReplace && <CheckCircle2 size={12} className="text-white" />}
+                      </div>
+                      <div className="flex flex-col">
+                         <span className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-red-400 transition-colors">
+                            Replace Existing Shifts
+                         </span>
+                         <span className="text-[8px] text-gray-500 uppercase tracking-tighter mt-0.5">
+                            Wipe all manual overrides for the dates in this file before import
+                         </span>
+                      </div>
+                   </label>
+                </div>
+              </motion.div>
+            )
           ) : (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
-            >
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-500/20 text-emerald-500 rounded-lg">
-                    <CheckCircle2 size={16} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold">{file.name}</p>
-                    <p className="text-[10px] text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
-                  </div>
+            <div className="space-y-6">
+              <div className="p-8 border border-white/5 bg-white/[0.02] rounded-[32px] text-center">
+                <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+                  <ShieldAlert className="text-red-500" size={32} />
                 </div>
+                <h4 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Smart Prediction System</h4>
+                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed">
+                  Generates an optimized matrix for May based on April's operational flow.
+                  Adheres to 20-shift limits, sequence constraints, and coverage requirements.
+                </p>
                 <button 
-                  onClick={() => { setFile(null); setPreviewRows([]); }}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-500"
+                  onClick={handlePredict}
+                  className="mt-8 px-12 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 transition-all active:scale-95"
                 >
-                  <X size={16} />
+                  Generate AI Prediction
                 </button>
               </div>
 
-              {/* Advanced Options */}
-              <div className="p-4 bg-white/2 border border-white/10 rounded-2xl">
-                 <label className="flex items-center gap-3 cursor-pointer group">
-                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldReplace ? 'bg-red-500 border-red-500 shadow-lg shadow-red-500/20' : 'border-white/20 bg-black/40'}`}>
-                       <input 
-                         type="checkbox" 
-                         className="hidden" 
-                         checked={shouldReplace} 
-                         onChange={(e) => setShouldReplace(e.target.checked)} 
-                       />
-                       {shouldReplace && <CheckCircle2 size={12} className="text-white" />}
-                    </div>
-                    <div className="flex flex-col">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-red-400 transition-colors">
-                          Replace Existing Shifts
-                       </span>
-                       <span className="text-[8px] text-gray-500 uppercase tracking-tighter mt-0.5">
-                          Wipe all manual overrides for the dates in this file before import
-                       </span>
-                    </div>
-                 </label>
-              </div>
+              {validationErrors.length > 0 && (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 text-amber-500 text-[10px] font-black uppercase tracking-widest">
+                    <AlertCircle size={14} />
+                    Constraint Warnings ({validationErrors.length})
+                  </div>
+                  <div className="max-h-24 overflow-y-auto text-[9px] text-amber-500/70 space-y-1 scrollbar-thin">
+                    {validationErrors.map((err, i) => <div key={i}>• {err}</div>)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
               {previewRows.length > 0 && (
                 <div className="space-y-2">
                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Live Grid Preview</p>
-                   {/* FIXED SCROLL CONTAINER */}
                     <div className="relative group/scroll bg-black/40 border border-white/5 rounded-2xl">
                       <div className="overflow-x-auto overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-red-600 scrollbar-track-white/5">
                         <table className="w-full text-left whitespace-nowrap table-auto min-w-max">
@@ -306,8 +391,6 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
                    </div>
                 </div>
               )}
-            </motion.div>
-          )}
 
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs">
@@ -318,22 +401,33 @@ export function ImportModal({ isOpen, onClose, onImport, year, month }: ImportMo
         </div>
 
         <div className="p-8 border-t border-white/5 bg-black/40">
-           <div className="flex flex-col sm:flex-row gap-4">
-             <button 
-               onClick={onClose}
-               className="order-2 sm:order-1 flex-1 px-8 py-4 rounded-2xl border border-white/5 text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all text-center"
-             >
-               Cancel
-             </button>
-             <button 
-               onClick={handleProcess}
-               disabled={!file}
-               className="order-1 sm:order-2 flex-[2] px-8 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all text-center flex items-center justify-center gap-2"
-             >
-               {shouldReplace ? <ShieldAlert size={14} className="text-white animate-pulse" /> : <Upload size={14} />}
-               {shouldReplace ? 'Execute Full Wipe & Sync' : 'Execute Matrix Sync'}
-             </button>
-           </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button 
+                onClick={onClose}
+                className="order-2 sm:order-1 flex-1 px-8 py-4 rounded-2xl border border-white/5 text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all text-center"
+              >
+                Cancel
+              </button>
+              {activeTab === 'excel' ? (
+                <button 
+                  onClick={handleProcess}
+                  disabled={!file}
+                  className="order-1 sm:order-2 flex-[2] px-8 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all text-center flex items-center justify-center gap-2"
+                >
+                  {shouldReplace ? <ShieldAlert size={14} className="text-white animate-pulse" /> : <Upload size={14} />}
+                  {shouldReplace ? 'Execute Full Wipe & Sync' : 'Execute Matrix Sync'}
+                </button>
+              ) : (
+                <button 
+                  onClick={handleApplyPrediction}
+                  disabled={!predictionResult}
+                  className="order-1 sm:order-2 flex-[2] px-8 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all text-center flex items-center justify-center gap-2"
+                >
+                  <ShieldAlert size={14} className="text-white" />
+                  Apply & Wipe Overrides
+                </button>
+              )}
+            </div>
         </div>
       </DialogContent>
     </Dialog>

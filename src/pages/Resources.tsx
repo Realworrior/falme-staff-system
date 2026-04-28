@@ -182,29 +182,29 @@ const sportsData: Record<Sport, SportData> = {
         id: "outcome",
         label: "Who Takes the Points?",
         tagline:
-          "Match result markets — the purest form of prediction.",
+          "Match result markets  -  the purest form of prediction.",
         icon: "🏆",
         colorKey: "green",
         markets: [
           {
             id: "1x2",
-            name: "1X2 — Match Result",
+            name: "1X2  -  Match Result",
             summary:
               "The most fundamental market in soccer. Predict the final outcome after 90 minutes of play including stoppage time.",
             complexity: "beginner",
             options: [
               {
-                name: "1 — Home Win",
+                name: "1  -  Home Win",
                 description:
                   "The home team (first-listed) wins the match.",
               },
               {
-                name: "X — Draw",
+                name: "X  -  Draw",
                 description:
                   "The match ends level: 0-0, 1-1, 2-2, etc.",
               },
               {
-                name: "2 — Away Win",
+                name: "2  -  Away Win",
                 description:
                   "The away team (second-listed) wins the match.",
               },
@@ -222,21 +222,21 @@ const sportsData: Record<Sport, SportData> = {
             id: "double-chance",
             name: "Double Chance",
             summary:
-              "Cover two of the three possible 1X2 outcomes with a single bet — reduced risk, lower odds.",
+              "Cover two of the three possible 1X2 outcomes with a single bet  -  reduced risk, lower odds.",
             complexity: "beginner",
             options: [
               {
-                name: "1X — Home or Draw",
+                name: "1X  -  Home or Draw",
                 description:
                   "Loses only if the away team wins outright.",
               },
               {
-                name: "X2 — Draw or Away",
+                name: "X2  -  Draw or Away",
                 description:
                   "Loses only if the home team wins outright.",
               },
               {
-                name: "12 — Home or Away",
+                name: "12  -  Home or Away",
                 description:
                   "Loses only if the match ends in a draw.",
               },
@@ -246,7 +246,7 @@ const sportsData: Record<Sport, SportData> = {
             id: "dnb",
             name: "Draw No Bet (DNB)",
             summary:
-              "Back a team to win with a safety net — your stake is refunded if the match is drawn.",
+              "Back a team to win with a safety net  -  your stake is refunded if the match is drawn.",
             complexity: "beginner",
             options: [
               {
@@ -276,7 +276,7 @@ const sportsData: Record<Sport, SportData> = {
         markets: [
           {
             id: "over-under",
-            name: "Over / Under — Total Goals",
+            name: "Over / Under  -  Total Goals",
             summary:
               "Wager on the combined number of goals scored by both teams across the full 90 minutes.",
             complexity: "beginner",
@@ -313,23 +313,23 @@ const sportsData: Record<Sport, SportData> = {
             id: "btts",
             name: "Both Teams To Score (BTTS)",
             summary:
-              "A simple Yes/No wager — will both teams find the net at least once?",
+              "A simple Yes/No wager  -  will both teams find the net at least once?",
             complexity: "beginner",
             options: [
               {
-                name: "BTTS — Yes",
+                name: "BTTS  -  Yes",
                 description:
                   "Both teams score at least one goal (e.g., 1-1, 2-1, 1-3).",
               },
               {
-                name: "BTTS — No",
+                name: "BTTS  -  No",
                 description:
                   "At least one team fails to score (e.g., 0-0, 1-0, 0-2).",
               },
             ],
             variations: [
-              "BTTS in Both Halves — both teams must score in the first half AND the second half.",
-              "BTTS + Over/Under — combined market requiring both teams to score AND total goals to clear/miss a line.",
+              "BTTS in Both Halves  -  both teams must score in the first half AND the second half.",
+              "BTTS + Over/Under  -  combined market requiring both teams to score AND total goals to clear/miss a line.",
             ],
           },
           {
@@ -360,7 +360,7 @@ const sportsData: Record<Sport, SportData> = {
               },
             ],
             variations: [
-              "Multi-Scores — select multiple scorelines in one bet (e.g., 1-0, 2-0, or 3-0). More coverage, lower odds.",
+              "Multi-Scores  -  select multiple scorelines in one bet (e.g., 1-0, 2-0, or 3-0). More coverage, lower odds.",
             ],
           },
           {
@@ -386,11 +386,11 @@ const sportsData: Record<Sport, SportData> = {
               {
                 name: "7+ Goals",
                 description:
-                  "Seven or more goals — a rare thriller.",
+                  "Seven or more goals  -  a rare thriller.",
               },
             ],
             variations: [
-              "First Team to Score — Home, Away, or None (0-0 result only).",
+              "First Team to Score  -  Home, Away, or None (0-0 result only).",
             ],
           },
         ],
@@ -409,7 +409,7 @@ const sportsData: Record<Sport, SportData> = {
               "Betfalme's primary handicap format. A virtual goal advantage or deficit is applied before kick-off, creating three possible outcomes.",
             complexity: "intermediate",
             example:
-              "Sassuolo vs. Como — Handicap 0:1 (Como starts +1):\n• Handicap 1 (Sassuolo –1): Sassuolo must win by 2+ goals.\n• Handicap X (Draw –1): Sassuolo wins by exactly 1 goal (e.g., 1-0, 2-1).\n• Handicap 2 (Como +1): Como wins the match OR it ends in a draw.",
+              "Sassuolo vs. Como  -  Handicap 0:1 (Como starts +1):\n• Handicap 1 (Sassuolo –1): Sassuolo must win by 2+ goals.\n• Handicap X (Draw –1): Sassuolo wins by exactly 1 goal (e.g., 1-0, 2-1).\n• Handicap 2 (Como +1): Como wins the match OR it ends in a draw.",
           },
           {
             id: "asian-handicap",
@@ -445,7 +445,7 @@ const sportsData: Record<Sport, SportData> = {
       {
         id: "halftime",
         label: "By the Clock",
-        tagline: "First 45 minutes — a match within the match.",
+        tagline: "First 45 minutes  -  a match within the match.",
         icon: "⏱️",
         colorKey: "blue",
         markets: [
@@ -475,7 +475,7 @@ const sportsData: Record<Sport, SportData> = {
             id: "ht-ou",
             name: "Half-Time Over / Under",
             summary:
-              "Total goals in the first half only — markets are typically tighter than full-match lines.",
+              "Total goals in the first half only  -  markets are typically tighter than full-match lines.",
             complexity: "intermediate",
             options: [
               {
@@ -518,11 +518,11 @@ const sportsData: Record<Sport, SportData> = {
             id: "first-goalscorer",
             name: "First Goalscorer",
             summary:
-              "Your selected player must score the very first goal of the match — not just any goal.",
+              "Your selected player must score the very first goal of the match  -  not just any goal.",
             complexity: "advanced",
             rules: [
               {
-                text: "Own goals are ignored for this market — the bet remains active for the next goal scored by an outfield player.",
+                text: "Own goals are ignored for this market  -  the bet remains active for the next goal scored by an outfield player.",
               },
             ],
           },
@@ -596,7 +596,7 @@ const sportsData: Record<Sport, SportData> = {
               {
                 name: "Total Shots Over/Under",
                 description:
-                  "All shots combined — on target, off target, and blocked.",
+                  "All shots combined  -  on target, off target, and blocked.",
               },
               {
                 name: "Shots on Target Over/Under",
@@ -625,7 +625,7 @@ const sportsData: Record<Sport, SportData> = {
       {
         id: "outcome",
         label: "Who Takes the W?",
-        tagline: "Pick a winner — with or without overtime.",
+        tagline: "Pick a winner  -  with or without overtime.",
         icon: "🏆",
         colorKey: "orange",
         markets: [
@@ -642,9 +642,9 @@ const sportsData: Record<Sport, SportData> = {
                   "Most common format. If tied after Q4, the winner after overtime decides the bet.",
               },
               {
-                name: "Excluding Overtime — 3-Way",
+                name: "Excluding Overtime  -  3-Way",
                 description:
-                  "Includes a Draw option. If tied at end of Q4, the Draw bet wins — even if one team wins in OT.",
+                  "Includes a Draw option. If tied at end of Q4, the Draw bet wins  -  even if one team wins in OT.",
               },
             ],
           },
@@ -682,7 +682,7 @@ const sportsData: Record<Sport, SportData> = {
               "Bet on whether the combined final score of both teams goes above or below a set number.",
             complexity: "beginner",
             example:
-              "Over/Under 200.5 Points:\n• Over 200.5 — Wins if the combined score is 201 or more.\n• Under 200.5 — Wins if the combined score is 200 or fewer.",
+              "Over/Under 200.5 Points:\n• Over 200.5  -  Wins if the combined score is 201 or more.\n• Under 200.5  -  Wins if the combined score is 200 or fewer.",
           },
         ],
       },
@@ -695,7 +695,7 @@ const sportsData: Record<Sport, SportData> = {
         markets: [
           {
             id: "quarter-betting",
-            name: "Quarter Betting — Q1, Q2, Q3, Q4",
+            name: "Quarter Betting  -  Q1, Q2, Q3, Q4",
             summary:
               "Each of the four quarters carries its own isolated set of markets, settled at the buzzer.",
             complexity: "intermediate",
@@ -719,7 +719,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "half-betting",
-            name: "Half Betting — 1st & 2nd Half",
+            name: "Half Betting  -  1st & 2nd Half",
             summary:
               "Markets that roll up the first two or last two quarters into a single bet.",
             complexity: "intermediate",
@@ -763,7 +763,7 @@ const sportsData: Record<Sport, SportData> = {
             id: "player-rebounds-assists",
             name: "Player Rebounds / Assists",
             summary:
-              "Same Over/Under concept applied to rebounds or assists — use official box-score statistics.",
+              "Same Over/Under concept applied to rebounds or assists  -  use official box-score statistics.",
             complexity: "intermediate",
           },
           {
@@ -803,13 +803,13 @@ const sportsData: Record<Sport, SportData> = {
             complexity: "beginner",
             rules: [
               {
-                text: "Overtime — Most Match Result and Total Points markets include overtime unless explicitly stated otherwise.",
+                text: "Overtime  -  Most Match Result and Total Points markets include overtime unless explicitly stated otherwise.",
               },
               {
-                text: "Postponed Games — If a game is not played within 24–48 hours of the scheduled time (varies by league), bets are typically voided.",
+                text: "Postponed Games  -  If a game is not played within 24–48 hours of the scheduled time (varies by league), bets are typically voided.",
               },
               {
-                text: "Abandoned Games — Bets are usually voided unless the market outcome was already determined (e.g., 1st Half markets if the game is abandoned in Q3).",
+                text: "Abandoned Games  -  Bets are usually voided unless the market outcome was already determined (e.g., 1st Half markets if the game is abandoned in Q3).",
               },
             ],
           },
@@ -828,15 +828,15 @@ const sportsData: Record<Sport, SportData> = {
       {
         id: "match",
         label: "Who Walks Off Victorious?",
-        tagline: "Match-level markets — no draws, ever.",
+        tagline: "Match-level markets  -  no draws, ever.",
         icon: "🏆",
         colorKey: "yellow",
         markets: [
           {
             id: "match-winner",
-            name: "Match Winner — 2-Way",
+            name: "Match Winner  -  2-Way",
             summary:
-              "Bet on which player wins the match. Tennis always produces a winner — no draw option exists.",
+              "Bet on which player wins the match. Tennis always produces a winner  -  no draw option exists.",
             complexity: "beginner",
             options: [
               {
@@ -858,9 +858,9 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "set-betting",
-            name: "Set Betting — Correct Score in Sets",
+            name: "Set Betting  -  Correct Score in Sets",
             summary:
-              "Predict the final match score in sets — a harder call than a simple winner bet.",
+              "Predict the final match score in sets  -  a harder call than a simple winner bet.",
             complexity: "intermediate",
             options: [
               {
@@ -879,7 +879,7 @@ const sportsData: Record<Sport, SportData> = {
             id: "set-handicap",
             name: "Set Handicap",
             summary:
-              "A handicap applied to the number of sets won — forces a player to dominate to cover.",
+              "A handicap applied to the number of sets won  -  forces a player to dominate to cover.",
             complexity: "intermediate",
             example:
               "Player 2 (–1.5 Sets) in a best-of-3:\n• Wins only if Player 2 wins the match 2-0.\n• Loses if Player 2 wins 2-1 or loses the match.",
@@ -895,7 +895,7 @@ const sportsData: Record<Sport, SportData> = {
         markets: [
           {
             id: "total-games",
-            name: "Total Games — Over / Under",
+            name: "Total Games  -  Over / Under",
             summary:
               "Wager on the total number of games played across all sets in the entire match.",
             complexity: "intermediate",
@@ -906,7 +906,7 @@ const sportsData: Record<Sport, SportData> = {
             id: "game-handicap",
             name: "Game Handicap",
             summary:
-              "A handicap applied to the total games won by each player across the whole match — can flip a loser into a winner.",
+              "A handicap applied to the total games won by each player across the whole match  -  can flip a loser into a winner.",
             complexity: "advanced",
             example:
               "Player 1 (+4.5 Games), match: Player 1 loses 6-4, 6-4\n→ Player 1 wins 8 games; Player 2 wins 12.\n→ With +4.5: Player 1's handicap total = 12.5 > 12\n→ BET WINS despite the match loss.",
@@ -931,7 +931,7 @@ const sportsData: Record<Sport, SportData> = {
             id: "set-total-games",
             name: "1st Set Total Games",
             summary:
-              "Over/Under for the number of games played in the first set only — excludes all subsequent sets.",
+              "Over/Under for the number of games played in the first set only  -  excludes all subsequent sets.",
             complexity: "intermediate",
             options: [
               {
@@ -966,13 +966,13 @@ const sportsData: Record<Sport, SportData> = {
             complexity: "beginner",
             rules: [
               {
-                text: "Match Tie-Break — In some tournaments a 10-point tie-break replaces the 3rd set. It counts as ONE set and ONE game for all betting purposes.",
+                text: "Match Tie-Break  -  In some tournaments a 10-point tie-break replaces the 3rd set. It counts as ONE set and ONE game for all betting purposes.",
               },
               {
-                text: "Change of Surface — If a match is moved from outdoor to indoor court (or vice versa), bets remain active.",
+                text: "Change of Surface  -  If a match is moved from outdoor to indoor court (or vice versa), bets remain active.",
               },
               {
-                text: "Delays — Rain delays are common in tennis. Bets stay active as long as the match is eventually completed within the tournament's scheduled timeframe.",
+                text: "Delays  -  Rain delays are common in tennis. Bets stay active as long as the match is eventually completed within the tournament's scheduled timeframe.",
               },
             ],
           },
@@ -983,14 +983,14 @@ const sportsData: Record<Sport, SportData> = {
 
   combos: {
     label: "Logic & Combos",
-    icon: "🔗",
+    icon: "� - ",
     accent: "#a855f7",
     accentLight: "rgba(168,85,247,0.15)",
     accentBorder: "rgba(168,85,247,0.4)",
     categories: [
       {
         id: "and",
-        label: "AND — Every Condition Must Be Met",
+        label: "AND  -  Every Condition Must Be Met",
         tagline:
           "All conditions must hold simultaneously. One failure = full loss.",
         icon: "✅",
@@ -1057,7 +1057,7 @@ const sportsData: Record<Sport, SportData> = {
       },
       {
         id: "or",
-        label: "OR — One Condition Is Enough",
+        label: "OR  -  One Condition Is Enough",
         tagline:
           "Bet wins if at least one specified outcome occurs.",
         icon: "🔀",
@@ -1065,23 +1065,23 @@ const sportsData: Record<Sport, SportData> = {
         markets: [
           {
             id: "double-chance-or",
-            name: "Double Chance — The Pure OR Market",
+            name: "Double Chance  -  The Pure OR Market",
             summary:
-              "Double Chance is logically an OR between two 1X2 outcomes — easier to win, lower odds.",
+              "Double Chance is logically an OR between two 1X2 outcomes  -  easier to win, lower odds.",
             complexity: "beginner",
             options: [
               {
-                name: "1X — Home OR Draw",
+                name: "1X  -  Home OR Draw",
                 description:
                   "Wins if the home team wins OR the match is drawn.",
               },
               {
-                name: "X2 — Draw OR Away",
+                name: "X2  -  Draw OR Away",
                 description:
                   "Wins if the match is drawn OR the away team wins.",
               },
               {
-                name: "12 — Home OR Away",
+                name: "12  -  Home OR Away",
                 description:
                   "Wins on any decisive result. Only a draw loses.",
               },
@@ -1094,11 +1094,11 @@ const sportsData: Record<Sport, SportData> = {
               "A hybrid: an OR condition (Double Chance) combined with an AND condition (BTTS). Two operators in one market.",
             complexity: "advanced",
             example:
-              "Home or Draw AND BTTS Yes:\n• Condition 1 (OR): Home wins OR it's a draw.\n• Condition 2 (AND): Both teams score.\n• Wins: 1-1, 2-1, 2-2, 3-1, 3-2\n• Loses: 1-0 (home wins but only one team scores)\n• Loses: 1-2 (both score but away wins — Cond 1 fails).",
+              "Home or Draw AND BTTS Yes:\n• Condition 1 (OR): Home wins OR it's a draw.\n• Condition 2 (AND): Both teams score.\n• Wins: 1-1, 2-1, 2-2, 3-1, 3-2\n• Loses: 1-0 (home wins but only one team scores)\n• Loses: 1-2 (both score but away wins  -  Cond 1 fails).",
           },
           {
             id: "multiscores",
-            name: "Multi-Scores — OR of Exact Scorelines",
+            name: "Multi-Scores  -  OR of Exact Scorelines",
             summary:
               "Select multiple correct scores in a single bet. A logical OR across two or more precise outcomes.",
             complexity: "advanced",
@@ -1109,14 +1109,14 @@ const sportsData: Record<Sport, SportData> = {
       },
       {
         id: "no-nor",
-        label: "NO / NOR — Betting on Absence",
+        label: "NO / NOR  -  Betting on Absence",
         tagline: "Win when specific events do NOT happen.",
         icon: "🚫",
         colorKey: "red",
         markets: [
           {
             id: "btts-no",
-            name: "BTTS — NO",
+            name: "BTTS  -  NO",
             summary:
               "Wins if at most one team scores. The logical negation of BTTS-Yes.",
             complexity: "beginner",
@@ -1124,29 +1124,29 @@ const sportsData: Record<Sport, SportData> = {
               {
                 name: "Winning Scores",
                 description:
-                  "0-0, 1-0, 0-1, 2-0, 0-2 — any score where one side is kept off the board.",
+                  "0-0, 1-0, 0-1, 2-0, 0-2  -  any score where one side is kept off the board.",
               },
               {
                 name: "Losing Scores",
                 description:
-                  "1-1, 2-1, 1-2, 2-2 — any score where both teams register at least one goal.",
+                  "1-1, 2-1, 1-2, 2-2  -  any score where both teams register at least one goal.",
               },
             ],
           },
           {
             id: "clean-sheet",
-            name: "Clean Sheet — Home / Away",
+            name: "Clean Sheet  -  Home / Away",
             summary:
               "Equivalent to 'the opposing team scores ZERO goals.' Straightforward but powerful.",
             complexity: "intermediate",
             options: [
               {
-                name: "Home Clean Sheet — Yes",
+                name: "Home Clean Sheet  -  Yes",
                 description:
                   "Away team scores NO goals. Home team does not concede.",
               },
               {
-                name: "Home Clean Sheet — No",
+                name: "Home Clean Sheet  -  No",
                 description:
                   "Away team scores at least 1 goal. Home team concedes.",
               },
@@ -1156,7 +1156,7 @@ const sportsData: Record<Sport, SportData> = {
             id: "neither-team",
             name: "Neither Team to Score (NOR)",
             summary:
-              "A joint negation — Home scores NO goals AND Away scores NO goals. The only winning result is 0-0.",
+              "A joint negation  -  Home scores NO goals AND Away scores NO goals. The only winning result is 0-0.",
             complexity: "intermediate",
             rules: [
               { text: "Only winning score: 0-0." },
@@ -1167,7 +1167,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "no-draw-btts",
-            name: "No Draw BTTS — NO",
+            name: "No Draw BTTS  -  NO",
             summary:
               "A complex negation: the match will NOT end in a scoring draw. Scoring draws (1-1, 2-2) are the ONLY losing outcomes.",
             complexity: "advanced",
@@ -1175,7 +1175,7 @@ const sportsData: Record<Sport, SportData> = {
               {
                 name: "Losing Scenarios",
                 description:
-                  "1-1, 2-2, 3-3 — any drawn match where both teams scored.",
+                  "1-1, 2-2, 3-3  -  any drawn match where both teams scored.",
               },
               {
                 name: "Winning Scenarios",
@@ -1202,22 +1202,22 @@ const sportsData: Record<Sport, SportData> = {
             complexity: "beginner",
             options: [
               {
-                name: "AND — Conjunction",
+                name: "AND  -  Conjunction",
                 description:
                   "ALL listed conditions must be true for the bet to win.",
               },
               {
-                name: "OR — Disjunction",
+                name: "OR  -  Disjunction",
                 description:
                   "AT LEAST ONE listed condition must be true for the bet to win.",
               },
               {
-                name: "NO / NOT — Negation",
+                name: "NO / NOT  -  Negation",
                 description:
                   "The specified event must NOT happen for the bet to win.",
               },
               {
-                name: "NOR — Joint Negation",
+                name: "NOR  -  Joint Negation",
                 description:
                   "NEITHER event A NOR event B must happen for the bet to win.",
               },
@@ -1344,7 +1344,7 @@ const crashGames: CrashGame[] = [
   {
     name: "Tower",
     theme: "Building",
-    themeIcon: "🏗️",
+    themeIcon: "� - ️",
     mechanic: "Climb tower; cash out before collapse.",
     historyHow: '"Floor History" tab.',
   },
@@ -1443,7 +1443,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> =
       label: "Crash Games",
       icon: "🚀",
       tagline:
-        "65+ multiplier games — mechanics & history lookup",
+        "65+ multiplier games  -  mechanics & history lookup",
       accent: "#ef4444",
       accentLight: "rgba(239,68,68,0.15)",
       accentBorder: "rgba(239,68,68,0.4)",
@@ -1615,7 +1615,7 @@ function MarketCard({
                       </span>
                       <span className="text-white/50 text-sm">
                         {" "}
-                        — {opt.description}
+                         -  {opt.description}
                       </span>
                     </div>
                   </div>
@@ -1814,11 +1814,11 @@ function CrashGamesView({ accent }: { accent: string }) {
         </div>
         <p className="text-white/60 text-sm leading-relaxed">
           A multiplier starts at{" "}
-          <span className="text-red-400">1.00×</span> and climbs
+          <span className="text-red-400">1.00� - </span> and climbs
           continuously. Players must click{" "}
           <span className="text-white/80">"Cash Out"</span>{" "}
           before the game crashes. Cash out in time → win your
-          stake × multiplier. Wait too long → lose your stake.
+          stake � -  multiplier. Wait too long → lose your stake.
           Each round is independently determined.
         </p>
         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
@@ -1826,7 +1826,7 @@ function CrashGamesView({ accent }: { accent: string }) {
             ["Place Bet", "Set stake before round starts", "1"],
             [
               "Watch Multiplier Climb",
-              "1.00× → 2.00× → 10.00× ...",
+              "1.00� -  → 2.00� -  → 10.00� -  ...",
               "2",
             ],
             [
@@ -1861,7 +1861,7 @@ function CrashGamesView({ accent }: { accent: string }) {
           className="text-white mb-4 flex items-center gap-2"
           style={{ fontSize: "1rem" }}
         >
-          <span>📋</span> History Checking Procedures —
+          <span>📋</span> History Checking Procedures  - 
           Universal Steps
         </h3>
         {[
@@ -1875,7 +1875,7 @@ function CrashGamesView({ accent }: { accent: string }) {
           ],
           [
             "Platform History",
-            'If a user disputes a result, check "My Bets" on the main Betfalme site — records Bet ID, Stake, and Settlement Status.',
+            'If a user disputes a result, check "My Bets" on the main Betfalme site  -  records Bet ID, Stake, and Settlement Status.',
           ],
         ].map(([step, desc], i) => (
           <div key={i} className="flex gap-4 mb-4 last:mb-0">
@@ -2164,7 +2164,7 @@ function CasinoView({ accent }: { accent: string }) {
               className="text-yellow-400"
               style={{ fontSize: "1rem" }}
             >
-              Slots — Mechanics & RTP
+              Slots  -  Mechanics & RTP
             </h3>
             <p className="text-white/45 text-sm">
               Return to Player typically ranges from 94% to 98%
@@ -2183,7 +2183,7 @@ function CasinoView({ accent }: { accent: string }) {
               Set the coin value or bet level, then click{" "}
               <span className="text-white/90">"Spin."</span>{" "}
               Matching symbols on paylines trigger wins. Each
-              game's rules differ — check the paytable.
+              game's rules differ  -  check the paytable.
             </p>
           </div>
           <div
@@ -2239,10 +2239,10 @@ function CasinoView({ accent }: { accent: string }) {
               className="text-yellow-400"
               style={{ fontSize: "1rem" }}
             >
-              Live Casino — Real Dealers, Real Time
+              Live Casino  -  Real Dealers, Real Time
             </h3>
             <p className="text-white/45 text-sm">
-              Streamed from professional studios — results via
+              Streamed from professional studios  -  results via
               physical action, not RNG
             </p>
           </div>
@@ -2273,7 +2273,7 @@ function CasinoView({ accent }: { accent: string }) {
         </div>
         <p className="mt-3 text-white/40 text-sm px-1">
           Users can chat with the dealer and other players in
-          real time. Results are physical — no RNG involved.
+          real time. Results are physical  -  no RNG involved.
         </p>
       </div>
 
@@ -2294,8 +2294,8 @@ function CasinoView({ accent }: { accent: string }) {
           </div>
           <p className="text-white/60 text-sm leading-relaxed">
             Digital versions of classic casino games. RNG-based
-            and faster-paced than live casino. Same core rules —
-            Blackjack, Roulette, Baccarat — but without the
+            and faster-paced than live casino. Same core rules  - 
+            Blackjack, Roulette, Baccarat  -  but without the
             dealer stream.
           </p>
         </div>
@@ -2406,7 +2406,7 @@ function OddsView({ accent }: { accent: string }) {
           </div>
         </div>
         <p className="text-white/30 text-xs mt-3">
-          Formula: Stake × Odds = Total Return · Profit = Total
+          Formula: Stake � -  Odds = Total Return · Profit = Total
           Return − Stake
         </p>
       </div>
@@ -2486,7 +2486,7 @@ function PromotionsView({ accent }: { accent: string }) {
               className="text-purple-300"
               style={{ fontSize: "1rem" }}
             >
-              Welcome Bonus — 100% First Deposit
+              Welcome Bonus  -  100% First Deposit
             </h3>
             <p className="text-white/40 text-sm">
               Up to KES 10,000
@@ -2518,7 +2518,7 @@ function PromotionsView({ accent }: { accent: string }) {
             </div>
             <p className="text-white/65 text-sm">
               Bonus must be wagered a specified number of times
-              (e.g., 5×) on odds of{" "}
+              (e.g., 5� - ) on odds of{" "}
               <span className="text-white/90">
                 1.50 or higher
               </span>{" "}
@@ -2591,7 +2591,7 @@ function PromotionsView({ accent }: { accent: string }) {
             style={{ background: "rgba(168,85,247,0.07)" }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🔗</span>
+              <span className="text-xl">� - </span>
               <span
                 className="text-purple-300"
                 style={{ fontSize: "0.95rem" }}
@@ -2661,7 +2661,7 @@ function SupportView({ accent }: { accent: string }) {
       response:
         "Advise the user to refresh the page or clear their browser cache.",
       important:
-        "The bet result is already recorded on the server — the game state will restore.",
+        "The bet result is already recorded on the server  -  the game state will restore.",
     },
     {
       issue: "Deposit Not Reflecting",
@@ -2675,7 +2675,7 @@ function SupportView({ accent }: { accent: string }) {
   const escalation = [
     {
       level: 1,
-      title: "Level 1 — Agent",
+      title: "Level 1  -  Agent",
       color: "#22c55e",
       items: [
         "General queries",
@@ -2685,7 +2685,7 @@ function SupportView({ accent }: { accent: string }) {
     },
     {
       level: 2,
-      title: "Level 2 — Supervisor",
+      title: "Level 2  -  Supervisor",
       color: "#f59e0b",
       items: [
         "Bonus disputes",
@@ -2695,7 +2695,7 @@ function SupportView({ accent }: { accent: string }) {
     },
     {
       level: 3,
-      title: "Level 3 — Technical / Compliance",
+      title: "Level 3  -  Technical / Compliance",
       color: "#ef4444",
       items: [
         "Suspected bugs",
@@ -2881,7 +2881,7 @@ function ComplianceView({ accent }: { accent: string }) {
             className="text-emerald-400 mb-2"
             style={{ fontSize: "0.95rem" }}
           >
-            Age Verification — Strictly 18+
+            Age Verification  -  Strictly 18+
           </h4>
           <p className="text-white/60 text-sm leading-relaxed">
             Any user suspected of being a minor must have their
