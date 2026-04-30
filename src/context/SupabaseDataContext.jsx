@@ -82,13 +82,20 @@ export const SupabaseDataProvider = ({ children }) => {
       .on('postgres_changes', { event: '*', table: 'aviator_logs', schema: 'public' }, () => {
         supabase.from('aviator_logs').select('*').order('created_at', { ascending: false }).then(({data}) => setLogs(data || []));
       })
-      .on('postgres_changes', { event: '*', table: 'rota_overrides', schema: 'public' }, async () => {
-        const { data } = await supabase.from('rota_overrides').select('*');
-        const overridesMap = {};
-        (data || []).forEach(item => {
-          overridesMap[item.date || item.id] = item;
-        });
-        setOverrides(overridesMap);
+      .on('postgres_changes', { event: '*', table: 'rota_overrides', schema: 'public' }, async (payload) => {
+        // Optimized: Only update the specific record that changed instead of fetching all
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          setOverrides(prev => ({
+            ...prev,
+            [payload.new.date || payload.new.id]: payload.new
+          }));
+        } else if (payload.eventType === 'DELETE') {
+          setOverrides(prev => {
+            const next = { ...prev };
+            delete next[payload.old.date || payload.old.id];
+            return next;
+          });
+        }
       })
       .subscribe();
 
@@ -313,29 +320,38 @@ export const SupabaseDataProvider = ({ children }) => {
       const existingMap = {};
       (existingRecords || []).forEach(r => existingMap[r[idField]] = r);
 
-      // 2. Prepare payload
+      // 2. Prepare payload with primary key awareness
       const payload = ids.map(id => {
         const updates = updatesMap[id];
         const existing = existingMap[id];
 
+        let finalShifts = updates.shifts || {};
         if (existing && !replace && targetTable === 'rota_overrides') {
-          return {
-            [idField]: id,
-            ...updates,
-            shifts: { ...existing.shifts, ...(updates.shifts || {}) }
-          };
+          finalShifts = { ...existing.shifts, ...finalShifts };
         }
-        return { [idField]: id, ...updates };
+
+        const entry = {
+          [idField]: id,
+          ...updates,
+          shifts: finalShifts
+        };
+
+        // Crucial: If row exists, include its internal ID to ensure an UPDATE occurs, not a duplicate INSERT
+        if (existing && existing.id) {
+          entry.id = existing.id;
+        }
+
+        return entry;
       });
 
-      // 3. Atomic Upsert
+      // 3. Atomic Upsert (Supabase will use PK 'id' if present, otherwise fallback to unique constraints)
       const { error: upsertError } = await supabase
         .from(targetTable)
-        .upsert(payload, { onConflict: idField });
+        .upsert(payload);
 
       if (upsertError) throw upsertError;
 
-      await fetchAllData();
+      // No need for a full fetchAllData here as the real-time subscription will handle updates
       return { success: true };
     } catch (err) {
       console.error(`Bulk update failed for ${table}:`, err);
