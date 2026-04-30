@@ -201,22 +201,20 @@ export default function App() {
     if (entries.length === 0) return;
 
     try {
-      if (shouldReplace) {
-        showToast('Replacing existing shifts...', 'info');
-      }
+      showToast(shouldReplace ? 'Executing Full Matrix Wipe & Sync...' : 'Merging Matrix Data...', 'info');
 
-      const promises = entries.map(([date, staffOverrides]) => {
-        // We wrap the staffOverrides in the 'shifts' key to match the DB schema
-        // We pass shouldReplace to control whether to merge or overwrite for each day
-        return actions.updateRecord('rotaOverrides', date, { shifts: staffOverrides }, shouldReplace);
+      // Convert data to the format expected by bulkUpdateRecords
+      const updatesMap: Record<string, any> = {};
+      entries.forEach(([date, staffOverrides]) => {
+        updatesMap[date] = { shifts: staffOverrides };
       });
+
+      await actions.bulkUpdateRecords('rotaOverrides', updatesMap, shouldReplace);
       
-      await Promise.all(promises);
-      await actions.refreshAll();
-      showToast(shouldReplace ? 'Rota wipe & sync complete' : 'Rota specialized update complete', 'success');
+      showToast(shouldReplace ? 'Full Rota wipe & sync complete' : 'Rota specialized merge complete', 'success');
     } catch (err) {
       console.error('Bulk import error:', err);
-      showToast('Import failed - check console', 'error');
+      showToast('Import failed - check matrix constraints', 'error');
     }
   };
 

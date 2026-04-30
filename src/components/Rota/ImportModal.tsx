@@ -51,21 +51,19 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
       }
     }
 
-    // 2. Try standard date parsing
-    try {
-      // Try to handle DD/MM/YYYY or DD-MM-YYYY specifically for local formats
-      const parts = clean.split(/[-/]/);
-      if (parts.length >= 2) {
-        let d = new Date(clean);
-        // If it looks like DD/MM
-        if (parts.length === 2 || (parts.length === 3 && parts[2].length <= 2)) {
-          const day = parseInt(parts[0]);
-          const monthIdx = parseInt(parts[1]) - 1;
-          d = new Date(year, monthIdx, day);
-        }
-        if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
-      }
+    // 2. Try explicit DD/MM/YYYY or DD-MM-YYYY
+    const dmyMatch = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+    if (dmyMatch) {
+      const day = parseInt(dmyMatch[1]);
+      const monthIdx = parseInt(dmyMatch[2]) - 1;
+      let fullYear = parseInt(dmyMatch[3]);
+      if (fullYear < 100) fullYear += 2000;
+      const d = new Date(fullYear, monthIdx, day);
+      if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
+    }
 
+    // 3. Try standard date parsing
+    try {
       const d = new Date(clean);
       if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
     } catch {
@@ -360,30 +358,47 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                               ))}
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-white/5">
-                            {previewRows.map((row, i) => (
-                              <tr key={i} className="text-gray-300 text-[10px]">
-                                {row.map((val, j) => {
-                                  const rawVal = val?.trim() || '';
-                                  const displayVal = j === 0 ? rawVal.replace(/,+/g, ', ') : cleanShift(rawVal);
-                                  return (
-                                    <td key={j} className={`p-3 ${j === 0 ? 'sticky left-0 bg-[#12121a] font-black text-white border-r border-white/5' : ''}`}>
-                                      {j === 0 ? displayVal : (
-                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black ${
-                                          displayVal === 'AM' ? 'bg-orange-500/10 text-orange-400' :
-                                          displayVal === 'PM' ? 'bg-emerald-500/10 text-emerald-400' :
-                                          displayVal === 'NT' ? 'bg-indigo-500/10 text-indigo-400' :
-                                          displayVal === 'OFF' ? 'bg-red-500/10 text-red-500' :
-                                          'bg-gray-500/10 text-gray-500'
-                                        }`}>
-                                          {displayVal || '-'}
-                                        </span>
-                                      )}
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            ))}
+                          <tbody className="divide-y divide-white/5">                            {previewRows.map((row, i) => {
+                              const dateKey = row[0]; // First col is date
+                              const dbDateOverrides = allOverrides[dateKey] || {};
+
+                              return (
+                                <tr key={i} className="text-gray-300 text-[10px]">
+                                  {row.map((val, j) => {
+                                    const rawVal = val?.trim() || '';
+                                    const displayVal = j === 0 ? rawVal.replace(/,+/g, ', ') : cleanShift(rawVal);
+                                    
+                                    // Check if this specific cell has a database value
+                                    const staffName = previewHeaders[j];
+                                    const dbVal = (j > 0 && !shouldReplace) ? dbDateOverrides[staffName] : null;
+                                    const isFromDb = dbVal && !displayVal;
+                                    const finalVal = displayVal || dbVal;
+
+                                    return (
+                                      <td key={j} className={`p-3 ${j === 0 ? 'sticky left-0 bg-[#12121a] font-black text-white border-r border-white/5' : ''}`}>
+                                        {j === 0 ? displayVal : (
+                                          <div className="flex flex-col gap-1">
+                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black ${
+                                              finalVal === 'AM' ? 'bg-orange-500/10 text-orange-400' :
+                                              finalVal === 'PM' ? 'bg-emerald-500/10 text-emerald-400' :
+                                              finalVal === 'NT' ? 'bg-indigo-500/10 text-indigo-400' :
+                                              finalVal === 'OFF' ? 'bg-red-500/10 text-red-500' :
+                                              'bg-gray-500/10 text-gray-500'
+                                            }`}>
+                                              {finalVal || '-'}
+                                            </span>
+                                            {isFromDb && (
+                                              <span className="text-[6px] text-blue-400 uppercase font-black tracking-tighter">from db</span>
+                                            )}
+                                          </div>
+                                        )}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              );
+                            })}
+
                           </tbody>
                         </table>
                       </div>

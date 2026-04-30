@@ -82,12 +82,13 @@ export const SupabaseDataProvider = ({ children }) => {
       .on('postgres_changes', { event: '*', table: 'aviator_logs', schema: 'public' }, () => {
         supabase.from('aviator_logs').select('*').order('created_at', { ascending: false }).then(({data}) => setLogs(data || []));
       })
-      .on('postgres_changes', { event: '*', table: 'rota_overrides', schema: 'public' }, () => {
-        supabase.from('rota_overrides').select('*').then(({data}) => {
-          const overridesMap = {};
-          (data || []).forEach(item => overridesMap[item.date || item.id] = item);
-          setOverrides(overridesMap);
+      .on('postgres_changes', { event: '*', table: 'rota_overrides', schema: 'public' }, async () => {
+        const { data } = await supabase.from('rota_overrides').select('*');
+        const overridesMap = {};
+        (data || []).forEach(item => {
+          overridesMap[item.date || item.id] = item;
         });
+        setOverrides(overridesMap);
       })
       .subscribe();
 
@@ -266,24 +267,80 @@ export const SupabaseDataProvider = ({ children }) => {
     if (table === 'aviatorLogs') targetTable = 'aviator_logs';
     
     const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
-    const { data } = await supabase.from(targetTable).select('*').eq(idField, recordId).single();
     
-    if (data) {
-        let finalUpdates = updates;
-        // Special Handling for Rota JSONB merging (Skip if replace is true)
-        if (targetTable === 'rota_overrides' && updates.shifts && data.shifts && !replace) {
-            finalUpdates = {
-                ...updates,
-                shifts: { ...data.shifts, ...updates.shifts }
-            };
-        }
-        const { error: updError } = await supabase.from(targetTable).update(finalUpdates).eq(idField, recordId);
-        if (updError) throw updError;
-    } else {
-        const { error: insError } = await supabase.from(targetTable).insert([{ [idField]: recordId, ...updates }]);
-        if (insError) throw insError;
+    try {
+      const { data, error: fetchError } = await supabase.from(targetTable).select('*').eq(idField, recordId).maybeSingle();
+      
+      if (fetchError) throw fetchError;
+
+      if (data) {
+          let finalUpdates = updates;
+          if (targetTable === 'rota_overrides' && updates.shifts && data.shifts && !replace) {
+              finalUpdates = {
+                  ...updates,
+                  shifts: { ...data.shifts, ...updates.shifts }
+              };
+          }
+          const { error: updError } = await supabase.from(targetTable).update(finalUpdates).eq(idField, recordId);
+          if (updError) throw updError;
+      } else {
+          const { error: insError } = await supabase.from(targetTable).insert([{ [idField]: recordId, ...updates }]);
+          if (insError) throw insError;
+      }
+      return { success: true };
+    } catch (err) {
+      console.error(`Update failed for ${table}:`, err);
+      throw err;
     }
-    return { success: true };
+  };
+
+  const bulkUpdateRecords = async (table, updatesMap, replace = false) => {
+    let targetTable = table;
+    if (table === 'rotaOverrides') targetTable = 'rota_overrides';
+    
+    const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
+    const ids = Object.keys(updatesMap);
+
+    try {
+      // 1. Fetch current states for merging
+      const { data: existingRecords, error: fetchError } = await supabase
+        .from(targetTable)
+        .select('*')
+        .in(idField, ids);
+
+      if (fetchError) throw fetchError;
+
+      const existingMap = {};
+      (existingRecords || []).forEach(r => existingMap[r[idField]] = r);
+
+      // 2. Prepare payload
+      const payload = ids.map(id => {
+        const updates = updatesMap[id];
+        const existing = existingMap[id];
+
+        if (existing && !replace && targetTable === 'rota_overrides') {
+          return {
+            [idField]: id,
+            ...updates,
+            shifts: { ...existing.shifts, ...(updates.shifts || {}) }
+          };
+        }
+        return { [idField]: id, ...updates };
+      });
+
+      // 3. Atomic Upsert
+      const { error: upsertError } = await supabase
+        .from(targetTable)
+        .upsert(payload, { onConflict: idField });
+
+      if (upsertError) throw upsertError;
+
+      await fetchAllData();
+      return { success: true };
+    } catch (err) {
+      console.error(`Bulk update failed for ${table}:`, err);
+      throw err;
+    }
   };
 
   const createRecord = async (table, record) => {
@@ -314,6 +371,7 @@ export const SupabaseDataProvider = ({ children }) => {
     actions: {
       createRecord, 
       updateRecord, 
+      bulkUpdateRecords,
       deleteRecord,
       setAllData,
       createTicket, 
