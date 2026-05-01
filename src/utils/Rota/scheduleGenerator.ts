@@ -6,6 +6,7 @@ export interface StaffMember {
   name: string;
   type: 'NT_ROTATION' | 'AM_ROTATION';
   cycleOffset: number; // Days offset from the base cycle start
+  transportRate?: number; // KSh per PM/NT shift
 }
 
 export interface Shift {
@@ -30,17 +31,19 @@ export const CYCLE_18: ShiftType[] = [
 ];
 
 // Staff configuration with balanced offsets for the 18-day cycle
+// Added default transport rates (can be overridden in Admin Panel)
 export const STAFF_CONFIG: StaffMember[] = [
-  { name: 'Ascar', type: 'NT_ROTATION', cycleOffset: 0 },
-  { name: 'Chris', type: 'NT_ROTATION', cycleOffset: 2 },
-  { name: 'Faye', type: 'NT_ROTATION', cycleOffset: 4 },
-  { name: 'Joyce', type: 'NT_ROTATION', cycleOffset: 6 },
-  { name: 'Linda', type: 'AM_ROTATION', cycleOffset: 8 },
-  { name: 'Nickson', type: 'AM_ROTATION', cycleOffset: 10 },
-  { name: 'Pauline', type: 'NT_ROTATION', cycleOffset: 12 },
-  { name: 'Sylvia', type: 'NT_ROTATION', cycleOffset: 14 },
-  { name: 'Terry', type: 'NT_ROTATION', cycleOffset: 16 },
+  { name: 'Ascar', type: 'NT_ROTATION', cycleOffset: 0, transportRate: 350 },
+  { name: 'Chris', type: 'NT_ROTATION', cycleOffset: 2, transportRate: 400 },
+  { name: 'Faye', type: 'NT_ROTATION', cycleOffset: 4, transportRate: 300 },
+  { name: 'Joyce', type: 'NT_ROTATION', cycleOffset: 6, transportRate: 450 },
+  { name: 'Linda', type: 'AM_ROTATION', cycleOffset: 8, transportRate: 350 },
+  { name: 'Nickson', type: 'AM_ROTATION', cycleOffset: 10, transportRate: 400 },
+  { name: 'Pauline', type: 'NT_ROTATION', cycleOffset: 12, transportRate: 300 },
+  { name: 'Sylvia', type: 'NT_ROTATION', cycleOffset: 14, transportRate: 450 },
+  { name: 'Terry', type: 'NT_ROTATION', cycleOffset: 16, transportRate: 400 },
 ].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
 
 // Color mapping for each staff member
 export type PersonColor = { bg: string; text: string; bar: string };

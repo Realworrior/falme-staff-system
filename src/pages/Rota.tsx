@@ -17,6 +17,7 @@ import { ScheduleCalendar } from '../components/Rota/ScheduleCalendar';
 import { ShiftMates } from '../components/Rota/ShiftMates';
 import { AnalyticsDashboard } from '../components/Rota/AnalyticsDashboard';
 import { ImportModal } from '../components/Rota/ImportModal';
+import { TransportDashboard } from '../components/Rota/TransportDashboard';
 import { 
   STAFF_CONFIG, 
   STAFF_COLORS, 
@@ -136,6 +137,7 @@ export default function App() {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [desktopView, setDesktopView] = useState<"grid" | "list">("grid");
   const { showToast } = useToast();
+  const [activeTab, setActiveTab] = useState<'matrix' | 'analytics' | 'admin' | 'transport'>('matrix');
 
   const [isReady, setIsReady] = useState(false);
   const { overrides: rawOverrides, loading: globalLoading, actions, user } = useSupabaseData();
@@ -152,6 +154,42 @@ export default function App() {
     const timer = setTimeout(() => setIsReady(true), 150);
     return () => clearTimeout(timer);
   }, []);
+
+  // Transport state derived from special keys in overrides
+  const transportConfig = useMemo(() => {
+    const config = (rawOverrides as any)['config_transport'] || {};
+    return {
+      rates: config.rates || {},
+      history: config.history || []
+    };
+  }, [rawOverrides]);
+
+  const handleSaveTransportRates = async (rates: Record<string, number>) => {
+    try {
+      const currentConfig = (rawOverrides as any)['config_transport'] || {};
+      await actions.updateRecord('rota_overrides', 'config_transport', { 
+        ...currentConfig,
+        rates 
+      });
+      showToast('Transport rates updated', 'success');
+    } catch (err) {
+      showToast('Failed to save rates', 'error');
+    }
+  };
+
+  const handleProcessPayment = async (payment: any) => {
+    try {
+      const currentConfig = (rawOverrides as any)['config_transport'] || {};
+      const history = [payment, ...(currentConfig.history || [])].slice(0, 50);
+      await actions.updateRecord('rota_overrides', 'config_transport', {
+        ...currentConfig,
+        history
+      });
+      showToast('Payment milestone recorded', 'success');
+    } catch (err) {
+      showToast('Failed to record payment', 'error');
+    }
+  };
 
   const overrides = useMemo(() => {
     if (!isReady || !rawOverrides) return {};
@@ -431,7 +469,7 @@ export default function App() {
 
         {/* Manager Command Center - Gated Row */}
         <AnimatePresence>
-          {isManagerMode && (
+          {isManagerMode && activeTab === 'admin' && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -468,12 +506,37 @@ export default function App() {
           style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
         >
           <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="flex items-center gap-2 px-2 py-1 bg-white/5 rounded-lg border border-white/5 w-fit">
-              <TrendingUp size={12} className="text-gray-500" />
-              <span className="text-[10px] font-black uppercase text-gray-500 tracking-[0.2em]">Filter Personnel:</span>
+            <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
+              <button
+                onClick={() => { setActiveTab('matrix'); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100); }}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matrix' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Matrix
+              </button>
+              <button
+                onClick={() => { setActiveTab('analytics'); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'analytics' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Trends
+              </button>
+              <button
+                onClick={() => setActiveTab('transport')}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'transport' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Transport
+              </button>
+              {isManagerMode && (
+                <button
+                  onClick={() => setActiveTab('admin')}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'admin' ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  Admin
+                </button>
+              )}
             </div>
             
-            <div className="flex flex-wrap gap-x-4 gap-y-3 items-center">
+            {activeTab === 'matrix' && (
+            <div className="flex flex-wrap gap-x-4 gap-y-3 items-center ml-auto">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -554,14 +617,55 @@ export default function App() {
         {/* ── Content ── */}
         <div className="flex-1 overflow-y-auto px-1 md:px-0">
           <div className="p-0 md:p-4 print:p-0">
-            <ScheduleCalendar
-              schedule={schedule}
-              selectedStaff={selectedStaff}
-              onDayClick={handleDayClick}
-              overrides={overrides}
-              desktopView={desktopView}
-            />
+            {activeTab === 'matrix' && (
+              <ScheduleCalendar
+                schedule={schedule}
+                selectedStaff={selectedStaff}
+                onDayClick={handleDayClick}
+                overrides={overrides}
+                desktopView={desktopView}
+                year={year}
+                month={month}
+              />
+            )}
+            {activeTab === 'analytics' && <AnalyticsDashboard analytics={analytics} />}
+            {activeTab === 'transport' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="pb-12"
+              >
+                <TransportDashboard 
+                  schedule={schedule}
+                  savedRates={transportConfig.rates}
+                  paymentHistory={transportConfig.history}
+                  onSaveRates={handleSaveTransportRates}
+                  onPay={handleProcessPayment}
+                />
+              </motion.div>
+            )}
+            {activeTab === 'admin' && isManagerMode && (
+               <div className="space-y-6">
+                  {/* Existing Admin Panel Content (Import, Export, etc) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="p-8 rounded-[40px] bg-white/[0.03] border border-white/10">
+                       <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-4 flex items-center gap-2">
+                         <Upload className="text-blue-500" />
+                         Data Import
+                       </h3>
+                       <button 
+                         onClick={() => setIsImportModalOpen(true)}
+                         className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest transition-all"
+                       >
+                         Launch Excel Sync
+                       </button>
+                    </div>
+                    {/* ... other admin actions ... */}
+                  </div>
+               </div>
+            )}
           </div>
+
 
           {/* Impact Analysis Section (Moved to Bottom) */}
           <motion.div 
