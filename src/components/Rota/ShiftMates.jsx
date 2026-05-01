@@ -1,20 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { DailySchedule, ShiftType, STAFF_COLORS } from '../../utils/Rota/scheduleGenerator';
+import { STAFF_COLORS } from '../../utils/Rota/scheduleGenerator';
 import { Edit2, X, Clock, Trash2, Plus } from 'lucide-react';
 
-interface ShiftMatesProps {
-  selectedDate: Date;
-  schedule: DailySchedule[];
-  selectedStaff: string | null;
-  isManagerMode?: boolean;
-  onOverride?: (date: string, staff: string, type: ShiftType) => void;
-  overrides?: Record<string, Record<string, string>>;
-  onClose?: () => void;
-}
-
-const SHIFT_META: Record<string, { label: string; time: string; color: string; bg: string; textColor: string }> = {
+const SHIFT_META = {
   AM: { 
     label: 'AM', 
     time: '07:30 - 15:30', 
@@ -53,20 +43,20 @@ export function ShiftMates({
   onOverride,
   overrides = {},
   onClose,
-}: ShiftMatesProps) {
+}) {
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
   const daySchedule = schedule.find(d => format(d.date, 'yyyy-MM-dd') === dateKey);
 
   // Group staff by their current shift
   const shifts = daySchedule
     ? [
-        { id: 'AM' as ShiftType, staff: daySchedule.shifts.AM },
-        { id: 'PM' as ShiftType, staff: daySchedule.shifts.PM },
-        { id: 'NT' as ShiftType, staff: daySchedule.shifts.NT },
+        { id: 'AM', staff: daySchedule.shifts.AM },
+        { id: 'PM', staff: daySchedule.shifts.PM },
+        { id: 'NT', staff: daySchedule.shifts.NT },
       ].filter(s => s.staff.length > 0)
     : [];
 
-  const handleShiftChange = (staff: string, type: ShiftType) => {
+  const handleShiftChange = (staff, type) => {
     onOverride?.(dateKey, staff, type);
   };
 
@@ -147,7 +137,7 @@ export function ShiftMates({
                       
                       {isManagerMode && (
                         <div className="absolute -top-12 left-0 z-10 flex gap-1 p-1 bg-[#1a1a24] rounded-2xl border border-white/10 shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity">
-                          {(['AM', 'PM', 'NT', 'OFF'] as ShiftType[]).map(type => (
+                          {['AM', 'PM', 'NT', 'OFF'].map(type => (
                             <button
                               key={type}
                               onClick={() => handleShiftChange(staffName, type)}

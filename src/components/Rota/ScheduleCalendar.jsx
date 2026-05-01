@@ -2,25 +2,15 @@ import React, { useEffect } from 'react';
 import { format, getDay } from 'date-fns';
 import { STAFF_THEME } from '../../utils/Rota/scheduleGenerator';
 
-interface ScheduleCalendarProps {
-  schedule: any[];
-  selectedStaff: string | null;
-  onDayClick: (date: Date) => void;
-  overrides?: Record<string, Record<string, string>>;
-  desktopView?: "grid" | "list";
-  year: number;
-  month: number;
-}
-
 const DEFAULT_COLOR = { bg: "#334466", text: "#aabbcc", bar: "#2a3a55" };
 
-function getColor(name: string) {
+function getColor(name) {
   return STAFF_THEME[name] ?? DEFAULT_COLOR;
 }
 
-function Pill({ name, size = "sm" }: { name: string; size?: "xs" | "sm" | "md" | "lg" }) {
+function Pill({ name, size = "sm" }) {
   const c = getColor(name);
-  const styles: Record<string, React.CSSProperties> = {
+  const styles = {
     xs: { fontSize: "10px", padding: "1px 6px",  borderRadius: 99 },
     sm: { fontSize: "11px", padding: "2.5px 8px",  borderRadius: 99 },
     md: { fontSize: "12px", padding: "3px 10px", borderRadius: 99 },
@@ -33,7 +23,7 @@ function Pill({ name, size = "sm" }: { name: string; size?: "xs" | "sm" | "md" |
   );
 }
 
-function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimmed, overrideActive }: any) {
+function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimmed, overrideActive }) {
   const ntStaff = data.NT.length > 0 ? data.NT[0] : null;
   const ntColor = ntStaff ? getColor(ntStaff) : null;
   const dayStr = format(scheduleDate, 'd');
@@ -70,14 +60,14 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
         <div className="flex-1 flex flex-col gap-1 min-w-0 overflow-hidden">
           <span style={{ fontSize: 9, color: "#3d7ee6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>AM</span>
           <div className="flex flex-wrap gap-1">
-            {data.AM.map((n: string) => <Pill key={n} name={n} size="sm" />)}
+            {data.AM.map((n) => <Pill key={n} name={n} size="sm" />)}
           </div>
         </div>
         <div style={{ width: 1.5, backgroundColor: "rgba(255,255,255,0.2)", alignSelf: "stretch", margin: "0 4px" }} />
         <div className="flex-1 flex flex-col gap-1 min-w-0 overflow-hidden">
           <span style={{ fontSize: 9, color: "#28a87c", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>PM</span>
           <div className="flex flex-wrap gap-[3px]">
-            {data.PM.map((n: string) => <Pill key={n} name={n} size="sm" />)}
+            {data.PM.map((n) => <Pill key={n} name={n} size="sm" />)}
           </div>
         </div>
       </div>
@@ -85,7 +75,7 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
       <div className="shrink-0 mt-auto">
         <div style={{ height: 1, backgroundColor: "rgba(255,255,255,0.1)" }} />
         {data.NT.length > 0 ? (
-          <div className="flex items-center gap-2 px-2 py-[5px]" style={{ backgroundColor: ntColor!.bar }}>
+          <div className="flex items-center gap-2 px-2 py-[5px]" style={{ backgroundColor: ntColor.bar }}>
             <span style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>NT</span>
             <span style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>{data.NT.join(', ')}</span>
           </div>
@@ -99,7 +89,7 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
   );
 }
 
-function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimmed, overrideActive }: any) {
+function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimmed, overrideActive }) {
   const ntStaff = data.NT.length > 0 ? data.NT[0] : null;
   const ntColor = ntStaff ? getColor(ntStaff) : null;
   const dowLabel = format(scheduleDate, 'EEE');
@@ -141,20 +131,20 @@ function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, di
           <div className="flex items-start gap-2 px-3 py-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
             <span className="shrink-0" style={{ fontSize: 10, color: "#3d7ee6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", paddingTop: 3, width: 32 }}>AM</span>
             <div className="flex flex-wrap gap-1.5 flex-1">
-              {data.AM.map((n: string) => <Pill key={n} name={n} size="md" />)}
+              {data.AM.map((n) => <Pill key={n} name={n} size="md" />)}
             </div>
           </div>
           <div className="flex items-start gap-2 px-3 py-2">
             <span className="shrink-0" style={{ fontSize: 10, color: "#28a87c", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", paddingTop: 3, width: 32 }}>PM</span>
             <div className="flex flex-wrap gap-1.5 flex-1">
-              {data.PM.map((n: string) => <Pill key={n} name={n} size="md" />)}
+              {data.PM.map((n) => <Pill key={n} name={n} size="md" />)}
             </div>
           </div>
         </div>
       </div>
 
       {data.NT.length > 0 ? (
-        <div className="flex items-center gap-3 px-4 py-2.5" style={{ backgroundColor: ntColor!.bar, borderTop: "1px solid rgba(0,0,0,0.15)" }}>
+        <div className="flex items-center gap-3 px-4 py-2.5" style={{ backgroundColor: ntColor.bar, borderTop: "1px solid rgba(0,0,0,0.15)" }}>
           <span style={{ fontSize: 10, color: "rgba(255,255,255,0.8)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em" }}>Night</span>
           <span style={{ fontSize: 14, color: "#fff", fontWeight: 700 }}>{data.NT.join(', ')}</span>
         </div>
@@ -167,7 +157,7 @@ function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, di
   );
 }
 
-export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, overrides = {}, desktopView = "grid", year, month }: ScheduleCalendarProps) {
+export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, overrides = {}, desktopView = "grid", year, month }) {
   useEffect(() => {
     // Auto-scroll to today on mobile or if relevant
     const today = new Date();
@@ -187,15 +177,15 @@ export function ScheduleCalendar({ schedule, selectedStaff, onDayClick, override
   const firstDay = schedule[0].date;
   const startDay = getDay(firstDay); 
 
-  const calendarSlots: (any | null)[] = [
+  const calendarSlots = [
     ...Array(startDay).fill(null),
     ...schedule,
   ];
 
-  const renderCard = (day: any, isMobileList: boolean) => {
+  const renderCard = (day, isMobileList) => {
     const isToday = format(day.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
     const hasSelectedStaff = selectedStaff
-      ? Object.values(day.shifts).some((arr: any) => arr.includes(selectedStaff))
+      ? Object.values(day.shifts).some((arr) => arr.includes(selectedStaff))
       : false;
 
     const filteredData = selectedStaff ? {

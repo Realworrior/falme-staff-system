@@ -1,13 +1,9 @@
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { MonthlyAnalytics, STAFF_COLORS } from '../../utils/Rota/scheduleGenerator';
+import { STAFF_COLORS } from '../../utils/Rota/scheduleGenerator';
 import { format } from 'date-fns';
 
-interface AnalyticsDashboardProps {
-  analytics: MonthlyAnalytics;
-}
-
-export function AnalyticsDashboard({ analytics }: AnalyticsDashboardProps) {
+export function AnalyticsDashboard({ analytics }) {
   const staffChartData = analytics.staffStats.map(stat => ({
     name: stat.name,
     AM: stat.amShifts,
@@ -135,7 +131,6 @@ export function AnalyticsDashboard({ analytics }: AnalyticsDashboardProps) {
               </div>
             </div>
             
-            {/* Hover Decor */}
             <div className="absolute -bottom-2 -right-2 w-16 h-16 rounded-full opacity-10 group-hover:scale-150 transition-transform duration-500" style={{ backgroundColor: STAFF_COLORS[stat.name] }} />
           </motion.div>
         ))}
