@@ -123,7 +123,7 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
 };
 
 // v4.5 - Atomic Sync Optimization
-export default function App() {
+export default function RotaPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -628,7 +628,7 @@ export default function App() {
                 month={month}
               />
             )}
-            {activeTab === 'analytics' && <AnalyticsDashboard analytics={analytics} />}
+            {activeTab === 'analytics' && analytics && <AnalyticsDashboard analytics={analytics} />}
             {activeTab === 'transport' && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -667,24 +667,7 @@ export default function App() {
           </div>
 
 
-          {/* Impact Analysis Section (Moved to Bottom) */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="pt-12 border-t border-white/5"
-          >
-            <div className="mb-8">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter font-heading">
-                Impact Analysis
-              </h2>
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mt-1">
-                Operational Performance & Allocation Metrics
-              </p>
-            </div>
-            <AnalyticsDashboard analytics={analytics} />
-          </motion.div>
+          </div>
         </div>
 
         {/* Shift Detail Modal (popup on date click) */}
