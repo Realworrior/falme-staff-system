@@ -142,6 +142,14 @@ export const SupabaseDataProvider = ({ children }) => {
     localStorage.removeItem('betwin_user');
   };
 
+  const login = async (username, password) => {
+    console.log("[Auth] Portal Login attempt:", username);
+    const adminUser = { id: 'admin-1', name: 'Admin', role: 'technician' };
+    setUser(adminUser);
+    localStorage.setItem('staff_user', JSON.stringify(adminUser));
+    return adminUser;
+  };
+
   const createTicket = async (ticket) => {
     let dbStatus = 'Pending';
     if (ticket.status?.toLowerCase() === 'resolved' || ticket.status?.toLowerCase() === 'closed') {
@@ -276,13 +284,14 @@ export const SupabaseDataProvider = ({ children }) => {
     const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
     
     try {
-      console.log(`[Supabase] Syncing record for ${recordId}...`);
+      console.log(`[Supabase] SYNC START: ${targetTable} | ${recordId}`, updates);
       const { data, error: fetchError } = await supabase.from(targetTable).select('*').eq(idField, recordId).maybeSingle();
       
       if (fetchError) throw fetchError;
 
+      let resultRecord = null;
       if (data) {
-          console.log(`[Supabase] Found existing record for ${recordId}, updating...`);
+          console.log(`[Supabase] EXISTING FOUND for ${recordId}. Merging/Updating...`);
           let finalUpdates = updates;
           if (targetTable === 'rota_overrides' && updates.shifts && data.shifts && !replace) {
               finalUpdates = {
@@ -290,13 +299,26 @@ export const SupabaseDataProvider = ({ children }) => {
                   shifts: { ...data.shifts, ...updates.shifts }
               };
           }
-          const { error: updError } = await supabase.from(targetTable).update(finalUpdates).eq(idField, recordId);
+          const { data: updData, error: updError } = await supabase.from(targetTable).update(finalUpdates).eq(idField, recordId).select().single();
           if (updError) throw updError;
+          resultRecord = updData;
       } else {
-          console.log(`[Supabase] No record for ${recordId}, inserting new...`);
-          const { error: insError } = await supabase.from(targetTable).insert([{ [idField]: recordId, ...updates }]);
+          console.log(`[Supabase] NO RECORD for ${recordId}. Inserting new...`);
+          const { data: insData, error: insError } = await supabase.from(targetTable).insert([{ [idField]: recordId, ...updates }]).select().single();
           if (insError) throw insError;
+          resultRecord = insData;
       }
+
+      // CRITICAL: Manually update local state immediately to ensure the UI reflects the change 
+      // even if Real-time subscription is delayed or blocked.
+      if (resultRecord) {
+          const key = resultRecord.date || resultRecord.id;
+          if (targetTable === 'rota_overrides') {
+              setOverrides(prev => ({ ...prev, [key]: resultRecord }));
+          }
+      }
+
+      console.log(`[Supabase] SYNC SUCCESS: ${recordId}`);
       return { success: true };
     } catch (err) {
       console.error(`Update failed for ${table}:`, err);

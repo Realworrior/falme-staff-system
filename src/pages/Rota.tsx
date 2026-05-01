@@ -203,13 +203,27 @@ export default function App() {
     try {
       showToast(shouldReplace ? 'Executing Full Matrix Wipe & Sync...' : 'Merging Matrix Data...', 'info');
 
-      // Convert data to the format expected by bulkUpdateRecords
       const updatesMap: Record<string, any> = {};
       entries.forEach(([date, staffOverrides]) => {
-        updatesMap[date] = { shifts: staffOverrides };
+        let finalShifts = staffOverrides;
+        
+        // If replacing, enforce Excel as the absolute source of truth.
+        // Any staff NOT in the Excel file will be set to 'OFF' to prevent 
+        // fallback to AI/Algorithmic predictions.
+        if (shouldReplace) {
+          const strictShifts: Record<string, string> = {};
+          STAFF_CONFIG.forEach(s => {
+            strictShifts[s.name] = staffOverrides[s.name] || 'OFF';
+          });
+          finalShifts = strictShifts;
+        }
+        
+        updatesMap[date] = { shifts: finalShifts };
       });
 
+      console.log(`[Import] Processing ${entries.length} days. Replace Mode: ${shouldReplace}`);
       await actions.bulkUpdateRecords('rotaOverrides', updatesMap, shouldReplace);
+
       
       showToast(shouldReplace ? 'Full Rota wipe & sync complete' : 'Rota specialized merge complete', 'success');
     } catch (err) {
