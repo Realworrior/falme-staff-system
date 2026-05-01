@@ -36,11 +36,14 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
 
   const normalizeDate = (raw: string): string | null => {
     if (!raw) return null;
-    // Clean weird characters and spaces
-    const clean = raw.trim().replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
+    // Clean weird characters, ordinal suffixes (1st, 2nd, etc), and spaces
+    const clean = raw.trim()
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/(\d+)(st|nd|rd|th)/i, '$1')
+      .replace(/\s+/g, ' ');
     
-    // 1. Check for day numbers (1, 2, 3... or Wed, 1)
-    const dayMatch = clean.match(/^([a-zA-Z]{2,3},?\s*)?(\d{1,2})$/);
+    // 1. Check for day numbers (1, 2, 3... or Wed, 1 or Wednesday 1)
+    const dayMatch = clean.match(/^([a-zA-Z]{2,10},?\s*)?(\d{1,2})$/i);
     if (dayMatch) {
       const dayNum = parseInt(dayMatch[2]);
       if (dayNum >= 1 && dayNum <= 31) {
@@ -50,6 +53,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
         } catch (e) { return null; }
       }
     }
+
 
     // 2. Try explicit DD/MM/YYYY or DD-MM-YYYY
     const dmyMatch = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);

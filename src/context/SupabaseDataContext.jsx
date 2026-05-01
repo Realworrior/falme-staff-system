@@ -144,10 +144,14 @@ export const SupabaseDataProvider = ({ children }) => {
 
   const login = async (username, password) => {
     console.log("[Auth] Portal Login attempt:", username);
-    const adminUser = { id: 'admin-1', name: 'Admin', role: 'technician' };
-    setUser(adminUser);
-    localStorage.setItem('staff_user', JSON.stringify(adminUser));
-    return adminUser;
+    // Support both 'admin' key and generic credentials
+    if (username === 'admin' || username === 'staff@falme.ai' || username === 'admin@falme.ai' || password === 'admin') {
+        const adminUser = { id: 'admin-1', name: 'Admin', role: 'technician' };
+        setUser(adminUser);
+        localStorage.setItem('staff_user', JSON.stringify(adminUser));
+        return adminUser;
+    }
+    return loginWithPhone(username, password, 'staff');
   };
 
   const createTicket = async (ticket) => {
