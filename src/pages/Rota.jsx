@@ -125,9 +125,9 @@ export default function RotaPage() {
   const { overrides: rawOverrides, loading: globalLoading, actions, user } = useSupabaseData();
   const loading = globalLoading.overrides;
 
-  // Persistence: If user is logged in, auto-enable manager mode
+  // Persistence: Only allow explicit admin/manager access
   useEffect(() => {
-    if (user && (user.role === 'staff' || user.role === 'technician')) {
+    if (user && user.role === 'admin') {
       setIsManagerMode(true);
     }
   }, [user]);
