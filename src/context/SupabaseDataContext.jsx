@@ -302,62 +302,23 @@ export const SupabaseDataProvider = ({ children }) => {
   };
 
   const bulkUpdateRecords = async (table, updatesMap, replace = false) => {
-    let targetTable = table;
-    if (table === 'rotaOverrides') targetTable = 'rota_overrides';
-    
-    const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
     const ids = Object.keys(updatesMap);
-
     try {
-      // 1. Fetch current states for merging
-      const { data: existingRecords, error: fetchError } = await supabase
-        .from(targetTable)
-        .select('*')
-        .in(idField, ids);
-
-      if (fetchError) throw fetchError;
-
-      const existingMap = {};
-      (existingRecords || []).forEach(r => existingMap[r[idField]] = r);
-
-      // 2. Prepare payload with primary key awareness
-      const payload = ids.map(id => {
-        const updates = updatesMap[id];
-        const existing = existingMap[id];
-
-        let finalShifts = updates.shifts || {};
-        if (existing && !replace && targetTable === 'rota_overrides') {
-          finalShifts = { ...existing.shifts, ...finalShifts };
-        }
-
-        const entry = {
-          [idField]: id,
-          ...updates,
-          shifts: finalShifts
-        };
-
-        // Crucial: If row exists, include its internal ID to ensure an UPDATE occurs, not a duplicate INSERT
-        if (existing && existing.id) {
-          entry.id = existing.id;
-        }
-
-        return entry;
-      });
-
-      // 3. Atomic Upsert (Supabase will use PK 'id' if present, otherwise fallback to unique constraints)
-      const { error: upsertError } = await supabase
-        .from(targetTable)
-        .upsert(payload);
-
-      if (upsertError) throw upsertError;
-
-      // No need for a full fetchAllData here as the real-time subscription will handle updates
+      // Execute sequentially to ensure complete reliability against any database constraints
+      for (const id of ids) {
+        await updateRecord(table, id, updatesMap[id], replace);
+      }
+      
+      // Optionally fetch all data once after bulk is done, if you don't trust the real-time events alone
+      // await fetchAllData();
+      
       return { success: true };
     } catch (err) {
       console.error(`Bulk update failed for ${table}:`, err);
       throw err;
     }
   };
+
 
   const createRecord = async (table, record) => {
     let targetTable = table;
