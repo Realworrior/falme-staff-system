@@ -276,11 +276,13 @@ export const SupabaseDataProvider = ({ children }) => {
     const idField = targetTable === 'rota_overrides' ? 'date' : 'id';
     
     try {
+      console.log(`[Supabase] Syncing record for ${recordId}...`);
       const { data, error: fetchError } = await supabase.from(targetTable).select('*').eq(idField, recordId).maybeSingle();
       
       if (fetchError) throw fetchError;
 
       if (data) {
+          console.log(`[Supabase] Found existing record for ${recordId}, updating...`);
           let finalUpdates = updates;
           if (targetTable === 'rota_overrides' && updates.shifts && data.shifts && !replace) {
               finalUpdates = {
@@ -291,6 +293,7 @@ export const SupabaseDataProvider = ({ children }) => {
           const { error: updError } = await supabase.from(targetTable).update(finalUpdates).eq(idField, recordId);
           if (updError) throw updError;
       } else {
+          console.log(`[Supabase] No record for ${recordId}, inserting new...`);
           const { error: insError } = await supabase.from(targetTable).insert([{ [idField]: recordId, ...updates }]);
           if (insError) throw insError;
       }

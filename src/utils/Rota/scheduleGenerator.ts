@@ -101,16 +101,27 @@ export function generateMonthSchedule(year: number, month: number, overrides: Re
     };
 
     STAFF_CONFIG.forEach(staff => {
-      // Use override if exists (case-insensitive), otherwise generate algorithmically
+      // 1. Direct match: { "StaffName": "AM" }
       const staffOverrideKey = Object.keys(dayOverrides).find(
         k => k.toLowerCase() === staff.name.toLowerCase()
       );
-      const shiftType = (staffOverrideKey ? dayOverrides[staffOverrideKey] : undefined) || getStaffShift(staff, date, baseDate).type;
+      let shiftType = staffOverrideKey ? dayOverrides[staffOverrideKey] : undefined;
+
+      // 2. Legacy/List match: { "AM": ["StaffName"] }
+      if (!shiftType) {
+        if (Array.isArray(dayOverrides.AM) && dayOverrides.AM.some((n: any) => String(n).toLowerCase() === staff.name.toLowerCase())) shiftType = 'AM';
+        else if (Array.isArray(dayOverrides.PM) && dayOverrides.PM.some((n: any) => String(n).toLowerCase() === staff.name.toLowerCase())) shiftType = 'PM';
+        else if (Array.isArray(dayOverrides.NT) && dayOverrides.NT.some((n: any) => String(n).toLowerCase() === staff.name.toLowerCase())) shiftType = 'NT';
+      }
+
+      // 3. Algorithm fallback
+      const finalShift = shiftType || getStaffShift(staff, date, baseDate).type;
       
-      if (shiftType !== 'OFF' && (shiftType === 'AM' || shiftType === 'PM' || shiftType === 'NT')) {
-        dailyShifts.shifts[shiftType].push(staff.name);
+      if (finalShift !== 'OFF' && (finalShift === 'AM' || finalShift === 'PM' || finalShift === 'NT')) {
+        dailyShifts.shifts[finalShift].push(staff.name);
       }
     });
+
 
     schedule.push(dailyShifts);
   }
