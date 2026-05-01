@@ -123,7 +123,7 @@ const generateICSContent = (selectedStaff: string, currentDate: Date, schedule: 
 
 // v4.5 - Atomic Sync Optimization
 export default function App() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1));
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
