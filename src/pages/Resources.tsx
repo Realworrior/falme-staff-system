@@ -3256,6 +3256,15 @@ export default function Resources() {
   const [section, setSection] = useState<AppSection>("guide");
   const { templates } = useSupabaseData();
 
+  // Handle section from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sec = params.get('section') as AppSection;
+    if (sec && (sec === 'guide' || sec === 'manual')) {
+      setSection(sec);
+    }
+  }, []);
+
   return (
     <div className="text-white">
       {/* ── Top Nav ── */}

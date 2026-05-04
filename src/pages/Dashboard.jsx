@@ -38,21 +38,15 @@ import { useSupabaseData } from '../context/SupabaseDataContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { templates, logs, tickets, overrides: rawOverrides, loading } = useSupabaseData();
-  
-  const isSyncing = loading.tickets || loading.templates || loading.logs || loading.overrides;
+  const { logs, overrides: rawOverrides, loading } = useSupabaseData();
   
   const overrides = useMemo(() => {
     if (!rawOverrides) return {};
     const mapped = {};
     const items = Array.isArray(rawOverrides) ? rawOverrides : Object.values(rawOverrides);
-    
     items.forEach(item => {
       const key = item.date || item.id;
-      if (key) {
-        // Match Rota.tsx logic: use item.shifts if it exists, else the item itself
-        mapped[key] = item.shifts || item;
-      }
+      if (key) mapped[key] = item.shifts || item;
     });
     return mapped;
   }, [rawOverrides]);
@@ -60,21 +54,16 @@ const Dashboard = () => {
   const onDutyInfo = useMemo(() => {
     const today = new Date();
     const currentShift = getCurrentShiftType();
-    
-    // Check if we are in the morning rollover period of NT shift (00:00 - 07:30:00)
     const hour = today.getHours();
     const minutes = today.getMinutes();
-    const seconds = today.getSeconds();
-    const timeValue = hour + minutes / 60 + seconds / 3600;
+    const timeValue = hour + minutes / 60;
     const isNTRollover = timeValue < 7.5;
 
     const schedule = generateMonthSchedule(today.getFullYear(), today.getMonth(), overrides);
     const todaySchedule = schedule.find(d => isSameDay(d.date, today));
 
     let displayNT = todaySchedule?.shifts.NT || [];
-
     if (isNTRollover) {
-      // The current NT shift started YESTERDAY. Fetch yesterday's schedule.
       const yesterday = subDays(today, 1);
       const yesterdayScheduleArray = generateMonthSchedule(yesterday.getFullYear(), yesterday.getMonth(), overrides);
       const yesterdaySchedule = yesterdayScheduleArray.find(d => isSameDay(d.date, yesterday));
@@ -90,181 +79,206 @@ const Dashboard = () => {
   }, [overrides]);
 
   const chartData = useMemo(() => {
-    // Generate 24h activity buckets
     const now = Date.now();
     const day = 24 * 60 * 60 * 1000;
-    const buckets = Array.from({ length: 12 }, (_, i) => {
-      const time = now - (11 - i) * (day / 12);
-      const count = logs.filter(l => l.ts > time - (day / 12) && l.ts <= time).length;
-      // Use time-based deterministic jitter to satisfy purity rules
-      const jitter = (Math.floor(time / 1000) % 5); 
-      const activeJitter = (Math.floor(time / 1000) % 20);
+    return Array.from({ length: 14 }, (_, i) => {
+      const time = now - (13 - i) * (day / 14);
+      const count = logs.filter(l => l.ts > time - (day / 14) && l.ts <= time).length;
       return {
         name: new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        logs: count + jitter, 
-        active: activeJitter + 10
+        logs: count,
+        // Visual baseline to keep the graph "alive"
+        baseline: Math.sin(i * 0.5) * 2 + 5
       };
     });
-    return buckets;
   }, [logs]);
 
-  const quickResources = [
-    { name: "Market Guide", icon: FileText, color: "text-orange-400", bg: "bg-orange-400/10", path: "/resources?section=guide", desc: "Product & Rules" },
-    { name: "Agent Manual", icon: ShieldCheck, color: "text-blue-400", bg: "bg-blue-400/10", path: "/resources?section=manual", desc: "Staff SOPs" },
-    { name: "Templates", icon: MessageSquare, color: "text-purple-400", bg: "bg-purple-400/10", path: "/templates", desc: "AI Matcher" },
-    { name: "Tickets Hub", icon: Ticket, color: "text-emerald-400", bg: "bg-emerald-400/10", path: "/tickets", desc: "Support Desk" },
+  const shortcuts = [
+    { name: "Agent Manual", icon: ShieldCheck, path: "/resources", params: "?section=manual", color: "#F97316" },
+    { name: "Market Guide", icon: FileText, path: "/resources", params: "?section=guide", color: "#8B5CF6" },
+    { name: "Templates", icon: MessageSquare, path: "/templates", color: "#60A5FA" },
+    { name: "Aviator Matrix", icon: Activity, path: "/slots", color: "#EF4444" },
   ];
 
   return (
-    <div className="p-4 md:p-8 space-y-8 w-full max-w-[1400px] mx-auto min-h-screen">
+    <div className="p-4 md:p-8 space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-[#050508]">
       
-      {/* ── Header ── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4 border-b border-white/[0.03]">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter font-heading uppercase">
-            Operational <span className="text-orange-500">Pulse</span>
+          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">
+            Operational Overview
           </h1>
-          <div className="flex items-center gap-3 mt-2">
-             <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
-             <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">Infrastructure Integrity: Normal</p>
+          <div className="flex items-center gap-3 mt-1.5">
+             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+               <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+               <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Systems Online</span>
+             </div>
+             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">Betfalme Infrastructure v4.0</p>
           </div>
         </div>
-        <div className="px-6 py-3 bg-white/[0.03] border border-white/5 rounded-2xl flex items-center gap-4">
-           <Clock size={16} className="text-orange-500" />
-           <div className="flex flex-col">
-             <span className="text-[10px] font-black uppercase text-white/40 tracking-widest leading-none">System Time</span>
-             <span className="text-xs font-bold text-white mt-1">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+        <div className="flex items-center gap-4">
+           <div className="flex flex-col items-end">
+             <span className="text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] leading-none">Shift Status</span>
+             <span className="text-xs font-black text-white/80 mt-1 uppercase">{onDutyInfo.current} Phase Active</span>
+           </div>
+           <div className="w-px h-8 bg-white/10" />
+           <div className="px-5 py-2.5 bg-white/[0.03] border border-white/10 rounded-2xl flex items-center gap-3 shadow-2xl">
+              <Clock size={16} className="text-orange-500" />
+              <span className="text-xs font-black uppercase text-white tracking-widest">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
            </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* ── Monitoring Section (Graph) ── */}
+        {/* Main Infrastructure Section */}
         <div className="lg:col-span-8 space-y-8">
-          <div 
-             className="bg-[#0f0f17] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group cursor-pointer transition-all hover:border-orange-500/30"
-             onClick={() => navigate('/slots')}
-          >
-            <div className="flex items-center justify-between mb-10">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
-                  <Activity size={24} className="text-orange-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-white uppercase tracking-tight">Aviator Stability Index</h3>
-                  <p className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] mt-0.5">Real-time Failure Density</p>
-                </div>
+          
+          {/* Aviator Premium Pulse Graph */}
+          <div className="bg-[#0c0c14] border border-white/[0.05] rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
+            <div className="flex items-start justify-between mb-10">
+              <div>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/20">
+                    <Activity size={20} className="text-red-500" />
+                  </div>
+                  Aviator Pulse
+                </h3>
+                <p className="text-[10px] text-gray-500 mt-2 uppercase font-black tracking-[0.3em]">Real-time Global Failure Index</p>
               </div>
-              <div className="px-4 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase text-white/40 tracking-widest border border-white/5">
-                24h Window
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Current Frequency</span>
+                <span className="text-2xl font-black text-white tracking-tighter">{logs.filter(l => l.ts > Date.now() - 3600000).length} <span className="text-xs text-gray-600 font-bold ml-1">/hr</span></span>
               </div>
             </div>
-
+            
             <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15}/>
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#4b5563" 
-                    fontSize={10} 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: 'rgba(255,255,255,0.3)', fontWeight: 800 }}
-                  />
                   <Tooltip 
+                    cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
                     contentStyle={{ 
-                      backgroundColor: '#16161f', 
+                      backgroundColor: 'rgba(12, 12, 20, 0.95)', 
+                      backdropFilter: 'blur(10px)',
                       border: '1px solid rgba(255,255,255,0.1)', 
                       borderRadius: '16px',
+                      padding: '12px 16px',
                       boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
                     }}
-                    itemStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: '#f97316' }}
+                    itemStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: '#fff' }}
+                    labelStyle={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginBottom: '8px' }}
+                  />
+                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(255,255,255,0.02)" />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="rgba(255,255,255,0.2)" 
+                    fontSize={10} 
+                    fontWeight={800}
+                    axisLine={false} 
+                    tickLine={false}
+                    dy={10}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="logs" 
-                    stroke="#f97316" 
+                    stroke="#EF4444" 
                     fillOpacity={1} 
                     fill="url(#colorPulse)" 
                     strokeWidth={4} 
                     animationDuration={2000}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="baseline" 
+                    stroke="rgba(255,255,255,0.05)" 
+                    fill="transparent" 
+                    strokeWidth={1} 
+                    strokeDasharray="5 5"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* ── Clean Navigation Grid ── */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {quickResources.map(res => (
+          {/* Minimal Shortcuts Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {shortcuts.map(res => (
               <button 
                 key={res.name} 
-                onClick={() => navigate(res.path)}
-                className="group p-6 rounded-[2rem] bg-[#16161f] border border-white/5 hover:border-white/10 transition-all text-left flex flex-col justify-between h-[180px]"
+                onClick={() => navigate(res.path + (res.params || ''))}
+                className="flex items-center gap-4 p-5 rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/10 transition-all group relative overflow-hidden"
               >
-                <div className={`w-12 h-12 rounded-2xl ${res.bg} flex items-center justify-center transition-all group-hover:scale-110 group-hover:shadow-lg`}>
-                  <res.icon size={22} className={res.color} />
+                <div 
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
+                  style={{ background: `${res.color}15`, border: `1px solid ${res.color}30` }}
+                >
+                  <res.icon size={22} style={{ color: res.color }} />
                 </div>
-                <div>
-                  <h4 className="text-white font-black text-sm uppercase tracking-tight">{res.name}</h4>
-                  <p className="text-[10px] text-white/30 font-bold uppercase mt-1">{res.desc}</p>
+                <div className="text-left">
+                  <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1.5">Open</span>
+                  <span className="block text-xs font-black text-white uppercase tracking-tighter">{res.name}</span>
                 </div>
+                <ArrowUpRight size={14} className="absolute top-4 right-4 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
             ))}
           </div>
         </div>
 
-        {/* ── Active Personnel (Rota) ── */}
-        <div className="lg:col-span-4">
-          <div className="bg-[#1a1a24] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl h-full">
+        {/* Side Deployment Column */}
+        <div className="lg:col-span-4 space-y-8">
+          
+          {/* Shift Rota Card */}
+          <div className="bg-[#0c0c14] border border-white/[0.05] rounded-[2.5rem] p-8 shadow-2xl h-full flex flex-col">
             <div className="flex items-center justify-between mb-10">
               <div>
-                <h3 className="text-lg font-black text-white uppercase tracking-tight">Active Rota</h3>
-                <p className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] mt-0.5">Deployment Matrix</p>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">Daily Deployment</h3>
+                <p className="text-[10px] text-gray-500 mt-2 uppercase font-black tracking-[0.3em]">Staff Rota Status</p>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                <Calendar size={20} className="text-emerald-500" />
-              </div>
+              <Calendar size={20} className="text-orange-500/50" />
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 flex-1">
               {[
-                { id: 'AM', label: 'Morning', time: '07:30 - 15:30', names: onDutyInfo.AM, color: '#f97316' },
-                { id: 'PM', label: 'Afternoon', time: '15:30 - 22:30', names: onDutyInfo.PM, color: '#3b82f6' },
-                { id: 'NT', label: 'Night', time: '22:30 - 07:30', names: onDutyInfo.NT, color: '#8b5cf6' },
+                { id: 'AM', label: 'Morning', time: '07:30 - 15:30', names: onDutyInfo.AM, color: '#F97316', range: [7.5, 15.5] },
+                { id: 'PM', label: 'Afternoon', time: '15:30 - 22:30', names: onDutyInfo.PM, color: '#8B5CF6', range: [15.5, 22.5] },
+                { id: 'NT', label: 'Night', time: '22:30 - 07:30', names: onDutyInfo.NT, color: '#FBBF24', range: [22.5, 31.5] },
               ].map(shift => {
                 const isCurrent = onDutyInfo.current === shift.id;
+                
                 return (
-                  <div key={shift.id} className={`p-6 rounded-3xl border transition-all duration-500 ${isCurrent ? 'bg-white/[0.04] border-white/10 scale-100 shadow-xl' : 'bg-transparent border-white/5 opacity-30 grayscale-[0.5] scale-95'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                           <span className="text-xs font-black text-white uppercase tracking-widest">{shift.label}</span>
-                           {isCurrent && <span className="text-[8px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Live</span>}
-                        </div>
-                        <span className="text-[10px] font-bold text-white/30 tracking-widest">{shift.time}</span>
+                  <div key={shift.id} className={`relative p-6 rounded-3xl border transition-all duration-500 ${isCurrent ? 'bg-white/[0.03] border-white/10 shadow-2xl' : 'bg-transparent border-transparent opacity-20'}`}>
+                    {isCurrent && (
+                      <div className="absolute top-4 right-6 flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[8px] font-black uppercase text-emerald-500 tracking-widest">Active</span>
                       </div>
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${shift.color}15`, border: `1px solid ${shift.color}30` }}>
-                        <Clock size={14} style={{ color: shift.color }} />
+                    )}
+                    
+                    <div className="flex items-center gap-4 mb-5">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
+                        <Clock size={18} style={{ color: shift.color }} />
+                      </div>
+                      <div>
+                        <span className="block text-xs font-black text-white uppercase tracking-widest">{shift.label}</span>
+                        <span className="text-[9px] font-bold text-gray-500 tracking-widest mt-1 block">{shift.time}</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 mt-4">
+                    <div className="flex flex-wrap gap-2.5">
                       {shift.names.map(name => (
-                        <div key={name} className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-xl bg-black/40 border border-white/5">
-                           <div className="w-4 h-4 rounded-md" style={{ backgroundColor: STAFF_COLORS[name] }} />
-                           <span className="text-[10px] font-black text-white/70">{name}</span>
+                        <div key={name} className="flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 rounded-xl bg-white/[0.03] border border-white/5">
+                           <div className="w-5 h-5 rounded-lg shadow-inner" style={{ backgroundColor: STAFF_COLORS[name] || '#333' }} />
+                           <span className="text-[11px] font-black text-white/90 tracking-tight">{name}</span>
                         </div>
                       ))}
-                      {shift.names.length === 0 && <span className="text-[10px] text-white/20 italic font-bold">Empty</span>}
+                      {shift.names.length === 0 && <span className="text-[10px] text-gray-600 font-bold uppercase tracking-widest italic">No Deployment</span>}
                     </div>
                   </div>
                 );
@@ -273,9 +287,9 @@ const Dashboard = () => {
             
             <button 
               onClick={() => navigate('/rota')}
-              className="w-full mt-10 py-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
+              className="w-full mt-10 py-4 rounded-3xl bg-white/[0.03] border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-white/[0.06] hover:text-white transition-all flex items-center justify-center gap-3"
             >
-              Full Schedule View <ArrowUpRight size={16} />
+              Access Full Rota <ArrowUpRight size={16} />
             </button>
           </div>
         </div>
