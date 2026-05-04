@@ -32,6 +32,7 @@ interface Market {
   rules?: Rule[];
   example?: string;
   variations?: string[];
+  isNew?: boolean;
 }
 interface Category {
   id: string;
@@ -473,6 +474,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "ht-ft",
+            isNew: true,
             name: "Half-Time / Full-Time (HT/FT)",
             summary:
               "Predict BOTH the half-time result AND the full-time result. Very high odds due to complexity.",
@@ -494,6 +496,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "second-half-result",
+            isNew: true,
             name: "Second Half Result",
             summary:
               "Calculated based ONLY on goals scored in the second half. Previous score is ignored.",
@@ -526,23 +529,30 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "player-card",
-            name: "Player To Receive a Card",
-            summary: "Will a specific player receive a yellow or red card?",
+            isNew: true,
+            name: "Player To Receive a Card (Yellow/Red)",
+            summary: "Will a specific player receive a card during the match?",
             complexity: "intermediate",
-            example: "Cucurella, Marc: 3.50 | Sangare, Ibrahim: 3.15",
+            options: [
+              { name: "To Receive a Card", description: "Any card (e.g., Cucurella 3.50)." },
+              { name: "To Receive a Red Card", description: "Specifically sent off (odds very high, 40.00+)." }
+            ],
           },
           {
             id: "player-stats",
+            isNew: true,
             name: "Shots & Assists",
             summary: "Specific performance metrics for individual players.",
             complexity: "advanced",
             options: [
               { name: "Player to Assist", description: "Provides a pass leading to a goal." },
-              { name: "Shots on Target", description: "Directs a shot specifically on goal." },
+              { name: "Player to Have 1+ Shots", description: "Any shot taken (e.g., Wood 1.11)." },
+              { name: "Shots on Target", description: "Directs a shot specifically on goal (e.g., Pedro 1.01)." },
             ],
           },
           {
             id: "scoring-milestones",
+            isNew: true,
             name: "2+ Goals / Hat-Trick",
             summary: "Predicting multiple goals for a single player.",
             complexity: "advanced",
@@ -559,6 +569,7 @@ const sportsData: Record<Sport, SportData> = {
         markets: [
           {
             id: "cards",
+            isNew: true,
             name: "Card & Booking Markets",
             summary:
               "Wager on the total disciplinary cards or booking points accumulated during the 90 minutes.",
@@ -580,6 +591,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "corners",
+            isNew: true,
             name: "Corner Markets",
             summary:
               "Bet on the total corner kicks awarded and taken during the match.",
@@ -637,6 +649,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "winning-margin",
+            isNew: true,
             name: "Winning Margin",
             summary: "Predict the exact point gap at the end of regulation.",
             complexity: "intermediate",
@@ -679,6 +692,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "team-totals",
+            isNew: true,
             name: "Team-Specific Totals",
             summary: "Over/Under points for one team only.",
             complexity: "intermediate",
@@ -686,6 +700,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "odd-even",
+            isNew: true,
             name: "Odd or Even Total Points",
             summary: "Will the final combined score be an odd or even number?",
             complexity: "beginner",
@@ -702,6 +717,7 @@ const sportsData: Record<Sport, SportData> = {
         markets: [
           {
             id: "race-to",
+            isNew: true,
             name: "Race To X Points",
             summary: "Which team reaches a point milestone first in the quarter?",
             complexity: "intermediate",
@@ -709,6 +725,7 @@ const sportsData: Record<Sport, SportData> = {
           },
           {
             id: "quarter-thresholds",
+            isNew: true,
             name: "Scoring Thresholds",
             summary: "Will a team score at least N points in this quarter?",
             complexity: "intermediate",
@@ -719,6 +736,11 @@ const sportsData: Record<Sport, SportData> = {
             name: "Quarter / Half Result",
             summary: "Bet on winner, spread, or totals for a specific period.",
             complexity: "intermediate",
+            options: [
+              { name: "Quarter Money Line", description: "Who wins each quarter (e.g. 1.90/1.83)." },
+              { name: "3-Way Quarter Handicap", description: "Includes Handicap Tie. e.g. +1: Home 2.25, Tie 14.00, Away 1.72." },
+              { name: "Half-Time Result", description: "Score at halftime (e.g. 2.03/1.88)." }
+            ],
           },
         ],
       },
@@ -776,6 +798,7 @@ const sportsData: Record<Sport, SportData> = {
         markets: [
           {
             id: "overtime-yes-no",
+            isNew: true,
             name: "Will there be Overtime?",
             summary: "Straight Yes/No on whether the game ends tied in regulation.",
             complexity: "beginner",
@@ -1419,6 +1442,7 @@ interface ManualSectionMeta {
   accent: string;
   accentLight: string;
   accentBorder: string;
+  isNew?: boolean;
 }
 const manualSections: Record<ManualSection, ManualSectionMeta> =
   {
@@ -1489,6 +1513,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> =
       accent: "#f472b6",
       accentLight: "rgba(244,114,182,0.15)",
       accentBorder: "rgba(244,114,182,0.4)",
+      isNew: true,
     },
   };
 
@@ -1544,10 +1569,13 @@ function MarketCard({
       <div className="p-5 flex flex-col gap-3 flex-1">
         <div className="flex items-start justify-between gap-2">
           <h4
-            className="text-white leading-snug flex-1"
+            className="text-white leading-snug flex-1 flex items-center gap-2"
             style={{ fontSize: "0.92rem" }}
           >
             {market.name}
+            {market.isNew && (
+              <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none">New</span>
+            )}
           </h4>
           <ComplexityBadge level={market.complexity} />
         </div>
@@ -1777,6 +1805,9 @@ function ManualTab({
     >
       <span>{meta.icon}</span>
       <span>{meta.label}</span>
+      {meta.isNew && (
+        <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none ml-1">New</span>
+      )}
     </button>
   );
 }
