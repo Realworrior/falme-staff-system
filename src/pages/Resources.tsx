@@ -12,7 +12,8 @@ type ManualSection =
   | "odds"
   | "promotions"
   | "support"
-  | "compliance";
+  | "compliance"
+  | "toolkit";
 type Complexity = "beginner" | "intermediate" | "advanced";
 
 interface MarketOption {
@@ -462,8 +463,7 @@ const sportsData: Record<Sport, SportData> = {
               },
               {
                 name: "X",
-                description:
-                  "Level at half-time (0-0, 1-1, etc.).",
+                description: "Level at half-time (0-0, 1-1, etc.).",
               },
               {
                 name: "2",
@@ -472,23 +472,33 @@ const sportsData: Record<Sport, SportData> = {
             ],
           },
           {
-            id: "ht-ou",
-            name: "Half-Time Over / Under",
+            id: "ht-ft",
+            name: "Half-Time / Full-Time (HT/FT)",
             summary:
-              "Total goals in the first half only  -  markets are typically tighter than full-match lines.",
-            complexity: "intermediate",
+              "Predict BOTH the half-time result AND the full-time result. Very high odds due to complexity.",
+            complexity: "advanced",
             options: [
               {
-                name: "Over/Under 0.5",
-                description:
-                  "At least 1 goal before the break (or fewer).",
+                name: "Home/Home",
+                description: "Home leads at HT, Home wins FT.",
               },
               {
-                name: "Over/Under 1.5",
-                description:
-                  "At least 2 goals in the first half (or fewer).",
+                name: "Home/Draw",
+                description: "Home leads at HT, but ends in a draw.",
+              },
+              {
+                name: "Home/Away",
+                description: "Home leads at HT, Away comes back to win.",
               },
             ],
+          },
+          {
+            id: "second-half-result",
+            name: "Second Half Result",
+            summary:
+              "Calculated based ONLY on goals scored in the second half. Previous score is ignored.",
+            complexity: "intermediate",
+            example: "If HT is 1-0 and FT is 1-1, the second half score is 0-1 (Away Win).",
           },
         ],
       },
@@ -515,16 +525,28 @@ const sportsData: Record<Sport, SportData> = {
             ],
           },
           {
-            id: "first-goalscorer",
-            name: "First Goalscorer",
-            summary:
-              "Your selected player must score the very first goal of the match  -  not just any goal.",
+            id: "player-card",
+            name: "Player To Receive a Card",
+            summary: "Will a specific player receive a yellow or red card?",
+            complexity: "intermediate",
+            example: "Cucurella, Marc: 3.50 | Sangare, Ibrahim: 3.15",
+          },
+          {
+            id: "player-stats",
+            name: "Shots & Assists",
+            summary: "Specific performance metrics for individual players.",
             complexity: "advanced",
-            rules: [
-              {
-                text: "Own goals are ignored for this market  -  the bet remains active for the next goal scored by an outfield player.",
-              },
+            options: [
+              { name: "Player to Assist", description: "Provides a pass leading to a goal." },
+              { name: "Shots on Target", description: "Directs a shot specifically on goal." },
             ],
+          },
+          {
+            id: "scoring-milestones",
+            name: "2+ Goals / Hat-Trick",
+            summary: "Predicting multiple goals for a single player.",
+            complexity: "advanced",
+            example: "To score a Hat-trick odds: 34.00 to 100.00.",
           },
         ],
       },
@@ -543,23 +565,17 @@ const sportsData: Record<Sport, SportData> = {
             complexity: "intermediate",
             options: [
               {
-                name: "Over/Under 3.5 or 4.5 Cards",
-                description:
-                  "Yellow = 1 card · Red = 2 cards · Double yellow = 3 cards total.",
+                name: "Exact Number of Cards",
+                description: "0 cards (34.00) | 2 cards (6.25) | 4 cards (4.60).",
               },
               {
                 name: "Booking Points",
-                description:
-                  "Yellow = 10 pts · Red = 25 pts · Double yellow = 35 pts.",
+                description: "Yellow = 10 pts · Red = 25 pts · Double yellow = 35 pts.",
               },
             ],
             rules: [
-              {
-                text: "Cards shown to managers, coaches, or bench players do NOT count.",
-              },
-              {
-                text: "Cards issued after the final whistle do NOT count.",
-              },
+              { text: "Cards shown to bench players or coaches do NOT count." },
+              { text: "Booking Points O/U 42.5 is a common market line." },
             ],
           },
           {
@@ -570,43 +586,12 @@ const sportsData: Record<Sport, SportData> = {
             complexity: "intermediate",
             options: [
               {
-                name: "Total Corners Over/Under",
-                description:
-                  "Common lines: 8.5, 9.5, or 10.5 corners per match.",
+                name: "Corner Bands",
+                description: "0-2 (5.50), 3-4 (2.85), 7+ (3.50).",
               },
               {
-                name: "Corner Handicap",
-                description:
-                  "A virtual corner advantage or disadvantage applied to one team.",
-              },
-            ],
-            rules: [
-              {
-                text: "A corner must be TAKEN to count. A corner awarded at the final whistle that is not taken does NOT count.",
-              },
-            ],
-          },
-          {
-            id: "shots",
-            name: "Shot Markets",
-            summary:
-              "Markets based on official statistics from the league or tournament organizers.",
-            complexity: "advanced",
-            options: [
-              {
-                name: "Total Shots Over/Under",
-                description:
-                  "All shots combined  -  on target, off target, and blocked.",
-              },
-              {
-                name: "Shots on Target Over/Under",
-                description:
-                  "Only shots that would have entered the goal if not for a save or last-defender block.",
-              },
-            ],
-            rules: [
-              {
-                text: "Shots that hit the post or crossbar and stay out are NOT counted as shots on target.",
+                name: "Team Corners",
+                description: "Home Team Total Corners O/U +5.5.",
               },
             ],
           },
@@ -631,22 +616,31 @@ const sportsData: Record<Sport, SportData> = {
         markets: [
           {
             id: "moneyline",
-            name: "Money Line (Winner)",
+            name: "Money Line / Match Result",
             summary:
               "The simplest basketball market: pick which team wins the game outright.",
             complexity: "beginner",
             options: [
               {
-                name: "Including Overtime",
-                description:
-                  "Most common format. If tied after Q4, the winner after overtime decides the bet.",
+                name: "Excluding Overtime",
+                description: "Settled after 4 quarters. If tied, bets usually push.",
               },
               {
-                name: "Excluding Overtime  -  3-Way",
-                description:
-                  "Includes a Draw option. If tied at end of Q4, the Draw bet wins  -  even if one team wins in OT.",
+                name: "Including Overtime",
+                description: "Winner after extra periods determines the bet.",
+              },
+              {
+                name: "Double Chance",
+                description: "Home or Draw (1.78), Home or Away (1.03).",
               },
             ],
+          },
+          {
+            id: "winning-margin",
+            name: "Winning Margin",
+            summary: "Predict the exact point gap at the end of regulation.",
+            complexity: "intermediate",
+            example: "Tie: 27.00 | 1-2 points: 8.25 | 3-6 points: 3.90",
           },
         ],
       },
@@ -681,8 +675,21 @@ const sportsData: Record<Sport, SportData> = {
             summary:
               "Bet on whether the combined final score of both teams goes above or below a set number.",
             complexity: "beginner",
-            example:
-              "Over/Under 200.5 Points:\n• Over 200.5  -  Wins if the combined score is 201 or more.\n• Under 200.5  -  Wins if the combined score is 200 or fewer.",
+            example: "O/U 162.5: Over 1.85 (163+) | Under 1.93 (162 or fewer).",
+          },
+          {
+            id: "team-totals",
+            name: "Team-Specific Totals",
+            summary: "Over/Under points for one team only.",
+            complexity: "intermediate",
+            example: "Home Over 81.5: 1.83 (Home scores 82+).",
+          },
+          {
+            id: "odd-even",
+            name: "Odd or Even Total Points",
+            summary: "Will the final combined score be an odd or even number?",
+            complexity: "beginner",
+            example: "Even: 1.85 | Odd: 1.93",
           },
         ],
       },
@@ -694,52 +701,24 @@ const sportsData: Record<Sport, SportData> = {
         colorKey: "blue",
         markets: [
           {
-            id: "quarter-betting",
-            name: "Quarter Betting  -  Q1, Q2, Q3, Q4",
-            summary:
-              "Each of the four quarters carries its own isolated set of markets, settled at the buzzer.",
+            id: "race-to",
+            name: "Race To X Points",
+            summary: "Which team reaches a point milestone first in the quarter?",
             complexity: "intermediate",
-            options: [
-              {
-                name: "Quarter Winner",
-                description:
-                  "Which team scores more points in that specific quarter.",
-              },
-              {
-                name: "Quarter Point Spread",
-                description:
-                  "A handicap applied to the scoring of a single quarter.",
-              },
-              {
-                name: "Quarter Total Points",
-                description:
-                  "Over/Under for total points in that quarter alone.",
-              },
-            ],
+            example: "Race to 10 Points: Home 1.89 | Away 1.81",
           },
           {
-            id: "half-betting",
-            name: "Half Betting  -  1st & 2nd Half",
-            summary:
-              "Markets that roll up the first two or last two quarters into a single bet.",
+            id: "quarter-thresholds",
+            name: "Scoring Thresholds",
+            summary: "Will a team score at least N points in this quarter?",
             complexity: "intermediate",
-            options: [
-              {
-                name: "1st Half Money Line",
-                description:
-                  "Which team leads at the end of the 2nd quarter.",
-              },
-              {
-                name: "1st Half Point Spread",
-                description:
-                  "Handicap across the combined first two quarters.",
-              },
-              {
-                name: "1st Half Total Points",
-                description:
-                  "Over/Under for total points in Q1 + Q2.",
-              },
-            ],
+            example: "Home to score 15 Points: Yes 1.09 | No 6.15",
+          },
+          {
+            id: "quarter-betting",
+            name: "Quarter / Half Result",
+            summary: "Bet on winner, spread, or totals for a specific period.",
+            complexity: "intermediate",
           },
         ],
       },
@@ -796,20 +775,24 @@ const sportsData: Record<Sport, SportData> = {
         colorKey: "slate",
         markets: [
           {
+            id: "overtime-yes-no",
+            name: "Will there be Overtime?",
+            summary: "Straight Yes/No on whether the game ends tied in regulation.",
+            complexity: "beginner",
+            example: "Yes: 10.00 | No: 1.02",
+          },
+          {
             id: "basketball-rules",
-            name: "Key Settlement Rules for Basketball",
+            name: "Key Settlement Rules",
             summary:
-              "Critical rules that govern how basketball markets on Betfalme are settled.",
+              "Critical rules governing basketball markets on Betfame.",
             complexity: "beginner",
             rules: [
               {
-                text: "Overtime  -  Most Match Result and Total Points markets include overtime unless explicitly stated otherwise.",
+                text: "Most Match Result and Total Points markets exclude overtime unless stated.",
               },
               {
-                text: "Postponed Games  -  If a game is not played within 24–48 hours of the scheduled time (varies by league), bets are typically voided.",
-              },
-              {
-                text: "Abandoned Games  -  Bets are usually voided unless the market outcome was already determined (e.g., 1st Half markets if the game is abandoned in Q3).",
+                text: "If a game is not played within 24–48 hours, bets are typically voided.",
               },
             ],
           },
@@ -1498,6 +1481,14 @@ const manualSections: Record<ManualSection, ManualSectionMeta> =
       accent: "#10b981",
       accentLight: "rgba(16,185,129,0.15)",
       accentBorder: "rgba(16,185,129,0.4)",
+    },
+    toolkit: {
+      label: "Staff Toolkit",
+      icon: "🧰",
+      tagline: "Talking points, odds guide & common FAQs",
+      accent: "#f472b6",
+      accentLight: "rgba(244,114,182,0.15)",
+      accentBorder: "rgba(244,114,182,0.4)",
     },
   };
 
@@ -2838,6 +2829,108 @@ function SupportView({ accent }: { accent: string }) {
 }
 
 // ── Compliance View ───────────────────────────────────────────────────────────
+function StaffToolkitView({ accent }: { accent: string }) {
+  return (
+    <div className="flex flex-col gap-10">
+      {/* Odds Probability Guide */}
+      <section>
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <span style={{ color: accent }}>●</span> Understanding Odds at a Glance
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { range: "1.01 - 1.10", prob: "99-91%", label: "Almost Certain", color: "text-emerald-400" },
+            { range: "1.10 - 1.50", prob: "91-67%", label: "Very Likely", color: "text-green-400" },
+            { range: "1.50 - 2.50", prob: "67-40%", label: "Likely", color: "text-yellow-400" },
+            { range: "2.50 - 5.00", prob: "40-20%", label: "Possible", color: "text-orange-400" },
+            { range: "5.00 - 10.00", prob: "20-10%", label: "Unlikely", color: "text-red-400" },
+            { range: "10.00+", prob: "< 10%", label: "Very Unlikely", color: "text-rose-500" },
+          ].map((item, i) => (
+            <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 flex flex-col items-center text-center">
+              <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Implied Probability</div>
+              <div className={`text-xl font-bold ${item.color}`}>{item.prob}</div>
+              <div className="text-white text-sm mt-1">{item.label}</div>
+              <div className="text-white/30 text-xs mt-2 px-2 py-0.5 bg-white/[0.05] rounded-md">{item.range}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Customer Service Talking Points */}
+      <section>
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <span style={{ color: accent }}>●</span> Customer Service Talking Points
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            {
+              title: "Explaining Odds",
+              text: "Always explain odds clearly: 'Odds of 2.00 means your KES 1,000 bet returns KES 2,000 if you win.'",
+            },
+            {
+              title: "Risk Management",
+              text: "Remind customers: Higher odds = higher risk. Don't chase longshots without understanding the odds.",
+            },
+            {
+              title: "Combined Markets",
+              text: "Point out that combined markets (e.g., Result + BTTS) have better odds but require two correct predictions.",
+            },
+            {
+              title: "Beginner Advice",
+              text: "For beginners: Start with simple markets like Match Result (1X2) and Over/Under goals.",
+            },
+          ].map((point, i) => (
+            <div key={i} className="bg-white/[0.03] border-l-2 p-5 rounded-r-xl" style={{ borderColor: accent }}>
+              <h4 className="text-white text-sm font-semibold mb-2">{point.title}</h4>
+              <p className="text-white/60 text-sm leading-relaxed italic">"{point.text}"</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Common Scenarios FAQ */}
+      <section>
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <span style={{ color: accent }}>●</span> Common Scenarios (FAQ)
+        </h3>
+        <div className="space-y-3">
+          {[
+            {
+              q: "What if a player I bet on gets injured and doesn't play?",
+              a: "Most player props are void (cancelled) if the player doesn't start. The bet is refunded.",
+            },
+            {
+              q: "Does extra time count for Match Result?",
+              a: "In most leagues, normal 90 minutes only. International tournaments may differ. Always check the market rules.",
+            },
+            {
+              q: "If a match is postponed, what happens to my bet?",
+              a: "Bets are usually held until the match is played. If abandoned and not rescheduled within 48 hours, bets are voided.",
+            },
+            {
+              q: "Why are BTTS combined markets so 'expensive'?",
+              a: "You're making two predictions instead of one (result AND scoring pattern). Higher complexity = better odds.",
+            },
+          ].map((faq, i) => (
+            <div key={i} className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-5 group hover:bg-white/[0.04] transition-all">
+              <div className="flex gap-3">
+                <span className="text-xl opacity-20 font-bold">Q</span>
+                <div>
+                  <div className="text-white text-sm font-medium mb-2">{faq.q}</div>
+                  <div className="flex gap-3 pt-2 border-t border-white/[0.05]">
+                    <span className="text-xl opacity-20 font-bold" style={{ color: accent }}>A</span>
+                    <p className="text-white/50 text-sm leading-relaxed">{faq.a}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function ComplianceView({ accent }: { accent: string }) {
   return (
     <div className="flex flex-col gap-6">
@@ -3051,6 +3144,9 @@ function AgentManualView() {
         )}
         {active === "compliance" && (
           <ComplianceView accent={meta.accent} />
+        )}
+        {active === "toolkit" && (
+          <StaffToolkitView accent={meta.accent} />
         )}
       </main>
     </div>
