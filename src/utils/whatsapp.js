@@ -6,19 +6,21 @@ const WHATSAPP_CONFIG = {
   // Replace with the tech team's WhatsApp number (with country code)
   TECH_TEAM_NUMBER: '254717619337', 
   
-  // Option: 'api' (invisible background sending)
-  MODE: 'api', 
-  
-  // SELF-HOSTED GATEWAY CONFIG (WAHA, Evolution API, etc.)
-  // Example: 'http://your-server-ip:3000/api/sendText'
-  API_URL: 'http://localhost:3000/api/sendText',
-  
-  // The header name your gateway uses for authentication (e.g., 'apikey' or 'X-Api-Key')
-  API_KEY_HEADER: 'apikey',
-  API_TOKEN: 'YOUR_SECRET_KEY_HERE',
+  // Choose your provider: 'callmebot' (free/easiest), 'whapi' (professional free tier), or 'ultramsg'
+  PROVIDER: 'callmebot', 
 
-  // The property names your API expects (WAHA uses 'chatId' and 'text')
-  PAYLOAD_TYPE: 'waha', // 'waha' or 'evolution' or 'generic'
+  // --- CALLMEBOT CONFIG ---
+  // 1. Add +34 621 07 38 66 to your contacts
+  // 2. Send "I allow callmebot to send me messages" to get your API key
+  CALLMEBOT_API_KEY: 'YOUR_CALLMEBOT_KEY_HERE',
+
+  // --- WHAPI CONFIG ---
+  WHAPI_API_URL: 'https://gate.whapi.cloud/messages/text',
+  WHAPI_TOKEN: 'YOUR_WHAPI_TOKEN_HERE',
+
+  // --- ULTRAMSG CONFIG ---
+  ULTRAMSG_API_URL: 'https://api.ultramsg.com/INSTANCE_ID/messages/chat',
+  ULTRAMSG_TOKEN: 'YOUR_ULTRAMSG_TOKEN_HERE',
 };
 
 /**
@@ -48,50 +50,52 @@ _Reply to this ticket or update status on the portal._`.trim();
  * Sends or prepares the WhatsApp message
  */
 export const sendTicketToWhatsApp = (ticket) => {
+  const { PROVIDER, TECH_TEAM_NUMBER } = WHATSAPP_CONFIG;
   const message = formatTicketForWhatsApp(ticket);
   const encodedMessage = encodeURIComponent(message);
-  const phoneNumber = WHATSAPP_CONFIG.TECH_TEAM_NUMBER;
 
-  if (WHATSAPP_CONFIG.MODE === 'api' && WHATSAPP_CONFIG.API_TOKEN !== 'YOUR_SECRET_KEY_HERE') {
-    // Background API call (Invisible to Staff)
-    console.log(`[WhatsApp] Attempting self-hosted sync for: ${ticket.ticket_id}`);
+  // 1. CALLMEBOT (Easiest Free Option)
+  if (PROVIDER === 'callmebot' && WHATSAPP_CONFIG.CALLMEBOT_API_KEY !== 'YOUR_CALLMEBOT_KEY_HERE') {
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${TECH_TEAM_NUMBER}&text=${encodedMessage}&apikey=${WHATSAPP_CONFIG.CALLMEBOT_API_KEY}`;
     
-    // Prepare payload based on gateway type
-    let body = {};
-    if (WHATSAPP_CONFIG.PAYLOAD_TYPE === 'waha') {
-      body = {
-        chatId: `${phoneNumber}@c.us`,
-        text: message
-      };
-    } else if (WHATSAPP_CONFIG.PAYLOAD_TYPE === 'evolution') {
-      body = {
-        number: phoneNumber,
-        message: message
-      };
-    } else {
-      // Generic fallback
-      body = { to: phoneNumber, message: message };
-    }
+    return fetch(url)
+      .then(() => ({ success: true, method: 'callmebot' }))
+      .catch(err => ({ success: false, error: err }));
+  }
 
-    return fetch(WHATSAPP_CONFIG.API_URL, {
+  // 2. WHAPI.CLOUD (Professional Free Tier)
+  if (PROVIDER === 'whapi' && WHATSAPP_CONFIG.WHAPI_TOKEN !== 'YOUR_WHAPI_TOKEN_HERE') {
+    return fetch(WHATSAPP_CONFIG.WHAPI_API_URL, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        [WHATSAPP_CONFIG.API_KEY_HEADER]: WHATSAPP_CONFIG.API_TOKEN
+        'Authorization': `Bearer ${WHATSAPP_CONFIG.WHAPI_TOKEN}`
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        typing_time: 0,
+        to: TECH_TEAM_NUMBER,
+        body: message
+      })
     })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      console.log(`[WhatsApp] Sync complete for ${ticket.ticket_id}`);
-      return { success: true };
-    })
-    .catch(err => {
-      console.error('[WhatsApp] Self-hosted sync failed:', err);
-      return { success: false, error: err };
-    });
-  } else {
-    console.warn('[WhatsApp] Gateway not configured. Please update WHATSAPP_CONFIG in src/utils/whatsapp.js');
-    return { success: false, error: 'API not configured' };
+    .then(res => ({ success: true, method: 'whapi' }))
+    .catch(err => ({ success: false, error: err }));
   }
+
+  // 3. ULTRAMSG (Legacy)
+  if (PROVIDER === 'ultramsg' && WHATSAPP_CONFIG.ULTRAMSG_TOKEN !== 'YOUR_ULTRAMSG_TOKEN_HERE') {
+    return fetch(WHATSAPP_CONFIG.ULTRAMSG_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: WHATSAPP_CONFIG.ULTRAMSG_TOKEN,
+        to: TECH_TEAM_NUMBER,
+        body: message
+      })
+    })
+    .then(res => ({ success: true, method: 'ultramsg' }))
+    .catch(err => ({ success: false, error: err }));
+  }
+
+  console.warn(`[WhatsApp] Provider ${PROVIDER} not configured or missing API key.`);
+  return { success: false, error: 'API not configured' };
 };
