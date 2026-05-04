@@ -6,12 +6,16 @@ import {
   Filter, LayoutGrid, Terminal, Trash2, Edit3, Save, Trash
 } from 'lucide-react';
 import { 
-  Dialog, 
-  DialogTitle, 
+  Dialog,
+  DialogTitle,
   DialogContent, 
   DialogActions, 
   TextField,
-  Tooltip
+  Tooltip,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl
 } from '@mui/material';
 
 import { useSupabaseData } from '../context/SupabaseDataContext';
@@ -230,6 +234,12 @@ const Templates = () => {
   
   // Expansion Logic: Max 3 cards, FIFO
   const [expandedIds, setExpandedIds] = useState([]);
+  const [isNewCategory, setIsNewCategory] = useState(false);
+
+  const availableCategories = useMemo(() => {
+    if (!data) return [];
+    return data.map(d => d.category).sort();
+  }, [data]);
 
   const toggleExpand = useCallback((id) => {
     setExpandedIds(prev => {
@@ -287,6 +297,7 @@ const Templates = () => {
       showToast('Template deployed!', 'success');
       setModalOpen(false);
       setNewTemplate({ category: '', title: '', standardText: '', empathyText: '' });
+      setIsNewCategory(false);
     }
   };
 
@@ -947,16 +958,47 @@ const Templates = () => {
         </DialogTitle>
         <DialogContent style={{ padding: '32px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <TextField 
-              label="Category" 
-              fullWidth 
-              variant="outlined"
-              placeholder="e.g., ⚽ SPORTS BET"
-              value={newTemplate.category} 
-              onChange={e => setNewTemplate({ ...newTemplate, category: e.target.value })}
-              InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }}
-              InputLabelProps={{ style: { color: S.textMuted } }}
-            />
+            <FormControl fullWidth variant="outlined">
+              <InputLabel style={{ color: S.textMuted }}>Category</InputLabel>
+              <Select
+                label="Category"
+                value={isNewCategory ? "NEW" : newTemplate.category}
+                onChange={e => {
+                  if (e.target.value === "NEW") {
+                    setIsNewCategory(true);
+                    setNewTemplate({ ...newTemplate, category: "" });
+                  } else {
+                    setIsNewCategory(false);
+                    setNewTemplate({ ...newTemplate, category: e.target.value });
+                  }
+                }}
+                style={{ color: '#fff', background: '#000', borderRadius: 12 }}
+                MenuProps={{
+                  PaperProps: {
+                    style: { background: S.surface, border: `1px solid ${S.border}`, color: '#fff' }
+                  }
+                }}
+              >
+                {availableCategories.map(cat => (
+                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                ))}
+                <MenuItem value="NEW" style={{ color: S.orangeText, fontWeight: 800 }}>+ ADD NEW CATEGORY</MenuItem>
+              </Select>
+            </FormControl>
+
+            {isNewCategory && (
+              <TextField 
+                label="New Category Name" 
+                fullWidth 
+                variant="outlined"
+                placeholder="e.g., ⚽ SPORTS BET"
+                value={newTemplate.category} 
+                onChange={e => setNewTemplate({ ...newTemplate, category: e.target.value })}
+                InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }}
+                InputLabelProps={{ style: { color: S.textMuted } }}
+                autoFocus
+              />
+            )}
             <TextField 
               label="Template Title" 
               fullWidth 
