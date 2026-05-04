@@ -7,13 +7,18 @@ const WHATSAPP_CONFIG = {
   TECH_TEAM_NUMBER: '254717619337', 
   
   // Option: 'api' (invisible background sending)
-  // To use this, you need a service like UltraMsg or Whapi.
   MODE: 'api', 
   
-  // API credentials for the WhatsApp Gateway (e.g., UltraMsg)
-  // Get these from your provider dashboard
-  API_URL: 'https://api.ultramsg.com/INSTANCE_ID/messages/chat',
-  API_TOKEN: 'YOUR_TOKEN_HERE',
+  // SELF-HOSTED GATEWAY CONFIG (WAHA, Evolution API, etc.)
+  // Example: 'http://your-server-ip:3000/api/sendText'
+  API_URL: 'http://localhost:3000/api/sendText',
+  
+  // The header name your gateway uses for authentication (e.g., 'apikey' or 'X-Api-Key')
+  API_KEY_HEADER: 'apikey',
+  API_TOKEN: 'YOUR_SECRET_KEY_HERE',
+
+  // The property names your API expects (WAHA uses 'chatId' and 'text')
+  PAYLOAD_TYPE: 'waha', // 'waha' or 'evolution' or 'generic'
 };
 
 /**
@@ -47,30 +52,46 @@ export const sendTicketToWhatsApp = (ticket) => {
   const encodedMessage = encodeURIComponent(message);
   const phoneNumber = WHATSAPP_CONFIG.TECH_TEAM_NUMBER;
 
-  if (WHATSAPP_CONFIG.MODE === 'api' && WHATSAPP_CONFIG.API_TOKEN !== 'YOUR_TOKEN_HERE') {
+  if (WHATSAPP_CONFIG.MODE === 'api' && WHATSAPP_CONFIG.API_TOKEN !== 'YOUR_SECRET_KEY_HERE') {
     // Background API call (Invisible to Staff)
-    console.log(`[WhatsApp] Background sync started for ticket: ${ticket.ticket_id}`);
+    console.log(`[WhatsApp] Attempting self-hosted sync for: ${ticket.ticket_id}`);
     
+    // Prepare payload based on gateway type
+    let body = {};
+    if (WHATSAPP_CONFIG.PAYLOAD_TYPE === 'waha') {
+      body = {
+        chatId: `${phoneNumber}@c.us`,
+        text: message
+      };
+    } else if (WHATSAPP_CONFIG.PAYLOAD_TYPE === 'evolution') {
+      body = {
+        number: phoneNumber,
+        message: message
+      };
+    } else {
+      // Generic fallback
+      body = { to: phoneNumber, message: message };
+    }
+
     return fetch(WHATSAPP_CONFIG.API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: WHATSAPP_CONFIG.API_TOKEN,
-        to: phoneNumber,
-        body: message
-      })
+      headers: { 
+        'Content-Type': 'application/json',
+        [WHATSAPP_CONFIG.API_KEY_HEADER]: WHATSAPP_CONFIG.API_TOKEN
+      },
+      body: JSON.stringify(body)
     })
     .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       console.log(`[WhatsApp] Sync complete for ${ticket.ticket_id}`);
-      return { success: true, method: 'api' };
+      return { success: true };
     })
     .catch(err => {
-      console.error('[WhatsApp] Background sync failed:', err);
+      console.error('[WhatsApp] Self-hosted sync failed:', err);
       return { success: false, error: err };
     });
   } else {
-    // Fallback if no API is configured yet
-    console.warn('[WhatsApp] No API configured. In-app notification only.');
+    console.warn('[WhatsApp] Gateway not configured. Please update WHATSAPP_CONFIG in src/utils/whatsapp.js');
     return { success: false, error: 'API not configured' };
   }
 };
