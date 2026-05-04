@@ -3090,8 +3090,10 @@ function ComplianceView({ accent }: { accent: string }) {
 
 // ── Agent Manual Shell ────────────────────────────────────────────────────────
 function AgentManualView() {
-  const [active, setActive] = useState<ManualSection>("crash");
+  const [active, setActive] = useState<ManualSection>("odds");
   const meta = manualSections[active];
+
+  if (!meta) return null;
 
   return (
     <div>
