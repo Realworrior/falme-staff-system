@@ -4,11 +4,15 @@ import { useSupabaseData } from "../context/SupabaseDataContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AppSection = "guide" | "manual";
-type Sport = "soccer" | "basketball" | "tennis" | "combos";
-type ManualSection =
+type Sport =
+  | "soccer"
+  | "basketball"
+  | "tennis"
+  | "combos"
   | "crash"
   | "virtual"
-  | "casino"
+  | "casino";
+type ManualSection =
   | "odds"
   | "promotions"
   | "support"
@@ -1233,6 +1237,30 @@ const sportsData: Record<Sport, SportData> = {
       },
     ],
   },
+  crash: {
+    label: "Crash",
+    icon: "🚀",
+    accent: "#ef4444",
+    accentLight: "rgba(239,68,68,0.15)",
+    accentBorder: "rgba(239,68,68,0.4)",
+    categories: [],
+  },
+  virtual: {
+    label: "Virtuals",
+    icon: "🌐",
+    accent: "#06b6d4",
+    accentLight: "rgba(6,182,212,0.15)",
+    accentBorder: "rgba(6,182,212,0.4)",
+    categories: [],
+  },
+  casino: {
+    label: "Casino",
+    icon: "🎰",
+    accent: "#f59e0b",
+    accentLight: "rgba(245,158,11,0.15)",
+    accentBorder: "rgba(245,158,11,0.4)",
+    categories: [],
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1444,78 +1472,49 @@ interface ManualSectionMeta {
   accentBorder: string;
   isNew?: boolean;
 }
-const manualSections: Record<ManualSection, ManualSectionMeta> =
-  {
-    crash: {
-      label: "Crash Games",
-      icon: "🚀",
-      tagline:
-        "65+ multiplier games  -  mechanics & history lookup",
-      accent: "#ef4444",
-      accentLight: "rgba(239,68,68,0.15)",
-      accentBorder: "rgba(239,68,68,0.4)",
-    },
-    virtual: {
-      label: "Virtual Worlds",
-      icon: "🌐",
-      tagline: "24/7 RNG-powered sports & racing simulations",
-      accent: "#06b6d4",
-      accentLight: "rgba(6,182,212,0.15)",
-      accentBorder: "rgba(6,182,212,0.4)",
-    },
-    casino: {
-      label: "Casino & Slots",
-      icon: "🎰",
-      tagline: "Slots, live tables, and game history access",
-      accent: "#f59e0b",
-      accentLight: "rgba(245,158,11,0.15)",
-      accentBorder: "rgba(245,158,11,0.4)",
-    },
-    odds: {
-      label: "Odds & Markets",
-      icon: "📊",
-      tagline: "Decimal odds explained with KES examples",
-      accent: "#22c55e",
-      accentLight: "rgba(34,197,94,0.15)",
-      accentBorder: "rgba(34,197,94,0.4)",
-    },
-    promotions: {
-      label: "Rewards & Perks",
-      icon: "💎",
-      tagline:
-        "Bonuses, cashback, VIP tiers, and referral program",
-      accent: "#a855f7",
-      accentLight: "rgba(168,85,247,0.15)",
-      accentBorder: "rgba(168,85,247,0.4)",
-    },
-    support: {
-      label: "Agent Toolkit",
-      icon: "🛠️",
-      tagline:
-        "Troubleshooting, escalation matrix & key procedures",
-      accent: "#3b82f6",
-      accentLight: "rgba(59,130,246,0.15)",
-      accentBorder: "rgba(59,130,246,0.4)",
-    },
-    compliance: {
-      label: "Compliance",
-      icon: "⚖️",
-      tagline:
-        "Responsible gaming, age verification & licensing",
-      accent: "#10b981",
-      accentLight: "rgba(16,185,129,0.15)",
-      accentBorder: "rgba(16,185,129,0.4)",
-    },
-    toolkit: {
-      label: "Staff Toolkit",
-      icon: "🧰",
-      tagline: "Talking points, odds guide & common FAQs",
-      accent: "#f472b6",
-      accentLight: "rgba(244,114,182,0.15)",
-      accentBorder: "rgba(244,114,182,0.4)",
-      isNew: true,
-    },
-  };
+const manualSections: Record<ManualSection, ManualSectionMeta> = {
+  odds: {
+    label: "Odds & Markets",
+    icon: "📊",
+    tagline: "Decimal odds explained with KES examples",
+    accent: "#22c55e",
+    accentLight: "rgba(34,197,94,0.15)",
+    accentBorder: "rgba(34,197,94,0.4)",
+  },
+  promotions: {
+    label: "Rewards & Perks",
+    icon: "💎",
+    tagline: "Bonuses, cashback, VIP tiers, and referral program",
+    accent: "#a855f7",
+    accentLight: "rgba(168,85,247,0.15)",
+    accentBorder: "rgba(168,85,247,0.4)",
+  },
+  support: {
+    label: "Agent Toolkit",
+    icon: "🛠️",
+    tagline: "Troubleshooting, escalation matrix & key procedures",
+    accent: "#3b82f6",
+    accentLight: "rgba(59,130,246,0.15)",
+    accentBorder: "rgba(59,130,246,0.4)",
+  },
+  compliance: {
+    label: "Compliance",
+    icon: "⚖️",
+    tagline: "Responsible gaming, age verification & licensing",
+    accent: "#10b981",
+    accentLight: "rgba(16,185,129,0.15)",
+    accentBorder: "rgba(16,185,129,0.4)",
+  },
+  toolkit: {
+    label: "Staff Toolkit",
+    icon: "🧰",
+    tagline: "Talking points, odds guide & common FAQs",
+    accent: "#f472b6",
+    accentLight: "rgba(244,114,182,0.15)",
+    accentBorder: "rgba(244,114,182,0.4)",
+    isNew: true,
+  },
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MARKET GUIDE COMPONENTS
@@ -3157,15 +3156,6 @@ function AgentManualView() {
           </div>
         </div>
 
-        {active === "crash" && (
-          <CrashGamesView accent={meta.accent} />
-        )}
-        {active === "virtual" && (
-          <VirtualGamesView accent={meta.accent} />
-        )}
-        {active === "casino" && (
-          <CasinoView accent={meta.accent} />
-        )}
         {active === "odds" && <OddsView accent={meta.accent} />}
         {active === "promotions" && (
           <PromotionsView accent={meta.accent} />
@@ -3254,27 +3244,36 @@ function MarketGuideView() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
-
-        {sport.categories.map((cat) => (
-          <CategorySection
-            key={cat.id}
-            category={cat}
-            accent={sport.accent}
-          />
-        ))}
-        <div
-          className="rounded-2xl p-6 text-center"
-          style={{
-            background: "rgba(255,255,255,0.02)",
-            border: "1px solid rgba(255,255,255,0.06)",
-          }}
-        >
-          <p className="text-white/30 text-sm">
-            Betfalme.ke Sportsbook Market Guide · Soccer Parts
-            1–3 · Basketball Part 4 · Tennis Part 5 · Logical
-            &amp; Combo Markets
-          </p>
-        </div>
+        {activeSport === "crash" ? (
+          <CrashGamesView accent={sport.accent} />
+        ) : activeSport === "virtual" ? (
+          <VirtualGamesView accent={sport.accent} />
+        ) : activeSport === "casino" ? (
+          <CasinoView accent={sport.accent} />
+        ) : (
+          <>
+            {sport.categories.map((cat) => (
+              <CategorySection
+                key={cat.id}
+                category={cat}
+                accent={sport.accent}
+              />
+            ))}
+            <div
+              className="rounded-2xl p-6 text-center"
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              <p className="text-white/30 text-sm">
+                Betfalme.ke Sportsbook Market Guide · Soccer Parts
+                1–3 · Basketball Part 4 · Tennis Part 5 · Logical
+                &amp; Combo Markets
+              </p>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
