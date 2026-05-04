@@ -3,8 +3,8 @@
  */
 
 const WHATSAPP_CONFIG = {
-  // Replace with the tech team's WhatsApp number (with country code, e.g., '254111222333')
-  TECH_TEAM_NUMBER: '254111222333', 
+  // Replace with the tech team's WhatsApp number (with country code)
+  TECH_TEAM_NUMBER: '254717619337', 
   
   // Option: 'api' (invisible background sending)
   // To use this, you need a service like UltraMsg or Whapi.
