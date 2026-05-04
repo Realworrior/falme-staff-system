@@ -143,19 +143,19 @@ const SlotTracker = () => {
           <p className="text-gray-500 text-sm md:text-base font-medium">Record and analyze real-time slot failure performance</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto">
           <motion.button 
             whileHover={{ y: -3, boxShadow: '0 8px 25px -10px rgba(239,68,68,0.4)' }}
             whileTap={{ y: 2, borderBottomWidth: 1 }}
             onClick={() => logFailure('Slot 1')}
-            className="group relative flex flex-col items-center justify-center p-4 bg-gradient-to-br from-red-500/15 to-red-600/5 border border-red-500/20 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(185,28,28,0.3)]"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-gradient-to-br from-red-500/15 to-red-600/5 border border-red-500/20 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(185,28,28,0.3)]"
           >
-            <div className="w-10 h-10 rounded-xl bg-black/30 flex items-center justify-center border border-white/5 mb-3 group-hover:scale-110 transition-transform">
-              <AlertCircle className="w-5 h-5 text-red-500" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
             </div>
-            <div className="text-center">
-              <span className="block text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Slot 1</span>
-              <span className="text-[7px] text-red-400/50 font-black uppercase tracking-widest mt-1.5 block">Alert</span>
+            <div className="text-left sm:text-center">
+              <span className="block text-xs sm:text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Slot 1</span>
+              <span className="text-[7px] text-red-400/50 font-black uppercase tracking-widest mt-1.5 block">Critical Event</span>
             </div>
           </motion.button>
 
@@ -163,14 +163,14 @@ const SlotTracker = () => {
             whileHover={{ y: -3, boxShadow: '0 8px 25px -10px rgba(34,197,94,0.4)' }}
             whileTap={{ y: 2, borderBottomWidth: 1 }}
             onClick={() => logFailure('Slot 2')}
-            className="group relative flex flex-col items-center justify-center p-4 bg-gradient-to-br from-green-500/15 to-green-600/5 border border-green-500/20 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(21,128,61,0.3)]"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-gradient-to-br from-green-500/15 to-green-600/5 border border-green-500/20 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(21,128,61,0.3)]"
           >
-            <div className="w-10 h-10 rounded-xl bg-black/30 flex items-center justify-center border border-white/5 mb-3 group-hover:scale-110 transition-transform">
-              <AlertCircle className="w-5 h-5 text-green-500" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
             </div>
-            <div className="text-center">
-              <span className="block text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Slot 2</span>
-              <span className="text-[7px] text-green-400/50 font-black uppercase tracking-widest mt-1.5 block">Alert</span>
+            <div className="text-left sm:text-center">
+              <span className="block text-xs sm:text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Slot 2</span>
+              <span className="text-[7px] text-green-400/50 font-black uppercase tracking-widest mt-1.5 block">Critical Event</span>
             </div>
           </motion.button>
 
@@ -178,14 +178,14 @@ const SlotTracker = () => {
             whileHover={{ y: -3, boxShadow: '0 8px 25px -10px rgba(255,255,255,0.05)' }}
             whileTap={{ y: 2, borderBottomWidth: 1 }}
             onClick={() => logFailure('Both')}
-            className="group relative flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(255,255,255,0.05)] col-span-2 sm:col-span-1"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(255,255,255,0.05)]"
           >
-            <div className="w-10 h-10 rounded-xl bg-black/30 flex items-center justify-center border border-white/5 mb-3 group-hover:scale-110 transition-transform">
-              <Activity className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="text-center">
-              <span className="block text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Both</span>
-              <span className="text-[7px] text-gray-600 font-black uppercase tracking-widest mt-1.5 block">Alert</span>
+            <div className="text-left sm:text-center">
+              <span className="block text-xs sm:text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Both</span>
+              <span className="text-[7px] text-gray-600 font-black uppercase tracking-widest mt-1.5 block">Simultaneous</span>
             </div>
           </motion.button>
         </div>

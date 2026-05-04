@@ -101,20 +101,20 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-2 md:p-8 space-y-4 md:space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-[#050508]">
+    <div className="p-3 md:p-8 space-y-6 md:space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-[#050508]">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-white/[0.03]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/[0.03]">
         <div>
-          <h1 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter">
+          <h1 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter">
             Operational Overview
           </h1>
-          <div className="flex items-center gap-2 mt-1">
-             <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+          <div className="flex items-center gap-3 mt-1.5">
+             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
                <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-               <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Online</span>
+               <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Systems Online</span>
              </div>
-             <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">Infrastructure v4.0</p>
+             <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">Betfalme Infrastructure v4.0</p>
           </div>
         </div>
         <div className="flex items-center justify-between md:justify-end gap-4">
@@ -133,23 +133,23 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Main Infrastructure Section */}
-        <div className="lg:col-span-8 space-y-4 md:space-y-8">
+        <div className="lg:col-span-8 space-y-8">
           
           {/* Aviator Premium Pulse Graph */}
-          <div className="bg-[#0c0c14] border border-white/[0.05] rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 shadow-2xl relative overflow-hidden group">
-            <div className="flex items-start justify-between mb-4 md:mb-10">
+          <div className="bg-[#0c0c14] border border-white/[0.05] rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-2xl relative overflow-hidden group">
+            <div className="flex items-start justify-between mb-6 md:mb-10">
               <div>
-                <h3 className="text-sm md:text-lg font-black text-white uppercase tracking-tight flex items-center gap-2 md:gap-3">
-                  <div className="p-1 md:p-2 rounded-md md:rounded-xl bg-red-500/10 border border-red-500/20">
-                    <Activity size={14} className="text-red-500" />
+                <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight flex items-center gap-2 md:gap-3">
+                  <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-red-500/10 border border-red-500/20">
+                    <Activity size={16} className="text-red-500" />
                   </div>
                   Aviator Pulse
                 </h3>
-                <p className="text-[7px] md:text-[10px] text-gray-500 mt-1 md:mt-2 uppercase font-black tracking-[0.3em]">Live Failure Index</p>
+                <p className="text-[8px] md:text-[10px] text-gray-500 mt-1.5 md:mt-2 uppercase font-black tracking-[0.3em]">Real-time Global Failure Index</p>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[7px] md:text-[10px] font-black text-gray-500 uppercase tracking-widest">Frequency</span>
-                <span className="text-lg md:text-2xl font-black text-white tracking-tighter">{logs.filter(l => l.ts > Date.now() - 3600000).length} <span className="text-[8px] md:text-[10px] text-gray-600 font-bold">/hr</span></span>
+                <span className="text-[8px] md:text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Frequency</span>
+                <span className="text-xl md:text-2xl font-black text-white tracking-tighter">{logs.filter(l => l.ts > Date.now() - 3600000).length} <span className="text-[10px] text-gray-600 font-bold ml-0.5">/hr</span></span>
               </div>
             </div>
             
@@ -208,22 +208,22 @@ const Dashboard = () => {
           </div>
 
           {/* Minimal Shortcuts Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
             {shortcuts.map(res => (
               <button 
                 key={res.name} 
                 onClick={() => navigate(res.path + (res.params || ''))}
-                className="flex items-center gap-2 md:gap-4 p-2.5 md:p-5 rounded-xl md:rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/10 transition-all group relative overflow-hidden"
+                className="flex items-center gap-3 md:gap-4 p-3 md:p-5 rounded-2xl md:rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/10 transition-all group relative overflow-hidden"
               >
                 <div 
-                  className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
                   style={{ background: `${res.color}15`, border: `1px solid ${res.color}30` }}
                 >
-                  <res.icon size={14} md:size={22} style={{ color: res.color }} />
+                  <res.icon size={18} md:size={22} style={{ color: res.color }} />
                 </div>
                 <div className="text-left">
-                  <span className="block text-[7px] md:text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Open</span>
-                  <span className="block text-[10px] md:text-xs font-black text-white uppercase tracking-tighter">{res.name}</span>
+                  <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1.5">Open</span>
+                  <span className="block text-xs font-black text-white uppercase tracking-tighter">{res.name}</span>
                 </div>
                 <ArrowUpRight size={14} className="absolute top-4 right-4 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
@@ -235,13 +235,13 @@ const Dashboard = () => {
         <div className="lg:col-span-4 space-y-8">
           
           {/* Shift Rota Card */}
-          <div className="bg-[#0c0c14] border border-white/[0.05] rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 shadow-2xl h-full flex flex-col">
-            <div className="flex items-center justify-between mb-4 md:mb-10">
+          <div className="bg-[#0c0c14] border border-white/[0.05] rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-2xl h-full flex flex-col">
+            <div className="flex items-center justify-between mb-6 md:mb-10">
               <div>
-                <h3 className="text-sm md:text-lg font-black text-white uppercase tracking-tight">Deployment</h3>
-                <p className="text-[7px] md:text-[10px] text-gray-500 mt-1 md:mt-2 uppercase font-black tracking-[0.3em]">Staff Rota</p>
+                <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Daily Deployment</h3>
+                <p className="text-[8px] md:text-[10px] text-gray-500 mt-1.5 md:mt-2 uppercase font-black tracking-[0.3em]">Staff Rota Status</p>
               </div>
-              <Calendar size={14} className="text-orange-500/50" />
+              <Calendar size={18} className="text-orange-500/50" />
             </div>
 
             <div className="space-y-6 flex-1">
@@ -253,32 +253,32 @@ const Dashboard = () => {
                 const isCurrent = onDutyInfo.current === shift.id;
                 
                 return (
-                  <div key={shift.id} className={`relative p-4 md:p-6 rounded-xl md:rounded-3xl border transition-all duration-500 ${isCurrent ? 'bg-white/[0.03] border-white/10 shadow-2xl' : 'bg-transparent border-transparent opacity-20'}`}>
+                  <div key={shift.id} className={`relative p-6 rounded-3xl border transition-all duration-500 ${isCurrent ? 'bg-white/[0.03] border-white/10 shadow-2xl' : 'bg-transparent border-transparent opacity-20'}`}>
                     {isCurrent && (
-                      <div className="absolute top-2 right-4 flex items-center gap-1">
-                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[7px] font-black uppercase text-emerald-500 tracking-widest">Active</span>
+                      <div className="absolute top-4 right-6 flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[8px] font-black uppercase text-emerald-500 tracking-widest">Active</span>
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-5">
-                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
-                        <Clock size={14} md:size={18} style={{ color: shift.color }} />
+                    <div className="flex items-center gap-4 mb-5">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
+                        <Clock size={18} style={{ color: shift.color }} />
                       </div>
                       <div>
-                        <span className="block text-[10px] md:text-xs font-black text-white uppercase tracking-widest">{shift.label}</span>
-                        <span className="text-[8px] md:text-[9px] font-bold text-gray-500 tracking-widest mt-0.5 block">{shift.time}</span>
+                        <span className="block text-xs font-black text-white uppercase tracking-widest">{shift.label}</span>
+                        <span className="text-[9px] font-bold text-gray-500 tracking-widest mt-1 block">{shift.time}</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5 md:gap-2.5">
+                    <div className="flex flex-wrap gap-2.5">
                       {shift.names.map(name => (
-                        <div key={name} className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-lg md:rounded-xl bg-white/[0.03] border border-white/5">
-                           <div className="w-3.5 h-3.5 md:w-5 md:h-5 rounded shadow-inner" style={{ backgroundColor: STAFF_COLORS[name] || '#333' }} />
-                           <span className="text-[9px] md:text-[11px] font-black text-white/90 tracking-tight">{name}</span>
+                        <div key={name} className="flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 rounded-xl bg-white/[0.03] border border-white/5">
+                           <div className="w-5 h-5 rounded-lg shadow-inner" style={{ backgroundColor: STAFF_COLORS[name] || '#333' }} />
+                           <span className="text-[11px] font-black text-white/90 tracking-tight">{name}</span>
                         </div>
                       ))}
-                      {shift.names.length === 0 && <span className="text-[8px] md:text-[10px] text-gray-600 font-bold uppercase tracking-widest italic">No Deployment</span>}
+                      {shift.names.length === 0 && <span className="text-[10px] text-gray-600 font-bold uppercase tracking-widest italic">No Deployment</span>}
                     </div>
                   </div>
                 );
