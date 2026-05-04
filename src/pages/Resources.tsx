@@ -1550,6 +1550,11 @@ function MarketCard({
   market: Market;
   accent: string;
 }) {
+  const hasExtra =
+    (market.options?.length ?? 0) > 0 ||
+    !!market.example ||
+    (market.rules?.length ?? 0) > 0 ||
+    (market.variations?.length ?? 0) > 0;
   return (
     <div
       className="rounded-xl border border-white/[0.07] bg-white/[0.03] overflow-hidden flex flex-col"
@@ -1572,69 +1577,28 @@ function MarketCard({
           </h4>
           <ComplexityBadge level={market.complexity} />
         </div>
-        <p className="text-white/60 text-sm leading-relaxed">
+        <p className="text-white/60 text-[13px] leading-relaxed">
           {market.summary}
         </p>
-        
-        <div className="flex flex-col gap-3 pt-3 mt-auto border-t border-white/[0.06]">
-          {market.options && market.options.length > 0 && (
-            <div className="flex flex-col gap-2.5">
-              {market.options.map((opt, i) => (
-                <div
-                  key={i}
-                  className="flex gap-2.5 items-start bg-white/[0.02] p-2.5 rounded-lg border border-white/[0.03]"
-                >
-                  <div
-                    className="w-1.5 h-1.5 rounded-full mt-[7px] shrink-0"
-                    style={{ background: accent }}
-                  />
-                  <div className="leading-tight">
-                    <span className="text-white text-xs font-bold block mb-0.5">
-                      {opt.name}
-                    </span>
-                    <span className="text-white/40 text-[11px] font-medium leading-normal">
-                      {opt.description}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {market.example && (
-            <div
-              className="rounded-xl p-4 text-[11px] font-mono leading-relaxed whitespace-pre-wrap relative overflow-hidden"
-              style={{
-                background: `${accent}08`,
-                border: `1px solid ${accent}20`,
-                color: "rgba(255,255,255,0.7)",
-              }}
-            >
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
-        )}
-        {open && hasExtra && (
-          <div className="flex flex-col gap-3 pt-1 border-t border-white/[0.06]">
+        {hasExtra && (
+          <div className="flex flex-col gap-4 pt-3 border-t border-white/[0.06]">
             {market.options && market.options.length > 0 && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2.5">
                 {market.options.map((opt, i) => (
                   <div
                     key={i}
-                    className="flex gap-2 items-start"
+                    className="flex gap-2.5 items-start"
                   >
                     <div
-                      className="w-1.5 h-1.5 rounded-full mt-[5px] shrink-0"
+                      className="w-1.5 h-1.5 rounded-full mt-[6px] shrink-0"
                       style={{ background: accent }}
                     />
-                    <div>
-                      <span className="text-white text-sm">
+                    <div className="flex flex-col">
+                      <span className="text-white text-[13px] font-semibold leading-tight">
                         {opt.name}
                       </span>
-                      <span className="text-white/50 text-sm">
-                        {" "}
-                         -  {opt.description}
+                      <span className="text-white/40 text-[12px] mt-0.5 leading-relaxed">
+                        {opt.description}
                       </span>
                     </div>
                   </div>
@@ -1643,44 +1607,47 @@ function MarketCard({
             )}
             {market.example && (
               <div
-                className="rounded-lg p-3 text-xs font-mono leading-relaxed whitespace-pre-wrap"
+                className="rounded-lg p-3.5 text-[12px] font-mono leading-relaxed whitespace-pre-wrap"
                 style={{
-                  background: `${accent}12`,
-                  border: `1px solid ${accent}30`,
-                  color: "rgba(255,255,255,0.75)",
+                  background: `${accent}10`,
+                  border: `1px solid ${accent}25`,
+                  color: "rgba(255,255,255,0.8)",
                 }}
               >
+                <div className="text-[10px] uppercase tracking-wider mb-1.5 opacity-50 font-sans font-bold" style={{ color: accent }}>Example</div>
                 {market.example}
               </div>
             )}
             {market.rules && market.rules.length > 0 && (
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-2">
+                <div className="text-[10px] uppercase tracking-wider opacity-50 font-bold" style={{ color: accent }}>Key Rules</div>
                 {market.rules.map((rule, i) => (
                   <div
                     key={i}
-                    className="flex gap-2 items-start text-sm text-yellow-300/80"
+                    className="flex gap-2 items-start text-sm text-yellow-300/60"
                   >
-                    <span className="shrink-0 mt-0.5">⚠</span>
-                    <span>{rule.text}</span>
+                    <span className="shrink-0 mt-0.5 text-[10px]">⚠</span>
+                    <span className="text-[12px] leading-relaxed">{rule.text}</span>
                   </div>
                 ))}
               </div>
             )}
             {market.variations &&
               market.variations.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <p className="text-xs text-white/40 uppercase tracking-wider">
+                <div className="flex flex-col gap-2">
+                  <p className="text-[10px] uppercase tracking-wider opacity-50 font-bold" style={{ color: accent }}>
                     Variations
                   </p>
-                  {market.variations.map((v, i) => (
-                    <div
-                      key={i}
-                      className="flex gap-2 text-sm text-white/55"
-                    >
-                      <span className="shrink-0">→</span>
-                      <span>{v}</span>
-                    </div>
-                  ))}
+                  <div className="flex flex-wrap gap-2">
+                    {market.variations.map((v, i) => (
+                      <span
+                        key={i}
+                        className="text-[10px] px-2 py-0.5 rounded-md border border-white/10 text-white/40 bg-white/5"
+                      >
+                        {v}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
           </div>
@@ -3089,14 +3056,100 @@ function ComplianceView({ accent }: { accent: string }) {
   );
 }
 
+// ── Agent Manual Shell ────────────────────────────────────────────────────────
+function AgentManualView() {
+  const [active, setActive] = useState<ManualSection>("odds");
+  const meta = manualSections[active];
+
+  if (!meta) return null;
+
+  return (
+    <div>
+      {/* Manual nav */}
+      <div
+        className="sticky top-[57px] z-40 backdrop-blur-xl"
+        style={{
+          background: "rgba(8,13,26,0.92)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto">
+          {(
+            Object.entries(manualSections) as [
+              ManualSection,
+              ManualSectionMeta,
+            ][]
+          ).map(([key, m]) => (
+            <ManualTab
+              key={key}
+              id={key}
+              meta={m}
+              active={active === key}
+              onClick={() => setActive(key)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 md:pt-10 pb-20 md:pb-8">
+
+        {/* Section header */}
+        <div
+          className="flex items-center gap-4 mb-8 rounded-2xl px-6 py-5 border"
+          style={{
+            background: meta.accentLight,
+            borderColor: meta.accentBorder,
+          }}
+        >
+          <span className="text-4xl">{meta.icon}</span>
+          <div>
+            <h2
+              className="text-white"
+              style={{ fontSize: "1.3rem" }}
+            >
+              {meta.label}
+            </h2>
+            <p className="text-white/50 text-sm mt-0.5">
+              {meta.tagline}
+            </p>
+          </div>
+          <div
+            className="ml-auto px-3 py-1 rounded-full text-xs border"
+            style={{
+              background: meta.accentLight,
+              borderColor: meta.accentBorder,
+              color: meta.accent,
+            }}
+          >
+            Agent Manual v2.0
+          </div>
+        </div>
+
+        {active === "odds" && <OddsView accent={meta.accent} />}
+        {active === "promotions" && (
+          <PromotionsView accent={meta.accent} />
+        )}
+        {active === "support" && (
+          <SupportView accent={meta.accent} />
+        )}
+        {active === "compliance" && (
+          <ComplianceView accent={meta.accent} />
+        )}
+        {active === "toolkit" && (
+          <StaffToolkitView accent={meta.accent} />
+        )}
+      </main>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// MARKET GUIDE VIEW
+// MARKET GUIDE SHELL
 // ═══════════════════════════════════════════════════════════════════════════════
-function MarketGuideView({
-  activeSport,
-}: {
-  activeSport: Sport;
-}) {
+function MarketGuideView() {
+  const [activeSport, setActiveSport] =
+    useState<Sport>("soccer");
   const sport = sportsData[activeSport];
   const totalMarkets = sport.categories.reduce(
     (acc, cat) => acc + cat.markets.length,
@@ -3104,27 +3157,63 @@ function MarketGuideView({
   );
 
   return (
-    <div className="flex-1 min-w-0">
-      {/* Sport hero strip */}
-      <div className="px-4 md:px-8 pt-8 pb-4 flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-4xl shadow-2xl">
-          {sport.icon}
+    <div>
+      {/* Sport Nav */}
+      <div
+        className="sticky top-[57px] z-40 backdrop-blur-xl"
+        style={{
+          background: "rgba(8,13,26,0.92)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
+          {(
+            Object.entries(sportsData) as [Sport, SportData][]
+          ).map(([key, data]) => (
+            <SportTab
+              key={key}
+              sport={key}
+              data={data}
+              active={activeSport === key}
+              onClick={() => setActiveSport(key)}
+            />
+          ))}
+          <div className="ml-auto flex items-center gap-4 pl-4 border-l border-white/[0.06] shrink-0">
+            <div className="flex items-center gap-1.5 text-xs text-green-400">
+              <span className="w-2 h-2 rounded-full bg-green-400" />{" "}
+              Beginner
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-yellow-400">
+              <span className="w-2 h-2 rounded-full bg-yellow-400" />{" "}
+              Intermediate
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-red-400">
+              <span className="w-2 h-2 rounded-full bg-red-400" />{" "}
+              Advanced
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Sport hero strip */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
+
+        <div className="text-3xl">{sport.icon}</div>
         <div>
-          <h1
-            className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase"
-            style={{ color: sport.accent }}
+          <div
+            className="text-white"
+            style={{ fontSize: "1rem", color: sport.accent }}
           >
-            {sport.label}
-          </h1>
-          <div className="text-white/40 text-[11px] font-bold uppercase tracking-widest mt-1">
+            {sport.label} Markets
+          </div>
+          <div className="text-white/35 text-sm">
             {sport.categories.length} categories ·{" "}
             {totalMarkets} markets
           </div>
         </div>
       </div>
 
-      <main className="px-4 md:px-8 pt-6 pb-20">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
         {activeSport === "crash" ? (
           <CrashGamesView accent={sport.accent} />
         ) : activeSport === "virtual" ? (
@@ -3133,24 +3222,24 @@ function MarketGuideView({
           <CasinoView accent={sport.accent} />
         ) : (
           <>
-            <div className="grid gap-12">
-              {sport.categories.map((cat) => (
-                <CategorySection
-                  key={cat.id}
-                  category={cat}
-                  accent={sport.accent}
-                />
-              ))}
-            </div>
+            {sport.categories.map((cat) => (
+              <CategorySection
+                key={cat.id}
+                category={cat}
+                accent={sport.accent}
+              />
+            ))}
             <div
-              className="rounded-2xl p-8 text-center mt-12"
+              className="rounded-2xl p-6 text-center"
               style={{
                 background: "rgba(255,255,255,0.02)",
                 border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
-              <p className="text-white/20 text-xs font-mono uppercase tracking-widest">
-                Betfalme.ke Resource Repository · Product ID: {activeSport.toUpperCase()}
+              <p className="text-white/30 text-sm">
+                Betfalme.ke Sportsbook Market Guide · Soccer Parts
+                1–3 · Basketball Part 4 · Tennis Part 5 · Logical
+                &amp; Combo Markets
               </p>
             </div>
           </>
@@ -3161,196 +3250,89 @@ function MarketGuideView({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// AGENT MANUAL VIEW
-// ═══════════════════════════════════════════════════════════════════════════════
-function AgentManualView({
-  active,
-}: {
-  active: ManualSection;
-}) {
-  const meta = manualSections[active];
-  if (!meta) return null;
-
-  return (
-    <div className="flex-1 min-w-0">
-      <main className="px-4 md:px-8 pt-8 pb-20">
-        {/* Section header */}
-        <div
-          className="flex items-center gap-5 mb-10 rounded-3xl px-8 py-7 border shadow-2xl"
-          style={{
-            background: `linear-gradient(135deg, ${meta.accentLight}, rgba(8,13,26,0.5))`,
-            borderColor: meta.accentBorder,
-          }}
-        >
-          <div className="w-20 h-20 rounded-2xl bg-black/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-5xl shadow-inner">
-            {meta.icon}
-          </div>
-          <div className="flex-1">
-            <h2
-              className="text-white font-black uppercase tracking-tight"
-              style={{ fontSize: "1.8rem" }}
-            >
-              {meta.label}
-            </h2>
-            <p className="text-white/60 text-sm font-medium mt-1">
-              {meta.tagline}
-            </p>
-          </div>
-          <div
-            className="hidden md:flex flex-col items-end gap-1 px-4 py-2 rounded-xl border bg-black/40"
-            style={{
-              borderColor: meta.accentBorder,
-            }}
-          >
-            <span className="text-white/30 text-[9px] font-black uppercase tracking-[0.2em]">Manual Entry</span>
-            <span className="text-white text-xs font-bold" style={{ color: meta.accent }}>v2.4.0-REV</span>
-          </div>
-        </div>
-
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {active === "odds" && <OddsView accent={meta.accent} />}
-          {active === "promotions" && (
-            <PromotionsView accent={meta.accent} />
-          )}
-          {active === "support" && (
-            <SupportView accent={meta.accent} />
-          )}
-          {active === "compliance" && (
-            <ComplianceView accent={meta.accent} />
-          )}
-          {active === "toolkit" && (
-            <StaffToolkitView accent={meta.accent} />
-          )}
-        </div>
-      </main>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function Resources() {
   const [section, setSection] = useState<AppSection>("guide");
-  const [activeSport, setActiveSport] = useState<Sport>("soccer");
-  const [activeManual, setActiveManual] = useState<ManualSection>("odds");
-  
   const { templates } = useSupabaseData();
 
   return (
-    <div className="min-h-screen bg-[#080d1a] text-white flex">
-      {/* ── Sidebar ── */}
-      <aside className="w-[280px] border-r border-white/5 bg-[#0a0f1d] flex-shrink-0 sticky top-0 h-screen overflow-y-auto hidden lg:flex flex-col">
-        <div className="p-6 pb-2">
-          <div className="flex items-center gap-3 px-2 mb-8">
-            <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-black italic shadow-lg shadow-red-600/20">B</div>
-            <span className="font-black uppercase tracking-tighter text-lg">Resource <span className="text-red-600">Center</span></span>
-          </div>
-          
-          <div className="space-y-9">
-            {/* Market Guide Section */}
-            <div>
-              <div className="px-3 mb-4 flex items-center justify-between">
-                <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">Market Guides</span>
-                {section === 'guide' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />}
-              </div>
-              <div className="space-y-1">
-                {(Object.entries(sportsData) as [Sport, SportData][]).map(([key, data]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setSection("guide");
-                      setActiveSport(key);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all group ${
-                      section === "guide" && activeSport === key
-                        ? "bg-white/10 text-white font-bold"
-                        : "text-white/40 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    <span className={`text-lg transition-transform duration-300 ${section === "guide" && activeSport === key ? 'scale-110' : 'group-hover:scale-110 opacity-60 group-hover:opacity-100'}`}>
-                      {data.icon}
-                    </span>
-                    <span className="flex-1 text-left">{data.label}</span>
-                    {section === "guide" && activeSport === key && (
-                      <div className="w-1 h-4 rounded-full" style={{ background: data.accent }} />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+    <div className="text-white">
+      {/* ── Top Nav ── */}
+      <div
+        className="sticky top-0 z-50 backdrop-blur-xl"
+        style={{
+          background: "rgba(8,13,26,0.96)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center justify-center gap-2 md:gap-6">
 
-            {/* Agent Manual Section */}
-            <div>
-              <div className="px-3 mb-4 flex items-center justify-between">
-                <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">Agent Manual</span>
-                {section === 'manual' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />}
-              </div>
-              <div className="space-y-1">
-                {(Object.entries(manualSections) as [ManualSection, ManualSectionMeta][]).map(([key, meta]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setSection("manual");
-                      setActiveManual(key);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all group ${
-                      section === "manual" && activeManual === key
-                        ? "bg-white/10 text-white font-bold"
-                        : "text-white/40 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    <span className={`text-lg transition-transform duration-300 ${section === "manual" && activeManual === key ? 'scale-110' : 'group-hover:scale-110 opacity-60 group-hover:opacity-100'}`}>
-                      {meta.icon}
-                    </span>
-                    <span className="flex-1 text-left">{meta.label}</span>
-                    {meta.isNew && (
-                      <span className="text-[8px] bg-red-600 text-white px-1 rounded font-black uppercase leading-tight">New</span>
-                    )}
-                    {section === "manual" && activeManual === key && (
-                      <div className="w-1 h-4 rounded-full" style={{ background: meta.accent }} />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="mt-auto p-6">
-          <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4">
-            <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-2">Internal Version</div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white/50">STF-V2.4.9</span>
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </aside>
 
-      {/* ── Main View ── */}
-      <div className="flex-1 min-h-screen flex flex-col relative">
-        {/* Mobile Nav Header (Optional/Hidden on Desktop) */}
-        <div className="lg:hidden h-[60px] border-b border-white/5 flex items-center px-4 justify-between bg-[#0a0f1d] sticky top-0 z-50">
-          <span className="font-black uppercase tracking-tighter italic">Resource Center</span>
-          {/* Simple mobile indicator */}
-          <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-red-500">
-            {section === "guide" ? sportsData[activeSport].label : manualSections[activeManual].label}
-          </div>
-        </div>
 
-        {/* Dynamic Content */}
-        <div className="flex-1 flex flex-col">
-          {section === "guide" ? (
-            <MarketGuideView activeSport={activeSport} />
-          ) : (
-            <AgentManualView active={activeManual} />
-          )}
+          {/* Section switcher */}
+          <div
+            className="flex gap-1 rounded-xl p-1"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            {(
+              [
+                {
+                  id: "guide",
+                  label: "Market Guide",
+                  icon: "📖",
+                },
+                {
+                  id: "manual",
+                  label: "Agent Manual",
+                  icon: "🛡️",
+                },
+              ] as {
+                id: AppSection;
+                label: string;
+                icon: string;
+              }[]
+            ).map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSection(s.id)}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm transition-all"
+                style={{
+                  background:
+                    section === s.id
+                      ? "rgba(255,255,255,0.1)"
+                      : "transparent",
+                  color:
+                    section === s.id
+                      ? "#fff"
+                      : "rgba(255,255,255,0.45)",
+                  border:
+                    section === s.id
+                      ? "1px solid rgba(255,255,255,0.15)"
+                      : "1px solid transparent",
+                }}
+              >
+                <span>{s.icon}</span>
+                <span>{s.label}</span>
+              </button>
+            ))}
+          </div>
+
+
         </div>
-        
-        {/* AI Assistant Overlay */}
-        <SmartAssistant templates={templates} />
       </div>
+
+
+      {/* ── Views ── */}
+      {section === "guide" && <MarketGuideView />}
+      {section === "manual" && <AgentManualView />}
+      
+      {/* Global AI Assistant */}
+      <SmartAssistant templates={templates} />
     </div>
   );
 }
