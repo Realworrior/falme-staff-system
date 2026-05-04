@@ -143,59 +143,50 @@ const SlotTracker = () => {
           <p className="text-gray-500 text-sm md:text-base font-medium">Record and analyze real-time slot failure performance</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 max-w-3xl mx-auto md:mx-0">
           <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ y: -4, boxShadow: '0 12px 30px -10px rgba(239,68,68,0.5)' }}
+            whileTap={{ y: 2, borderBottomWidth: 1 }}
             onClick={() => logFailure('Slot 1')}
-            className="group relative overflow-hidden px-5 py-3 bg-[#1a1a24] border border-red-500/20 rounded-2xl transition-all hover:border-red-500/50 shadow-xl"
+            className="group relative flex flex-col items-center justify-center p-6 bg-gradient-to-br from-red-500/20 to-red-600/5 border border-red-500/30 rounded-3xl transition-all shadow-[0_8px_0_0_rgba(185,28,28,0.4)]"
           >
-            <div className="relative z-10 flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center border border-red-500/20 group-hover:bg-red-500/20 transition-all">
-                <AlertCircle className="w-6 h-6 text-red-500" />
-              </div>
-              <div className="text-center">
-                <span className="block text-xl font-black text-white tracking-widest font-heading leading-none">SLOT 1</span>
-                <span className="text-[8px] text-red-400/60 font-black uppercase tracking-widest mt-1 block">Critical Failure</span>
-              </div>
+            <div className="w-12 h-12 rounded-2xl bg-black/20 flex items-center justify-center border border-white/5 mb-4 group-hover:scale-110 transition-transform">
+              <AlertCircle className="w-6 h-6 text-red-500" />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="text-center">
+              <span className="block text-lg font-black text-white tracking-[0.2em] leading-none uppercase">Slot 1</span>
+              <span className="text-[9px] text-red-400/60 font-black uppercase tracking-widest mt-2 block">Critical Event</span>
+            </div>
           </motion.button>
 
           <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ y: -4, boxShadow: '0 12px 30px -10px rgba(34,197,94,0.5)' }}
+            whileTap={{ y: 2, borderBottomWidth: 1 }}
             onClick={() => logFailure('Slot 2')}
-            className="group relative overflow-hidden px-5 py-3 bg-[#1a1a24] border border-green-500/20 rounded-2xl transition-all hover:border-green-500/50 shadow-xl"
+            className="group relative flex flex-col items-center justify-center p-6 bg-gradient-to-br from-green-500/20 to-green-600/5 border border-green-500/30 rounded-3xl transition-all shadow-[0_8px_0_0_rgba(21,128,61,0.4)]"
           >
-            <div className="relative z-10 flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center border border-green-500/20 group-hover:bg-green-500/20 transition-all">
-                <AlertCircle className="w-6 h-6 text-green-500" />
-              </div>
-              <div className="text-center">
-                <span className="block text-xl font-black text-white tracking-widest font-heading leading-none">SLOT 2</span>
-                <span className="text-[8px] text-green-400/60 font-black uppercase tracking-widest mt-1 block">Critical Failure</span>
-              </div>
+            <div className="w-12 h-12 rounded-2xl bg-black/20 flex items-center justify-center border border-white/5 mb-4 group-hover:scale-110 transition-transform">
+              <AlertCircle className="w-6 h-6 text-green-500" />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="text-center">
+              <span className="block text-lg font-black text-white tracking-[0.2em] leading-none uppercase">Slot 2</span>
+              <span className="text-[9px] text-green-400/60 font-black uppercase tracking-widest mt-2 block">Critical Event</span>
+            </div>
           </motion.button>
 
           <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ y: -4, boxShadow: '0 12px 30px -10px rgba(255,255,255,0.1)' }}
+            whileTap={{ y: 2, borderBottomWidth: 1 }}
             onClick={() => logFailure('Both')}
-            className="group relative overflow-hidden px-5 py-3 bg-[#1a1a24] border border-white/10 rounded-2xl transition-all hover:border-white/30 shadow-xl col-span-2 sm:col-span-1"
+            className="group relative flex flex-col items-center justify-center p-6 bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-3xl transition-all shadow-[0_8px_0_0_rgba(255,255,255,0.1)] col-span-2 sm:col-span-1"
           >
-            <div className="relative z-10 flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-all">
-                <Activity className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-center">
-                <span className="block text-xl font-black text-white tracking-widest font-heading uppercase leading-none">Both</span>
-                <span className="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-1 block">Simultaneous</span>
-              </div>
+            <div className="w-12 h-12 rounded-2xl bg-black/20 flex items-center justify-center border border-white/5 mb-4 group-hover:scale-110 transition-transform">
+              <Activity className="w-6 h-6 text-white" />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="text-center">
+              <span className="block text-lg font-black text-white tracking-[0.2em] leading-none uppercase">Both</span>
+              <span className="text-[9px] text-gray-500 font-black uppercase tracking-widest mt-2 block">Simultaneous</span>
+            </div>
           </motion.button>
         </div>
       </motion.div>
