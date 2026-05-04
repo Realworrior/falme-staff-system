@@ -210,7 +210,7 @@ export default function Tickets() {
           </div>
 
           <div className="p-8 space-y-4">
-            {loading ? (
+            {loading?.tickets ? (
               <div className="py-24 text-center">
                 <div className="w-12 h-12 mx-auto mb-4 border-4 border-red-500/20 border-t-red-500 rounded-full animate-spin" />
                 <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Syncing with Central database...</p>
