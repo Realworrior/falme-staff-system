@@ -79,8 +79,14 @@ export const SupabaseDataProvider = ({ children }) => {
       .on('postgres_changes', { event: '*', table: 'support_templates', schema: 'public' }, () => {
         supabase.from('support_templates').select('*').then(({data}) => setTemplates(data || []));
       })
-      .on('postgres_changes', { event: '*', table: 'aviator_logs', schema: 'public' }, () => {
-        supabase.from('aviator_logs').select('*').order('created_at', { ascending: false }).then(({data}) => setLogs(data || []));
+      .on('postgres_changes', { event: '*', table: 'aviator_logs', schema: 'public' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setLogs(prev => [payload.new, ...prev]);
+        } else if (payload.eventType === 'DELETE') {
+          setLogs(prev => prev.filter(l => l.id === payload.old.id));
+        } else if (payload.eventType === 'UPDATE') {
+          setLogs(prev => prev.map(l => l.id === payload.new.id ? payload.new : l));
+        }
       })
       .on('postgres_changes', { event: '*', table: 'rota_overrides', schema: 'public' }, async (payload) => {
         // Optimized: Only update the specific record that changed instead of fetching all
