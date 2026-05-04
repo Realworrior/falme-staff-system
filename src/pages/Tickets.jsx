@@ -7,6 +7,7 @@ import { TicketCard } from '../components/Tracking/TicketCard';
 import { NewTicketModal } from '../components/Tracking/NewTicketModal';
 import { StatsCard } from '../components/Tracking/StatsCard';
 import { LoginForm } from '../components/Tracking/LoginForm';
+import { sendTicketToWhatsApp } from '../utils/whatsapp';
 
 export default function Tickets() {
   const { tickets, user, loading, actions } = useSupabaseData();
@@ -45,11 +46,18 @@ export default function Tickets() {
 
   const handleNewTicket = async (ticketData) => {
     try {
-      await actions.createTicket({
+      const newTicket = await actions.createTicket({
         ...ticketData,
         author: user?.name || 'Customer'
       });
+      
       showToast('Ticket created successfully', 'success');
+      
+      // Send to WhatsApp
+      if (newTicket) {
+        sendTicketToWhatsApp(newTicket);
+      }
+      
     } catch (err) {
       showToast(`Creation Failed: ${err.message || 'Unknown Error'}`, 'error');
     }
