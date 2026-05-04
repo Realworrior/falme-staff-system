@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SmartAssistant } from "../components/SmartAssistant";
 import { useSupabaseData } from "../context/SupabaseDataContext";
 
