@@ -6,13 +6,14 @@ const WHATSAPP_CONFIG = {
   // Replace with the tech team's WhatsApp number (with country code, e.g., '254111222333')
   TECH_TEAM_NUMBER: '254111222333', 
   
-  // Option: 'redirect' (manual) or 'api' (automated)
-  // For 'api', you need a service like UltraMsg, Whapi, or Twilio
-  MODE: 'redirect', 
+  // Option: 'api' (invisible background sending)
+  // To use this, you need a service like UltraMsg or Whapi.
+  MODE: 'api', 
   
-  // API credentials (if MODE is 'api')
-  API_URL: '',
-  API_TOKEN: '',
+  // API credentials for the WhatsApp Gateway (e.g., UltraMsg)
+  // Get these from your provider dashboard
+  API_URL: 'https://api.ultramsg.com/INSTANCE_ID/messages/chat',
+  API_TOKEN: 'YOUR_TOKEN_HERE',
 };
 
 /**
@@ -46,13 +47,10 @@ export const sendTicketToWhatsApp = (ticket) => {
   const encodedMessage = encodeURIComponent(message);
   const phoneNumber = WHATSAPP_CONFIG.TECH_TEAM_NUMBER;
 
-  if (WHATSAPP_CONFIG.MODE === 'redirect') {
-    // Open WhatsApp Web or App with pre-filled message
-    const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-    window.open(url, '_blank');
-    return { success: true, method: 'redirect' };
-  } else if (WHATSAPP_CONFIG.MODE === 'api' && WHATSAPP_CONFIG.API_URL) {
-    // background API call (e.g., UltraMsg)
+  if (WHATSAPP_CONFIG.MODE === 'api' && WHATSAPP_CONFIG.API_TOKEN !== 'YOUR_TOKEN_HERE') {
+    // Background API call (Invisible to Staff)
+    console.log(`[WhatsApp] Background sync started for ticket: ${ticket.ticket_id}`);
+    
     return fetch(WHATSAPP_CONFIG.API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,12 +60,17 @@ export const sendTicketToWhatsApp = (ticket) => {
         body: message
       })
     })
-    .then(res => res.json())
+    .then(res => {
+      console.log(`[WhatsApp] Sync complete for ${ticket.ticket_id}`);
+      return { success: true, method: 'api' };
+    })
     .catch(err => {
-      console.error('WhatsApp API Error:', err);
+      console.error('[WhatsApp] Background sync failed:', err);
       return { success: false, error: err };
     });
+  } else {
+    // Fallback if no API is configured yet
+    console.warn('[WhatsApp] No API configured. In-app notification only.');
+    return { success: false, error: 'API not configured' };
   }
-  
-  return { success: false, error: 'Invalid Configuration' };
 };
