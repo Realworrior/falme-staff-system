@@ -32,8 +32,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
       .replace(/(\d+)(st|nd|rd|th)/i, '$1')
       .replace(/\s+/g, ' ');
     
-    // Robust match for "Fri, , 1" or "Fri, 1" or just "1"
-    const dayMatch = clean.match(/(?:[a-zA-Z]{2,10},?\s*)*,?(\d{1,2})$/i);
+    // Robust match for "Fri, , 1" or "Fri, 1" or just "1" with any amount of spacing/commas
+    const dayMatch = clean.match(/(?:[a-zA-Z]{2,10}|,|\s)+\s*(\d{1,2})$/i);
     if (dayMatch) {
       const dayNum = parseInt(dayMatch[1]);
       if (dayNum >= 1 && dayNum <= 31) {
@@ -158,6 +158,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
     }
 
     const result = {};
+    let processedRows = 0;
+
     parsedData.slice(1).forEach((row) => {
       const rawDate = row[0]?.trim();
       if (!rawDate) return;
@@ -165,20 +167,29 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
       const dateKey = normalizeDate(rawDate);
       if (!dateKey) return;
 
+      let rowHasData = false;
       staffIndices.forEach(({ name, index }) => {
         const shift = cleanShift(row[index]);
         if (shift) {
           if (!result[dateKey]) result[dateKey] = {};
           result[dateKey][name] = shift;
+          rowHasData = true;
         }
       });
+      if (rowHasData) processedRows++;
     });
+
+    if (processedRows === 0) {
+      setError('No valid shift data found in the pasted content. Check if the dates and staff names match.');
+      return;
+    }
 
     onImport(result, shouldReplace); 
     onClose();
     setFile(null);
     setParsedData(null);
     setPreviewRows([]);
+    setPasteText('');
   };
 
   const handlePredict = () => {
