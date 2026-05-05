@@ -33,7 +33,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
       .replace(/\s+/g, ' ');
     
     // Robust match for "Fri, , 1" or "Fri, 1" or just "1" with any amount of spacing/commas
-    const dayMatch = clean.match(/(?:[a-zA-Z]{2,10}|,|\s)+\s*(\d{1,2})$/i);
+    const dayMatch = clean.match(/(?:[a-zA-Z]{2,10}|,|\s)*\s*(\d{1,2})$/i);
     if (dayMatch) {
       const dayNum = parseInt(dayMatch[1]);
       if (dayNum >= 1 && dayNum <= 31) {
@@ -142,7 +142,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
     }
 
     const headers = parsedData[0].map(h => h?.trim().toLowerCase() || '');
-    const staffIndices = [];
+    let staffIndices = [];
     
     STAFF_CONFIG.forEach(staff => {
       const lowerName = staff.name.toLowerCase();
@@ -152,15 +152,25 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
       }
     });
 
-    if (staffIndices.length === 0) {
-      setError('Could not identify any staff columns. Ensure headers match staff names.');
+    // Fallback: If no headers matched (e.g. user didn't copy the header row), 
+    // assume the standard 10-column layout from the spreadsheet:
+    // Date, Chris, Faye, Joyce, Linda, Nickson, Pauline, Sylvia, Terry, Ascar
+    if (staffIndices.length === 0 && parsedData[0].length >= 9) {
+      const standardOrder = ['Chris', 'Faye', 'Joyce', 'Linda', 'Nickson', 'Pauline', 'Sylvia', 'Terry', 'Ascar'];
+      staffIndices = standardOrder.map((name, idx) => ({ name, index: idx + 1 }));
+    } else if (staffIndices.length === 0) {
+      setError('Could not identify any staff columns. Ensure headers match staff names or the columns follow the standard layout.');
       return;
     }
 
     const result = {};
     let processedRows = 0;
 
-    parsedData.slice(1).forEach((row) => {
+    // If we used the fallback, we need to process from row 0 instead of row 1 
+    // because row 0 might be actual data, not a header row.
+    const startRow = headers.some(h => h.includes('date') || h.includes('chris') || h.includes('faye')) ? 1 : 0;
+
+    parsedData.slice(startRow).forEach((row) => {
       const rawDate = row[0]?.trim();
       if (!rawDate) return;
 
