@@ -348,6 +348,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
               </div>
             </div>
           )}
+
+          {activeTab === 'ai' && (
             <div className="space-y-6">
               <div className="p-8 border border-white/5 bg-white/[0.02] rounded-[32px] text-center">
                 <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-3">

@@ -24,6 +24,22 @@ export interface DailySchedule {
   };
 }
 
+export interface MonthlyAnalytics {
+  staffStats: {
+    name: string;
+    totalShifts: number;
+    amShifts: number;
+    pmShifts: number;
+    ntShifts: number;
+  }[];
+  dailyMetrics: {
+    date: Date;
+    amCount: number;
+    pmCount: number;
+    ntCount: number;
+  }[];
+}
+
 // Balanced 18-day cycle pattern (5 AM, 5 PM, 2 NT, 6 OFF)
 export const CYCLE_18: ShiftType[] = [
   'AM', 'AM', 'PM', 'PM', 'NT', 'OFF', 'OFF', 'AM', 'OFF', // Part 1: 3 AM, 2 PM
