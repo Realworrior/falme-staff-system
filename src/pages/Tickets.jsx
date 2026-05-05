@@ -120,7 +120,7 @@ export default function Tickets() {
         className="flex flex-col md:flex-row md:items-center justify-between gap-6"
       >
         <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center shadow-lg">
             {userRole === 'staff' ? <User className="text-red-500" /> : <Shield className="text-red-500" />}
           </div>
           <div>
@@ -132,7 +132,7 @@ export default function Tickets() {
                 Logged in as {user.name}
               </span>
             </div>
-            <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2 flex-wrap">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2 flex-wrap">
               <Zap size={10} className="text-red-500/60" />
               Real-time Issue Tracking Protocol Active
               <span className="text-red-500/40 font-mono">• {user.phone}</span>
@@ -151,7 +151,7 @@ export default function Tickets() {
           {userRole === 'staff' && (
             <button 
               onClick={() => setShowNewTicketModal(true)}
-              className="px-8 py-4 accent-gradient text-white rounded-2xl font-black shadow-2xl hover:shadow-red-500/40 transition-all duration-300 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em]"
+              className="px-8 py-4 bg-red-600 text-white rounded-xl font-black shadow-lg transition-all duration-300 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em]"
             >
               <Plus size={18} strokeWidth={3} />
               New Ticket
@@ -178,12 +178,12 @@ export default function Tickets() {
               placeholder="Search by ID, Phone, or Content..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 bg-[#0f0f17] border border-white/5 rounded-3xl text-white placeholder-gray-700 focus:outline-none focus:border-red-500/20 transition-all shadow-2xl"
+              className="w-full pl-14 pr-6 py-5 bg-card border border-border rounded-2xl text-white placeholder-gray-700 focus:outline-none focus:border-red-500/20 transition-all shadow-lg"
             />
           </div>
         </div>
 
-        <div className="bg-[#0f0f17] rounded-[40px] border border-white/5 shadow-2xl overflow-hidden min-h-[400px]">
+        <div className="bg-card rounded-2xl border border-border shadow-lg overflow-hidden min-h-[400px]">
           <div className="p-8 border-b border-white/5 flex flex-col md:flex-row items-center justify-between bg-black/20 gap-4">
             <div className="flex items-center gap-3">
               <Filter size={18} className="text-red-500" />

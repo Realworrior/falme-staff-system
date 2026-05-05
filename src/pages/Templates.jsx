@@ -27,22 +27,23 @@ import KeywordHighlighter from '../components/KeywordHighlighter';
 // PREMIUM DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const S = {
-  bg: '#0a0a10',
-  surface: '#111118',
-  card: '#16161f',
-  cardHover: '#1c1c28',
-  border: '#1e1e2c',
-  borderHover: '#2e2e42',
-  orange: '#f97316',
+  bg: 'var(--background)',
+  surface: 'var(--card)',
+  card: 'var(--card)',
+  cardHover: 'var(--secondary)',
+  border: 'var(--border)',
+  borderHover: 'var(--ring)',
+  primary: 'var(--accent)',
+  orange: 'var(--brand-orange)',
   orangeDim: '#ea580c',
-  orangeGlow: 'rgba(249,115,22,0.15)',
-  orangeText: '#fb923c',
-  textPrimary: '#e8eaf0',
-  textSecondary: '#8b93a7',
-  textMuted: '#4b5363',
-  green: '#22c55e',
-  red: '#ef4444',
-  purple: '#8b5cf6',
+  orangeGlow: 'rgba(249,115,22,0.05)',
+  orangeText: 'var(--brand-orange)',
+  textPrimary: 'var(--foreground)',
+  textSecondary: 'var(--muted-foreground)',
+  textMuted: '#64748b',
+  green: 'var(--brand-emerald)',
+  red: 'var(--brand-red)',
+  purple: 'var(--brand-purple)',
   yellow: '#eab308',
 };
 
@@ -535,9 +536,9 @@ const Templates = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{
               width: 48, height: 48, borderRadius: 16,
-              background: `linear-gradient(135deg, ${S.orange}, #dc2626)`,
+              background: S.primary,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 8px 20px -6px rgba(249,115,22,0.4)'
+              border: '1px solid rgba(255,255,255,0.1)'
             }}>
               <Zap size={24} color="#fff" />
             </div>
@@ -621,14 +622,11 @@ const Templates = () => {
 
             {/* Main Command Bar */}
             <div style={{
-              background: 'rgba(22, 22, 31, 0.6)',
-              backdropFilter: 'blur(20px)',
-              border: `1px solid ${aiInput.length > 20 ? S.orange : S.border}`,
-              borderRadius: 28,
+              background: 'var(--card)',
+              border: `1px solid ${aiInput.length > 20 ? S.primary : S.border}`,
+              borderRadius: 20,
               padding: '12px',
-              boxShadow: aiInput.length > 20 
-                ? `0 20px 50px -10px ${S.orange}20, inset 0 1px 1px rgba(255,255,255,0.05)` 
-                : '0 20px 40px -15px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
               transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
               display: 'flex',
               flexDirection: 'column',
@@ -692,21 +690,21 @@ const Templates = () => {
                     onClick={handleAnalyze}
                     disabled={aiInput.length < 10 || aiLoading}
                     style={{
-                      background: aiInput.length >= 10 ? `linear-gradient(135deg, ${S.orange}, #dc2626)` : 'rgba(255,255,255,0.03)',
+                      background: aiInput.length >= 10 ? S.primary : 'rgba(255,255,255,0.03)',
                       color: aiInput.length >= 10 ? '#fff' : S.textMuted,
                       border: 'none',
-                      borderRadius: 16,
-                      padding: '12px 24px',
+                      borderRadius: 12,
+                      padding: '10px 24px',
                       fontSize: 12,
                       fontWeight: 900,
                       cursor: aiInput.length >= 10 ? 'pointer' : 'default',
                       display: 'flex',
                       alignItems: 'center',
                       gap: 10,
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transition: 'all 0.3s',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
-                      boxShadow: aiInput.length >= 10 ? `0 10px 20px -5px ${S.orange}40` : 'none'
+                      boxShadow: 'none'
                     }}
                   >
                     {aiLoading ? <RotateCcw size={14} className="animate-spin" /> : <Sparkles size={14} />}

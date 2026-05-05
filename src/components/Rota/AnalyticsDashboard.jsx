@@ -25,7 +25,7 @@ export function AnalyticsDashboard({ analytics }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#0f0f17] border border-white/5 rounded-[32px] p-6 shadow-2xl"
+        className="bg-card border border-border rounded-2xl p-6 shadow-lg"
       >
         <h3 className="mb-6 text-sm font-black uppercase tracking-[0.2em] text-gray-400 font-heading">
           Staff Shift Distribution
@@ -37,11 +37,11 @@ export function AnalyticsDashboard({ analytics }) {
             <YAxis tick={{ fontSize: 10, fill: '#4b5563' }} axisLine={false} tickLine={false} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#0f0f17',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '16px',
+                backgroundColor: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
                 fontSize: '12px',
-                color: '#fff'
+                color: 'var(--foreground)'
               }}
               itemStyle={{ color: '#fff' }}
             />
@@ -58,7 +58,7 @@ export function AnalyticsDashboard({ analytics }) {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        className="bg-[#0f0f17] border border-white/5 rounded-[32px] p-6 shadow-2xl"
+        className="bg-card border border-border rounded-2xl p-6 shadow-lg"
       >
         <h3 className="mb-6 text-sm font-black uppercase tracking-[0.2em] text-gray-400 font-heading">
           Daily Staff Coverage
@@ -76,11 +76,11 @@ export function AnalyticsDashboard({ analytics }) {
             <YAxis tick={{ fontSize: 10, fill: '#4b5563' }} axisLine={false} tickLine={false} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#0f0f17',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '16px',
+                backgroundColor: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
                 fontSize: '12px',
-                color: '#fff'
+                color: 'var(--foreground)'
               }}
               itemStyle={{ color: '#fff' }}
             />
@@ -100,10 +100,7 @@ export function AnalyticsDashboard({ analytics }) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 + index * 0.05 }}
-            className="rounded-[28px] p-5 text-white border border-white/5 shadow-xl relative overflow-hidden group/stat"
-            style={{
-              background: `linear-gradient(135deg, ${STAFF_COLORS[stat.name]}22, ${STAFF_COLORS[stat.name]}05)`
-            }}
+            className="rounded-2xl p-5 text-white border border-border bg-card shadow-lg relative overflow-hidden group/stat"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 font-heading">

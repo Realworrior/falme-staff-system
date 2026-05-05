@@ -90,7 +90,7 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
   return (
     <div className="space-y-8">
       {/* Premium Header Card */}
-      <div className="relative overflow-hidden p-8 md:p-12 rounded-[50px] bg-gradient-to-br from-blue-600 to-indigo-900 shadow-2xl">
+      <div className="relative overflow-hidden p-8 md:p-12 rounded-2xl bg-accent border border-white/10 shadow-lg">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
@@ -107,7 +107,7 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
             </p>
           </div>
 
-          <div className="bg-black/20 backdrop-blur-2xl p-8 rounded-[40px] border border-white/10 min-w-[280px]">
+          <div className="bg-black/20 backdrop-blur-2xl p-8 rounded-xl border border-white/10 min-w-[280px]">
             <p className="text-blue-200 text-[10px] font-black uppercase tracking-widest mb-2">Total Estimated Payout</p>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black text-white tracking-tighter">
@@ -129,7 +129,7 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
 
       {/* Filters & Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
-        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
+        <div className="flex bg-white/5 p-1 rounded-xl border border-border">
           {['weekly', 'monthly', 'custom'].map(type => (
             <button
               key={type}
@@ -178,7 +178,7 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
               <motion.div 
                 layout
                 key={s.name}
-                className="p-6 rounded-[30px] bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group"
+                className="p-6 rounded-2xl bg-card border border-border hover:border-white/10 transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -235,7 +235,7 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
 
         {/* History / Sidebar */}
         <div className="space-y-6">
-          <div className="p-8 rounded-[40px] bg-white/[0.02] border border-white/5">
+          <div className="p-8 rounded-2xl bg-card border border-border">
             <h3 className="text-lg font-black text-white uppercase tracking-tighter mb-6 flex items-center gap-2">
               <History size={18} className="text-blue-500" />
               Payment Registry
@@ -263,7 +263,7 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
             </div>
           </div>
 
-          <div className="p-8 rounded-[40px] bg-blue-600/5 border border-blue-500/10">
+          <div className="p-8 rounded-2xl bg-accent/5 border border-accent/10">
             <div className="flex items-center gap-3 mb-4">
               <Info size={16} className="text-blue-500" />
               <h4 className="text-xs font-black text-white uppercase tracking-widest">Policy Insight</h4>

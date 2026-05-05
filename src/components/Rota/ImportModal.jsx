@@ -233,8 +233,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#0a0a0f] border-white/5 text-white max-w-7xl w-[98vw] max-h-[92vh] p-0 overflow-hidden rounded-[32px] flex flex-col">
-        <div className="p-8 border-b border-white/5 bg-black/40">
+      <DialogContent className="bg-background border-border text-white max-w-7xl w-[98vw] max-h-[92vh] p-0 overflow-hidden rounded-2xl flex flex-col">
+        <div className="p-8 border-b border-border bg-card">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
               <Upload className="text-red-500" />
@@ -251,7 +251,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
           <div className="flex gap-2 mt-6">
             <button 
               onClick={() => { setActiveTab('excel'); setError(null); setParsedData(null); setPreviewRows([]); setFile(null); }}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'excel' ? 'bg-white/10 text-white border border-white/10' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'excel' ? 'bg-white/10 text-white border border-border' : 'text-gray-500 hover:text-gray-300'}`}
             >
               CSV File
             </button>
@@ -357,7 +357,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                 </div>
                 <h4 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Smart Prediction System</h4>
                 <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed">Generates an optimized matrix based on operational flow.</p>
-                <button onClick={handlePredict} className="mt-8 px-12 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20">Generate AI Prediction</button>
+                <button onClick={handlePredict} className="mt-8 px-12 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">Generate AI Prediction</button>
               </div>
               {validationErrors.length > 0 && (
                 <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2">
@@ -375,8 +375,8 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                   <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
                     <table className="w-full text-left whitespace-nowrap table-auto min-w-max">
                       <thead>
-                        <tr className="bg-[#0f0f17] text-gray-400 uppercase tracking-widest text-[9px]">
-                          {previewHeaders.map((h, i) => <th key={i} className={`p-4 border-b border-white/10 ${i === 0 ? 'sticky left-0 bg-[#0f0f17] z-20 min-w-[180px]' : 'min-w-[140px]'}`}>{h}</th>)}
+                        <tr className="bg-muted text-gray-400 uppercase tracking-widest text-[9px]">
+                          {previewHeaders.map((h, i) => <th key={i} className={`p-4 border-b border-border ${i === 0 ? 'sticky left-0 bg-muted z-20 min-w-[180px]' : 'min-w-[140px]'}`}>{h}</th>)}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
@@ -419,13 +419,13 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
           {error && <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs"><AlertCircle size={14} />{error}</div>}
         </div>
 
-        <div className="p-8 border-t border-white/5 bg-black/40">
+        <div className="p-8 border-t border-border bg-card">
             <div className="flex flex-col sm:flex-row gap-4">
-              <button onClick={onClose} className="flex-1 px-8 py-4 rounded-2xl border border-white/5 text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all text-center">Cancel</button>
+              <button onClick={onClose} className="flex-1 px-8 py-4 rounded-xl border border-border text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all text-center">Cancel</button>
               {activeTab === 'excel' || activeTab === 'paste' ? (
-                <button onClick={handleProcess} disabled={activeTab === 'excel' ? !file : !parsedData} className="flex-[2] px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 disabled:opacity-50 transition-all">Execute Matrix Sync</button>
+                <button onClick={handleProcess} disabled={activeTab === 'excel' ? !file : !parsedData} className="flex-[2] px-8 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg disabled:opacity-50 transition-all">Execute Matrix Sync</button>
               ) : (
-                <button onClick={handleApplyPrediction} disabled={!predictionResult} className="flex-[2] px-8 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 transition-all">Apply & Wipe Overrides</button>
+                <button onClick={handleApplyPrediction} disabled={!predictionResult} className="flex-[2] px-8 py-4 rounded-xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg disabled:opacity-50 transition-all">Apply & Wipe Overrides</button>
               )}
             </div>
         </div>

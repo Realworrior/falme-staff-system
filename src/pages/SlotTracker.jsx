@@ -144,11 +144,9 @@ const SlotTracker = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto">
-          <motion.button 
-            whileHover={{ y: -3, boxShadow: '0 8px 25px -10px rgba(239,68,68,0.4)' }}
-            whileTap={{ y: 2, borderBottomWidth: 1 }}
+          <motion.button
             onClick={() => logFailure('Slot 1')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-gradient-to-br from-red-500/15 to-red-600/5 border border-red-500/20 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(185,28,28,0.3)]"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-2xl transition-all"
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
@@ -159,11 +157,9 @@ const SlotTracker = () => {
             </div>
           </motion.button>
 
-          <motion.button 
-            whileHover={{ y: -3, boxShadow: '0 8px 25px -10px rgba(34,197,94,0.4)' }}
-            whileTap={{ y: 2, borderBottomWidth: 1 }}
+          <motion.button
             onClick={() => logFailure('Slot 2')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-gradient-to-br from-green-500/15 to-green-600/5 border border-green-500/20 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(21,128,61,0.3)]"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-2xl transition-all"
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
@@ -174,11 +170,9 @@ const SlotTracker = () => {
             </div>
           </motion.button>
 
-          <motion.button 
-            whileHover={{ y: -3, boxShadow: '0 8px 25px -10px rgba(255,255,255,0.05)' }}
-            whileTap={{ y: 2, borderBottomWidth: 1 }}
+          <motion.button
             onClick={() => logFailure('Both')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl transition-all shadow-[0_6px_0_0_rgba(255,255,255,0.05)]"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-white/5 border border-white/10 rounded-2xl transition-all"
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
               <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -196,7 +190,7 @@ const SlotTracker = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="bg-[#0f0f17] rounded-3xl border border-white/5 shadow-2xl overflow-hidden"
+        className="bg-card rounded-2xl border border-border shadow-lg overflow-hidden"
       >
         <div className="p-6 border-b border-white/5 bg-black/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -358,7 +352,7 @@ const SlotTracker = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="bg-[#0f0f17] rounded-3xl p-6 border border-white/5 shadow-2xl"
+        className="bg-card rounded-2xl p-6 border border-border shadow-lg"
       >
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -384,16 +378,6 @@ const SlotTracker = () => {
         <div className="h-[260px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorSlot1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--dull-red)" stopOpacity={0.05}/>
-                  <stop offset="95%" stopColor="var(--dull-red)" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorSlot2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--dull-green)" stopOpacity={0.05}/>
-                  <stop offset="95%" stopColor="var(--dull-green)" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.02)" />
               <XAxis 
                 dataKey="day" 
@@ -419,19 +403,19 @@ const SlotTracker = () => {
               <Area 
                 type="monotone" 
                 dataKey="slot1" 
-                stroke="var(--dull-red)" 
+                stroke="#ef4444" 
                 strokeWidth={2}
-                fillOpacity={1} 
-                fill="url(#colorSlot1)" 
+                fill="#ef4444"
+                fillOpacity={0.05} 
                 animationDuration={1500}
               />
               <Area 
                 type="monotone" 
                 dataKey="slot2" 
-                stroke="var(--dull-green)" 
+                stroke="#10b981" 
                 strokeWidth={2}
-                fillOpacity={1} 
-                fill="url(#colorSlot2)" 
+                fill="#10b981"
+                fillOpacity={0.05} 
                 animationDuration={1500}
               />
             </AreaChart>

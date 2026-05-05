@@ -101,7 +101,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-3 md:p-8 space-y-6 md:space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-[#050508]">
+    <div className="p-3 md:p-8 space-y-6 md:space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-background">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/[0.03]">
@@ -136,7 +136,7 @@ const Dashboard = () => {
         <div className="lg:col-span-8 space-y-8">
           
           {/* Aviator Premium Pulse Graph */}
-          <div className="bg-[#0c0c14] border border-white/[0.05] rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-2xl relative overflow-hidden group">
+          <div className="bg-card border border-border rounded-2xl p-5 md:p-8 shadow-lg relative overflow-hidden group">
             <div className="flex items-start justify-between mb-6 md:mb-10">
               <div>
                 <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight flex items-center gap-2 md:gap-3">
@@ -156,14 +156,8 @@ const Dashboard = () => {
             <div className="h-[240px] md:h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15}/>
-                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
                   <Tooltip 
-                    cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                    cursor={{ stroke: 'rgba(255,255,255,0.05)', strokeWidth: 1 }}
                     contentStyle={{ 
                       backgroundColor: 'rgba(12, 12, 20, 0.95)', 
                       backdropFilter: 'blur(10px)',
@@ -189,9 +183,9 @@ const Dashboard = () => {
                     type="monotone" 
                     dataKey="logs" 
                     stroke="#EF4444" 
-                    fillOpacity={1} 
-                    fill="url(#colorPulse)" 
-                    strokeWidth={4} 
+                    fill="#EF4444"
+                    fillOpacity={0.05} 
+                    strokeWidth={3} 
                     animationDuration={2000}
                   />
                   <Area 
@@ -235,7 +229,7 @@ const Dashboard = () => {
         <div className="lg:col-span-4 space-y-8">
           
           {/* Shift Rota Card */}
-          <div className="bg-[#0c0c14] border border-white/[0.05] rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-2xl h-full flex flex-col">
+          <div className="bg-card border border-border rounded-2xl p-5 md:p-8 shadow-lg h-full flex flex-col">
             <div className="flex items-center justify-between mb-6 md:mb-10">
               <div>
                 <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Daily Deployment</h3>
@@ -253,7 +247,7 @@ const Dashboard = () => {
                 const isCurrent = onDutyInfo.current === shift.id;
                 
                 return (
-                  <div key={shift.id} className={`relative p-6 rounded-3xl border transition-all duration-500 ${isCurrent ? 'bg-white/[0.03] border-white/10 shadow-2xl' : 'bg-transparent border-transparent opacity-20'}`}>
+                  <div key={shift.id} className={`relative p-6 rounded-2xl border transition-all duration-500 ${isCurrent ? 'bg-white/[0.02] border-white/10 shadow-lg' : 'bg-transparent border-transparent opacity-30'}`}>
                     {isCurrent && (
                       <div className="absolute top-4 right-6 flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -287,7 +281,7 @@ const Dashboard = () => {
             
             <button 
               onClick={() => navigate('/rota')}
-              className="w-full mt-10 py-4 rounded-3xl bg-white/[0.03] border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-white/[0.06] hover:text-white transition-all flex items-center justify-center gap-3"
+              className="w-full mt-10 py-4 rounded-2xl bg-white/[0.02] border border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-white/[0.05] hover:text-white transition-all flex items-center justify-center gap-3"
             >
               Access Full Rota <ArrowUpRight size={16} />
             </button>

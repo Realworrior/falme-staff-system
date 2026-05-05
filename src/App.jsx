@@ -15,21 +15,24 @@ import TourGuide from './components/TourGuide';
 export const theme = createTheme({
   palette: {
     mode: 'dark',
-    primary: { main: '#FF4B4B', light: '#ff7070', dark: '#c92a2a' },
-    secondary: { main: '#3b82f6', light: '#60a5fa', dark: '#1d4ed8' },
+    primary: { main: '#2563eb', light: '#3b82f6', dark: '#1d4ed8' },
+    secondary: { main: '#10b981', light: '#34d399', dark: '#059669' },
     background: {
-      default: '#05050D',
-      paper: '#0F111A',
+      default: '#08080c',
+      paper: '#0f0f16',
     },
-    divider: 'rgba(255,255,255,0.06)',
+    divider: '#1e1e2d',
     text: {
-      primary: '#ffffff',
-      secondary: '#A1A1AA',
+      primary: '#f8fafc',
+      secondary: '#94a3b8',
     },
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", sans-serif',
-    button: { textTransform: 'none', fontWeight: 600 },
+    fontFamily: '"Outfit", "Inter", "Roboto", sans-serif',
+    button: { textTransform: 'none', fontWeight: 700, letterSpacing: '0.02em' },
+    h1: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700 },
+    h2: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700 },
+    h3: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700 },
   },
   shape: { borderRadius: 12 },
   components: {
@@ -54,10 +57,11 @@ export const theme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#0F111A',
-          backgroundImage: 'linear-gradient(135deg, #1a1a24 0%, #0f0f17 100%)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 20,
+          backgroundColor: '#0f0f16',
+          backgroundImage: 'none',
+          border: '1px solid #1e1e2d',
+          borderRadius: 24,
+          boxShadow: 'none',
         },
       },
     },

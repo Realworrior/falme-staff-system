@@ -85,31 +85,43 @@ const TourGuide = () => {
       steps={steps}
       styles={{
         options: {
-          primaryColor: '#f97316',
-          backgroundColor: '#16161f',
-          textColor: '#e8eaf0',
-          arrowColor: '#16161f',
-          overlayColor: 'rgba(0, 0, 0, 0.7)',
+          primaryColor: 'var(--accent)',
+          backgroundColor: 'var(--card)',
+          textColor: 'var(--foreground)',
+          arrowColor: 'var(--card)',
+          overlayColor: 'rgba(0, 0, 0, 0.8)',
           zIndex: 10000,
         },
         buttonClose: {
           display: 'none',
         },
         buttonSkip: {
-          color: '#8b93a7',
+          color: 'var(--muted-foreground)',
+          fontSize: '11px',
+          fontWeight: '700',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
         },
         buttonNext: {
-          backgroundColor: '#f97316',
-          fontWeight: 'bold',
+          backgroundColor: 'var(--accent)',
+          fontWeight: '800',
           borderRadius: 8,
+          fontSize: '11px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
         },
         buttonBack: {
           marginRight: 10,
-          color: '#eab308'
+          color: 'var(--foreground)',
+          fontSize: '11px',
+          fontWeight: '700',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
         },
         tooltip: {
-          borderRadius: 16,
-          border: '1px solid #2e2e42',
+          borderRadius: 12,
+          border: '1px solid var(--border)',
+          padding: '20px',
         },
       }}
     />

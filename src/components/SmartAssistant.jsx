@@ -150,7 +150,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="fixed bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl accent-gradient text-white shadow-2xl z-[999] flex items-center justify-center border border-white/20"
+          className="fixed bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-accent text-white shadow-lg z-[999] flex items-center justify-center border border-white/20"
         >
           <AnimatePresence mode="wait">
             {isOpen ? (
@@ -161,7 +161,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
               <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} className="relative">
                 <BrainCircuit size={28} />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-[#12121e] animate-pulse" />
-                <div className="absolute -top-6 -left-6 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full shadow-lg shadow-red-500/40 animate-bounce">NEW</div>
+                <div className="absolute -top-6 -left-6 bg-red-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full shadow-lg animate-bounce">NEW</div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -175,7 +175,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
             initial={{ opacity: 0, y: 20, scale: 0.95, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: 20, scale: 0.95, filter: 'blur(10px)' }}
-            className="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-[380px] md:w-[420px] h-[calc(100vh-120px)] sm:h-[600px] max-h-[800px] bg-[#0a0a0f] border border-white/10 rounded-[24px] sm:rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[999] flex flex-col overflow-hidden backdrop-blur-xl"
+            className="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-[380px] md:w-[420px] h-[calc(100vh-120px)] sm:h-[600px] max-h-[800px] bg-card border border-border rounded-2xl shadow-xl z-[999] flex flex-col overflow-hidden backdrop-blur-xl"
           >
             {/* Header */}
             <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center gap-4">

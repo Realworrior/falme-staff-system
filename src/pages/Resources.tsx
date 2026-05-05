@@ -2934,11 +2934,7 @@ function ComplianceView({ accent }: { accent: string }) {
     <div className="flex flex-col gap-6">
       {/* License banner */}
       <div
-        className="rounded-2xl p-5 border border-emerald-500/25 flex items-center gap-4"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04))",
-        }}
+        className="rounded-2xl p-5 border border-emerald-500/20 flex items-center gap-4 bg-emerald-500/10"
       >
         <span className="text-4xl">🏛️</span>
         <div>
@@ -3067,11 +3063,7 @@ function AgentManualView() {
     <div>
       {/* Manual nav */}
       <div
-        className="sticky top-[57px] z-40 backdrop-blur-xl"
-        style={{
-          background: "rgba(8,13,26,0.92)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-        }}
+        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/80 border-b border-border"
       >
         <div className="max-w-7xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto">
           {(
@@ -3096,11 +3088,7 @@ function AgentManualView() {
 
         {/* Section header */}
         <div
-          className="flex items-center gap-4 mb-8 rounded-2xl px-6 py-5 border"
-          style={{
-            background: meta.accentLight,
-            borderColor: meta.accentBorder,
-          }}
+          className="flex items-center gap-4 mb-8 rounded-2xl px-6 py-5 border border-border bg-card"
         >
           <span className="text-4xl">{meta.icon}</span>
           <div>
@@ -3160,11 +3148,7 @@ function MarketGuideView() {
     <div>
       {/* Sport Nav */}
       <div
-        className="sticky top-[57px] z-40 backdrop-blur-xl"
-        style={{
-          background: "rgba(8,13,26,0.92)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-        }}
+        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/80 border-b border-border"
       >
         <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
           {(
@@ -3269,11 +3253,7 @@ export default function Resources() {
     <div className="text-white">
       {/* ── Top Nav ── */}
       <div
-        className="sticky top-0 z-50 backdrop-blur-xl"
-        style={{
-          background: "rgba(8,13,26,0.96)",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-        }}
+        className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border"
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center justify-center gap-2 md:gap-6">
 

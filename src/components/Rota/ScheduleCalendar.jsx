@@ -32,11 +32,11 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
     <div
       id={`day-card-${dayStr}`}
       onClick={onClick}
-      className={`flex flex-col h-full rounded-xl overflow-hidden cursor-pointer transition-all ${dimmed ? 'opacity-30' : 'opacity-100'} hover:scale-[1.02]`}
+      className={`flex flex-col h-full rounded-2xl overflow-hidden cursor-pointer transition-all ${dimmed ? 'opacity-30' : 'opacity-100'} hover:border-white/20`}
       style={{
-        backgroundColor: "#131c31",
-        border: isToday ? "1.5px solid #4080e8" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.07)"),
-        boxShadow: isToday ? "0 0 0 3px rgba(64,128,232,0.13), 0 4px 16px rgba(0,0,0,0.35)" : "0 2px 8px rgba(0,0,0,0.22)",
+        backgroundColor: "var(--card)",
+        border: isToday ? "2px solid var(--accent)" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--border)"),
+        boxShadow: isToday ? "0 4px 20px rgba(0,0,0,0.4)" : "none",
       }}
     >
       <div className="flex items-center justify-between px-2 pt-1.5 pb-1 shrink-0">
@@ -50,10 +50,10 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
             </span>
           )}
           {overrideActive && (
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)] ml-1" title="Manual Override Active" />
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 ml-1" title="Manual Override Active" />
           )}
         </div>
-        <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: ntColor ? ntColor.bg : "rgba(255,255,255,0.1)", boxShadow: ntColor ? `0 0 4px ${ntColor.bg}90` : "none" }} />
+        <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: ntColor ? ntColor.bg : "rgba(255,255,255,0.1)" }} />
       </div>
 
       <div className="flex flex-1 gap-px px-1.5 pb-1 min-h-0">
@@ -99,11 +99,11 @@ function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, di
     <div
       id={`day-card-${dayStr}`}
       onClick={onClick}
-      className={`rounded-2xl overflow-hidden cursor-pointer transition-all ${dimmed ? 'opacity-30' : 'opacity-100'} hover:scale-[1.01]`}
+      className={`rounded-2xl overflow-hidden cursor-pointer transition-all ${dimmed ? 'opacity-30' : 'opacity-100'}`}
       style={{
-        backgroundColor: "#131c31",
-        border: isToday ? "2.5px solid #4080e8" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.08)"),
-        boxShadow: isToday ? "0 0 0 4px rgba(64,128,232,0.14)" : "0 2px 10px rgba(0,0,0,0.28)",
+        backgroundColor: "var(--card)",
+        border: isToday ? "2px solid var(--accent)" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--border)"),
+        boxShadow: isToday ? "0 4px 20px rgba(0,0,0,0.4)" : "none",
       }}
     >
       <div className="flex">
@@ -117,7 +117,7 @@ function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, di
           }}
         >
           {overrideActive && (
-            <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" title="Manual Override Active" />
+            <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-amber-500" title="Manual Override Active" />
           )}
           <span style={{ fontSize: 26, lineHeight: 1, color: isToday ? "#4080e8" : "#c8d4e8", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
             {dayStr}

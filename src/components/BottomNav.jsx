@@ -42,10 +42,10 @@ const BottomNav = ({ className }) => {
       )}
     >
       <div className="hidden md:flex items-center justify-center mb-12 relative group">
-         <div className="w-12 h-12 rounded-2xl accent-gradient flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.3)] border border-red-500/20 group-hover:scale-110 transition-transform">
+         <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform">
            <Activity className="text-white w-6 h-6" />
          </div>
-         <div className="absolute -bottom-6 text-[9px] font-black tracking-[0.3em] uppercase text-gray-500">Falme</div>
+         <div className="absolute -bottom-6 text-[9px] font-black tracking-[0.3em] uppercase text-gray-400">Falme</div>
       </div>
 
       <div className="flex flex-row md:flex-col w-full items-center justify-around md:justify-start md:gap-8 flex-1">
@@ -56,8 +56,8 @@ const BottomNav = ({ className }) => {
             end={item.path === '/'}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center gap-1.5 transition-all duration-500 group relative min-w-[50px] md:w-full",
-                isActive ? "text-red-500 scale-105" : "text-gray-500 hover:text-gray-300"
+                "flex flex-col items-center justify-center gap-1.5 transition-all duration-300 group relative min-w-[50px] md:w-full",
+                isActive ? "text-accent" : "text-gray-500 hover:text-gray-300"
               )
             }
           >
@@ -65,11 +65,11 @@ const BottomNav = ({ className }) => {
               <>
                 <div className={cn(
                   "w-10 h-10 flex items-center justify-center rounded-xl transition-all relative",
-                  isActive ? "bg-red-500/10 border border-red-500/20 shadow-inner" : "bg-white/0 group-hover:bg-white/5"
+                  isActive ? "bg-accent/10 border border-accent/20" : "bg-transparent group-hover:bg-white/5"
                 )}>
                   <item.icon className={cn(
                     "w-5 h-5 transition-transform",
-                    isActive ? "drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "group-hover:scale-110"
+                    isActive ? "" : "group-hover:scale-110"
                   )} />
                   {item.isNew && (
                     <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-600 rounded-full border border-[#0a0a0f] shadow-sm animate-pulse" />
@@ -85,7 +85,7 @@ const BottomNav = ({ className }) => {
                 {isActive && (
                   <motion.div 
                      layoutId="activeBottomNav"
-                     className="absolute -bottom-2 md:-right-0 md:left-auto md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-8 left-1/2 -translate-x-1/2 w-8 h-1 bg-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"
+                     className="absolute -bottom-2 md:-right-0 md:left-auto md:top-1/2 md:-translate-y-1/2 md:w-1 md:h-8 left-1/2 -translate-x-1/2 w-8 h-1 bg-accent rounded-full"
                   />
                 )}
               </>
