@@ -36,7 +36,7 @@ const S = {
   primary: 'var(--accent)',
   orange: 'var(--brand-orange)',
   orangeDim: '#ea580c',
-  orangeGlow: 'rgba(249,115,22,0.05)',
+  orangeGlow: 'transparent',
   orangeText: 'var(--brand-orange)',
   textPrimary: 'var(--foreground)',
   textSecondary: 'var(--muted-foreground)',
@@ -87,7 +87,7 @@ function ResponseCard({ item, copiedId, onCopy, expanded, onToggle }) {
       borderRadius: 12, overflow: 'hidden',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       background: expanded ? S.cardHover : S.card,
-      boxShadow: expanded ? '0 10px 30px -10px rgba(0,0,0,0.5)' : 'none',
+      boxShadow: 'none',
     }}>
       <button
         onClick={onToggle}
@@ -1038,7 +1038,6 @@ const Templates = () => {
             style={{ 
               background: S.orange, color: '#fff', border: 'none', borderRadius: 12, 
               padding: '12px 32px', fontWeight: 900, cursor: 'pointer', textTransform: 'uppercase',
-              boxShadow: '0 8px 20px -6px rgba(249,115,22,0.4)'
             }}
           >
             Deploy

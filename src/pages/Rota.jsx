@@ -338,7 +338,7 @@ export default function RotaPage() {
                 onClick={() => setSelectedStaff(null)}
                 className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                   !selectedStaff 
-                    ? "bg-accent border-accent text-white shadow-lg" 
+                    ? "bg-accent border-accent text-white" 
                     : "bg-white/5 border-white/10 text-gray-500 hover:text-gray-300"
                 }`}
               >
@@ -412,7 +412,7 @@ export default function RotaPage() {
           <div className="flex bg-white/5 p-1 rounded-2xl border border-border m-4 md:mx-8">
             <button
               onClick={() => setActiveTab('matrix')}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matrix' ? 'bg-accent text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matrix' ? 'bg-accent text-white' : 'text-gray-500 hover:text-gray-300'}`}
             >
               Matrix
             </button>
@@ -420,19 +420,19 @@ export default function RotaPage() {
               <>
                 <button
                   onClick={() => setActiveTab('analytics')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'analytics' ? 'bg-accent text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'analytics' ? 'bg-accent text-white' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Trends
                 </button>
                 <button
                   onClick={() => setActiveTab('transport')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'transport' ? 'bg-accent text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'transport' ? 'bg-accent text-white' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Transport
                 </button>
                 <button
                   onClick={() => setActiveTab('admin')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'admin' ? 'bg-amber-600 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'admin' ? 'bg-amber-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Admin
                 </button>
@@ -549,7 +549,7 @@ export default function RotaPage() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="fixed z-[70] left-1/2 top-1/2 md:top-[25vh] -translate-x-1/2 -translate-y-1/2 md:translate-y-0 w-[90%] max-w-[420px] bg-[#0a0a0f] border border-white/10 p-6 md:p-8 rounded-[40px] shadow-2xl"
+                className="fixed z-[70] left-1/2 top-1/2 md:top-[25vh] -translate-x-1/2 -translate-y-1/2 md:translate-y-0 w-[90%] max-w-[420px] bg-[#0a0a0f] border border-white/10 p-6 md:p-8 rounded-[40px]"
               >
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
@@ -577,7 +577,7 @@ export default function RotaPage() {
                   </button>
                   <button 
                     onClick={handleExportCSV}
-                    className="flex-1 py-4 rounded-2xl bg-accent text-white font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg"
+                    className="flex-1 py-4 rounded-2xl bg-accent text-white font-black uppercase tracking-widest hover:bg-blue-600 transition-all"
                   >
                     Export CSV
                   </button>
@@ -602,7 +602,7 @@ export default function RotaPage() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="fixed z-[90] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[400px] bg-[#0a0a0f] border border-white/10 p-8 rounded-[40px] shadow-2xl"
+                className="fixed z-[90] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[400px] bg-[#0a0a0f] border border-white/10 p-8 rounded-[40px]"
               >
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
@@ -633,7 +633,7 @@ export default function RotaPage() {
                       showToast('Invalid Access Code', 'error');
                     }
                   }}
-                  className="w-full py-4 rounded-2xl bg-amber-600 text-white font-black uppercase tracking-widest hover:bg-amber-500 transition-all shadow-xl shadow-amber-600/20"
+                  className="w-full py-4 rounded-2xl bg-amber-600 text-white font-black uppercase tracking-widest hover:bg-amber-500 transition-all"
                 >
                   Authorize
                 </button>

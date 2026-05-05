@@ -36,7 +36,7 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
       style={{
         backgroundColor: "var(--card)",
         border: isToday ? "2px solid var(--accent)" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--border)"),
-        boxShadow: isToday ? "0 4px 20px rgba(0,0,0,0.4)" : "none",
+        boxShadow: "none",
       }}
     >
       <div className="flex items-center justify-between px-2 pt-1.5 pb-1 shrink-0">
@@ -103,7 +103,7 @@ function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, di
       style={{
         backgroundColor: "var(--card)",
         border: isToday ? "2px solid var(--accent)" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--border)"),
-        boxShadow: isToday ? "0 4px 20px rgba(0,0,0,0.4)" : "none",
+        boxShadow: "none",
       }}
     >
       <div className="flex">
@@ -112,17 +112,17 @@ function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, di
           style={{
             width: 60,
             padding: "12px 0",
-            backgroundColor: isToday ? "rgba(64,128,232,0.18)" : "rgba(255,255,255,0.025)",
+            backgroundColor: isToday ? "var(--accent)" : "rgba(255,255,255,0.025)",
             borderRight: "1px solid rgba(255,255,255,0.07)",
           }}
         >
           {overrideActive && (
             <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-amber-500" title="Manual Override Active" />
           )}
-          <span style={{ fontSize: 26, lineHeight: 1, color: isToday ? "#4080e8" : "#c8d4e8", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ fontSize: 26, lineHeight: 1, color: isToday ? "#fff" : "#c8d4e8", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
             {dayStr}
           </span>
-          <span style={{ fontSize: 10, color: isToday ? "#4080e8" : "#5c7a9e", fontWeight: 600, marginTop: 2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          <span style={{ fontSize: 10, color: isToday ? "#fff" : "#5c7a9e", fontWeight: 600, marginTop: 2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
             {isToday ? "Today" : dowLabel}
           </span>
         </div>

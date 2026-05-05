@@ -48,13 +48,13 @@ export function LoginForm({ onLogin }) {
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-md bg-[#0f0f17] rounded-[32px] border border-white/5 shadow-2xl overflow-hidden relative"
+        className="w-full max-w-md bg-[#0f0f17] rounded-[32px] border border-white/10 overflow-hidden relative"
       >
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-red-600/10 to-transparent pointer-events-none" />
+
         
         <div className="p-8 relative z-10">
           <div className="flex flex-col items-center mb-10">
-            <div className="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center shadow-2xl shadow-red-500/20 mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center mb-4">
               <Shield className="text-white w-8 h-8" />
             </div>
             <h1 className="text-2xl font-black text-white font-heading tracking-tighter uppercase">Support Login</h1>
@@ -66,7 +66,7 @@ export function LoginForm({ onLogin }) {
               type="button"
               onClick={() => setRole('staff')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                role === 'staff' ? "bg-red-600 text-white shadow-lg shadow-red-500/20" : "text-gray-500 hover:text-gray-300"
+                role === 'staff' ? "bg-red-600 text-white" : "text-gray-500 hover:text-gray-300"
               }`}
             >
               <Users size={14} />
@@ -76,7 +76,7 @@ export function LoginForm({ onLogin }) {
               type="button"
               onClick={() => setRole('technician')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                role === 'technician' ? "bg-red-600 text-white shadow-lg shadow-red-500/20" : "text-gray-500 hover:text-gray-300"
+                role === 'technician' ? "bg-red-600 text-white" : "text-gray-500 hover:text-gray-300"
               }`}
             >
               <Wrench size={14} />
@@ -131,7 +131,7 @@ export function LoginForm({ onLogin }) {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full py-5 accent-gradient text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-red-500/20 hover:shadow-red-500/40 transition-all active:scale-95 flex items-center justify-center gap-2 mt-8 disabled:opacity-50"
+              className="w-full py-5 bg-red-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] transition-all active:scale-95 flex items-center justify-center gap-2 mt-8 disabled:opacity-50"
             >
               {loading ? 'Validating...' : 'Establish Connection'}
               <ArrowRight size={16} strokeWidth={3} />

@@ -123,7 +123,7 @@ const Dashboard = () => {
              <span className="text-[10px] md:text-xs font-black text-white/80 mt-1 uppercase">{onDutyInfo.current} Phase Active</span>
            </div>
            <div className="w-px h-8 bg-white/10" />
-           <div className="px-4 md:px-5 py-2 md:py-2.5 bg-white/[0.03] border border-white/10 rounded-xl md:rounded-2xl flex items-center gap-2 md:gap-3 shadow-2xl">
+           <div className="px-4 md:px-5 py-2 md:py-2.5 bg-card border border-border rounded-xl md:rounded-2xl flex items-center gap-2 md:gap-3">
               <Clock size={14} className="text-orange-500" />
               <span className="text-[10px] md:text-xs font-black uppercase text-white tracking-widest">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
            </div>
@@ -136,7 +136,7 @@ const Dashboard = () => {
         <div className="lg:col-span-8 space-y-8">
           
           {/* Aviator Premium Pulse Graph */}
-          <div className="bg-card border border-border rounded-2xl p-5 md:p-8 shadow-lg relative overflow-hidden group">
+          <div className="bg-card border border-border rounded-2xl p-5 md:p-8 relative overflow-hidden group">
             <div className="flex items-start justify-between mb-6 md:mb-10">
               <div>
                 <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight flex items-center gap-2 md:gap-3">
@@ -164,7 +164,7 @@ const Dashboard = () => {
                       border: '1px solid rgba(255,255,255,0.1)', 
                       borderRadius: '16px',
                       padding: '12px 16px',
-                      boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+                      boxShadow: 'none'
                     }}
                     itemStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: '#fff' }}
                     labelStyle={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginBottom: '8px' }}
@@ -184,9 +184,9 @@ const Dashboard = () => {
                     dataKey="logs" 
                     stroke="#EF4444" 
                     fill="#EF4444"
-                    fillOpacity={0.05} 
-                    strokeWidth={3} 
-                    animationDuration={2000}
+                    fillOpacity={0.02} 
+                    strokeWidth={2} 
+                    animationDuration={1000}
                   />
                   <Area 
                     type="monotone" 
@@ -229,7 +229,7 @@ const Dashboard = () => {
         <div className="lg:col-span-4 space-y-8">
           
           {/* Shift Rota Card */}
-          <div className="bg-card border border-border rounded-2xl p-5 md:p-8 shadow-lg h-full flex flex-col">
+          <div className="bg-card border border-border rounded-2xl p-5 md:p-8 h-full flex flex-col">
             <div className="flex items-center justify-between mb-6 md:mb-10">
               <div>
                 <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Daily Deployment</h3>
@@ -247,10 +247,10 @@ const Dashboard = () => {
                 const isCurrent = onDutyInfo.current === shift.id;
                 
                 return (
-                  <div key={shift.id} className={`relative p-6 rounded-2xl border transition-all duration-500 ${isCurrent ? 'bg-white/[0.02] border-white/10 shadow-lg' : 'bg-transparent border-transparent opacity-30'}`}>
+                  <div key={shift.id} className={`relative p-6 rounded-2xl border transition-all duration-500 ${isCurrent ? 'bg-card border-border' : 'bg-transparent border-transparent opacity-30'}`}>
                     {isCurrent && (
                       <div className="absolute top-4 right-6 flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         <span className="text-[8px] font-black uppercase text-emerald-500 tracking-widest">Active</span>
                       </div>
                     )}

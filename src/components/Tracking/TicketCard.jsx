@@ -42,7 +42,7 @@ export function TicketCard({ ticket, onStatusChange, onAssign, userRole, userNam
   };
 
   return (
-    <div className="glass rounded-2xl p-6 hover:border-red-500/20 transition-all group relative overflow-hidden">
+    <div className="bg-card rounded-2xl p-6 border border-border hover:border-red-500/20 transition-all group relative overflow-hidden">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -125,7 +125,7 @@ export function TicketCard({ ticket, onStatusChange, onAssign, userRole, userNam
           ) : userRole === 'technician' ? (
             <button
               onClick={() => onAssign(ticket.id, userName || 'Technician')}
-              className="px-4 py-2 text-[9px] font-black uppercase tracking-widest bg-red-600/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-600/20 transition-all active:scale-95 shadow-lg shadow-red-500/10"
+              className="px-4 py-2 text-[9px] font-black uppercase tracking-widest bg-red-600/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-600/20 transition-all active:scale-95"
             >
               Assign to me
             </button>

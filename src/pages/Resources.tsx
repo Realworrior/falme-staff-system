@@ -1557,8 +1557,7 @@ function MarketCard({
     (market.variations?.length ?? 0) > 0;
   return (
     <div
-      className="rounded-xl border border-white/[0.07] bg-white/[0.03] overflow-hidden flex flex-col"
-      style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.3)" }}
+      className="rounded-xl border border-white/[0.07] bg-card overflow-hidden flex flex-col"
     >
       <div
         className="h-[2px] w-full"
@@ -1609,8 +1608,8 @@ function MarketCard({
               <div
                 className="rounded-lg p-3.5 text-[12px] font-mono leading-relaxed whitespace-pre-wrap"
                 style={{
-                  background: `${accent}10`,
-                  border: `1px solid ${accent}25`,
+                  background: 'rgba(255,255,255,0.03)',
+                  border: `1px solid rgba(255,255,255,0.1)`,
                   color: "rgba(255,255,255,0.8)",
                 }}
               >
@@ -1668,7 +1667,7 @@ function CategorySection({
   return (
     <section className="mb-14">
       <div
-        className={`flex items-center gap-4 mb-6 rounded-2xl px-5 py-4 border ${colors.bg} ${colors.border}`}
+        className={`flex items-center gap-4 mb-6 rounded-2xl px-5 py-4 border border-border bg-card`}
       >
         <span className="text-3xl">{category.icon}</span>
         <div>
@@ -1715,13 +1714,10 @@ function SportTab({
       className="flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm transition-all whitespace-nowrap"
       style={{
         background: active
-          ? data.accentLight
+          ? "var(--accent)"
           : "rgba(255,255,255,0.04)",
-        border: `1px solid ${active ? data.accentBorder : "rgba(255,255,255,0.08)"}`,
-        color: active ? data.accent : "rgba(255,255,255,0.55)",
-        boxShadow: active
-          ? `0 0 20px ${data.accentLight}`
-          : "none",
+        border: `1px solid ${active ? "var(--accent)" : "rgba(255,255,255,0.08)"}`,
+        color: active ? "#fff" : "rgba(255,255,255,0.55)",
       }}
     >
       <span className="text-xl">{data.icon}</span>

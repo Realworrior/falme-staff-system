@@ -72,7 +72,7 @@ const BottomNav = ({ className }) => {
                     isActive ? "" : "group-hover:scale-110"
                   )} />
                   {item.isNew && (
-                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-600 rounded-full border border-[#0a0a0f] shadow-sm animate-pulse" />
+                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-600 rounded-full border border-[#0a0a0f]" />
                   )}
                 </div>
                 <span className={cn(

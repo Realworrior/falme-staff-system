@@ -120,7 +120,7 @@ export default function Tickets() {
         className="flex flex-col md:flex-row md:items-center justify-between gap-6"
       >
         <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center shadow-lg">
+          <div className="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center">
             {userRole === 'staff' ? <User className="text-red-500" /> : <Shield className="text-red-500" />}
           </div>
           <div>
@@ -151,7 +151,7 @@ export default function Tickets() {
           {userRole === 'staff' && (
             <button 
               onClick={() => setShowNewTicketModal(true)}
-              className="px-8 py-4 bg-red-600 text-white rounded-xl font-black shadow-lg transition-all duration-300 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em]"
+              className="px-8 py-4 bg-red-600 text-white rounded-xl font-black transition-all duration-300 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em]"
             >
               <Plus size={18} strokeWidth={3} />
               New Ticket
@@ -178,12 +178,12 @@ export default function Tickets() {
               placeholder="Search by ID, Phone, or Content..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 bg-card border border-border rounded-2xl text-white placeholder-gray-700 focus:outline-none focus:border-red-500/20 transition-all shadow-lg"
+              className="w-full pl-14 pr-6 py-5 bg-card border border-border rounded-2xl text-white placeholder-gray-700 focus:outline-none focus:border-red-500/20 transition-all"
             />
           </div>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border shadow-lg overflow-hidden min-h-[400px]">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden min-h-[400px]">
           <div className="p-8 border-b border-white/5 flex flex-col md:flex-row items-center justify-between bg-black/20 gap-4">
             <div className="flex items-center gap-3">
               <Filter size={18} className="text-red-500" />
