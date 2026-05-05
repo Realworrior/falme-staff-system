@@ -23,6 +23,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
   const [shouldReplace, setShouldReplace] = useState(false);
   const [predictionResult, setPredictionResult] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
+  const [pasteText, setPasteText] = useState('');
 
   const normalizeDate = (raw) => {
     if (!raw) return null;
@@ -31,9 +32,10 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
       .replace(/(\d+)(st|nd|rd|th)/i, '$1')
       .replace(/\s+/g, ' ');
     
-    const dayMatch = clean.match(/^([a-zA-Z]{2,10},?\s*)?(\d{1,2})$/i);
+    // Robust match for "Fri, , 1" or "Fri, 1" or just "1"
+    const dayMatch = clean.match(/(?:[a-zA-Z]{2,10},?\s*)*,?(\d{1,2})$/i);
     if (dayMatch) {
-      const dayNum = parseInt(dayMatch[2]);
+      const dayNum = parseInt(dayMatch[1]);
       if (dayNum >= 1 && dayNum <= 31) {
         try {
           const d = new Date(year, month, dayNum);
@@ -104,6 +106,33 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
         setPreviewRows(previewData);
       }
     });
+  };
+
+  const handlePaste = (text) => {
+    setPasteText(text);
+    if (!text.trim()) {
+      setParsedData(null);
+      setPreviewRows([]);
+      return;
+    }
+
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length === 0) return;
+
+    const data = lines.map(line => line.split('\t'));
+    setParsedData(data);
+    
+    const headers = data[0].map(h => h?.trim() || '');
+    setPreviewHeaders(headers);
+    
+    const previewData = data.slice(1, 10).map(row => {
+      const arr = new Array(headers.length).fill('');
+      for (let i = 0; i < Math.min(row.length, headers.length); i++) {
+        arr[i] = row[i]?.trim() || '';
+      }
+      return arr;
+    });
+    setPreviewRows(previewData);
   };
 
   const handleProcess = () => {
@@ -200,10 +229,16 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
 
           <div className="flex gap-2 mt-6">
             <button 
-              onClick={() => { setActiveTab('excel'); setError(null); setPreviewRows([]); }}
+              onClick={() => { setActiveTab('excel'); setError(null); setParsedData(null); setPreviewRows([]); setFile(null); }}
               className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'excel' ? 'bg-white/10 text-white border border-white/10' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              Excel Import
+              CSV File
+            </button>
+            <button 
+              onClick={() => { setActiveTab('paste'); setError(null); setParsedData(null); setPreviewRows([]); }}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'paste' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              Smart Paste
             </button>
             <button 
               onClick={() => { setActiveTab('ai'); setError(null); setPreviewRows([]); }}
@@ -215,7 +250,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
         </div>
 
         <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-thin">
-          {activeTab === 'excel' ? (
+          {activeTab === 'excel' && (
             !file ? (
               <div 
                 className="border-2 border-dashed border-white/10 rounded-3xl p-12 flex flex-col items-center justify-center gap-4 hover:border-red-500/30 transition-all group cursor-pointer relative"
@@ -232,7 +267,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-bold">Drop CSV file here or click to browse</p>
-                  <p className="mt-2 text-[9px] text-gray-600 uppercase tracking-widest font-black">Handles Dates like "Wed, 1" (Matrix Format)</p>
+                  <p className="mt-2 text-[9px] text-gray-600 uppercase tracking-widest font-black">Standard Matrix Format</p>
                 </div>
               </div>
             ) : (
@@ -245,7 +280,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                       <p className="text-[10px] text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
                     </div>
                   </div>
-                  <button onClick={() => { setFile(null); setPreviewRows([]); }} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-500"><X size={16} /></button>
+                  <button onClick={() => { setFile(null); setParsedData(null); setPreviewRows([]); }} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-500"><X size={16} /></button>
                 </div>
                 <div className="p-4 bg-white/2 border border-white/10 rounded-2xl">
                    <label className="flex items-center gap-3 cursor-pointer group">
@@ -261,7 +296,37 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                 </div>
               </motion.div>
             )
-          ) : (
+          )}
+
+          {activeTab === 'paste' && (
+            <div className="space-y-6">
+              <div className="relative">
+                <textarea
+                  value={pasteText}
+                  onChange={(e) => handlePaste(e.target.value)}
+                  placeholder="Paste cells from Excel here... (Include header row)"
+                  className="w-full h-48 bg-black/40 border border-white/10 rounded-3xl p-6 text-sm font-mono text-gray-300 focus:outline-none focus:border-emerald-500/50 transition-all resize-none"
+                />
+                <div className="absolute bottom-4 right-6 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500/60">Live TSV Engine Active</span>
+                </div>
+              </div>
+              
+              <div className="p-4 bg-white/2 border border-white/10 rounded-2xl">
+                 <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldReplace ? 'bg-emerald-500 border-emerald-500 shadow-lg' : 'border-white/20 bg-black/40'}`}>
+                       <input type="checkbox" className="hidden" checked={shouldReplace} onChange={(e) => setShouldReplace(e.target.checked)} />
+                       {shouldReplace && <CheckCircle2 size={12} className="text-white" />}
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-emerald-400">Synchronize Entire Matrix</span>
+                       <span className="text-[8px] text-gray-500 uppercase tracking-tighter mt-0.5">Overwrite all existing data with these Excel values</span>
+                    </div>
+                 </label>
+              </div>
+            </div>
+          )}
             <div className="space-y-6">
               <div className="p-8 border border-white/5 bg-white/[0.02] rounded-[32px] text-center">
                 <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
@@ -334,10 +399,10 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
         <div className="p-8 border-t border-white/5 bg-black/40">
             <div className="flex flex-col sm:flex-row gap-4">
               <button onClick={onClose} className="flex-1 px-8 py-4 rounded-2xl border border-white/5 text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all text-center">Cancel</button>
-              {activeTab === 'excel' ? (
-                <button onClick={handleProcess} disabled={!file} className="flex-[2] px-8 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50">Execute Matrix Sync</button>
+              {activeTab === 'excel' || activeTab === 'paste' ? (
+                <button onClick={handleProcess} disabled={activeTab === 'excel' ? !file : !parsedData} className="flex-[2] px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 disabled:opacity-50 transition-all">Execute Matrix Sync</button>
               ) : (
-                <button onClick={handleApplyPrediction} disabled={!predictionResult} className="flex-[2] px-8 py-4 rounded-2xl accent-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50">Apply & Wipe Overrides</button>
+                <button onClick={handleApplyPrediction} disabled={!predictionResult} className="flex-[2] px-8 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 transition-all">Apply & Wipe Overrides</button>
               )}
             </div>
         </div>
