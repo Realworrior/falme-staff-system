@@ -59,6 +59,7 @@ function CashbackCalculator() {
   const [cycleMode, setCycleMode] = useState('all'); 
   const [cycleOffset, setCycleOffset] = useState(0);
   const [parsedTx, setParsedTx] = useState([]);
+  const [isVideoExpanded, setIsVideoExpanded] = useState(false);
 
   const depNum = parseFloat(deposits) || 0;
   const withNum = parseFloat(withdrawals) || 0;
@@ -344,7 +345,7 @@ function CashbackCalculator() {
                <div className="space-y-2">
                  <h3 className="text-xs font-black text-white uppercase tracking-wider">How to Copy (The Selection Zone)</h3>
                  <p className="text-[10px] text-gray-500 leading-relaxed italic">
-                   "Always copy the **entire row** from the portal. Position your mouse at the Transaction ID and drag all the way to the Date column. Include as many rows as needed."
+                   "Position your mouse at the Transaction ID and drag all the way to the Date column. Include as many rows as needed. **No need to copy the column headers.**"
                  </p>
                </div>
                
@@ -352,7 +353,7 @@ function CashbackCalculator() {
                  {[
                    "Must include Action Type (Deposit/Withdraw)",
                    "Must include Amount & Full Timestamp",
-                   "Can include headers (System ignores them)",
+                   "No need to copy column headers",
                    "Handles thousands of rows instantly"
                  ].map((item, i) => (
                    <li key={i} className="flex items-center gap-2 text-[9px] font-bold text-gray-600 uppercase">
@@ -363,28 +364,44 @@ function CashbackCalculator() {
                </ul>
              </div>
 
-             <div className="relative group rounded-2xl overflow-hidden border border-white/10 aspect-video bg-black/40">
+             <div 
+               onClick={() => setIsVideoExpanded(true)}
+               className="relative group rounded-2xl overflow-hidden border border-white/10 aspect-video bg-black/40 cursor-pointer hover:border-accent/40 transition-all shadow-2xl"
+             >
                <img 
                  src="/assets/copy_demo.webp"
                  alt="How to Copy Tutorial"
                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                  loading="lazy"
-                 onError={(e) => {
-                   // Fallback for local dev or if remote fails
-                   e.target.style.display = 'none';
-                   e.target.nextSibling.style.display = 'flex';
-                 }}
                />
-               <div className="hidden absolute inset-0 flex-col items-center justify-center text-center p-4">
-                 <AlertCircle size={24} className="text-gray-700 mb-2" />
-                 <span className="text-[8px] font-black text-gray-600 uppercase">Video Guide Available in Production</span>
+               <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                 <LayoutGrid size={24} className="text-white drop-shadow-lg" />
                </div>
                <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[7px] font-black text-white uppercase tracking-widest border border-white/10">
-                 Visual Demo
+                 Click to Expand
                </div>
              </div>
            </div>
         </div>
+
+        {/* Video Lightbox Modal */}
+        {isVideoExpanded && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300"
+            onClick={() => setIsVideoExpanded(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(var(--accent-rgb),0.2)]"
+            >
+              <img src="/assets/copy_demo.webp" className="w-full h-full object-contain" alt="Expanded Tutorial" />
+              <button className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md border border-white/10">
+                <LayoutGrid size={20} className="rotate-45" />
+              </button>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );

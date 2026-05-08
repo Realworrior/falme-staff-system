@@ -24,8 +24,8 @@ const BottomNav = ({ className }) => {
     { path: '/slots', label: 'Aviator', icon: Activity },
     { path: '/tickets', label: 'Tickets', icon: Ticket },
     { path: '/tools', label: 'Tools', icon: Wrench, isNew: true },
-    { path: '/rota', label: 'Rota', icon: CalendarDays, isNew: true },
-    { path: '/resources', label: 'Resources', icon: BookOpen, isNew: true },
+    { path: '/rota', label: 'Rota', icon: CalendarDays },
+    { path: '/resources', label: 'Resources', icon: BookOpen },
   ];
 
 
