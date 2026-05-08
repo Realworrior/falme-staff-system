@@ -8,7 +8,7 @@ import {
   CalendarDays,
   ExternalLink,
   BookOpen,
-  Wrench
+  Calculator
 } from 'lucide-react';
 
 import { motion } from 'framer-motion';
@@ -23,7 +23,7 @@ const BottomNav = ({ className }) => {
     { path: '/templates', label: 'Templates', icon: FileText },
     { path: '/slots', label: 'Aviator', icon: Activity },
     { path: '/tickets', label: 'Tickets', icon: Ticket },
-    { path: '/tools', label: 'Tools', icon: Wrench, isNew: true },
+    { path: '/tools', label: 'Tools', icon: Calculator, isNew: true },
     { path: '/rota', label: 'Rota', icon: CalendarDays },
     { path: '/resources', label: 'Resources', icon: BookOpen },
   ];
