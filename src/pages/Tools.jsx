@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Calculator, 
   Zap, 
@@ -22,8 +22,8 @@ import {
   setSeconds,
   subDays, 
   format,
-  parse 
-} from "date-fns";
+  parse,
+  isSameDay} from "date-fns";
 import demoVideo from '../assets/copy_demo.png';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -400,7 +400,9 @@ function CashbackCalculator() {
                           </span>
                         </td>
                         <td className="px-8 py-4 font-bold text-white text-xs">KSh {tx.amount.toLocaleString()}</td>
-                        <td className="px-8 py-4 text-right text-[10px] font-medium text-gray-500">{tx.dateStr}</td>
+                        <td className="px-8 py-4 text-right text-[10px] font-medium text-gray-500">
+                          {tx.date ? format(tx.date, 'eee, MMM d • HH:mm') : tx.dateStr}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -442,7 +444,11 @@ function CashbackCalculator() {
                           />
                         )}
                       </div>
-                      <p className="text-[11px] font-black text-white mt-2 uppercase tracking-tighter">{format(day.start, 'MMM d')} – {format(day.end, 'MMM d')}</p>
+                      <p className="text-[11px] font-black text-white mt-2 uppercase tracking-tighter">
+                        {format(day.end, 'eeee, MMM d')}
+                        {isSameDay(day.end, new Date()) && <span className="ml-2 text-accent/60">(Today)</span>}
+                        {isSameDay(day.end, subDays(new Date(), 1)) && <span className="ml-2 text-gray-600">(Yesterday)</span>}
+                      </p>
                     </div>
                     <div className="text-right">
                       <span className="text-[8px] font-black text-accent uppercase block tracking-widest">Cashback Due</span>
@@ -568,16 +574,19 @@ function CashbackCalculator() {
 
 export default function Tools() {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('tab') === 'odds' ? 'odds' : 'cashback';
-  });
+  const navigate = useNavigate();
+  const queryTab = new URLSearchParams(location.search).get('tab');
+  const activeTab = queryTab === 'odds' ? 'odds' : 'cashback';
 
-  useEffect(() => {
+  const setActiveTab = (tab) => {
     const params = new URLSearchParams(location.search);
-    const tab = params.get('tab');
-    if (tab && tab !== activeTab) setActiveTab(tab);
-  }, [location, activeTab]);
+    if (tab === 'cashback') {
+      params.delete('tab');
+    } else {
+      params.set('tab', tab);
+    }
+    navigate({ search: params.toString() }, { replace: true });
+  };
 
   return (
     <div className="min-h-screen bg-[#08080c] pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto">
