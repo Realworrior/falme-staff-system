@@ -366,18 +366,24 @@ function CashbackCalculator() {
 
              <div 
                onClick={() => setIsVideoExpanded(true)}
-               className="relative group rounded-2xl overflow-hidden border border-white/10 aspect-video bg-black/40 cursor-pointer hover:border-accent/40 transition-all shadow-2xl"
+               className="relative group rounded-2xl overflow-hidden border border-white/10 aspect-video bg-black/40 cursor-pointer hover:border-accent/40 transition-all shadow-2xl flex items-center justify-center"
              >
                <img 
                  src="/assets/copy_demo.webp"
                  alt="How to Copy Tutorial"
-                 className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                 className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity z-10"
                  loading="lazy"
                />
-               <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+               {/* Loading / Fallback UI */}
+               <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-white/5 animate-pulse">
+                 <Calculator size={20} className="text-gray-800 mb-2" />
+                 <span className="text-[7px] font-black text-gray-700 uppercase tracking-widest">Loading Tutorial...</span>
+               </div>
+               
+               <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                  <LayoutGrid size={24} className="text-white drop-shadow-lg" />
                </div>
-               <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[7px] font-black text-white uppercase tracking-widest border border-white/10">
+               <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[7px] font-black text-white uppercase tracking-widest border border-white/10 z-20">
                  Click to Expand
                </div>
              </div>
@@ -393,10 +399,14 @@ function CashbackCalculator() {
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(var(--accent-rgb),0.2)]"
+              className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(var(--accent-rgb),0.2)] bg-black flex items-center justify-center"
             >
-              <img src="/assets/copy_demo.webp" className="w-full h-full object-contain" alt="Expanded Tutorial" />
-              <button className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md border border-white/10">
+               <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                 <Calculator size={32} className="text-gray-800 mb-2 animate-bounce" />
+                 <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest">Optimizing Visual...</span>
+               </div>
+              <img src="/assets/copy_demo.webp" className="w-full h-full object-contain relative z-10" alt="Expanded Tutorial" />
+              <button className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md border border-white/10 z-20">
                 <LayoutGrid size={20} className="rotate-45" />
               </button>
             </motion.div>
