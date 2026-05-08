@@ -24,7 +24,7 @@ import {
   format,
   parse 
 } from "date-fns";
-import demoVideo from '../assets/copy_demo.webp';
+import demoVideo from '../assets/copy_demo.png';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -182,7 +182,7 @@ function CashbackCalculator() {
   const netLoss = Math.max(0, depNum - withNum);
   const cashback = netLoss * 0.1;
 
-  // Live Parser Effect
+  // Live Parser Effect — Precise regex-based approach for portal data format
   React.useEffect(() => {
     if (!pasteContent.trim()) {
       setParsedTx([]);
@@ -191,25 +191,49 @@ function CashbackCalculator() {
 
     const lines = pasteContent.split("\n").map(l => l.trim()).filter(l => l.length > 0);
     const results = [];
-    const isHeader = lines[0].toLowerCase().includes("type") || lines[0].toLowerCase().includes("action");
+
+    // Detect and skip header row
+    const firstLineLower = lines[0].toLowerCase();
+    const headerKeywords = ["type", "action", "amount", "balance", "date", "id"];
+    const isHeader = headerKeywords.filter(k => firstLineLower.includes(k)).length >= 2;
 
     lines.forEach((line, i) => {
       if (isHeader && i === 0) return;
       const lowerLine = line.toLowerCase();
+
+      // ── 1. Classify transaction type ──────────────────────────────────────
       let type = "other";
       let rawType = "Unknown";
-      
-      if (lowerLine.includes("admin deposit")) { type = "deposit"; rawType = "Admin Deposit"; }
-      else if (lowerLine.includes("cash back")) { type = "other"; rawType = "Cash Back"; }
-      else if (lowerLine.includes("withdraw")) { type = "withdrawal"; rawType = "Withdrawal"; }
-      else if (lowerLine.includes("deposit")) { type = "deposit"; rawType = "Deposit"; }
-      else {
-        const parts = line.split(/\s+/);
-        const actionPart = parts.find(p => p.toLowerCase().includes("dep") || p.toLowerCase().includes("with"));
-        if (actionPart) { type = actionPart.toLowerCase().includes("dep") ? "deposit" : "withdrawal"; rawType = actionPart; }
+
+      if (lowerLine.includes("cash back") || lowerLine.includes("cashback")) {
+        type = "other"; rawType = "Cash Back";
+      } else if (lowerLine.includes("admin deposit")) {
+        type = "deposit"; rawType = "Admin Deposit";
+      } else if (lowerLine.includes("withdraw")) {
+        type = "withdrawal"; rawType = "Withdraw";
+      } else if (lowerLine.includes("deposit")) {
+        type = "deposit"; rawType = "Deposit";
+      } else {
+        return; // skip unrecognised lines
       }
 
-      const dateMatch = line.match(/\d{1,2}\/\d{1,2}\/\d{4},?\s+\d{1,2}:\d{2}(?::\d{2})?\s+(?:AM|PM|am|pm)/i) 
+      // ── 2. Extract amount — match the SIGNED amount (first +/- KSH value) ─
+      // Portal format: "+KSH 1,000.00" or "-KSH 2,000.00" or "KSH 63.00"
+      const amountMatch = line.match(/[+-]?\s*KSH\s+([0-9,]+(?:\.[0-9]{1,2})?)/i)
+                       || line.match(/([+-])\s*([0-9,]+(?:\.[0-9]{1,2})?)/);
+      let amount = 0;
+      if (amountMatch) {
+        // Take the first captured group that looks like a number
+        const numStr = (amountMatch[1] || amountMatch[2] || "").replace(/,/g, "");
+        amount = parseFloat(numStr) || 0;
+      } else {
+        // Fallback: grab first standalone number with decimals
+        const fallback = line.match(/\b([0-9,]+\.[0-9]{2})\b/);
+        if (fallback) amount = parseFloat(fallback[1].replace(/,/g, "")) || 0;
+      }
+
+      // ── 3. Extract date ────────────────────────────────────────────────────
+      const dateMatch = line.match(/\d{1,2}\/\d{1,2}\/\d{4},?\s+\d{1,2}:\d{2}(?::\d{2})?\s+(?:AM|PM)/i)
                      || line.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
       const dateStr = dateMatch ? dateMatch[0] : "";
       let txDate = null;
@@ -220,34 +244,23 @@ function CashbackCalculator() {
           } else {
             const cleanDate = dateStr.replace(",", "");
             txDate = parse(cleanDate, "M/d/yyyy h:mm:ss a", new Date());
-            if (isNaN(txDate.getTime())) txDate = parse(cleanDate, "M/d/yyyy h:mm a", new Date());
-            if (isNaN(txDate.getTime())) txDate = new Date(cleanDate);
+            if (isNaN(txDate?.getTime())) txDate = parse(cleanDate, "M/d/yyyy h:mm a", new Date());
+            if (isNaN(txDate?.getTime())) txDate = new Date(cleanDate);
           }
-        } catch(e) { try { txDate = new Date(dateStr); } catch(ee) {} }
+        } catch(e) { /* leave null */ }
       }
 
-      const parts = line.split(/\s+/).filter(p => p.length > 0);
-      const lowerParts = parts.map(p => p.toLowerCase());
-      const actionIdx = lowerParts.findIndex(p => p.includes("dep") || p.includes("with"));
-      
-      const numericParts = parts.map((p, idx) => {
-        const v = p.replace(/[^\d.]/g, "");
-        if (!v || isNaN(parseFloat(v)) || p.includes("T") || p.includes(":") || v.length > 10) return null;
-        return { val: parseFloat(v), raw: p, idx };
-      }).filter(n => n !== null);
-
-      let amount = 0;
-      if (numericParts.length > 0) {
-        // Priority 1: The first significant number AFTER the action keyword
-        const afterAction = numericParts.find(n => n.idx > actionIdx);
-        // Priority 2: Any part containing currency hints (. or KSH)
-        const withContext = numericParts.find(n => n.raw.includes(".") || n.raw.includes("KSH") || n.raw.includes("+") || n.raw.includes("-"));
-        
-        amount = (afterAction?.val) || (withContext?.val) || numericParts[0].val;
-      }
-
-      if (rawType !== "Unknown" || amount > 0) {
-        results.push({ id: parts[0], type, rawType, amount, date: txDate, dateStr: dateStr || "N/A", ignored: type === "other" });
+      const parts = line.split(/\s+/);
+      if (rawType !== "Unknown") {
+        results.push({
+          id: parts[0],
+          type,
+          rawType,
+          amount,
+          date: txDate,
+          dateStr: dateStr || "N/A",
+          ignored: type === "other"
+        });
       }
     });
 
