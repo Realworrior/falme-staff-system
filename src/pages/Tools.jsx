@@ -59,7 +59,6 @@ function CashbackCalculator() {
   const [cycleMode, setCycleMode] = useState('all'); 
   const [cycleOffset, setCycleOffset] = useState(0);
   const [parsedTx, setParsedTx] = useState([]);
-  const [showGuide, setShowGuide] = useState(false);
 
   const depNum = parseFloat(deposits) || 0;
   const withNum = parseFloat(withdrawals) || 0;
@@ -195,48 +194,10 @@ function CashbackCalculator() {
             </div>
             
             <div className="flex items-center gap-2 bg-white/5 p-1 rounded-xl">
-               <button onClick={() => setShowGuide(true)} className="p-2 text-white/30 hover:text-accent transition-colors" title="How to use">
-                 <HelpCircle size={18} />
-               </button>
-               <div className="w-px h-4 bg-white/10 mx-1" />
                <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${isSmartPasteMode ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'text-white/30'}`}>Smart Paste</button>
                <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!isSmartPasteMode ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'text-white/30'}`}>Manual</button>
             </div>
           </div>
-
-          {/* Tutorial Modal */}
-          {showGuide && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
-              <div className="bg-[#0f0f15] border border-white/10 rounded-[32px] w-full max-w-2xl overflow-hidden shadow-2xl relative">
-                <button onClick={() => setShowGuide(false)} className="absolute top-6 right-6 z-10 p-2 bg-white/5 hover:bg-white/10 rounded-full text-white transition-all">
-                  <ArrowRight size={20} className="rotate-180" />
-                </button>
-                <div className="p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <HelpCircle size={20} className="text-accent" />
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Staff Guide: Smart Analysis</h3>
-                  </div>
-                  <div className="rounded-2xl overflow-hidden border border-white/5 bg-black/40 mb-6">
-                    <img src="/cashback_guide.webp" alt="How to use tutorial" className="w-full h-auto" />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex gap-4">
-                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex-shrink-0 flex items-center justify-center text-[10px] font-black">1</div>
-                      <p className="text-xs text-gray-400 font-medium">Copy the entire table from the portal (ID, Type, Amount, Date).</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex-shrink-0 flex items-center justify-center text-[10px] font-black">2</div>
-                      <p className="text-xs text-gray-400 font-medium">Paste the content into the Smart Analysis box on the left.</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex-shrink-0 flex items-center justify-center text-[10px] font-black">3</div>
-                      <p className="text-xs text-gray-400 font-medium">Click "Analyze" to see the 8:30 PM daily breakdown automatically.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {isSmartPasteMode ? (
             <div className="space-y-6">
@@ -366,13 +327,63 @@ function CashbackCalculator() {
           </div>
         )}
 
-        {/* Quick Help Card */}
-        <div className="bg-black/20 border border-white/5 rounded-[32px] p-6 space-y-4">
-           <div className="flex items-center gap-2">
-             <ShieldCheck size={14} className="text-accent" />
-             <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
+        {/* Staff Guide & Protocol (On-Page) */}
+        <div className="bg-black/20 border border-white/5 rounded-[32px] p-8 space-y-6">
+           <div className="flex items-center justify-between">
+             <div className="flex items-center gap-3">
+               <HelpCircle size={18} className="text-accent" />
+               <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Operational Protocol</span>
+             </div>
+             <div className="px-3 py-1 bg-accent/10 rounded-full border border-accent/20">
+               <span className="text-[8px] font-black text-accent uppercase">Staff Training</span>
+             </div>
            </div>
-           <p className="text-[10px] text-gray-500 leading-relaxed font-medium italic">"Cashback is 10% of the difference between total deposits and total withdrawals made from 8:35 PM to 8:35 PM daily."</p>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+             <div className="space-y-4">
+               <div className="space-y-2">
+                 <h3 className="text-xs font-black text-white uppercase tracking-wider">How to Copy (The Selection Zone)</h3>
+                 <p className="text-[10px] text-gray-500 leading-relaxed italic">
+                   "Always copy the **entire row** from the portal. Position your mouse at the Transaction ID and drag all the way to the Date column. Include as many rows as needed."
+                 </p>
+               </div>
+               
+               <ul className="space-y-2">
+                 {[
+                   "Must include Action Type (Deposit/Withdraw)",
+                   "Must include Amount & Full Timestamp",
+                   "Can include headers (System ignores them)",
+                   "Handles thousands of rows instantly"
+                 ].map((item, i) => (
+                   <li key={i} className="flex items-center gap-2 text-[9px] font-bold text-gray-600 uppercase">
+                     <ShieldCheck size={10} className="text-emerald-500" />
+                     {item}
+                   </li>
+                 ))}
+               </ul>
+             </div>
+
+             <div className="relative group rounded-2xl overflow-hidden border border-white/10 aspect-video bg-black/40">
+               <img 
+                 src="/assets/copy_demo.webp"
+                 alt="How to Copy Tutorial"
+                 className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                 loading="lazy"
+                 onError={(e) => {
+                   // Fallback for local dev or if remote fails
+                   e.target.style.display = 'none';
+                   e.target.nextSibling.style.display = 'flex';
+                 }}
+               />
+               <div className="hidden absolute inset-0 flex-col items-center justify-center text-center p-4">
+                 <AlertCircle size={24} className="text-gray-700 mb-2" />
+                 <span className="text-[8px] font-black text-gray-600 uppercase">Video Guide Available in Production</span>
+               </div>
+               <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[7px] font-black text-white uppercase tracking-widest border border-white/10">
+                 Visual Demo
+               </div>
+             </div>
+           </div>
         </div>
       </div>
     </div>
