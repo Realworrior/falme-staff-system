@@ -567,14 +567,17 @@ function CashbackCalculator() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Tools() {
-  const [activeTab, setActiveTab] = useState('cashback');
   const location = useLocation();
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('tab') === 'odds' ? 'odds' : 'cashback';
+  });
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab === 'odds') setActiveTab('odds');
-  }, [location]);
+    if (tab && tab !== activeTab) setActiveTab(tab);
+  }, [location, activeTab]);
 
   return (
     <div className="min-h-screen bg-[#08080c] pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto">

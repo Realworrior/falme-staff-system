@@ -16,7 +16,8 @@ import {
   Database,
   Cloud,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  Calculator
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -215,7 +216,7 @@ const Dashboard = () => {
                   className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
                   style={{ background: `${res.color}15`, border: `1px solid ${res.color}30` }}
                 >
-                  <res.icon size={18} md:size={22} style={{ color: res.color }} />
+                  <res.icon size={18} style={{ color: res.color }} />
                 </div>
                 <div className="text-left">
                   <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1.5">Open</span>
