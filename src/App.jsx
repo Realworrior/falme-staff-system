@@ -8,6 +8,7 @@ import Tickets from './pages/Tickets';
 import SlotTracker from './pages/SlotTracker';
 import Rota from './pages/Rota';
 import Resources from './pages/Resources';
+import Tools from './pages/Tools';
 import TourGuide from './components/TourGuide';
 
 // Maintain the MUI theme for underlying MUI components (like Dialogs) 
@@ -80,6 +81,7 @@ function App() {
           <Route path="/slots" element={<SlotTracker />} />
           <Route path="/rota" element={<Rota />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/tools" element={<Tools />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
