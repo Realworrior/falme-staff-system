@@ -59,6 +59,7 @@ function CashbackCalculator() {
   const [cycleMode, setCycleMode] = useState('all'); 
   const [cycleOffset, setCycleOffset] = useState(0);
   const [parsedTx, setParsedTx] = useState([]);
+  const [showGuide, setShowGuide] = useState(false);
 
   const depNum = parseFloat(deposits) || 0;
   const withNum = parseFloat(withdrawals) || 0;
@@ -194,10 +195,48 @@ function CashbackCalculator() {
             </div>
             
             <div className="flex items-center gap-2 bg-white/5 p-1 rounded-xl">
+               <button onClick={() => setShowGuide(true)} className="p-2 text-white/30 hover:text-accent transition-colors" title="How to use">
+                 <HelpCircle size={18} />
+               </button>
+               <div className="w-px h-4 bg-white/10 mx-1" />
                <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${isSmartPasteMode ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'text-white/30'}`}>Smart Paste</button>
                <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!isSmartPasteMode ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'text-white/30'}`}>Manual</button>
             </div>
           </div>
+
+          {/* Tutorial Modal */}
+          {showGuide && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
+              <div className="bg-[#0f0f15] border border-white/10 rounded-[32px] w-full max-w-2xl overflow-hidden shadow-2xl relative">
+                <button onClick={() => setShowGuide(false)} className="absolute top-6 right-6 z-10 p-2 bg-white/5 hover:bg-white/10 rounded-full text-white transition-all">
+                  <ArrowRight size={20} className="rotate-180" />
+                </button>
+                <div className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <HelpCircle size={20} className="text-accent" />
+                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Staff Guide: Smart Analysis</h3>
+                  </div>
+                  <div className="rounded-2xl overflow-hidden border border-white/5 bg-black/40 mb-6">
+                    <img src="/cashback_guide.webp" alt="How to use tutorial" className="w-full h-auto" />
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex-shrink-0 flex items-center justify-center text-[10px] font-black">1</div>
+                      <p className="text-xs text-gray-400 font-medium">Copy the entire table from the portal (ID, Type, Amount, Date).</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex-shrink-0 flex items-center justify-center text-[10px] font-black">2</div>
+                      <p className="text-xs text-gray-400 font-medium">Paste the content into the Smart Analysis box on the left.</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex-shrink-0 flex items-center justify-center text-[10px] font-black">3</div>
+                      <p className="text-xs text-gray-400 font-medium">Click "Analyze" to see the 8:30 PM daily breakdown automatically.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {isSmartPasteMode ? (
             <div className="space-y-6">
