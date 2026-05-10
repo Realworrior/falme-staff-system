@@ -1,49 +1,62 @@
-// Listen for messages from the extension popup
+let lastFocusedInput = null;
+
+// Continuously track the last focused input field
+document.addEventListener('focusin', (e) => {
+  const isInput = e.target.tagName === 'TEXTAREA' || 
+                  (e.target.tagName === 'INPUT' && e.target.type === 'text') || 
+                  e.target.isContentEditable;
+  if (isInput) {
+    lastFocusedInput = e.target;
+  }
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "injectText") {
+    let target = lastFocusedInput;
     
-    // BlastChat uses various input fields. We try to find the active chat input.
-    // We look for common chat input selectors (textareas, contenteditable divs, or specific React input wrappers).
-    const inputSelectors = [
-      'textarea[placeholder*="Type a message"]',
-      'textarea[placeholder*="reply"]',
-      'textarea',
-      '#chat-input',
-      '.chat-input',
-      '[contenteditable="true"]',
-      'input[type="text"]'
-    ];
-    
-    let injected = false;
-    
-    for (let selector of inputSelectors) {
-      const elements = document.querySelectorAll(selector);
-      
-      // Attempt to inject into the first visible/interactive input found
-      for (let element of elements) {
-        if (element && element.offsetParent !== null) { // Ensure it's visible
-          
-          // Handle contenteditable divs (rich text editors)
-          if (element.isContentEditable) {
-            element.innerText = request.text;
-          } 
-          // Handle standard textareas / inputs
-          else {
-            element.value = request.text;
+    // Fallback: If no input was focused, find the best visible candidate
+    if (!target) {
+      const selectors = ['textarea', '[contenteditable="true"]', 'input[type="text"]'];
+      for (let s of selectors) {
+        const elements = document.querySelectorAll(s);
+        for (let el of elements) {
+          if (el.offsetParent !== null && !el.disabled) { // Is visible and enabled
+            target = el;
+            break;
           }
-          
-          // React/Vue/Angular require events to be dispatched so their state updates
-          element.dispatchEvent(new Event('input', { bubbles: true }));
-          element.dispatchEvent(new Event('change', { bubbles: true }));
-          
-          injected = true;
-          break; // Stop at the first successful injection
         }
+        if (target) break;
       }
-      if (injected) break;
     }
-    
-    sendResponse({ success: injected });
+
+    if (target) {
+      target.focus();
+      
+      // 1. If it's a rich text editor (contenteditable)
+      if (target.isContentEditable) {
+        document.execCommand('insertText', false, request.text);
+      } 
+      // 2. If it's a standard React/Vue input or textarea
+      else {
+        // Try the native setter to bypass React's event hijacking
+        const proto = target.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+        const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+        
+        if (nativeSetter) {
+          nativeSetter.call(target, request.text);
+        } else {
+          target.value = request.text;
+        }
+        
+        // Force the app to recognize the change
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+        target.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      
+      sendResponse({ success: true });
+    } else {
+      sendResponse({ success: false });
+    }
   }
   return true;
 });

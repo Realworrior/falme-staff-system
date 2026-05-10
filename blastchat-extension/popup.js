@@ -73,22 +73,41 @@ document.addEventListener('DOMContentLoaded', () => {
     errorMsg.style.display = 'block';
     setTimeout(() => {
       errorMsg.style.display = 'none';
-    }, 3000);
+    }, 4000);
   }
 
   function injectText(text, tabId) {
+    // Attempt 1: Send message (assuming content script is already there)
     chrome.tabs.sendMessage(tabId, { action: "injectText", text: text }, (response) => {
       if (chrome.runtime.lastError) {
-        // Content script might not be injected yet (e.g. page load before extension installed)
-        showError("Error: Please refresh the BlastChat page and try again.");
-        return;
-      }
-      
-      if (!response || !response.success) {
-        showError("Could not find the chat input box. Please click inside the box and try again.");
+        // Attempt 2: If content script isn't there, inject it dynamically
+        chrome.scripting.executeScript({
+          target: { tabId: tabId },
+          files: ['content.js']
+        }, () => {
+          if (chrome.runtime.lastError) {
+             showError("Cannot inject here. Are you on a protected page?");
+             return;
+          }
+          
+          // Now that it's injected, send the message again
+          setTimeout(() => {
+            chrome.tabs.sendMessage(tabId, { action: "injectText", text: text }, (retryResponse) => {
+              if (chrome.runtime.lastError || !retryResponse || !retryResponse.success) {
+                showError("Could not find the chat input box. Please click inside it first.");
+              } else {
+                window.close();
+              }
+            });
+          }, 100); // short delay to ensure script initializes
+        });
       } else {
-        // Success - close popup
-        window.close();
+        // Success on first try
+        if (!response || !response.success) {
+          showError("Could not find the chat input box. Please click inside it first.");
+        } else {
+          window.close();
+        }
       }
     });
   }
