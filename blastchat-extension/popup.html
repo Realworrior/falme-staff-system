@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root {
+      --bg-color: #08080c;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --accent: #10b981;
+      --text: #ffffff;
+      --text-muted: #9ca3af;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+    
+    body { 
+      width: 320px; 
+      padding: 16px; 
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif; 
+      background: var(--bg-color); 
+      color: var(--text); 
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .header-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 14px;
+    }
+    
+    h3 { 
+      margin: 0; 
+      font-size: 12px; 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+      font-weight: 900;
+    }
+    
+    .status {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    .template-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .template-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .template-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    .template-title {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+    }
+    
+    .template-preview {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    #error-msg {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 8px;
+      color: #ef4444;
+      font-size: 11px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-icon">⚡</div>
+    <h3>Quick Injector</h3>
+  </div>
+  
+  <div id="status" class="status">Checking active tab...</div>
+  
+  <div class="template-list" id="templates">
+    <!-- Templates will be injected here via JS -->
+  </div>
+  
+  <div id="error-msg"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

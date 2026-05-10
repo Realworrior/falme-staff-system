@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "BlastChat Quick Responses",
+  "version": "1.0",
+  "description": "Auto-populates responses directly into BlastChat agent views.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://blastchat.chat/*",
+    "https://*.blastchat.chat/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "BlastChat Tools"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://blastchat.chat/*",
+        "https://*.blastchat.chat/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ]
+}
