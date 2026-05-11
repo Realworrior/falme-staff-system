@@ -332,6 +332,7 @@ const Templates = () => {
         else if (upper.includes('HARD CASES')) rawName = '⚖️ HARD CASES';
         else if (upper.includes('RESPONSIBLE') || upper.includes('THREATENING')) rawName = '🛡️ RESPONSIBLE GAMING';
         else if (upper.includes('SYSTEM') || upper.includes('UPGRADE') || upper.includes('MAINTENANCE')) rawName = '⚙️ SYSTEM MAINTENANCE';
+        else if (upper.includes('CASHBACK')) rawName = '🔄 CASHBACK — 10%';
 
         const normalizedKey = rawName.replace(/\p{Emoji}/gu, '').trim().toUpperCase();
         if (!consolidatedMap[normalizedKey]) consolidatedMap[normalizedKey] = { category: rawName, templates: [] };
