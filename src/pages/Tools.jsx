@@ -180,12 +180,19 @@ function CashbackCalculator() {
   const { showToast } = useToast();
   const [isVideoExpanded, setIsVideoExpanded] = useState(false);
 
+  const isResetWindow = (date) => {
+    if (!date) return false;
+    const h = date.getHours();
+    const m = date.getMinutes();
+    return (h === 20 && m >= 30 && m < 40);
+  };
+
   const handleCopySummary = (day) => {
     const netLoss = Math.max(0, day.deposits - day.withdrawals);
     const cb = netLoss * 0.1;
     const summary = `Total Withdrawals (Yesterday to today): ${Math.round(day.withdrawals).toLocaleString()}KSh
 Total Deposits from 8:30pm (Yesterday to today) : ${Math.round(day.deposits).toLocaleString()}ksh 
-Cashback calculation : ${Math.round(day.withdrawals).toLocaleString()} / ${Math.round(day.deposits).toLocaleString()} * 10% = ${Math.round(cb).toLocaleString()}ksh`;
+Cashback calculation : (${Math.round(day.deposits).toLocaleString()} - ${Math.round(day.withdrawals).toLocaleString()}) * 10% = ${Math.round(cb).toLocaleString()}ksh`;
     
     navigator.clipboard.writeText(summary);
     showToast('Daily Summary Copied!', 'success');
@@ -294,7 +301,9 @@ Cashback calculation : ${Math.round(day.withdrawals).toLocaleString()} / ${Math.
     const cStart = subDays(cEnd, 1);
     parsedTx.forEach(tx => {
       const inPeriod = cycleMode === 'all' || (tx.date && isAfter(tx.date, cStart) && isBefore(tx.date, cEnd));
-      if (inPeriod && !tx.ignored) {
+      const inReset = tx.date && isResetWindow(tx.date);
+      
+      if (inPeriod && !tx.ignored && !inReset) {
         if (tx.type === "deposit") totalDep += tx.amount;
         else if (tx.type === "withdrawal") totalWith += tx.amount;
       }
@@ -306,7 +315,7 @@ Cashback calculation : ${Math.round(day.withdrawals).toLocaleString()} / ${Math.
     if (parsedTx.length === 0) return [];
     const groups = {};
     parsedTx.forEach(tx => {
-      if (!tx.date || tx.ignored) return;
+      if (!tx.date || tx.ignored || isResetWindow(tx.date)) return;
       let cEnd = setSeconds(setMinutes(setHours(new Date(tx.date), 20), 30), 0);
       if (isAfter(tx.date, cEnd)) cEnd = new Date(cEnd.getTime() + 86400000);
       const key = format(cEnd, 'yyyy-MM-dd');
