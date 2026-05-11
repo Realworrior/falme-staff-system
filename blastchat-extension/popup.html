@@ -15,7 +15,7 @@
     }
     
     body { 
-      width: 420px; 
+      width: 650px; 
       padding: 0; 
       margin: 0;
       font-family: 'Inter', system-ui, -apple-system, sans-serif; 
@@ -25,163 +25,84 @@
     }
 
     .main-container {
-      padding: 20px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-    }
-    
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      background: rgba(255,255,255,0.02);
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .header-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      gap: 24px;
     }
 
-    .header-logo {
-      width: 28px;
-      height: 28px;
-      background: var(--accent-glow);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 8px;
+    /* CATEGORY NAV */
+    .category-nav {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 15px var(--accent-glow);
+      gap: 10px;
+      overflow-x: auto;
+      padding: 4px 0 16px;
+      scrollbar-width: none;
     }
-    
-    h3 { 
-      margin: 0; 
-      font-size: 11px; 
-      text-transform: uppercase; 
-      letter-spacing: 2px; 
-      font-weight: 900;
-      color: var(--text);
+
+    .category-nav::-webkit-scrollbar { display: none; }
+
+    .nav-item {
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
     }
-    
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
+
+    .nav-item.active {
       background: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 4px 15px var(--accent-glow);
     }
 
     .search-section {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    .section-label {
-      font-size: 9px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
 
     #search-input {
       width: 100%;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.4);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
+      border-radius: 12px;
+      padding: 14px 18px;
       color: white;
-      font-size: 13px;
+      font-size: 14px;
       outline: none;
       box-sizing: border-box;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    #search-input:focus {
-      border-color: var(--accent);
-      background: rgba(0,0,0,0.5);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    /* AI RECOMMENDATION BOX */
-    #ai-suggestion-box {
-      background: linear-gradient(165deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      border-radius: 16px;
-      padding: 16px;
-      display: none;
-      animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .ai-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
-      background: var(--accent);
-      color: white;
-      border-radius: 6px;
-      font-size: 9px;
-      font-weight: 900;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    #ai-suggestion-content {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--text);
-      margin-bottom: 16px;
-      white-space: pre-line;
-    }
-
-    .action-btn {
-      background: white;
-      color: black;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-      width: 100%;
-    }
-
-    .action-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(255,255,255,0.1);
-    }
-
-    /* TEMPLATE ITEMS */
+    /* GRID LAYOUT FOR TEMPLATES */
     .template-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
     
     .template-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
+      border-radius: 20px;
+      padding: 20px;
       transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-sizing: border-box;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     .template-card:hover {
@@ -214,15 +135,14 @@
 
     .tone-selector {
       display: flex;
+      flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 12px;
-      overflow-x: auto;
-      padding-bottom: 4px;
+      margin-bottom: 16px;
     }
 
     .tone-btn {
-      padding: 5px 10px;
-      border-radius: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
       background: rgba(255,255,255,0.05);
       border: 1px solid var(--border);
       color: var(--text-muted);
@@ -240,22 +160,23 @@
     }
 
     .response-preview {
-      font-size: 12px;
-      line-height: 1.5;
+      font-size: 13px;
+      line-height: 1.6;
       color: var(--text-muted);
-      max-height: 100px;
-      overflow: hidden;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
       white-space: pre-line;
+      flex: 1;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .inject-mini-btn {
       background: var(--accent);
       color: white;
       border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 9px;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 10px;
       font-weight: 900;
       text-transform: uppercase;
       cursor: pointer;
@@ -308,8 +229,12 @@
       <button id="ai-inject-btn" class="action-btn">Inject to Chat</button>
     </div>
 
+    <div class="category-nav" id="category-nav">
+      <!-- Dynamic categories -->
+    </div>
+
     <div class="template-list" id="templates">
-       <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px;">Syncing Intelligence Matrix...</div>
+       <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; grid-column: span 2;">Syncing Intelligence Matrix...</div>
     </div>
   </div>
 

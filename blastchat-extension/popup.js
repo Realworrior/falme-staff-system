@@ -22,9 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const aiBox = document.getElementById('ai-suggestion-box');
   const aiContent = document.getElementById('ai-suggestion-content');
   const aiInjectBtn = document.getElementById('ai-inject-btn');
+  const categoryNav = document.getElementById('category-nav');
 
   let activeTabId = null;
   let isBlastChat = false;
+  let activeCategory = 'ALL';
 
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     const activeTab = tabs[0];
@@ -80,23 +82,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function fetchTemplates() {
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/support_templates?select=*&apikey=${SUPABASE_ANON_KEY}`, {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/supportTemplates?select=*`, {
         headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
+          'Content-Type': 'application/json'
         }
       });
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
-      }
-      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       
-      // Flatten the nested structure: rows (categories) -> templates (array)
       const flattened = [];
       data.forEach(catRow => {
         if (catRow.templates && Array.isArray(catRow.templates)) {
@@ -114,17 +110,60 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
       allTemplates = flattened;
+      renderCategoryNav(data.map(d => d.category));
       renderTemplates(allTemplates);
     } catch (err) {
       console.error("SUPABASE FETCH ERROR:", err);
       showError(`Sync Error: ${err.message || "Connection failed"}`);
-      // Fallback to basic templates if fetch fails
-      allTemplates = [
-        { id: 't1', title: 'Standard Greeting', text: 'Hello! How can I assist you today?', category: 'Support', triggers: ['hi', 'hello'] },
-        { id: 't2', title: 'Refund Policy', text: 'Our policy does not allow refunds for this case.', category: 'Policy', triggers: ['refund'] }
-      ];
-      renderTemplates(allTemplates);
     }
+  }
+
+  function renderCategoryNav(categories) {
+    if (!categoryNav) return;
+    categoryNav.innerHTML = '';
+    
+    const allBtn = document.createElement('div');
+    allBtn.className = `nav-item ${activeCategory === 'ALL' ? 'active' : ''}`;
+    allBtn.textContent = 'ALL';
+    allBtn.onclick = () => {
+      activeCategory = 'ALL';
+      renderCategoryNav(categories);
+      filterTemplates();
+    };
+    categoryNav.appendChild(allBtn);
+
+    const uniqueCats = [...new Set(categories)].sort();
+    uniqueCats.forEach(cat => {
+      const btn = document.createElement('div');
+      btn.className = `nav-item ${activeCategory === cat ? 'active' : ''}`;
+      btn.textContent = cat.split(' ').pop();
+      btn.title = cat;
+      btn.onclick = () => {
+        activeCategory = cat;
+        renderCategoryNav(categories);
+        filterTemplates();
+      };
+      categoryNav.appendChild(btn);
+    });
+  }
+
+  function filterTemplates() {
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    let filtered = allTemplates;
+    
+    if (activeCategory !== 'ALL') {
+      filtered = filtered.filter(t => t.category === activeCategory);
+    }
+
+    if (query) {
+      filtered = filtered.filter(t => 
+        t.title.toLowerCase().includes(query) || 
+        t.text.toLowerCase().includes(query) ||
+        (t.triggers && t.triggers.some(tr => tr.toLowerCase().includes(query)))
+      );
+    }
+    
+    renderTemplates(filtered);
   }
 
   function renderTemplates(templatesToRender) {
@@ -133,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (matchCountEl) matchCountEl.textContent = `${templatesToRender.length} items`;
 
     if (templatesToRender.length === 0) {
-      container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px;">No intelligence matches.</div>';
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; grid-column: span 2;">No intelligence matches.</div>';
       return;
     }
 
@@ -202,10 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // AI Matcher Logic
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
+      filterTemplates();
+      
       const input = e.target.value.toLowerCase().trim();
       if (!input) {
         if (aiBox) aiBox.style.display = 'none';
-        renderTemplates(allTemplates);
         return;
       }
 
