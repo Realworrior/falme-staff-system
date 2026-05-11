@@ -26,6 +26,8 @@ import {
   isSameDay} from "date-fns";
 import demoVideo from '../assets/copy_demo.png';
 
+import { useToast } from '../context/ToastContext';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -175,7 +177,19 @@ function CashbackCalculator() {
   const [cycleMode, setCycleMode] = useState('all'); 
   const [cycleOffset, setCycleOffset] = useState(0);
   const [parsedTx, setParsedTx] = useState([]);
+  const { showToast } = useToast();
   const [isVideoExpanded, setIsVideoExpanded] = useState(false);
+
+  const handleCopySummary = (day) => {
+    const netLoss = Math.max(0, day.deposits - day.withdrawals);
+    const cb = netLoss * 0.1;
+    const summary = `Total Withdrawals (Yesterday to today): ${Math.round(day.withdrawals).toLocaleString()}KSh
+Total Deposits from 8:30pm (Yesterday to today) : ${Math.round(day.deposits).toLocaleString()}ksh 
+Cashback calculation : ${Math.round(day.withdrawals).toLocaleString()} / ${Math.round(day.deposits).toLocaleString()} * 10% = ${Math.round(cb).toLocaleString()}ksh`;
+    
+    navigator.clipboard.writeText(summary);
+    showToast('Daily Summary Copied!', 'success');
+  };
 
   const depNum = parseFloat(deposits) || 0;
   const withNum = parseFloat(withdrawals) || 0;
@@ -450,9 +464,18 @@ function CashbackCalculator() {
                         {isSameDay(day.end, subDays(new Date(), 1)) && <span className="ml-2 text-gray-600">(Yesterday)</span>}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <span className="text-[8px] font-black text-accent uppercase block tracking-widest">Cashback Due</span>
-                      <span className="text-xl font-black text-emerald-500">KSh {cb.toLocaleString()}</span>
+                    <div className="text-right flex flex-col items-end gap-2">
+                      <div className="flex flex-col items-end">
+                        <span className="text-[8px] font-black text-accent uppercase block tracking-widest">Cashback Due</span>
+                        <span className="text-xl font-black text-emerald-500">KSh {cb.toLocaleString()}</span>
+                      </div>
+                      <button 
+                        onClick={() => handleCopySummary(day)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all group"
+                      >
+                        <Copy size={10} className="text-accent group-hover:scale-110 transition-transform" />
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Copy Report</span>
+                      </button>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/5">
