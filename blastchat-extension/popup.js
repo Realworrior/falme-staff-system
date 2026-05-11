@@ -236,10 +236,15 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
   function showError(msg) {
-    if (errorMsg) {
-      errorMsg.textContent = msg;
-      errorMsg.style.display = 'block';
-      setTimeout(() => errorMsg.style.display = 'none', 3000);
+    const errEl = document.getElementById('error-msg');
+    if (errEl) {
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+      setTimeout(() => {
+        if (errEl) errEl.style.display = 'none';
+      }, 3000);
+    } else {
+      console.error("Critical Extension Error:", msg);
     }
   }
 

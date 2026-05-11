@@ -256,10 +256,14 @@ const Templates = () => {
   }, []);
 
   const handleCopy = useCallback((text, id) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    showToast('Copied to clipboard!', 'success');
-    setTimeout(() => setCopiedId(null), 2000);
+    try {
+      navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      showToast('Copied to clipboard!', 'success');
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (e) {
+      showError('Failed to copy to clipboard');
+    }
   }, [showToast]);
 
   const handleAnalyze = useCallback(() => {
@@ -285,20 +289,31 @@ const Templates = () => {
       responses.push({ type: 'High Empathy', text: newTemplate.empathyText });
     }
 
-    const success = await actions.createRecord('supportTemplates', {
-      category: newTemplate.category,
-      templates: [{
-        title: newTemplate.title,
-        responses: responses,
-        triggers: [newTemplate.title.toLowerCase()]
-      }]
-    });
+    setAiLoading(true);
+    try {
+      const success = await actions.createRecord('supportTemplates', {
+        category: newTemplate.category,
+        templates: [{
+          title: newTemplate.title,
+          responses: responses,
+          triggers: [newTemplate.title.toLowerCase()]
+        }]
+      });
 
-    if (success) {
-      showToast('Template deployed!', 'success');
-      setModalOpen(false);
-      setNewTemplate({ category: '', title: '', standardText: '', empathyText: '' });
-      setIsNewCategory(false);
+      if (success) {
+        showToast('Template deployed!', 'success');
+        setModalOpen(false);
+        setNewTemplate({ category: '', title: '', standardText: '', empathyText: '' });
+        setIsNewCategory(false);
+        actions.refreshAll();
+      } else {
+        showToast('Deployment failed. Database rejected record.', 'error');
+      }
+    } catch (err) {
+      console.error("Creation Error:", err);
+      showToast('Critical error during deployment.', 'error');
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -491,12 +506,17 @@ const Templates = () => {
       count++;
     }
     
-    const cleanList = Object.values(consolidatedMap);
-    await actions.setAllData('supportTemplates', cleanList);
-    
-    setAiLoading(false);
-    showToast(`Synchronized & Cleaned ${cleanList.length} categories!`, 'success');
-    actions.refreshAll();
+    try {
+      const cleanList = Object.values(consolidatedMap);
+      await actions.setAllData('supportTemplates', cleanList);
+      showToast(`Synchronized & Cleaned ${cleanList.length} categories!`, 'success');
+      actions.refreshAll();
+    } catch (err) {
+      console.error("Deployment Failure:", err);
+      showToast('System Pack deployment failed. Check connection.', 'error');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const filteredData = useMemo(() => {
@@ -569,48 +589,53 @@ const Templates = () => {
           </div>
         </div>
 
-        {/* OPERATIONAL CONTROLS */}
+        {/* FLOATING OPERATIONAL CONTROLS */}
         <div style={{ 
-          display: 'flex', gap: 12, marginBottom: 24, padding: '12px', 
-          background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' 
+          position: 'fixed', top: 24, right: 100, zIndex: 100,
+          display: 'flex', gap: 10, padding: '10px', 
+          background: 'rgba(15,17,26,0.8)', backdropFilter: 'blur(20px)',
+          borderRadius: 20, border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
         }}>
            <button 
             onClick={() => setModalOpen(true)}
             style={{
               background: S.orange, color: '#fff', border: 'none',
-              borderRadius: 10, padding: '8px 16px', fontSize: 11, fontWeight: 800,
+              borderRadius: 12, padding: '10px 18px', fontSize: 11, fontWeight: 900,
               display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase', transition: 'all 0.3s'
             }}
           >
-            <Plus size={14} strokeWidth={3} /> New Template
+            <Plus size={16} strokeWidth={3} /> New Template
           </button>
           
-          <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.1)', margin: '0 4px' }} />
+          <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.1)', margin: '0 4px' }} />
 
           <button 
             onClick={handleConsolidate}
             disabled={aiLoading}
+            className="hover:bg-white/5"
             style={{
               background: 'transparent', color: S.textMuted, border: 'none',
-              padding: '8px 12px', fontSize: 10, fontWeight: 700,
+              borderRadius: 12, padding: '10px 16px', fontSize: 10, fontWeight: 700,
               display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
               textTransform: 'uppercase', transition: 'all 0.2s'
             }}
           >
-            <Trash2 size={12} /> Cleanup Library
+            <Trash2 size={14} /> Cleanup
           </button>
           <button 
             onClick={handleDeploySystemPack}
             disabled={aiLoading}
+            className="hover:bg-orange-500/10"
             style={{
-              background: 'transparent', color: S.textMuted, border: 'none',
-              padding: '8px 12px', fontSize: 10, fontWeight: 700,
+              background: 'transparent', color: S.orangeText, border: 'none',
+              borderRadius: 12, padding: '10px 16px', fontSize: 10, fontWeight: 700,
               display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
               textTransform: 'uppercase', transition: 'all 0.2s'
             }}
           >
-            <Terminal size={12} /> Deploy Failure Pack
+            <Terminal size={14} /> Deploy Fail Pack
           </button>
         </div>
         </div>
