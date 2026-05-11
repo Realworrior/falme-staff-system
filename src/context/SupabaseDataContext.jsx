@@ -66,14 +66,11 @@ export const SupabaseDataProvider = ({ children }) => {
     }
   };
 
-  const [onlineStaff, setOnlineStaff] = useState({});
-  const [presenceLoaded, setPresenceLoaded] = useState(false);
-
   useEffect(() => {
     fetchAllData();
     
     // Real-time Subscriptions
-    const ticketsChannel = supabase.channel('custom-all-channel')
+    const channels = supabase.channel('custom-all-channel')
       .on('postgres_changes', { event: '*', table: 'tickets', schema: 'public' }, (payload) => {
         if (payload.eventType === 'INSERT') setTickets(prev => [payload.new, ...prev]);
         else if (payload.eventType === 'UPDATE') setTickets(prev => prev.map(t => t.id === payload.new.id ? payload.new : t));
@@ -92,8 +89,12 @@ export const SupabaseDataProvider = ({ children }) => {
         }
       })
       .on('postgres_changes', { event: '*', table: 'rota_overrides', schema: 'public' }, async (payload) => {
+        // Optimized: Only update the specific record that changed instead of fetching all
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          setOverrides(prev => ({ ...prev, [payload.new.date || payload.new.id]: payload.new }));
+          setOverrides(prev => ({
+            ...prev,
+            [payload.new.date || payload.new.id]: payload.new
+          }));
         } else if (payload.eventType === 'DELETE') {
           setOverrides(prev => {
             const next = { ...prev };
@@ -104,38 +105,10 @@ export const SupabaseDataProvider = ({ children }) => {
       })
       .subscribe();
 
-    // ── PRESENCE TRACKING ───────────────────────────────────────────────────
-    const presenceChannel = supabase.channel('online-staff', {
-      config: { presence: { key: user?.name || 'Anonymous' } }
-    });
-
-    presenceChannel
-      .on('presence', { event: 'sync' }, () => {
-        const state = presenceChannel.presenceState();
-        setOnlineStaff(state);
-        setPresenceLoaded(true);
-      })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('[Presence] Staff joined:', key, newPresences);
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('[Presence] Staff left:', key, leftPresences);
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED' && user) {
-          await presenceChannel.track({
-            name: user.name,
-            role: user.role,
-            online_at: new Date().toISOString(),
-          });
-        }
-      });
-
     return () => {
-      supabase.removeChannel(ticketsChannel);
-      supabase.removeChannel(presenceChannel);
+      supabase.removeChannel(channels);
     };
-  }, [user]);
+  }, []);
 
   const loginWithPhone = async (phone, pin, role) => {
     // HARDCODED DEMO CREDENTIALS to bypass DB requirement
@@ -404,11 +377,9 @@ export const SupabaseDataProvider = ({ children }) => {
     logs,
     overrides,
     user,
-    onlineStaff,
     loading,
     error,
     isReady,
-    presenceLoaded,
     actions: {
       createRecord, 
       updateRecord, 

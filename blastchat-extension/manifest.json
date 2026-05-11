@@ -12,9 +12,15 @@
     "https://*.blastchat.chat/*",
     "https://kgpcruwlejoougjbeouw.supabase.co/*"
   ],
+  "icons": {
+    "16": "icon.svg",
+    "48": "icon.svg",
+    "128": "icon.svg"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "BlastChat Tools"
+    "default_title": "BlastChat Tools",
+    "default_icon": "icon.svg"
   },
   "content_scripts": [
     {

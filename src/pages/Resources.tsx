@@ -2611,7 +2611,63 @@ function ComplianceView({ accent }: { accent: string }) {
 // ── Staff Toolkit View ───────────────────────────────────────────────────────
 function ToolkitView({ accent }: { accent: string }) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* ── Extension Deployment Card ── */}
+      <div 
+        className="rounded-3xl p-8 border border-emerald-500/30 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+        style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.1) 100%)" }}
+      >
+        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+           <img src="/favicon.svg" alt="BG" className="w-32 h-32 rotate-12" />
+        </div>
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
+          <div className="w-20 h-20 rounded-3xl bg-accent/20 flex items-center justify-center border border-accent/40 shadow-2xl backdrop-blur-md group-hover:scale-110 transition-transform duration-500">
+             <img src="/favicon.svg" alt="Extension" className="w-12 h-12 object-contain brightness-125" />
+          </div>
+          
+          <div className="flex-1 text-center lg:text-left">
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
+              <h3 className="text-white text-2xl font-black tracking-tight">BlastChat Accelerator</h3>
+              <span className="px-2.5 py-0.5 bg-accent text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg">v1.0 STABLE</span>
+            </div>
+            <p className="text-white/60 text-base max-w-xl leading-relaxed">
+              Equip your browser with real-time AI intelligence. This extension syncs with our live templates to provide instant suggestions as you chat with clients.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-4">
+               <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+                  <span>✨</span> AI Matcher
+               </div>
+               <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+                  <span>🔄</span> Live Sync
+               </div>
+               <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+                  <span>🖱️</span> Highlight-to-Match
+               </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 min-w-[220px]">
+             <a 
+               href="https://github.com/Realworrior/falme-staff-system/archive/refs/heads/master.zip"
+               target="_blank"
+               rel="noopener noreferrer"
+               className="w-full px-6 py-4 bg-accent text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
+             >
+               <span>📦</span> Download Extension
+             </a>
+             
+             <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-[10px] text-white/40 leading-relaxed">
+                <span className="text-accent font-black">INSTALLATION:</span><br/>
+                1. Unzip download<br/>
+                2. Go to <span className="text-white/60">chrome://extensions</span><br/>
+                3. Enable <span className="text-white/60">Developer Mode</span><br/>
+                4. Drag <span className="text-white/60">/blastchat-extension</span> folder in
+             </div>
+          </div>
+        </div>
+      </div>
+
       <div 
         className="rounded-2xl p-6 border border-pink-500/20"
         style={{ background: "rgba(244,114,182,0.07)" }}
