@@ -45,32 +45,32 @@ document.addEventListener('DOMContentLoaded', () => {
     await fetchTemplates();
 
     // AUTO-MATCH: Check for highlighted text in the page
-    chrome.tabs.sendMessage(activeTabId, { action: "getSelectedText" }, (response) => {
-      if (chrome.runtime.lastError) {
-        // Content script might not be loaded yet, try injecting it
-        chrome.scripting.executeScript({
-          target: { tabId: activeTabId },
-          files: ['content.js']
-        }, () => {
-          if (!chrome.runtime.lastError) {
-            chrome.tabs.sendMessage(activeTabId, { action: "getSelectedText" }, (retryResponse) => {
-              if (retryResponse && retryResponse.text) {
-                applySelection(retryResponse.text);
-              }
-            });
-          }
-        });
-      } else if (response && response.text) {
-        applySelection(response.text);
-      }
-    });
+    if (activeTabId) {
+      chrome.tabs.sendMessage(activeTabId, { action: "getSelectedText" }, (response) => {
+        if (chrome.runtime.lastError) {
+          chrome.scripting.executeScript({
+            target: { tabId: activeTabId },
+            files: ['content.js']
+          }, () => {
+            if (!chrome.runtime.lastError) {
+              chrome.tabs.sendMessage(activeTabId, { action: "getSelectedText" }, (retryResponse) => {
+                if (retryResponse && retryResponse.text) {
+                  applySelection(retryResponse.text);
+                }
+              });
+            }
+          });
+        } else if (response && response.text) {
+          applySelection(response.text);
+        }
+      });
+    }
   });
 
   function applySelection(text) {
     const trimmed = text.trim();
-    if (trimmed.length > 3) {
+    if (trimmed.length > 3 && searchInput) {
       searchInput.value = trimmed;
-      // Trigger the input event manually
       searchInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
