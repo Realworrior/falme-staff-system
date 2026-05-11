@@ -225,52 +225,88 @@ document.addEventListener('DOMContentLoaded', () => {
       header.appendChild(cat);
       card.appendChild(header);
 
-      // Tone Selector if multiple responses
-      let activeText = t.text;
-      if (t.responses && t.responses.length > 1) {
-        const selector = document.createElement('div');
-        selector.className = 'tone-selector';
+      // CAROUSEL LOGIC
+      let currentToneIdx = 0;
+      let activeText = t.responses?.[0]?.text || t.text;
+
+      if (t.responses && t.responses.length > 0) {
+        const carousel = document.createElement('div');
+        carousel.className = 'tone-carousel';
         
-        t.responses.forEach((resp, idx) => {
-          const tBtn = document.createElement('button');
-          const type = resp.type.toLowerCase();
-          const isNamed = type.includes('standard') || type.includes('empathy');
+        const header = document.createElement('div');
+        header.className = 'carousel-header';
+        
+        const prevBtn = document.createElement('div');
+        prevBtn.className = 'carousel-btn';
+        prevBtn.innerHTML = '←';
+        
+        const nextBtn = document.createElement('div');
+        nextBtn.className = 'carousel-btn';
+        nextBtn.innerHTML = '→';
+        
+        const info = document.createElement('div');
+        info.className = 'carousel-info';
+        
+        const dots = document.createElement('div');
+        dots.className = 'carousel-dots';
+        
+        const updateCarousel = (idx) => {
+          currentToneIdx = idx;
+          const resp = t.responses[idx];
+          preview.textContent = resp.text;
+          activeText = resp.text;
           
-          tBtn.className = `tone-btn ${idx === 0 ? 'active' : ''} ${isNamed ? 'named-tone' : ''}`;
+          const label = resp.type.toUpperCase();
+          info.innerHTML = `<span>${idx + 1}/${t.responses.length}</span> <span style="opacity:0.5">•</span> <span>${label}</span>`;
           
-          let icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="3" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
-          let label = idx + 1;
+          // Update dots
+          dots.querySelectorAll('.dot').forEach((d, i) => {
+            d.className = i === idx ? 'dot active' : 'dot';
+          });
+        };
 
-          if (type.includes('standard')) {
-            icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="3" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
-            label = 'Standard';
-          } else if (type.includes('empathy')) {
-            icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="3" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
-            label = 'Empathy';
-          }
+        prevBtn.onclick = (e) => {
+          e.stopPropagation();
+          const newIdx = (currentToneIdx - 1 + t.responses.length) % t.responses.length;
+          updateCarousel(newIdx);
+        };
 
-          tBtn.innerHTML = `${icon}${isNamed ? `<span style="margin-left:6px">${label}</span>` : `<span style="margin-left:2px; font-size:10px; font-weight:900">${label}</span>`}`;
-          
-          tBtn.onclick = (e) => {
-            e.stopPropagation();
-            selector.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
-            tBtn.classList.add('active');
-            preview.textContent = resp.text;
-            activeText = resp.text;
-          };
-          selector.appendChild(tBtn);
+        nextBtn.onclick = (e) => {
+          e.stopPropagation();
+          const newIdx = (currentToneIdx + 1) % t.responses.length;
+          updateCarousel(newIdx);
+        };
+
+        // Initial dots
+        t.responses.forEach((_, i) => {
+          const dot = document.createElement('div');
+          dot.className = i === 0 ? 'dot active' : 'dot';
+          dots.appendChild(dot);
         });
-        card.appendChild(selector);
+
+        header.appendChild(prevBtn);
+        header.appendChild(info);
+        header.appendChild(nextBtn);
+        
+        carousel.appendChild(header);
+        
+        const preview = document.createElement('div');
+        preview.className = 'response-preview';
+        carousel.appendChild(preview);
+        carousel.appendChild(dots);
+        
+        card.appendChild(carousel);
+        updateCarousel(0);
+      } else {
+        const preview = document.createElement('div');
+        preview.className = 'response-preview';
+        preview.textContent = activeText;
+        card.appendChild(preview);
       }
-      
-      const preview = document.createElement('div');
-      preview.className = 'response-preview';
-      preview.textContent = activeText;
-      card.appendChild(preview);
       
       const injectBtn = document.createElement('button');
       injectBtn.className = 'inject-mini-btn';
-      injectBtn.textContent = 'Inject This Tone';
+      injectBtn.textContent = 'Inject to Chat';
       injectBtn.onclick = () => {
         if (!isBlastChat) {
           showError("Not on BlastChat!");

@@ -278,69 +278,87 @@
       white-space: nowrap;
     }
 
-    .tone-selector {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 12px;
-      padding: 6px;
+    .tone-carousel {
       background: rgba(255,255,255,0.02);
-      border-radius: 10px;
       border: 1px solid var(--border);
-      justify-content: flex-start;
-      align-items: center;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    .tone-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+    .carousel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
       background: rgba(255,255,255,0.03);
-      border: 1px solid transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .carousel-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    /* Named tones get more width */
-    .tone-btn.named-tone {
-      width: auto;
-      padding: 0 10px;
-      font-size: 8px;
+    .carousel-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .carousel-info {
+      font-size: 9px;
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .tone-btn:hover {
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-    }
-
-    .tone-btn.active {
-      background: var(--accent);
-      color: white;
-      box-shadow: 0 4px 10px var(--accent-glow);
+      letter-spacing: 1px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .response-preview {
       font-size: 13px;
       line-height: 1.6;
       color: #cbd5e1;
-      padding: 14px;
-      background: #000;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      margin-bottom: 16px;
+      padding: 16px;
+      min-height: 80px;
       white-space: pre-line;
-      flex: 1;
       overflow-wrap: break-word;
       word-break: break-word;
-      min-height: 50px;
+    }
+
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+
+    .dot.active {
+      width: 12px;
+      border-radius: 4px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
     }
 
     .inject-mini-btn {
@@ -348,18 +366,20 @@
       color: #000;
       border: none;
       border-radius: 12px;
-      padding: 12px 20px;
+      padding: 14px 20px;
       font-size: 10px;
       font-weight: 900;
       text-transform: uppercase;
       cursor: pointer;
       width: 100%;
       transition: all 0.2s;
+      letter-spacing: 0.5px;
     }
 
     .inject-mini-btn:hover {
       background: var(--accent);
       color: #fff;
+      transform: translateY(-2px);
     }
 
     #error-msg {
