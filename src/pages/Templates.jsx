@@ -327,7 +327,7 @@ const Templates = () => {
         if (upper.includes('SECURITY') || upper.includes('ACCOUNT MANAGEMENT')) rawName = '👤 ACCOUNT MANAGEMENT';
         else if (upper.includes('WITHDRAWAL')) rawName = '💸 WITHDRAWALS & TRANSACTIONS';
         else if (upper.includes('DEPOSIT')) rawName = '💰 DEPOSITS — M-PESA';
-        else if (upper.includes('SPORTS BETTING') || upper.includes('DISPUTE')) rawName = '⚽ SPORTS BETTING';
+        else if (upper.includes('SPORTS') || upper.includes('DISPUTE') || upper.includes('LIVE BETTING')) rawName = '⚽ SPORTS BETTING';
         else if (upper.includes('GAMES') || upper.includes('CASINO')) rawName = '🎰 CASINO GAMES';
         else if (upper.includes('HARD CASES')) rawName = '⚖️ HARD CASES';
         else if (upper.includes('RESPONSIBLE') || upper.includes('THREATENING')) rawName = '🛡️ RESPONSIBLE GAMING';
