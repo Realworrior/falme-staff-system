@@ -12,7 +12,8 @@ let allTemplates = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('templates');
-  const statusEl = document.getElementById('status');
+  const statusIndicator = document.getElementById('status-indicator');
+  const statusText = document.getElementById('status-text');
   const errorMsg = document.getElementById('error-msg');
   const searchInput = document.getElementById('search-input');
   const matchCountEl = document.getElementById('match-count');
@@ -31,14 +32,16 @@ document.addEventListener('DOMContentLoaded', () => {
     isBlastChat = activeTab.url && activeTab.url.includes("blastchat.chat");
     
     if (isBlastChat) {
-      if (statusEl) {
-        statusEl.textContent = "Ready for BlastChat Injector";
-        statusEl.style.color = "#10b981";
+      if (statusText) statusText.textContent = "Connected to BlastChat Engine";
+      if (statusIndicator) {
+        statusIndicator.style.background = "#10b981";
+        statusIndicator.style.boxShadow = "0 0 10px #10b981";
       }
     } else {
-      if (statusEl) {
-        statusEl.textContent = "Navigate to blastchat.chat";
-        statusEl.style.color = "#ef4444";
+      if (statusText) statusText.textContent = "Waiting for blastchat.chat...";
+      if (statusIndicator) {
+        statusIndicator.style.background = "#ef4444";
+        statusIndicator.style.boxShadow = "0 0 10px #ef4444";
       }
     }
 
@@ -130,47 +133,69 @@ document.addEventListener('DOMContentLoaded', () => {
     if (matchCountEl) matchCountEl.textContent = `${templatesToRender.length} items`;
 
     if (templatesToRender.length === 0) {
-      container.innerHTML = '<div class="no-results">No intelligence matches.</div>';
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px;">No intelligence matches.</div>';
       return;
     }
 
     templatesToRender.forEach(t => {
-      const btn = document.createElement('button');
-      btn.className = 'template-btn';
+      const card = document.createElement('div');
+      card.className = 'template-card';
       
       const header = document.createElement('div');
-      header.style.display = 'flex';
-      header.style.alignItems = 'center';
-      header.style.width = '100%';
-      header.style.marginBottom = '2px';
+      header.className = 'card-header';
       
       const title = document.createElement('div');
-      title.className = 'template-title';
+      title.className = 'card-title';
       title.textContent = t.title;
       
-      const category = document.createElement('div');
-      category.className = 'category-badge';
-      category.textContent = t.category.split(' ').pop(); // Just show the emoji/last word
+      const cat = document.createElement('div');
+      cat.className = 'card-category';
+      cat.textContent = t.category.split(' ').pop();
       
       header.appendChild(title);
-      header.appendChild(category);
+      header.appendChild(cat);
+      card.appendChild(header);
+
+      // Tone Selector if multiple responses
+      let activeText = t.text;
+      if (t.responses && t.responses.length > 1) {
+        const selector = document.createElement('div');
+        selector.className = 'tone-selector';
+        
+        t.responses.forEach((resp, idx) => {
+          const tBtn = document.createElement('button');
+          tBtn.className = `tone-btn ${idx === 0 ? 'active' : ''}`;
+          tBtn.textContent = resp.type;
+          tBtn.onclick = (e) => {
+            e.stopPropagation();
+            selector.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+            tBtn.classList.add('active');
+            preview.textContent = resp.text;
+            activeText = resp.text;
+          };
+          selector.appendChild(tBtn);
+        });
+        card.appendChild(selector);
+      }
       
       const preview = document.createElement('div');
-      preview.className = 'template-preview';
-      preview.textContent = t.text;
+      preview.className = 'response-preview';
+      preview.textContent = activeText;
+      card.appendChild(preview);
       
-      btn.appendChild(header);
-      btn.appendChild(preview);
-      
-      btn.onclick = () => {
+      const injectBtn = document.createElement('button');
+      injectBtn.className = 'inject-mini-btn';
+      injectBtn.textContent = 'Inject This Tone';
+      injectBtn.onclick = () => {
         if (!isBlastChat) {
           showError("Not on BlastChat!");
           return;
         }
-        injectText(t.text, activeTabId);
+        injectText(activeText, activeTabId);
       };
       
-      container.appendChild(btn);
+      card.appendChild(injectBtn);
+      container.appendChild(card);
     });
   }
 
@@ -184,25 +209,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-    // Ported simplified AI matching from main app
     const tokens = input.split(/\s+/).filter(t => t.length > 2);
     let bestMatch = null;
     let maxScore = 0;
 
     const matched = allTemplates.map(tpl => {
       let score = 0;
-      const combined = (tpl.title + ' ' + tpl.category + ' ' + tpl.triggers.join(' ')).toLowerCase();
+      const combined = (tpl.title + ' ' + tpl.category + ' ' + (tpl.triggers || []).join(' ')).toLowerCase();
       
       tokens.forEach(token => {
         if (combined.includes(token)) score += 10;
         if (tpl.text.toLowerCase().includes(token)) score += 2;
-        if (tpl.triggers.some(tr => tr.toLowerCase() === token)) score += 25;
+        if (tpl.triggers && tpl.triggers.some(tr => tr.toLowerCase() === token)) score += 25;
       });
 
-      // Boost for keyword-specific scenarios
       if (input.includes('deposit') && tpl.title.toLowerCase().includes('deposit')) score += 30;
-      if (input.includes('mpesa') && tpl.triggers.some(t => t.includes('mpesa'))) score += 30;
-      if (input.includes('aviator') && tpl.triggers.some(t => t.includes('aviator'))) score += 30;
+      if (input.includes('mpesa') && (tpl.triggers || []).some(t => t.includes('mpesa'))) score += 30;
+      if (input.includes('aviator') && (tpl.triggers || []).some(t => t.includes('aviator'))) score += 30;
 
       if (score > maxScore) {
         maxScore = score;
@@ -216,7 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderTemplates(matched);
 
-    // Show AI Suggestion if score is high enough
     if (bestMatch && maxScore > 25) {
       if (aiBox) aiBox.style.display = 'block';
       if (aiContent) aiContent.textContent = bestMatch.text;

@@ -4,267 +4,316 @@
   <meta charset="utf-8">
   <style>
     :root {
-      --bg-color: #08080c;
-      --card-bg: rgba(255, 255, 255, 0.05);
+      --bg-color: #060609;
+      --card-bg: rgba(255, 255, 255, 0.03);
       --accent: #10b981;
-      --text: #ffffff;
-      --text-muted: #9ca3af;
-      --border: rgba(255, 255, 255, 0.1);
+      --accent-glow: rgba(16, 185, 129, 0.2);
+      --text: #f8fafc;
+      --text-muted: #64748b;
+      --border: rgba(255, 255, 255, 0.06);
+      --surface: #0f111a;
     }
     
     body { 
-      width: 320px; 
-      padding: 16px; 
+      width: 420px; 
+      padding: 0; 
       margin: 0;
-      font-family: system-ui, -apple-system, sans-serif; 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
       background: var(--bg-color); 
       color: var(--text); 
+      overflow-x: hidden;
+    }
+
+    .main-container {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
     
     .header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: rgba(255,255,255,0.02);
       border-bottom: 1px solid var(--border);
     }
     
-    .header-icon {
-      width: 24px;
-      height: 24px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      border-radius: 6px;
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-logo {
+      width: 28px;
+      height: 28px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--accent);
-      font-weight: bold;
-      font-size: 14px;
+      box-shadow: 0 0 15px var(--accent-glow);
     }
     
     h3 { 
       margin: 0; 
-      font-size: 12px; 
+      font-size: 11px; 
       text-transform: uppercase; 
-      letter-spacing: 1px; 
+      letter-spacing: 2px; 
       font-weight: 900;
+      color: var(--text);
     }
     
-    .status {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-      font-style: italic;
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
     }
 
-    .search-container {
-      margin-bottom: 16px;
+    .search-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
 
-    .search-label {
+    .section-label {
       font-size: 9px;
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: var(--accent);
-      margin-bottom: 6px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-    }
-
-    .match-count {
-      color: var(--text-muted);
-      font-weight: normal;
     }
 
     #search-input {
       width: 100%;
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(0,0,0,0.3);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: 10px;
+      padding: 12px 14px;
       color: white;
-      font-size: 12px;
+      font-size: 13px;
       outline: none;
       box-sizing: border-box;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     #search-input:focus {
       border-color: var(--accent);
-      background: rgba(255, 255, 255, 0.05);
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+      background: rgba(0,0,0,0.5);
+      box-shadow: 0 0 0 3px var(--accent-glow);
     }
 
-    .ai-suggestion-card {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    /* AI RECOMMENDATION BOX */
+    #ai-suggestion-box {
+      background: linear-gradient(165deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
       border: 1px solid rgba(16, 185, 129, 0.2);
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 16px;
+      border-radius: 16px;
+      padding: 16px;
       display: none;
-      animation: fadeIn 0.3s ease-out;
+      animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .ai-suggestion-header {
-      display: flex;
+    .ai-badge {
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      padding: 4px 10px;
+      background: var(--accent);
+      color: white;
+      border-radius: 6px;
       font-size: 9px;
       font-weight: 900;
       text-transform: uppercase;
-      color: #10b981;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
-    .ai-suggestion-text {
-      font-size: 11px;
-      line-height: 1.5;
+    #ai-suggestion-content {
+      font-size: 13px;
+      line-height: 1.6;
       color: var(--text);
-      margin-bottom: 10px;
+      margin-bottom: 16px;
       white-space: pre-line;
     }
 
-    .ai-suggestion-actions {
-      display: flex;
-      justify-content: flex-end;
+    .action-btn {
+      background: white;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
     }
 
-    .inject-btn {
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255,255,255,0.1);
+    }
+
+    /* TEMPLATE ITEMS */
+    .template-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .template-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      transition: all 0.3s;
+    }
+
+    .template-card:hover {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .card-category {
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-glow);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .tone-selector {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .tone-btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 9px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .tone-btn.active {
+      background: white;
+      color: black;
+      border-color: white;
+    }
+
+    .response-preview {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      max-height: 100px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      white-space: pre-line;
+    }
+
+    .inject-mini-btn {
       background: var(--accent);
       color: white;
       border: none;
       border-radius: 6px;
       padding: 6px 12px;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 900;
       text-transform: uppercase;
       cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .inject-btn:hover {
-      opacity: 0.9;
-    }
-
-    .template-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    
-    .template-btn {
       width: 100%;
-      padding: 12px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      cursor: pointer;
-      text-align: left;
-      border-radius: 12px;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    
-    .template-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-1px);
-    }
-    
-    .template-title {
-      font-size: 11px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--accent);
-    }
-    
-    .template-preview {
-      font-size: 11px;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
-    .category-badge {
-      font-size: 8px;
-      font-weight: 900;
-      text-transform: uppercase;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      margin-left: auto;
-      color: var(--text-muted);
-    }
-
-    .loading-state, .no-results {
-      text-align: center;
-      padding: 20px;
-      color: var(--text-muted);
-      font-size: 11px;
-      font-style: italic;
-    }
-    
     #error-msg {
-      display: none;
-      margin-top: 12px;
-      padding: 10px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      border-radius: 8px;
-      color: #ef4444;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: #ef4444;
+      color: white;
+      padding: 12px;
+      border-radius: 10px;
       font-size: 11px;
-      font-weight: bold;
+      font-weight: 800;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="header-icon">
-      <img src="icon.svg" alt="Logo" style="width: 16px; height: 16px; object-contain: contain;" />
+    <div class="header-brand">
+      <div class="header-logo">
+        <img src="icon.svg" alt="Logo" style="width: 16px; height: 16px; object-fit: contain;" />
+      </div>
+      <h3>Quick Injector</h3>
     </div>
-    <h3>Quick Injector</h3>
-  </div>
-  
-  <div id="status" class="status">Checking active tab...</div>
-
-  <div class="search-container">
-    <div class="search-label">
-      <span>✨ AI Matcher</span>
-      <span id="match-count" class="match-count">0 matches</span>
-    </div>
-    <input type="text" id="search-input" placeholder="Paste client message for AI matching..." />
+    <div id="status-indicator" class="status-dot"></div>
   </div>
 
-  <div id="ai-suggestion-box" class="ai-suggestion-card">
-    <div class="ai-suggestion-header">
-      <span>✨ AI Draft Recommendation</span>
+  <div class="main-container">
+    <div id="status-text" style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px; font-style: italic;">Syncing...</div>
+
+    <div class="search-section">
+      <div class="section-label">
+        <span>✨ AI Matcher</span>
+        <span id="match-count">0 items</span>
+      </div>
+      <input type="text" id="search-input" placeholder="Paste client message..." />
     </div>
-    <div id="ai-suggestion-content" class="ai-suggestion-text"></div>
-    <div class="ai-suggestion-actions">
-      <button id="ai-inject-btn" class="inject-btn">Inject Draft</button>
+
+    <div id="ai-suggestion-box">
+      <div class="ai-badge">✨ Draft Recommendation</div>
+      <div id="ai-suggestion-content"></div>
+      <button id="ai-inject-btn" class="action-btn">Inject to Chat</button>
+    </div>
+
+    <div class="template-list" id="templates">
+       <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px;">Syncing Intelligence Matrix...</div>
     </div>
   </div>
-  
-  <div class="template-list" id="templates">
-    <div class="loading-state">Syncing Intelligence Matrix...</div>
-  </div>
-  
+
   <div id="error-msg"></div>
-
   <script src="popup.js"></script>
 </body>
 </html>
