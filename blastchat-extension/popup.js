@@ -31,11 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
     isBlastChat = activeTab.url && activeTab.url.includes("blastchat.chat");
     
     if (isBlastChat) {
-      statusEl.textContent = "Ready for BlastChat Injector";
-      statusEl.style.color = "#10b981";
+      if (statusEl) {
+        statusEl.textContent = "Ready for BlastChat Injector";
+        statusEl.style.color = "#10b981";
+      }
     } else {
-      statusEl.textContent = "Navigate to blastchat.chat";
-      statusEl.style.color = "#ef4444";
+      if (statusEl) {
+        statusEl.textContent = "Navigate to blastchat.chat";
+        statusEl.style.color = "#ef4444";
+      }
     }
 
     await fetchTemplates();
@@ -121,8 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderTemplates(templatesToRender) {
+    if (!container) return;
     container.innerHTML = '';
-    matchCountEl.textContent = `${templatesToRender.length} items`;
+    if (matchCountEl) matchCountEl.textContent = `${templatesToRender.length} items`;
 
     if (templatesToRender.length === 0) {
       container.innerHTML = '<div class="no-results">No intelligence matches.</div>';
@@ -170,13 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // AI Matcher Logic
-  searchInput.addEventListener('input', (e) => {
-    const input = e.target.value.toLowerCase().trim();
-    if (!input) {
-      aiBox.style.display = 'none';
-      renderTemplates(allTemplates);
-      return;
-    }
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const input = e.target.value.toLowerCase().trim();
+      if (!input) {
+        if (aiBox) aiBox.style.display = 'none';
+        renderTemplates(allTemplates);
+        return;
+      }
 
     // Ported simplified AI matching from main app
     const tokens = input.split(/\s+/).filter(t => t.length > 2);
@@ -212,24 +218,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Show AI Suggestion if score is high enough
     if (bestMatch && maxScore > 25) {
-      aiBox.style.display = 'block';
-      aiContent.textContent = bestMatch.text;
-      aiInjectBtn.onclick = () => {
-        if (!isBlastChat) {
-          showError("Not on BlastChat!");
-          return;
-        }
-        injectText(bestMatch.text, activeTabId);
-      };
+      if (aiBox) aiBox.style.display = 'block';
+      if (aiContent) aiContent.textContent = bestMatch.text;
+      if (aiInjectBtn) {
+        aiInjectBtn.onclick = () => {
+          if (!isBlastChat) {
+            showError("Not on BlastChat!");
+            return;
+          }
+          injectText(bestMatch.text, activeTabId);
+        };
+      }
     } else {
-      aiBox.style.display = 'none';
+      if (aiBox) aiBox.style.display = 'none';
     }
   });
+}
 
   function showError(msg) {
-    errorMsg.textContent = msg;
-    errorMsg.style.display = 'block';
-    setTimeout(() => errorMsg.style.display = 'none', 3000);
+    if (errorMsg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+      setTimeout(() => errorMsg.style.display = 'none', 3000);
+    }
   }
 
   function injectText(text, tabId) {

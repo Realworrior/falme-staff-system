@@ -551,42 +551,68 @@ const Templates = () => {
           </div>
 
           <div style={{ display: 'flex', gap: 12 }}>
-             <button 
-              onClick={handleConsolidate}
-              disabled={aiLoading}
-              style={{
-                background: 'transparent', color: S.textMuted, border: `1px solid ${S.border}`,
-                borderRadius: 12, padding: '10px 20px', fontSize: 11, fontWeight: 700,
-                display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-                textTransform: 'uppercase', transition: 'all 0.2s'
-              }}
-            >
-              <Trash2 size={14} /> Cleanup Library
-            </button>
-             <button 
-              onClick={handleDeploySystemPack}
-              disabled={aiLoading}
-              style={{
-                background: 'transparent', color: S.orangeText, border: `1px solid ${S.orange}40`,
-                borderRadius: 12, padding: '10px 20px', fontSize: 11, fontWeight: 700,
-                display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-                textTransform: 'uppercase', transition: 'all 0.2s'
-              }}
-            >
-              <Terminal size={14} /> Deploy Failure Pack
-            </button>
-             <button 
-              onClick={() => setModalOpen(true)}
-              style={{
-                background: S.orange, color: '#fff', border: 'none',
-                borderRadius: 12, padding: '10px 20px', fontSize: 12, fontWeight: 800,
-                display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(249,115,22,0.2)', textTransform: 'uppercase'
-              }}
-            >
-              <Plus size={16} strokeWidth={3} /> New Template
-            </button>
+             <a 
+               href="https://github.com/Realworrior/falme-staff-system/archive/refs/heads/master.zip"
+               target="_blank"
+               rel="noopener noreferrer"
+               style={{
+                 background: "linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(59,130,246,0.1) 100%)",
+                 color: S.green, border: `1px solid ${S.green}30`,
+                 borderRadius: 12, padding: '10px 20px', fontSize: 11, fontWeight: 900,
+                 display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                 textTransform: 'uppercase', transition: 'all 0.2s', textDecoration: 'none',
+                 boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+               }}
+             >
+               <img src="/favicon.svg" alt="X" style={{ width: 14, height: 14 }} /> Download Extension
+             </a>
           </div>
+        </div>
+
+        {/* OPERATIONAL CONTROLS */}
+        <div style={{ 
+          display: 'flex', gap: 12, marginBottom: 24, padding: '12px', 
+          background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' 
+        }}>
+           <button 
+            onClick={() => setModalOpen(true)}
+            style={{
+              background: S.orange, color: '#fff', border: 'none',
+              borderRadius: 10, padding: '8px 16px', fontSize: 11, fontWeight: 800,
+              display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+              textTransform: 'uppercase'
+            }}
+          >
+            <Plus size={14} strokeWidth={3} /> New Template
+          </button>
+          
+          <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.1)', margin: '0 4px' }} />
+
+          <button 
+            onClick={handleConsolidate}
+            disabled={aiLoading}
+            style={{
+              background: 'transparent', color: S.textMuted, border: 'none',
+              padding: '8px 12px', fontSize: 10, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+              textTransform: 'uppercase', transition: 'all 0.2s'
+            }}
+          >
+            <Trash2 size={12} /> Cleanup Library
+          </button>
+          <button 
+            onClick={handleDeploySystemPack}
+            disabled={aiLoading}
+            style={{
+              background: 'transparent', color: S.textMuted, border: 'none',
+              padding: '8px 12px', fontSize: 10, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+              textTransform: 'uppercase', transition: 'all 0.2s'
+            }}
+          >
+            <Terminal size={12} /> Deploy Failure Pack
+          </button>
+        </div>
         </div>
 
         {/* PREMIUM UNIFIED COMMAND CENTER */}
