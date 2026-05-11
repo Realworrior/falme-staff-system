@@ -204,7 +204,7 @@ function ResponseCard({ item, copiedId, onCopy, expanded, onToggle }) {
                      </div>
                    )}
                 </div>
-                <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={handleCopy} />
+                <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
               </div>
             </div>
           </motion.div>
