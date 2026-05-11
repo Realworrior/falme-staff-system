@@ -1,26 +1,41 @@
 let lastFocusedInput = null;
 
-// Continuously track the last focused input field
-document.addEventListener('focusin', (e) => {
-  const isInput = e.target.tagName === 'TEXTAREA' || 
-                  (e.target.tagName === 'INPUT' && e.target.type === 'text') || 
-                  e.target.isContentEditable;
-  if (isInput) {
-    lastFocusedInput = e.target;
+// Track focus across the document and within shadow roots
+function trackFocus(root) {
+  root.addEventListener('focusin', (e) => {
+    const target = e.composedPath()[0]; // Get the actual element even through shadow boundaries
+    const isInput = target.tagName === 'TEXTAREA' || 
+                    (target.tagName === 'INPUT' && (target.type === 'text' || target.type === 'search')) || 
+                    target.isContentEditable;
+    if (isInput) {
+      lastFocusedInput = target;
+    }
+  }, true);
+}
+
+trackFocus(document);
+
+// Helper to find elements in Shadow DOMs
+function findInShadows(root, selector) {
+  const elements = Array.from(root.querySelectorAll(selector));
+  const shadows = Array.from(root.querySelectorAll('*')).map(el => el.shadowRoot).filter(Boolean);
+  
+  for (const shadow of shadows) {
+    elements.push(...findInShadows(shadow, selector));
   }
-});
+  return elements;
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "injectText") {
     let target = lastFocusedInput;
     
-    // Fallback: If no input was focused, find the best visible candidate
-    if (!target) {
-      const selectors = ['textarea', '[contenteditable="true"]', 'input[type="text"]'];
+    if (!target || !document.body.contains(target)) {
+      const selectors = ['textarea', '[contenteditable="true"]', 'input[type="text"]', 'input[type="search"]', '.public-DraftEditor-content'];
       for (let s of selectors) {
-        const elements = document.querySelectorAll(s);
+        const elements = findInShadows(document, s);
         for (let el of elements) {
-          if (el.offsetParent !== null && !el.disabled) { // Is visible and enabled
+          if (el.offsetParent !== null && !el.disabled) {
             target = el;
             break;
           }
@@ -32,28 +47,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (target) {
       target.focus();
       
-      // 1. If it's a rich text editor (contenteditable)
-      if (target.isContentEditable) {
-        document.execCommand('insertText', false, request.text);
-      } 
-      // 2. If it's a standard React/Vue input or textarea
-      else {
-        // Try the native setter to bypass React's event hijacking
-        const proto = target.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
-        const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
-        
-        if (nativeSetter) {
-          nativeSetter.call(target, request.text);
+      try {
+        if (target.isContentEditable) {
+          // Attempt execCommand first (best for keeping history/undo)
+          const successful = document.execCommand('insertText', false, request.text);
+          if (!successful) {
+            // Fallback for strict editors: manually set text and dispatch events
+            target.innerText = request.text;
+          }
         } else {
-          target.value = request.text;
+          // Standard input/textarea with React/Vue protection bypass
+          const proto = target.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+          const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+          
+          if (nativeSetter) {
+            nativeSetter.call(target, request.text);
+          } else {
+            target.value = request.text;
+          }
         }
-        
-        // Force the app to recognize the change
-        target.dispatchEvent(new Event('input', { bubbles: true }));
-        target.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // Broad event dispatch to wake up any framework (React, Vue, Angular, Svelte)
+        const events = ['input', 'change', 'blur'];
+        events.forEach(type => {
+          target.dispatchEvent(new Event(type, { bubbles: true, composed: true }));
+        });
+
+        sendResponse({ success: true });
+      } catch (e) {
+        console.error("Injection failed:", e);
+        sendResponse({ success: false });
       }
-      
-      sendResponse({ success: true });
     } else {
       sendResponse({ success: false });
     }
