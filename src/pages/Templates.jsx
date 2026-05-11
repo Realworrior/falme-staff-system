@@ -388,7 +388,7 @@ const Templates = () => {
         }]
       },
       {
-        category: '💰 CASHBACK & PROMOS',
+        category: '🔄 CASHBACK — 10%',
         templates: [{
           title: 'Daily Cashback Reset Window',
           responses: [
