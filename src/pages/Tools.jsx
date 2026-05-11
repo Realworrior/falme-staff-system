@@ -187,15 +187,19 @@ function CashbackCalculator() {
     return (h === 20 && m >= 30 && m < 40);
   };
 
-  const handleCopySummary = (day) => {
+  const handleCopySummary = (day, lineIndex = null) => {
     const netLoss = Math.max(0, day.deposits - day.withdrawals);
     const cb = netLoss * 0.1;
-    const summary = `Total Withdrawals (Yesterday to today): ${Math.round(day.withdrawals).toLocaleString()}KSh
-Total Deposits from 8:30pm (Yesterday to today) : ${Math.round(day.deposits).toLocaleString()}ksh 
-Cashback calculation : (${Math.round(day.deposits).toLocaleString()} - ${Math.round(day.withdrawals).toLocaleString()}) * 10% = ${Math.round(cb).toLocaleString()}ksh`;
     
-    navigator.clipboard.writeText(summary);
-    showToast('Daily Summary Copied!', 'success');
+    const lines = [
+      `Total Withdrawals (Yesterday to today): ${Math.round(day.withdrawals).toLocaleString()}KSh`,
+      `Total Deposits from 8:30pm (Yesterday to today) : ${Math.round(day.deposits).toLocaleString()}ksh`,
+      `Cashback calculation : (${Math.round(day.deposits).toLocaleString()} - ${Math.round(day.withdrawals).toLocaleString()}) * 10% = ${Math.round(cb).toLocaleString()}ksh`
+    ];
+
+    const text = lineIndex !== null ? lines[lineIndex - 1] : lines.join('\n');
+    navigator.clipboard.writeText(text);
+    showToast(lineIndex !== null ? `Line ${lineIndex} Copied!` : 'Full Report Copied!', 'success');
   };
 
   const depNum = parseFloat(deposits) || 0;
@@ -455,7 +459,7 @@ Cashback calculation : (${Math.round(day.deposits).toLocaleString()} - ${Math.ro
                   transition={{ delay: i * 0.1 }}
                   className={`p-6 rounded-[32px] border ${day.label === 'Current' ? 'bg-accent/5 border-accent/40 shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)]' : 'bg-black/20 border-white/5'}`}
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-6">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-[9px] font-black text-accent uppercase tracking-widest">{day.label} Cycle</span>
@@ -469,27 +473,54 @@ Cashback calculation : (${Math.round(day.deposits).toLocaleString()} - ${Math.ro
                       </div>
                       <p className="text-[11px] font-black text-white mt-2 uppercase tracking-tighter">
                         {format(day.end, 'eeee, MMM d')}
-                        {isSameDay(day.end, new Date()) && <span className="ml-2 text-accent/60">(Today)</span>}
-                        {isSameDay(day.end, subDays(new Date(), 1)) && <span className="ml-2 text-gray-600">(Yesterday)</span>}
                       </p>
                     </div>
-                    <div className="text-right flex flex-col items-end gap-2">
-                      <div className="flex flex-col items-end">
-                        <span className="text-[8px] font-black text-accent uppercase block tracking-widest">Cashback Due</span>
-                        <span className="text-xl font-black text-emerald-500">KSh {cb.toLocaleString()}</span>
-                      </div>
-                      <button 
-                        onClick={() => handleCopySummary(day)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all group"
-                      >
-                        <Copy size={10} className="text-accent group-hover:scale-110 transition-transform" />
-                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Copy Report</span>
-                      </button>
+                    <div className="text-right flex flex-col items-end">
+                      <span className="text-[8px] font-black text-accent uppercase block tracking-widest">Cashback Due</span>
+                      <span className="text-xl font-black text-emerald-500">KSh {cb.toLocaleString()}</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/5">
-                    <div><span className="text-[7px] font-black text-gray-600 uppercase block">Deposits</span><span className="text-[10px] font-bold text-gray-300">KSh {day.deposits.toLocaleString()}</span></div>
-                    <div className="text-right"><span className="text-[7px] font-black text-gray-600 uppercase block">Withdrawals</span><span className="text-[10px] font-bold text-gray-300">KSh {day.withdrawals.toLocaleString()}</span></div>
+
+                  <div className="space-y-3 pt-6 border-t border-white/5">
+                    {/* Line 1 */}
+                    <div className="flex items-center justify-between group/row">
+                      <div className="flex flex-col">
+                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 1: Withdrawals</span>
+                        <span className="text-[10px] font-bold text-gray-300">KSh {Math.round(day.withdrawals).toLocaleString()}</span>
+                      </div>
+                      <button onClick={() => handleCopySummary(day, 1)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-500 hover:text-accent transition-all">
+                        <Copy size={10} />
+                      </button>
+                    </div>
+
+                    {/* Line 2 */}
+                    <div className="flex items-center justify-between group/row">
+                      <div className="flex flex-col">
+                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 2: Deposits</span>
+                        <span className="text-[10px] font-bold text-gray-300">KSh {Math.round(day.deposits).toLocaleString()}</span>
+                      </div>
+                      <button onClick={() => handleCopySummary(day, 2)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-500 hover:text-accent transition-all">
+                        <Copy size={10} />
+                      </button>
+                    </div>
+
+                    {/* Line 3 */}
+                    <div className="flex items-center justify-between group/row">
+                      <div className="flex flex-col">
+                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 3: Calculation</span>
+                        <span className="text-[10px] font-bold text-gray-300">Net Loss * 10%</span>
+                      </div>
+                      <button onClick={() => handleCopySummary(day, 3)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-500 hover:text-accent transition-all">
+                        <Copy size={10} />
+                      </button>
+                    </div>
+
+                    <button 
+                      onClick={() => handleCopySummary(day)}
+                      className="w-full mt-2 py-2.5 bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-xl text-[8px] font-black text-accent uppercase tracking-widest transition-all"
+                    >
+                      Copy Full Report
+                    </button>
                   </div>
                 </motion.div>
               );
