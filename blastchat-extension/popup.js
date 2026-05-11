@@ -233,16 +233,24 @@ document.addEventListener('DOMContentLoaded', () => {
         
         t.responses.forEach((resp, idx) => {
           const tBtn = document.createElement('button');
-          tBtn.className = `tone-btn ${idx === 0 ? 'active' : ''}`;
+          const type = resp.type.toLowerCase();
+          const isNamed = type.includes('standard') || type.includes('empathy');
           
-          let icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" style="flex-shrink:0;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
-          if (resp.type.toLowerCase().includes('standard')) {
-            icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" style="flex-shrink:0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
-          } else if (resp.type.toLowerCase().includes('empathy')) {
-            icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" style="flex-shrink:0;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+          tBtn.className = `tone-btn ${idx === 0 ? 'active' : ''} ${isNamed ? 'named-tone' : ''}`;
+          
+          let icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="3" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+          let label = idx + 1;
+
+          if (type.includes('standard')) {
+            icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="3" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+            label = 'Standard';
+          } else if (type.includes('empathy')) {
+            icon = '<svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="3" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+            label = 'Empathy';
           }
 
-          tBtn.innerHTML = `${icon}<span>${resp.type.split(' ').pop()}</span>`;
+          tBtn.innerHTML = `${icon}${isNamed ? `<span style="margin-left:6px">${label}</span>` : `<span style="margin-left:2px; font-size:10px; font-weight:900">${label}</span>`}`;
+          
           tBtn.onclick = (e) => {
             e.stopPropagation();
             selector.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
