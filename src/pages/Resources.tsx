@@ -2416,6 +2416,307 @@ function MarketGuideView() {
   );
 }
 
+// ── Promotions View ──────────────────────────────────────────────────────────
+function PromotionsView({ accent }: { accent: string }) {
+  return (
+    <div className="space-y-8">
+      <div 
+        className="rounded-2xl p-6 border border-purple-500/20"
+        style={{ background: "rgba(168,85,247,0.07)" }}
+      >
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <span>🎁</span> Active Promotions & Bonuses
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            {
+              title: "Welcome Bonus",
+              desc: "100% first deposit match up to KES 5,000.",
+              rule: "4x wagering requirement on odds 2.0+."
+            },
+            {
+              title: "Weekly Cashback",
+              desc: "10% back on net losses every Monday.",
+              rule: "Minimum loss of KES 100 to qualify."
+            },
+            {
+              title: "Accumulator Boost",
+              desc: "Up to 50% extra winnings on 5+ selections.",
+              rule: "Each selection must be odds 1.30+."
+            },
+            {
+              title: "Refer a Friend",
+              desc: "Earn KES 500 for every successful referral.",
+              rule: "Referral must deposit at least KES 1,000."
+            }
+          ].map((p, i) => (
+            <div key={i} className="p-4 rounded-xl bg-black/20 border border-white/5">
+              <div className="text-purple-400 font-bold mb-1">{p.title}</div>
+              <p className="text-white/70 text-sm mb-2">{p.desc}</p>
+              <div className="text-[10px] text-white/30 uppercase tracking-wider font-bold">Key Rule: {p.rule}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+        <h3 className="text-white text-lg mb-4">💎 VIP & Loyalty Tiers</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="text-white/40 text-xs uppercase tracking-widest border-b border-white/5">
+                <th className="pb-3 px-2">Tier</th>
+                <th className="pb-3 px-2">Monthly Volume</th>
+                <th className="pb-3 px-2">Cashback %</th>
+                <th className="pb-3 px-2">Perks</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm text-white/70">
+              {[
+                { name: "Bronze", vol: "KES 0+", cb: "5%", perks: "Standard Support" },
+                { name: "Silver", vol: "KES 50k+", cb: "7%", perks: "Faster Withdrawals" },
+                { name: "Gold", vol: "KES 200k+", cb: "10%", perks: "Personal Account Manager" },
+                { name: "Platinum", vol: "KES 1M+", cb: "15%", perks: "VIP Events & Gifts" }
+              ].map((t, i) => (
+                <tr key={i} className="border-b border-white/[0.03] last:border-0">
+                  <td className="py-4 px-2 font-bold text-white">{t.name}</td>
+                  <td className="py-4 px-2">{t.vol}</td>
+                  <td className="py-4 px-2 text-purple-400">{t.cb}</td>
+                  <td className="py-4 px-2 text-xs">{t.perks}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Support View ─────────────────────────────────────────────────────────────
+function SupportView({ accent }: { accent: string }) {
+  return (
+    <div className="space-y-8">
+      <div 
+        className="rounded-2xl p-6 border border-blue-500/20"
+        style={{ background: "rgba(59,130,246,0.07)" }}
+      >
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <span>🛠️</span> Escalation Matrix
+        </h3>
+        <div className="space-y-4">
+          {[
+            { level: "Level 1", role: "General Agent", handle: "Password resets, bet queries, basic technical help." },
+            { level: "Level 2", role: "Team Leader", handle: "Large withdrawal approvals, account closures, complex bet disputes." },
+            { level: "Level 3", role: "Operations Manager", handle: "Fraud investigations, major system outages, legal threats." }
+          ].map((e, i) => (
+            <div key={i} className="flex gap-4 p-4 rounded-xl bg-black/20 border border-white/5">
+              <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
+                <span className="text-blue-400 font-black">{i+1}</span>
+              </div>
+              <div>
+                <div className="text-white font-bold">{e.level} — {e.role}</div>
+                <p className="text-white/50 text-sm mt-1">{e.handle}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+          <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Standard Procedures</h4>
+          <ul className="space-y-3">
+            {[
+              "Verify user identity via Email/Phone OTP before sharing account data.",
+              "Document every call/chat with a unique Ticket ID.",
+              "Check 'Risk Score' before approving withdrawals over KES 10,000.",
+              "Tag 'Responsible Gaming' flags immediately for Level 2 review."
+            ].map((s, i) => (
+              <li key={i} className="flex gap-3 text-sm text-white/60">
+                <span className="text-blue-500 mt-0.5">●</span>
+                {s}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-2xl p-6 border border-red-500/10 bg-red-500/5">
+          <h4 className="text-red-400 mb-4 uppercase text-xs tracking-widest font-black">Emergency Protocols</h4>
+          <ul className="space-y-3">
+            {[
+              "Platform Crash: Notify DevOps channel on Slack immediately.",
+              "Security Breach: Lock all admin accounts and initiate 'Code Red'.",
+              "Suspicious Betting: Suspend the market and notify Odds Team.",
+              "Self-Harm Threat: Follow the 'Duty of Care' script and escalate to L3."
+            ].map((s, i) => (
+              <li key={i} className="flex gap-3 text-sm text-red-400/70">
+                <span className="text-red-500 mt-0.5">❗</span>
+                {s}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Compliance View ──────────────────────────────────────────────────────────
+function ComplianceView({ accent }: { accent: string }) {
+  return (
+    <div className="space-y-8">
+      <div 
+        className="rounded-2xl p-6 border border-emerald-500/20"
+        style={{ background: "rgba(16,185,129,0.07)" }}
+      >
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <span>⚖️</span> Responsible Gaming Pillars
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { title: "Self-Exclusion", icon: "🔒", desc: "Permanent or temporary account locking at user request." },
+            { title: "Deposit Limits", icon: "📉", desc: "Daily, weekly, or monthly caps on how much a user can fund." },
+            { title: "Reality Checks", icon: "⏱️", desc: "Automated alerts showing time spent and net position." }
+          ].map((p, i) => (
+            <div key={i} className="p-5 rounded-xl bg-black/20 border border-white/5 text-center">
+              <div className="text-3xl mb-3">{p.icon}</div>
+              <div className="text-emerald-400 font-bold mb-2">{p.title}</div>
+              <p className="text-white/50 text-xs leading-relaxed">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+        <h3 className="text-white text-lg mb-4">🛡️ KYC & Licensing Requirements</h3>
+        <div className="space-y-6">
+          <div className="p-4 rounded-xl border border-white/5 bg-black/20">
+            <div className="text-white text-sm font-bold mb-2">Proof of Identity (ID)</div>
+            <p className="text-white/40 text-xs">National ID, Passport, or Alien Card. Must be valid and clear. Scan both sides.</p>
+          </div>
+          <div className="p-4 rounded-xl border border-white/5 bg-black/20">
+            <div className="text-white text-sm font-bold mb-2">Proof of Address (POA)</div>
+            <p className="text-white/40 text-xs">Utility bill or bank statement (not older than 3 months). Must match account name.</p>
+          </div>
+          <div className="p-4 rounded-xl border border-white/5 bg-black/20">
+            <div className="text-white text-sm font-bold mb-2">Age Verification</div>
+            <p className="text-white/40 text-xs text-red-400/60 font-bold">STRICT 18+ POLICY. No exceptions. Any account suspected of underage play must be locked instantly.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Staff Toolkit View ───────────────────────────────────────────────────────
+function ToolkitView({ accent }: { accent: string }) {
+  return (
+    <div className="space-y-8">
+      <div 
+        className="rounded-2xl p-6 border border-pink-500/20"
+        style={{ background: "rgba(244,114,182,0.07)" }}
+      >
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <span>🧰</span> Staff Talking Points
+        </h3>
+        <div className="space-y-4">
+          {[
+            { q: "Why was my bet voided?", a: "Explain abandonment rules or postponement beyond 48h. Reference Rule 4.2." },
+            { q: "My withdrawal is taking too long.", a: "Check if KYC is pending. Remind user of the 24-48h processing window." },
+            { q: "I didn't get my bonus.", a: "Verify if minimum deposit was met. Check for duplicate accounts (Bonus Abuse)." }
+          ].map((t, i) => (
+            <div key={i} className="p-4 rounded-xl bg-black/20 border border-white/5">
+              <div className="text-pink-400 text-xs font-black uppercase mb-1">Scenario: {t.q}</div>
+              <p className="text-white/70 text-sm">Response: <span className="italic text-white/90">"{t.a}"</span></p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+          <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Odds Guide Reference</h4>
+          <div className="space-y-4 text-sm">
+            <div className="flex justify-between border-b border-white/5 pb-2">
+              <span className="text-white/40">Decimal 2.00</span>
+              <span className="text-pink-400 font-bold">50% Probability</span>
+            </div>
+            <div className="flex justify-between border-b border-white/5 pb-2">
+              <span className="text-white/40">Decimal 1.50</span>
+              <span className="text-pink-400 font-bold">66.7% Probability</span>
+            </div>
+            <div className="flex justify-between border-b border-white/5 pb-2">
+              <span className="text-white/40">Decimal 4.00</span>
+              <span className="text-pink-400 font-bold">25% Probability</span>
+            </div>
+            <p className="text-[10px] text-white/30 italic pt-2">Formula: (1 / Odds) * 100 = Implied Probability</p>
+          </div>
+        </div>
+        <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+          <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Internal Tools Links</h4>
+          <div className="grid grid-cols-2 gap-3">
+            {["Admin Portal", "Slack Ops", "Zendesk", "Supabase", "Jira", "Vercel"].map(l => (
+              <div key={l} className="px-3 py-2 rounded-lg bg-black/40 border border-white/5 text-xs text-white/60 hover:text-pink-400 hover:border-pink-500/30 transition-all cursor-pointer">
+                ↗ {l}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Agent Manual View ───────────────────────────────────────────────────
+function AgentManualView() {
+  const [activeSection, setActiveSection] = useState<ManualSection>("promotions");
+  const meta = manualSections[activeSection];
+
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Manual Section Nav */}
+      <div 
+        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/80 border-b border-border"
+      >
+        <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
+          {(Object.entries(manualSections) as [ManualSection, ManualSectionMeta][]).map(([id, data]) => (
+            <ManualTab
+              key={id}
+              id={id}
+              meta={data}
+              active={activeSection === id}
+              onClick={() => setActiveSection(id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Section Hero */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
+        <div className="text-3xl">{meta.icon}</div>
+        <div>
+          <div 
+            className="text-white font-bold" 
+            style={{ fontSize: "1.1rem", color: meta.accent }}
+          >
+            {meta.label}
+          </div>
+          <div className="text-white/35 text-sm">
+            {meta.tagline}
+          </div>
+        </div>
+      </div>
+
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
+        {activeSection === "promotions" && <PromotionsView accent={meta.accent} />}
+        {activeSection === "support" && <SupportView accent={meta.accent} />}
+        {activeSection === "compliance" && <ComplianceView accent={meta.accent} />}
+        {activeSection === "toolkit" && <ToolkitView accent={meta.accent} />}
+      </main>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ═══════════════════════════════════════════════════════════════════════════════

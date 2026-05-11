@@ -57,6 +57,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else {
       sendResponse({ success: false });
     }
+  } else if (request.action === "getSelectedText") {
+    const selection = window.getSelection().toString();
+    sendResponse({ text: selection });
   }
   return true;
 });

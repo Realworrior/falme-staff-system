@@ -94,15 +94,31 @@
       color: var(--accent);
     }
     
-    .template-preview {
-      font-size: 11px;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    #error-msg {
+  <div id="status" class="status">Checking active tab...</div>
+
+  <div class="search-container">
+    <div class="search-label">
+      <span>✨ AI Matcher</span>
+      <span id="match-count" class="match-count">0 matches</span>
+    </div>
+    <input type="text" id="search-input" placeholder="Paste client message for AI matching..." />
+  </div>
+
+  <div id="ai-suggestion-box" class="ai-suggestion-card">
+    <div class="ai-suggestion-header">
+      <span>✨ AI Draft Recommendation</span>
+    </div>
+    <div id="ai-suggestion-content" class="ai-suggestion-text"></div>
+    <div class="ai-suggestion-actions">
+      <button id="ai-inject-btn" class="inject-btn">Inject Draft</button>
+    </div>
+  </div>
+  
+  <div class="template-list" id="templates">
+    <div class="loading-state">Syncing Intelligence Matrix...</div>
+  </div>
+  
+  <div id="error-msg"></div>
       display: none;
       margin-top: 12px;
       padding: 10px;
