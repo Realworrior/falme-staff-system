@@ -73,14 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function fetchTemplates() {
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/support_templates?select=*`, {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/support_templates?select=*&apikey=${SUPABASE_ANON_KEY}`, {
         headers: {
           'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
         }
       });
       
-      if (!response.ok) throw new Error("Fetch failed");
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+      }
       
       const data = await response.json();
       
@@ -104,12 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
       allTemplates = flattened;
       renderTemplates(allTemplates);
     } catch (err) {
-      console.error(err);
-      showError("Offline/Sync Error. Using fallback data.");
-      renderTemplates([
-        { id: 'f1', title: 'Standard Greeting', text: 'Hello! How can I assist you?', category: 'General' },
-        { id: 'f2', title: 'Refund Info', text: 'Refunds take 3-5 days to process.', category: 'Policy' }
-      ]);
+      console.error("SUPABASE FETCH ERROR:", err);
+      showError(`Sync Error: ${err.message || "Connection failed"}`);
+      // Fallback to basic templates if fetch fails
+      allTemplates = [
+        { id: 't1', title: 'Standard Greeting', text: 'Hello! How can I assist you today?', category: 'Support', triggers: ['hi', 'hello'] },
+        { id: 't2', title: 'Refund Policy', text: 'Our policy does not allow refunds for this case.', category: 'Policy', triggers: ['refund'] }
+      ];
+      renderTemplates(allTemplates);
     }
   }
 
