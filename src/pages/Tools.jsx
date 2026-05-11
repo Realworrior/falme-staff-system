@@ -475,7 +475,7 @@ function CashbackCalculator() {
                <ShieldCheck size={14} className="text-accent" />
                <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
              </div>
-             <p className="text-[10px] text-gray-500 leading-relaxed font-medium italic">"Cashback is 10% of the net loss calculated daily from 8:30 PM to 8:30 PM."</p>
+             <p className="text-[10px] text-gray-500 leading-relaxed font-medium italic">"Calculated daily from 8:30 PM to 8:30 PM. Note: 8:30 PM–8:40 PM is a technical reset window; deposits within this gap are not counted in the 24hr cycle."</p>
           </div>
         </div>
       </div>

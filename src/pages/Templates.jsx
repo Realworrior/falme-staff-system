@@ -386,6 +386,17 @@ const Templates = () => {
           ],
           triggers: ['aviator', 'failed', 'down', 'broken', 'unavailable', 'global']
         }]
+      },
+      {
+        category: '💰 CASHBACK & PROMOS',
+        templates: [{
+          title: 'Daily Cashback Reset Window',
+          responses: [
+            { type: 'Standard', text: "Our daily cashback calculation includes a 10-minute system reset window between 8:30 PM and 8:40 PM. Please note that any deposits made within this specific window are not captured in the current 24-hour cycle to prevent synchronization errors during the daily reset." },
+            { type: 'High Empathy', text: "I'd like to clarify our cashback timing for you! Our system performs a daily reset between 8:30 PM and 8:40 PM. Because of this, any deposits made in those 10 minutes aren't always counted in the immediate 24-hour cycle as the system refreshes. We appreciate your patience while we ensure everything is processed accurately!" }
+          ],
+          triggers: ['cashback', 'not counted', 'time', 'reset', 'calculation', 'window', '8:30', '8.30']
+        }]
       }
     ];
 
