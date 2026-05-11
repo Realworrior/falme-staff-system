@@ -9,7 +9,8 @@
   ],
   "host_permissions": [
     "https://blastchat.chat/*",
-    "https://*.blastchat.chat/*"
+    "https://*.blastchat.chat/*",
+    "https://kgpcruwlejoougjbeouw.supabase.co/*"
   ],
   "action": {
     "default_popup": "popup.html",
