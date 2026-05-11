@@ -365,8 +365,8 @@ function CashbackCalculator() {
                     onChange={(e) => setPasteContent(e.target.value)}
                     placeholder="Paste portal transactions here...
 Example:
-Withdraw | KSH 5,000.00 | 5/11/2026 8:45 PM
-Deposit | KSH 10,000.00 | 5/11/2026 7:20 PM"
+20608273	withdraw	-KSH 4,555.00	KSH 200.00	—	5/11/2026, 9:39:06 PM
+20607525	Deposit	+KSH 90.00	KSH 189.00	—	5/11/2026, 9:27:14 PM"
                     className="w-full h-48 bg-white/5 border border-white/10 rounded-[24px] p-6 text-white text-sm font-medium outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 transition-all placeholder:text-gray-700/50 resize-none"
                   />
                   <div className="absolute top-4 right-6 flex items-center gap-2">
