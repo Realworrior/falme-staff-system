@@ -281,38 +281,60 @@
     .tone-selector {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 20px;
+      padding: 4px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      border: 1px solid var(--border);
     }
 
     .tone-btn {
-      padding: 8px 14px;
+      flex: 1;
+      min-width: 60px;
+      padding: 8px 12px;
       border-radius: 10px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
+      background: transparent;
+      border: 1px solid transparent;
       color: var(--text-muted);
       font-size: 9px;
       font-weight: 800;
       cursor: pointer;
       text-transform: uppercase;
-      transition: all 0.2s;
+      letter-spacing: 0.5px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tone-btn:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.03);
     }
 
     .tone-btn.active {
       background: rgba(139, 92, 246, 0.1);
       color: var(--accent);
-      border-color: var(--accent);
+      border-color: rgba(139, 92, 246, 0.2);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
     }
 
     .response-preview {
       font-size: 13px;
       line-height: 1.7;
-      color: var(--text-muted);
-      margin-bottom: 24px;
+      color: #e2e8f0;
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
       white-space: pre-line;
       flex: 1;
       overflow-wrap: break-word;
       word-break: break-word;
+      min-height: 60px;
     }
 
     .inject-mini-btn {
