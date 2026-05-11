@@ -656,7 +656,7 @@ export default function Tools() {
               <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Operational Suite</span>
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">CBC Command Center</h1>
+          <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Cashback Command Center</h1>
           <p className="text-gray-500 text-sm mt-2 max-w-md">Professional utilities designed to streamline support workflows and increase accuracy.</p>
         </div>
 
