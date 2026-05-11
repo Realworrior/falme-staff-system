@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     const activeTab = tabs[0];
+    if (!activeTab) return;
+    
     activeTabId = activeTab.id;
     isBlastChat = activeTab.url && activeTab.url.includes("blastchat.chat");
     
@@ -81,14 +83,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function fetchTemplates() {
+    // Load from cache first for instant UI
+    const cached = localStorage.getItem('blastchat_templates');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        allTemplates = parsed.allTemplates;
+        renderCategoryNav(parsed.categories);
+        renderTemplates(allTemplates);
+        if (statusText) statusText.textContent = "Matrix Synchronized (Cached)";
+      } catch (e) { console.error("Cache parse error", e); }
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
       const response = await fetch(`${SUPABASE_URL}/rest/v1/supportTemplates?select=*`, {
+        signal: controller.signal,
         headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json'
         }
       });
+      clearTimeout(timeoutId);
       
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
@@ -110,11 +129,22 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
       allTemplates = flattened;
-      renderCategoryNav(data.map(d => d.category));
+      const categories = data.map(d => d.category);
+      
+      // Save to cache
+      localStorage.setItem('blastchat_templates', JSON.stringify({
+        allTemplates,
+        categories
+      }));
+
+      renderCategoryNav(categories);
       renderTemplates(allTemplates);
+      if (statusText) statusText.textContent = "Matrix Fully Synchronized";
     } catch (err) {
       console.error("SUPABASE FETCH ERROR:", err);
-      showError(`Sync Error: ${err.message || "Connection failed"}`);
+      if (!cached) {
+         showError(`Sync Error: ${err.name === 'AbortError' ? 'Timeout' : 'Connection failed'}`);
+      }
     }
   }
 
