@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/supportTemplates?select=*`, {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/support_templates?select=*`, {
         signal: controller.signal,
         headers: {
           'apikey': SUPABASE_ANON_KEY,
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (matchCountEl) matchCountEl.textContent = `${templatesToRender.length} items`;
 
     if (templatesToRender.length === 0) {
-      container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; grid-column: span 2;">No intelligence matches.</div>';
+      if (container) container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; grid-column: span 2;">No intelligence matches.</div>';
       return;
     }
 
