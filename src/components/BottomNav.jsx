@@ -23,7 +23,7 @@ const BottomNav = ({ className }) => {
     { path: '/templates', label: 'Templates', icon: FileText },
     { path: '/slots', label: 'Aviator', icon: Activity },
     { path: '/tickets', label: 'Tickets', icon: Ticket },
-    { path: '/tools', label: 'Tools', icon: Calculator, isNew: true },
+    { path: '/tools', label: 'CBC', icon: Calculator, isNew: true },
     { path: '/rota', label: 'Rota', icon: CalendarDays },
     { path: '/resources', label: 'Resources', icon: BookOpen },
   ];

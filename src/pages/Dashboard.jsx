@@ -95,7 +95,7 @@ const Dashboard = () => {
   }, [logs]);
 
   const shortcuts = [
-    { name: "Cashback Calc", icon: Calculator, path: "/tools", color: "#22c55e" },
+    { name: "CBC Calc", icon: Calculator, path: "/tools", color: "#22c55e" },
     { name: "Odds Converter", icon: Zap, path: "/tools", params: "?tab=odds", color: "#3b82f6" },
     { name: "Agent Manual", icon: ShieldCheck, path: "/resources", params: "?section=manual", color: "#F97316" },
     { name: "Market Guide", icon: FileText, path: "/resources", params: "?section=guide", color: "#8B5CF6" },

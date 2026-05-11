@@ -334,12 +334,12 @@ function CashbackCalculator() {
   const dailyBreakdown = getDailyBreakdown();
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Main Interface: Left Column */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-6">
           
-          <div className="bg-black/20 border border-white/5 rounded-[32px] p-8 space-y-8">
+          <div className="bg-black/20 border border-white/5 rounded-[32px] p-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-2xl bg-accent/10 border border-accent/20 text-accent">
@@ -363,21 +363,17 @@ function CashbackCalculator() {
                   <textarea 
                     value={pasteContent}
                     onChange={(e) => setPasteContent(e.target.value)}
-                    placeholder="Paste transaction logs from portal..."
-                    className="w-full h-48 bg-white/5 border border-white/10 rounded-[24px] p-6 text-white text-sm font-medium outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 transition-all placeholder:text-gray-700 resize-none"
+                    placeholder="Paste portal transactions here...
+Example:
+Withdraw | KSH 5,000.00 | 5/11/2026 8:45 PM
+Deposit | KSH 10,000.00 | 5/11/2026 7:20 PM"
+                    className="w-full h-48 bg-white/5 border border-white/10 rounded-[24px] p-6 text-white text-sm font-medium outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 transition-all placeholder:text-gray-700/50 resize-none"
                   />
                   <div className="absolute top-4 right-6 flex items-center gap-2">
-                    <span className="text-[8px] font-black text-gray-700 uppercase tracking-widest">Awaiting Input</span>
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-800" />
+                    <span className="text-[8px] font-black text-gray-700 uppercase tracking-widest">Auto-Analyzing</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                   </div>
                 </div>
-                <button 
-                  onClick={handleSmartPaste}
-                  className="w-full py-5 rounded-[24px] bg-accent text-white text-xs font-black uppercase tracking-[0.2em] shadow-2xl shadow-accent/20 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-3 group"
-                >
-                  <Zap size={16} className="group-hover:animate-pulse" />
-                  Analyze & Sync Summary
-                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -402,7 +398,7 @@ function CashbackCalculator() {
           {/* Audit Table (if data exists) */}
           {parsedTx.length > 0 && (
             <div className="bg-black/20 border border-white/5 rounded-[32px] overflow-hidden">
-              <div className="p-8 border-b border-white/5 flex items-center justify-between">
+              <div className="p-6 border-b border-white/5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <History size={18} className="text-gray-500" />
                   <h4 className="text-[10px] font-black text-white uppercase tracking-widest">Detailed Record Log</h4>
@@ -660,7 +656,7 @@ export default function Tools() {
               <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Operational Suite</span>
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Cashback Calculator</h1>
+          <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">CBC Command Center</h1>
           <p className="text-gray-500 text-sm mt-2 max-w-md">Professional utilities designed to streamline support workflows and increase accuracy.</p>
         </div>
 
