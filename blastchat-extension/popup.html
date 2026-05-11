@@ -59,6 +59,102 @@
       font-style: italic;
     }
 
+    .search-container {
+      margin-bottom: 16px;
+    }
+
+    .search-label {
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .match-count {
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    #search-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: white;
+      font-size: 12px;
+      outline: none;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    #search-input:focus {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+    }
+
+    .ai-suggestion-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ai-suggestion-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: #10b981;
+      margin-bottom: 8px;
+    }
+
+    .ai-suggestion-text {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 10px;
+      white-space: pre-line;
+    }
+
+    .ai-suggestion-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .inject-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .inject-btn:hover {
+      opacity: 0.9;
+    }
+
     .template-list {
       display: flex;
       flex-direction: column;
@@ -94,6 +190,53 @@
       color: var(--accent);
     }
     
+    .template-preview {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .category-badge {
+      font-size: 8px;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-left: auto;
+      color: var(--text-muted);
+    }
+
+    .loading-state, .no-results {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-style: italic;
+    }
+    
+    #error-msg {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 8px;
+      color: #ef4444;
+      font-size: 11px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-icon">⚡</div>
+    <h3>Quick Injector</h3>
+  </div>
+  
   <div id="status" class="status">Checking active tab...</div>
 
   <div class="search-container">
@@ -116,31 +259,6 @@
   
   <div class="template-list" id="templates">
     <div class="loading-state">Syncing Intelligence Matrix...</div>
-  </div>
-  
-  <div id="error-msg"></div>
-      display: none;
-      margin-top: 12px;
-      padding: 10px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      border-radius: 8px;
-      color: #ef4444;
-      font-size: 11px;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="header-icon">⚡</div>
-    <h3>Quick Injector</h3>
-  </div>
-  
-  <div id="status" class="status">Checking active tab...</div>
-  
-  <div class="template-list" id="templates">
-    <!-- Templates will be injected here via JS -->
   </div>
   
   <div id="error-msg"></div>
