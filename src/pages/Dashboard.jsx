@@ -39,7 +39,7 @@ import { useSupabaseData } from '../context/SupabaseDataContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { logs, overrides: rawOverrides, loading } = useSupabaseData();
+  const { logs, onlineStaff, overrides: rawOverrides, loading } = useSupabaseData();
   
   const overrides = useMemo(() => {
     if (!rawOverrides) return {};
@@ -288,6 +288,58 @@ const Dashboard = () => {
             >
               Access Full Rota <ArrowUpRight size={16} />
             </button>
+          </div>
+
+          {/* Online Connectivity Card */}
+          <div className="bg-card border border-border rounded-2xl p-5 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Team Connectivity</h3>
+                <p className="text-[8px] md:text-[10px] text-gray-500 mt-1.5 uppercase font-black tracking-[0.3em]">Real-time Presence</p>
+              </div>
+              <Cloud size={18} className="text-emerald-500/50" />
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Active Devices</span>
+                  <span className="px-2 py-0.5 rounded bg-emerald-500 text-white text-[9px] font-black">{Object.keys(onlineStaff).length} Online</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.keys(onlineStaff).map(name => (
+                    <div key={name} className="flex items-center gap-2 px-2 py-1 rounded-lg bg-black/20 border border-white/5">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                      <span className="text-[10px] font-bold text-white/80">{name}</span>
+                    </div>
+                  ))}
+                  {Object.keys(onlineStaff).length === 0 && (
+                    <span className="text-[10px] text-gray-600 italic">Syncing presence...</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Remote Access Link</span>
+                <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-black/40 border border-white/5">
+                  <span className="text-[10px] font-mono text-gray-400 truncate">betmfalme.vercel.app</span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText('https://betmfalme.vercel.app');
+                      // Toast would be good here but I don't have it easily available without more imports
+                    }}
+                    className="p-1.5 hover:text-white text-gray-600 transition-colors"
+                  >
+                    <ExternalLink size={14} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-1">
+                <Database size={12} className="text-orange-500" />
+                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">Cross-Device Sync Active</span>
+              </div>
+            </div>
           </div>
         </div>
 
