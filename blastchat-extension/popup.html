@@ -89,23 +89,20 @@
     /* CATEGORY NAV */
     .category-nav {
       display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding: 4px 0 16px;
-      scrollbar-width: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 0 16px;
     }
 
-    .category-nav::-webkit-scrollbar { display: none; }
-
     .nav-item {
-      padding: 10px 20px;
+      padding: 8px 14px;
       background: rgba(255,255,255,0.02);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 12px;
       font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       color: var(--text-muted);
       cursor: pointer;
       white-space: nowrap;
