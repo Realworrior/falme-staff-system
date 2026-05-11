@@ -4,31 +4,86 @@
   <meta charset="utf-8">
   <style>
     :root {
-      --bg-color: #060609;
-      --card-bg: rgba(255, 255, 255, 0.03);
-      --accent: #10b981;
-      --accent-glow: rgba(16, 185, 129, 0.2);
-      --text: #f8fafc;
-      --text-muted: #64748b;
+      --bg-color: #030303;
+      --surface: #0a0a0c;
+      --card-bg: rgba(255, 255, 255, 0.02);
       --border: rgba(255, 255, 255, 0.06);
-      --surface: #0f111a;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #8b5cf6;
+      --accent-glow: rgba(139, 92, 246, 0.15);
+      --green: #10b981;
+      --orange: #f59e0b;
     }
-    
+
     body { 
-      width: 650px; 
+      width: 880px; 
       padding: 0; 
       margin: 0;
       font-family: 'Inter', system-ui, -apple-system, sans-serif; 
       background: var(--bg-color); 
       color: var(--text); 
       overflow-x: hidden;
+      letter-spacing: -0.01em;
     }
+
+    /* PREMIUM SCROLLBAR */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
     .main-container {
       padding: 24px;
       display: flex;
       flex-direction: column;
       gap: 24px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      background: rgba(255,255,255,0.01);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+    
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #8b5cf6, #d946ef);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+    }
+    
+    h3 { 
+      margin: 0; 
+      font-size: 12px; 
+      text-transform: uppercase; 
+      letter-spacing: 3px; 
+      font-weight: 900;
+      background: linear-gradient(to right, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
     }
 
     /* CATEGORY NAV */
@@ -43,127 +98,219 @@
     .category-nav::-webkit-scrollbar { display: none; }
 
     .nav-item {
-      padding: 8px 16px;
-      background: rgba(255,255,255,0.03);
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.02);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
+      letter-spacing: 1px;
       color: var(--text-muted);
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+      color: #fff;
     }
 
     .nav-item.active {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-      box-shadow: 0 4px 15px var(--accent-glow);
+      background: white;
+      color: black;
+      border-color: white;
+      box-shadow: 0 5px 20px rgba(255,255,255,0.2);
     }
 
+    /* SEARCH SECTION */
     .search-section {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
     }
 
     #search-input {
       width: 100%;
-      background: rgba(0,0,0,0.4);
+      background: #000;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 18px;
+      border-radius: 16px;
+      padding: 16px 20px;
       color: white;
-      font-size: 14px;
+      font-size: 15px;
       outline: none;
       box-sizing: border-box;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* GRID LAYOUT FOR TEMPLATES */
+    #search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+
+    /* AI SUGGESTION BOX */
+    #ai-suggestion-box {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(217, 70, 239, 0.05));
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 24px;
+      padding: 24px;
+      display: none;
+      animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #ai-suggestion-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(139, 92, 246, 0.5), transparent);
+    }
+
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--accent);
+      color: white;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      box-shadow: 0 5px 15px var(--accent-glow);
+    }
+
+    #ai-suggestion-content {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 24px;
+      white-space: pre-line;
+    }
+
+    .action-btn {
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 28px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      letter-spacing: 1px;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255,255,255,0.2);
+    }
+
+    /* TEMPLATE LIST - 3 COLUMN GRID */
     .template-list {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
     }
     
     .template-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
-      transition: all 0.3s;
+      border-radius: 24px;
+      padding: 24px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
       height: 100%;
       box-sizing: border-box;
       max-width: 100%;
       overflow: hidden;
+      position: relative;
     }
 
     .template-card:hover {
-      border-color: rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      transform: translateY(-4px);
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
+      gap: 12px;
     }
 
     .card-title {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 800;
       color: var(--text);
+      line-height: 1.4;
     }
 
     .card-category {
       font-size: 9px;
       font-weight: 900;
       text-transform: uppercase;
-      color: var(--accent);
-      background: var(--accent-glow);
-      padding: 2px 8px;
-      border-radius: 4px;
+      color: #fff;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
     }
 
     .tone-selector {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 20px;
     }
 
     .tone-btn {
-      padding: 6px 12px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
       color: var(--text-muted);
       font-size: 9px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
-      white-space: nowrap;
+      text-transform: uppercase;
       transition: all 0.2s;
     }
 
     .tone-btn.active {
-      background: white;
-      color: black;
-      border-color: white;
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--accent);
+      border-color: var(--accent);
     }
 
     .response-preview {
       font-size: 13px;
-      line-height: 1.6;
+      line-height: 1.7;
       color: var(--text-muted);
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       white-space: pre-line;
       flex: 1;
       overflow-wrap: break-word;
@@ -171,56 +318,67 @@
     }
 
     .inject-mini-btn {
-      background: var(--accent);
-      color: white;
+      background: #fff;
+      color: #000;
       border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
+      border-radius: 12px;
+      padding: 12px 20px;
       font-size: 10px;
       font-weight: 900;
       text-transform: uppercase;
       cursor: pointer;
       width: 100%;
+      transition: all 0.2s;
+    }
+
+    .inject-mini-btn:hover {
+      background: var(--accent);
+      color: #fff;
     }
 
     #error-msg {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
+      bottom: 24px;
+      left: 24px;
+      right: 24px;
       background: #ef4444;
       color: white;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 11px;
+      padding: 16px;
+      border-radius: 16px;
+      font-size: 12px;
       font-weight: 800;
       display: none;
       z-index: 1000;
-      box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+      box-shadow: 0 20px 40px rgba(239, 68, 68, 0.4);
       text-align: center;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="header-brand">
-      <div class="header-logo" style="width: 32px; height: 32px; background: var(--accent-glow); border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px var(--accent-glow);">
-        <img src="icon.svg" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+      <div class="header-logo">
+        <img src="icon.svg" alt="X" style="width: 20px; height: 20px; object-fit: contain; filter: brightness(0) invert(1);" />
       </div>
-      <h3 style="margin-left: 12px;">Quick Injector</h3>
+      <h3>BlastChat Matrix</h3>
     </div>
     <div id="status-indicator" class="status-dot"></div>
   </div>
 
   <div class="main-container">
-    <div id="status-text" style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px; font-style: italic;">Syncing...</div>
+    <div id="status-text" style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Initialising Intelligence...</div>
 
     <div class="search-section">
       <div class="section-label">
         <span>✨ AI Matcher</span>
         <span id="match-count">0 items</span>
       </div>
-      <input type="text" id="search-input" placeholder="Paste client message..." />
+      <input type="text" id="search-input" placeholder="Analyse customer sentiment or paste message..." />
     </div>
 
     <div id="ai-suggestion-box">
@@ -234,7 +392,9 @@
     </div>
 
     <div class="template-list" id="templates">
-       <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; grid-column: span 2;">Syncing Intelligence Matrix...</div>
+       <div style="text-align: center; padding: 60px; color: var(--text-muted); font-size: 12px; grid-column: span 3; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
+         Syncing Staff Intelligence...
+       </div>
     </div>
   </div>
 

@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (matchCountEl) matchCountEl.textContent = `${templatesToRender.length} items`;
 
     if (templatesToRender.length === 0) {
-      if (container) container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; grid-column: span 2;">No intelligence matches.</div>';
+      if (container) container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; grid-column: span 3;">No intelligence matches.</div>';
       return;
     }
 
