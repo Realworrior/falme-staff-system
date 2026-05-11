@@ -99,7 +99,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/support_templates?select=*`, {
+      const targetTable = "support_templates";
+      const url = `${SUPABASE_URL}/rest/v1/${targetTable}?select=*`;
+      console.log(`[BlastChat Sync] Fetching from: ${url}`);
+      
+      const response = await fetch(url, {
         signal: controller.signal,
         headers: {
           'apikey': SUPABASE_ANON_KEY,
@@ -109,43 +113,67 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       clearTimeout(timeoutId);
       
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
+      console.log(`[BlastChat Sync] Status: ${response.status} ${response.statusText}`);
       
-      const flattened = [];
-      data.forEach(catRow => {
-        if (catRow.templates && Array.isArray(catRow.templates)) {
-          catRow.templates.forEach(t => {
-            flattened.push({
-              id: `${catRow.id}-${t.title}`,
-              category: catRow.category,
-              title: t.title,
-              text: t.responses?.[0]?.text || "",
-              responses: t.responses || [],
-              triggers: t.triggers || []
-            });
-          });
+      if (!response.ok) {
+        // Fallback attempt for different table naming conventions
+        if (response.status === 404) {
+           console.warn("[BlastChat Sync] 404 on support_templates, trying supportTemplates...");
+           const retryUrl = `${SUPABASE_URL}/rest/v1/supportTemplates?select=*`;
+           const retryResponse = await fetch(retryUrl, {
+             headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+           });
+           if (retryResponse.ok) {
+             const retryData = await retryResponse.json();
+             return processData(retryData);
+           }
         }
-      });
+        throw new Error(`HTTP ${response.status}`);
+      }
       
-      allTemplates = flattened;
-      const categories = data.map(d => d.category);
-      
-      // Save to cache
-      localStorage.setItem('blastchat_templates', JSON.stringify({
-        allTemplates,
-        categories
-      }));
+      const data = await response.json();
+      processData(data);
 
-      renderCategoryNav(categories);
-      renderTemplates(allTemplates);
-      if (statusText) statusText.textContent = "Matrix Fully Synchronized";
     } catch (err) {
       console.error("SUPABASE FETCH ERROR:", err);
       if (!cached) {
-         showError(`Sync Error: ${err.name === 'AbortError' ? 'Timeout' : 'Connection failed'}`);
+         showError(`Sync Error: ${err.message}`);
       }
     }
+  }
+
+  function processData(data) {
+    if (!data || !Array.isArray(data)) return;
+    
+    const flattened = [];
+    data.forEach(catRow => {
+      if (catRow && catRow.templates && Array.isArray(catRow.templates)) {
+        catRow.templates.forEach(t => {
+          flattened.push({
+            id: `${catRow.id}-${t.title}`,
+            category: catRow.category || "General",
+            title: t.title || "Untitled",
+            text: t.responses?.[0]?.text || "",
+            responses: t.responses || [],
+            triggers: t.triggers || []
+          });
+        });
+      }
+    });
+    
+    allTemplates = flattened;
+    const categories = data.map(d => d.category).filter(Boolean);
+    
+    // Save to cache
+    localStorage.setItem('blastchat_templates', JSON.stringify({
+      allTemplates,
+      categories
+    }));
+
+    renderCategoryNav(categories);
+    renderTemplates(allTemplates);
+    const statusText = document.getElementById('status-text');
+    if (statusText) statusText.textContent = "Matrix Fully Synchronized";
   }
 
   function renderCategoryNav(categories) {
