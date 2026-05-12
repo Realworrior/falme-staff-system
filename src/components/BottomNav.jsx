@@ -75,19 +75,9 @@ const BottomNav = ({ className }) => {
                   )} />
                   {item.isNew && (
                     <motion.div 
-                      animate={{ y: [0, -4, 0] }}
-                      transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                      className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-accent rounded-md shadow-[0_0_10px_rgba(var(--accent-rgb),0.4)] z-10"
-                    >
-                      <span className="text-[7px] font-black text-white uppercase tracking-tighter">New</span>
-                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-accent rotate-45" />
-                    </motion.div>
-                  )}
-                  {item.isNew && (
-                    <motion.div 
                       animate={{ scale: [1, 1.2, 1], opacity: [1, 0.5, 1] }}
                       transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                      className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full border border-[#0a0a0f]" 
+                      className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full border border-[#0a0a0f] z-10" 
                     />
                   )}
                 </div>
