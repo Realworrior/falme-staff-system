@@ -236,6 +236,19 @@ const Templates = () => {
   // Expansion Logic: Max 3 cards, FIFO
   const [expandedIds, setExpandedIds] = useState([]);
   const [isNewCategory, setIsNewCategory] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [passInput, setPassInput] = useState('');
+  const [loginOpen, setLoginOpen] = useState(false);
+
+  const handleLogin = () => {
+    if (passInput === 'Admin') {
+      setIsAdmin(true);
+      setLoginOpen(false);
+      showToast('Authenticated as Admin', 'success');
+    } else {
+      showToast('Invalid Matrix Key', 'error');
+    }
+  };
 
   const availableCategories = useMemo(() => {
     if (!data) return [];
@@ -472,13 +485,14 @@ const Templates = () => {
                 <p style={{ fontSize: 12, fontWeight: 600, color: S.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Support Intelligence Matrix</p>
               </div>
             </div>
-            <a 
-              href="https://github.com/Realworrior/falme-staff-system/archive/refs/heads/master.zip"
-              target="_blank" rel="noopener noreferrer"
-              style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(59,130,246,0.1) 100%)", color: S.green, border: `1px solid ${S.green}30`, borderRadius: 12, padding: '12px 24px', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
-            >
-              <img src="/favicon.svg" alt="X" style={{ width: 14, height: 14 }} /> Download Extension
-            </a>
+            {!isAdmin && (
+              <button 
+                onClick={() => setLoginOpen(true)}
+                style={{ background: 'rgba(255,255,255,0.03)', color: S.textMuted, border: `1px solid ${S.border}`, borderRadius: 12, padding: '10px 20px', fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
+              >
+                Admin Login
+              </button>
+            )}
           </div>
 
           <div className="tour-template-ai" style={{ marginBottom: 60 }}>
@@ -542,7 +556,7 @@ const Templates = () => {
               <h2 style={{ fontSize: 18, fontWeight: 900, textTransform: 'uppercase', margin: 0 }}>{searchQuery ? 'Search Results' : 'Library'}</h2>
               <div style={{ flex: 1, height: 1, background: S.border }} />
             </div>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredData.map((cat, idx) => (
                 <div key={idx} style={{ background: 'rgba(255,255,255,0.01)', borderRadius: 24, padding: 24, border: `1px solid ${S.border}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
@@ -562,18 +576,29 @@ const Templates = () => {
 
         {/* SIDEBAR */}
         <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <div style={{ background: S.surface, border: `1px solid ${S.border}`, borderRadius: 24, padding: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 900, color: S.textMuted, textTransform: 'uppercase', marginBottom: 20 }}>System Administration</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <button onClick={() => setModalOpen(true)} style={{ background: S.orange, color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontSize: 12, fontWeight: 900, cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><Plus size={18} strokeWidth={3} /> New Template</button>
-              <div style={{ height: 1, background: S.border, margin: '8px 0' }} />
-              <button onClick={handleConsolidate} disabled={aiLoading} style={{ background: 'rgba(255,255,255,0.03)', color: '#fff', border: `1px solid ${S.border}`, borderRadius: 12, padding: '12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Trash2 size={14} /> Cleanup Library</button>
-              <button onClick={handleDeploySystemPack} disabled={aiLoading} style={{ background: 'rgba(249,115,22,0.05)', color: S.orangeText, border: `1px solid ${S.orange}20`, borderRadius: 12, padding: '12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Terminal size={14} /> Deploy Failure Pack</button>
+          {isAdmin && (
+            <div style={{ background: S.surface, border: `1px solid ${S.border}`, borderRadius: 24, padding: 24 }}>
+              <div style={{ fontSize: 11, fontWeight: 900, color: S.textMuted, textTransform: 'uppercase', marginBottom: 20 }}>System Administration</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <button onClick={() => setModalOpen(true)} style={{ background: S.orange, color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontSize: 12, fontWeight: 900, cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><Plus size={18} strokeWidth={3} /> New Template</button>
+                <div style={{ height: 1, background: S.border, margin: '8px 0' }} />
+                <button onClick={handleConsolidate} disabled={aiLoading} style={{ background: 'rgba(255,255,255,0.03)', color: '#fff', border: `1px solid ${S.border}`, borderRadius: 12, padding: '12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Trash2 size={14} /> Cleanup Library</button>
+                <button onClick={handleDeploySystemPack} disabled={aiLoading} style={{ background: 'rgba(249,115,22,0.05)', color: S.orangeText, border: `1px solid ${S.orange}20`, borderRadius: 12, padding: '12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Terminal size={14} /> Deploy Failure Pack</button>
+              </div>
             </div>
-          </div>
-          <div style={{ padding: 20, background: 'rgba(16,185,129,0.05)', borderRadius: 24, border: '1px solid rgba(16,185,129,0.1)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}><Zap size={16} color={S.green} /><span style={{ fontSize: 12, fontWeight: 900, color: S.green, textTransform: 'uppercase' }}>Extension Linked</span></div>
-            <p style={{ fontSize: 11, color: S.textMuted, margin: 0, lineHeight: 1.6 }}>Your AI Injector extension is directly connected to this database. Updates here are immediate.</p>
+          )}
+          <div style={{ padding: 24, background: 'rgba(16,185,129,0.05)', borderRadius: 24, border: '1px solid rgba(16,185,129,0.1)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}><Zap size={16} color={S.green} /><span style={{ fontSize: 12, fontWeight: 900, color: S.green, textTransform: 'uppercase' }}>Extension Matrix</span></div>
+              <p style={{ fontSize: 11, color: S.textMuted, margin: 0, lineHeight: 1.6 }}>Your AI Injector extension is directly connected to this database. Updates here are immediate.</p>
+            </div>
+            <a 
+              href="https://github.com/Realworrior/falme-staff-system/archive/refs/heads/master.zip"
+              target="_blank" rel="noopener noreferrer"
+              style={{ background: "rgba(16,185,129,0.1)", color: S.green, border: `1px solid ${S.green}30`, borderRadius: 12, padding: '12px', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, textDecoration: 'none', transition: 'all 0.2s' }}
+            >
+              <Plus size={14} /> Install Injector
+            </a>
           </div>
         </div>
       </div>
@@ -591,6 +616,23 @@ const Templates = () => {
         <DialogActions style={{ padding: '24px 32px' }}>
           <button onClick={() => setModalOpen(false)} style={{ background: 'transparent', border: 'none', color: S.textMuted, fontWeight: 700, cursor: 'pointer' }}>CANCEL</button>
           <button onClick={handleCreate} style={{ background: S.orange, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 32px', fontWeight: 900, cursor: 'pointer' }}>DEPLOY</button>
+        </DialogActions>
+      </Dialog>
+
+      {/* LOGIN DIALOG */}
+      <Dialog open={loginOpen} onClose={() => setLoginOpen(false)} PaperProps={{ style: { background: S.surface, borderRadius: 24, border: `1px solid ${S.border}`, color: '#fff' } }}>
+        <DialogTitle style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: 14 }}>Matrix Authorization</DialogTitle>
+        <DialogContent style={{ width: 300 }}>
+          <TextField 
+            fullWidth type="password" variant="outlined" placeholder="Enter Access Key"
+            value={passInput} onChange={e => setPassInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <button onClick={() => setLoginOpen(false)} style={{ background: 'transparent', border: 'none', color: S.textMuted, fontWeight: 700, cursor: 'pointer' }}>CANCEL</button>
+          <button onClick={handleLogin} style={{ background: S.primary, color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontWeight: 900, cursor: 'pointer' }}>AUTH</button>
         </DialogActions>
       </Dialog>
     </div>
