@@ -297,25 +297,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function injectText(text) {
+  async function injectText(text) {
     if (!isBlastChat) {
       showError("Please open BlastChat first!");
       return;
     }
+    
     updateStatus("Injecting...", "purple");
-    chrome.tabs.sendMessage(activeTabId, { action: "injectText", text }, (res) => {
-      if (chrome.runtime.lastError) {
-        console.error("Runtime Error:", chrome.runtime.lastError);
-        showError("Matrix Link Broken. Refresh BlastChat.");
-        updateStatus("Link Error", "orange");
-      } else if (!res?.success) {
-        console.warn("Injection Failed:", res?.error);
-        showError("Focus Chat Input & Try Again");
-        updateStatus("Focus Required", "orange");
-      } else {
-        updateStatus("Injection Successful", "emerald");
-        setTimeout(() => window.close(), 100);
-      }
-    });
+
+    const tryInject = (attempt = 1) => {
+      chrome.tabs.sendMessage(activeTabId, { action: "injectText", text }, async (res) => {
+        if (chrome.runtime.lastError) {
+          console.warn("Connection lost, attempting recovery...", chrome.runtime.lastError);
+          
+          if (attempt === 1) {
+            // Self-healing: Try to re-inject content script if connection is lost
+            try {
+              await chrome.scripting.executeScript({
+                target: { tabId: activeTabId },
+                files: ['content.js']
+              });
+              // Small delay to let script initialise
+              setTimeout(() => tryInject(2), 200);
+            } catch (err) {
+              console.error("Recovery failed:", err);
+              showError("Matrix Link Broken. Refresh BlastChat.");
+              updateStatus("Link Error", "orange");
+            }
+          } else {
+            showError("Matrix Link Broken. Refresh BlastChat.");
+            updateStatus("Link Error", "orange");
+          }
+        } else if (!res?.success) {
+          console.warn("Injection Failed:", res?.error);
+          showError("Focus Chat Input & Try Again");
+          updateStatus("Focus Required", "orange");
+        } else {
+          updateStatus("Injection Successful", "emerald");
+          setTimeout(() => window.close(), 100);
+        }
+      });
+    };
+
+    tryInject();
   }
 });
