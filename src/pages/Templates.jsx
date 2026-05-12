@@ -47,23 +47,32 @@ const S = {
 const VariableHighlighter = ({ text }) => {
   if (!text) return null;
 
-  // Emotional Keywords
-  const emotionalKeywords = [
-    'Deposit', 'Withdrawal', 'bet ID', 'Referral Violation', 'Referral Bonus', 
-    'Submitted', 'Phone number', 'Account Number', 'Cashback', 'Deleted Message', 
-    'Mpesa', 'registered phone number', 'Rolled back', 'Lost'
-  ];
+  // Emotional Categorization
+  const categories = {
+    danger: ['Referral Violation', 'Deleted Message', 'Lost', 'Rolled back'],
+    success: ['Submitted', 'Cashback', 'Referral Bonus'],
+    info: ['Deposit', 'Withdrawal', 'bet ID', 'Mpesa'],
+    data: ['Phone number', 'Account Number', 'registered phone number']
+  };
 
-  // Pattern for placeholders: {thing} or [thing]
-  // Pattern for emotional keywords (case insensitive)
-  const pattern = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|${emotionalKeywords.join('|')})`, 'gi');
+  const allKeywords = Object.values(categories).flat();
+  const pattern = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|${allKeywords.join('|')})`, 'gi');
   const parts = text.split(pattern);
+
+  const getColor = (keyword) => {
+    const k = keyword.toLowerCase();
+    if (categories.danger.some(v => v.toLowerCase() === k)) return '#ff4d4d'; // Red
+    if (categories.success.some(v => v.toLowerCase() === k)) return '#00e676'; // Green
+    if (categories.info.some(v => v.toLowerCase() === k)) return '#4080ff';   // Blue
+    if (categories.data.some(v => v.toLowerCase() === k)) return '#ffea00';   // Yellow
+    return '#fff';
+  };
 
   return (
     <div style={{ fontFamily: S.mono, letterSpacing: '-0.02em' }}>
       {parts.map((part, i) => {
         const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
-        const isEmotional = emotionalKeywords.some(k => k.toLowerCase() === part.toLowerCase());
+        const isEmotional = allKeywords.some(k => k.toLowerCase() === part.toLowerCase());
 
         if (isPlaceholder) {
           return (
@@ -78,13 +87,15 @@ const VariableHighlighter = ({ text }) => {
         }
 
         if (isEmotional) {
+          const color = getColor(part);
           return (
             <span key={i} style={{ 
-              color: '#fff', fontWeight: 900, 
-              textShadow: '0 0 8px rgba(255,255,255,0.4)',
-              background: 'rgba(255,255,255,0.05)',
-              padding: '0 2px',
-              borderRadius: 2
+              color: color, fontWeight: 900, 
+              textShadow: `0 0 8px ${color}40`,
+              background: `${color}10`,
+              padding: '0 4px',
+              borderRadius: 4,
+              border: `1px solid ${color}20`
             }}>
               {part}
             </span>
@@ -206,9 +217,6 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, index
                     </button>
                   ))}
                 </div>
-                <span style={{ fontSize: 10, color: S.orange, fontWeight: 800, fontFamily: S.mono }}>
-                  // {activeType === 'High Empathy' ? 'SOFT_TONE' : 'DIRECT_TONE'}
-                </span>
               </div>
 
               {/* Design A: Copy field box with bracket design */}
