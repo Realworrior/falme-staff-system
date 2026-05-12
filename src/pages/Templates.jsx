@@ -341,14 +341,15 @@ const Templates = () => {
   const [newTemplate, setNewTemplate] = useState({ category: '', title: '', standardText: '', empathyText: '' });
   const [isNewCategory, setIsNewCategory] = useState(false);
   
-  // Expansion Logic
+  // Expansion Logic: Max 3 at a time
   const [expandedIds, setExpandedIds] = useState([]);
 
   const toggleExpand = useCallback((id) => {
     setExpandedIds(prev => {
       if (prev.includes(id)) return prev.filter(i => i !== id);
+      // Limit to 3: remove the oldest one if adding a new one
       const next = [...prev, id];
-      if (next.length > 3) return next.slice(1); // Keep only last 3
+      if (next.length > 3) return next.slice(1);
       return next;
     });
   }, []);
@@ -505,7 +506,7 @@ const Templates = () => {
       {/* MAIN CONTENT GRID */}
       <main style={{ maxWidth: 1600, margin: '0 auto', padding: '40px' }}>
         <div 
-          className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6 auto-rows-fr"
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6 auto-rows-fr"
           style={{ display: 'grid', gridAutoRows: 'minmax(400px, 1fr)' }}
         >
           {filteredData.map((cat, idx) => (
