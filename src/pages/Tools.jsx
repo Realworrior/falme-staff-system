@@ -582,7 +582,7 @@ Example:
              <img 
                src={demoVideo}
                alt="How to Copy Tutorial"
-               className={isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100" + " w-full h-full object-cover transition-opacity z-10"}
+               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity z-10"
                loading="lazy"
              />
              {/* Loading / Fallback UI */}
