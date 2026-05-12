@@ -128,38 +128,55 @@
       transition: border-color 0.2s;
     }
 
-    #search-input:focus {
-      border-color: var(--orange);
+    /* DROPDOWN & WRAP FIX */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 180px;
+      gap: 12px;
+      align-items: center;
     }
 
-    /* SHORTCUTS & CATEGORIES CAROUSEL FIX */
-    .carousel-container {
-      width: 100%;
-      overflow: hidden;
+    .category-dropdown-wrapper {
       position: relative;
     }
 
-    .shortcuts-row, .category-navbar {
+    #category-select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 16px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      outline: none;
+      appearance: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    #category-select:focus {
+      border-color: var(--orange);
+    }
+
+    .dropdown-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-muted);
+    }
+
+    .shortcuts-row {
       display: flex;
+      flex-wrap: wrap; /* REMOVE SCROLLING - WRAP INSTEAD */
       gap: 8px;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 4px;
       width: 100%;
     }
 
-    /* Hide scrollbar for Chrome/Safari but keep scrollable */
-    .shortcuts-row::-webkit-scrollbar, .category-navbar::-webkit-scrollbar {
-      height: 2px;
-    }
-    .shortcuts-row::-webkit-scrollbar-thumb, .category-navbar::-webkit-scrollbar-thumb {
-      background: rgba(249, 115, 22, 0.2);
-      border-radius: 10px;
-    }
-
     .shortcut-tag {
-      flex-shrink: 0;
       padding: 6px 12px;
       background: var(--orange-dim);
       border: 1px solid rgba(249, 115, 22, 0.2);
@@ -361,21 +378,29 @@
   </header>
 
   <div class="sticky-controls">
-    <div class="search-input-wrapper">
-      <div class="search-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-        </svg>
+    <div class="controls-grid">
+      <div class="search-input-wrapper">
+        <div class="search-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+        </div>
+        <input type="text" id="search-input" placeholder="Search Intelligence..." autocomplete="off">
       </div>
-      <input type="text" id="search-input" placeholder="Search Intelligence Database..." autocomplete="off">
+
+      <div class="category-dropdown-wrapper">
+        <select id="category-select">
+          <option value="ALL">All Categories</option>
+          <!-- Options injected here -->
+        </select>
+        <div class="dropdown-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
     </div>
 
     <div class="shortcuts-row" id="shortcuts-row">
       <!-- Keywords injected here -->
-    </div>
-
-    <div class="category-navbar" id="category-navbar">
-      <!-- Categories injected here -->
     </div>
   </div>
 

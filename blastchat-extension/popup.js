@@ -8,15 +8,23 @@ let activeShortcut = null;
 let activeTabId = null;
 let isBlastChat = false;
 
-// Fixed Keywords for Shortcuts
-const SHORTCUT_KEYWORDS = [
-  'Account number', 'Submitted', 'betid', 'Lost Amount', 
-  'pending bet', 'pending cashout', 'violation', 'bonus', 'cashback'
-];
+// Fixed Keywords for Shortcuts with specific query mappings
+const SHORTCUT_MAPPING = {
+  'Account number': 'Account verification request',
+  'Failed deposit': 'Deposits',
+  'Case submitted': 'Submitted',
+  'Lost amount': 'casino',
+  'Unpaid winning bet': 'BetId',
+  'Pending betslip': 'BetId',
+  'Account closure': 'Delete'
+};
+
+const SHORTCUT_KEYWORDS = Object.keys(SHORTCUT_MAPPING);
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('templates');
   const searchInput = document.getElementById('search-input');
+  const categorySelect = document.getElementById('category-select');
   
   updateStatus("Initializing Neural Sync...", "orange");
 
@@ -46,6 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Setup Search
   if (searchInput) {
     searchInput.addEventListener('input', () => {
+      activeShortcut = null;
+      document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
+      filterTemplates();
+    });
+  }
+
+  // 4. Setup Category Dropdown
+  if (categorySelect) {
+    categorySelect.addEventListener('change', (e) => {
+      activeCategory = e.target.value;
       activeShortcut = null;
       document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
       filterTemplates();
@@ -106,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderUI(categories) {
     renderShortcuts();
-    renderCategoryNav(categories);
+    renderCategoryDropdown(categories);
     filterTemplates();
   }
 
@@ -135,24 +153,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function renderCategoryNav(categories) {
-    const nav = document.getElementById('category-navbar');
-    if (!nav) return;
-    nav.innerHTML = '';
+  function renderCategoryDropdown(categories) {
+    if (!categorySelect) return;
+    // Keep the "ALL" option
+    categorySelect.innerHTML = '<option value="ALL">All Categories</option>';
     
-    ['ALL', ...categories.sort()].forEach(cat => {
-      const btn = document.createElement('div');
-      btn.className = `nav-link ${activeCategory === cat ? 'active' : ''}`;
-      // Display only the meaningful part or the icon if any
-      btn.textContent = cat === 'ALL' ? 'ALL' : cat.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').split(' — ')[0].trim();
-      btn.onclick = () => {
-        activeCategory = cat;
-        activeShortcut = null;
-        document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
-        renderCategoryNav(categories);
-        filterTemplates();
-      };
-      nav.appendChild(btn);
+    categories.sort().forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat;
+      // Clean up category name for dropdown
+      option.textContent = cat.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').split(' — ')[0].trim();
+      if (activeCategory === cat) option.selected = true;
+      categorySelect.appendChild(option);
     });
   }
 
@@ -165,12 +177,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (activeShortcut) {
-      const s = activeShortcut.toLowerCase();
+      // Use the mapping logic
+      const searchQuery = SHORTCUT_MAPPING[activeShortcut].toLowerCase();
       filtered = filtered.filter(t => 
-        t.category.toLowerCase().includes(s) || 
-        t.title.toLowerCase().includes(s) || 
-        t.triggers.some(tr => tr.toLowerCase().includes(s)) ||
-        t.responses.some(r => r.text.toLowerCase().includes(s))
+        t.category.toLowerCase().includes(searchQuery) || 
+        t.title.toLowerCase().includes(searchQuery) || 
+        t.triggers.some(tr => tr.toLowerCase().includes(searchQuery)) ||
+        t.responses.some(r => r.text.toLowerCase().includes(searchQuery))
       );
     }
 
