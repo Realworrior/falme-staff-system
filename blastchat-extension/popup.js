@@ -13,6 +13,9 @@ let activeCategory = 'ALL';
 let activeTabId = null;
 let isBlastChat = false;
 
+const EXTENSION_VERSION = "2026-05-12T12:50:00Z";
+const SYSTEM_URL = "https://betmfalme.vercel.app"; // Fallback to Vercel URL for version checks
+
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('templates');
   const searchInput = document.getElementById('search-input');
@@ -41,8 +44,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 3. Load Templates
+  // 3. Load Templates & Check Updates
   fetchTemplates();
+  checkUpdates();
+
+  async function checkUpdates() {
+    try {
+      const res = await fetch(`${SYSTEM_URL}/version.json?t=${Date.now()}`);
+      const data = await res.json();
+      if (data.timestamp && data.timestamp !== EXTENSION_VERSION) {
+        updateStatus("Matrix Update Available!", "orange");
+      }
+    } catch (e) {}
+  }
 
   // 4. Setup Search
   if (searchInput) {
