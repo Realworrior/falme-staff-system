@@ -1,5 +1,4 @@
 import React from 'react';
-// SYSTEM_PURGE_2026_05_12_21_02
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './components/AppShell';
