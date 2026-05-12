@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "BlastChat Quick Responses",
-  "version": "1.0",
+  "name": "BlastChat Matrix",
+  "version": "1.1",
   "description": "Auto-populates responses directly into BlastChat agent views.",
   "permissions": [
     "activeTab",
@@ -19,8 +19,12 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "BlastChat Tools",
-    "default_icon": "icon48.png"
+    "default_title": "BlastChat Matrix",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
   },
   "content_scripts": [
     {

@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const url = `${SUPABASE_URL}/rest/v1/supportTemplates?select=*`;
+      const url = `${SUPABASE_URL}/rest/v1/support_templates?select=*`;
       const response = await fetch(url, {
         headers: {
           'apikey': SUPABASE_ANON_KEY,
