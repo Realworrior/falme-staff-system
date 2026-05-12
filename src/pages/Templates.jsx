@@ -335,7 +335,7 @@ const Templates = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
-  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
   const currentVersion = "1.0.1"; // Current Build
   
   // Update Detection Logic
@@ -345,13 +345,15 @@ const Templates = () => {
         const res = await fetch('/version.json?t=' + Date.now());
         const data = await res.json();
         if (data.version !== currentVersion) {
-          setUpdateAvailable(true);
+          setUpdateInfo(data);
+        } else {
+          setUpdateInfo(null);
         }
       } catch (e) { /* ignore */ }
     };
     
     checkUpdate();
-    const interval = setInterval(checkUpdate, 300000); // Check every 5 mins
+    const interval = setInterval(checkUpdate, 300000); 
     return () => clearInterval(interval);
   }, []);
 
@@ -530,7 +532,7 @@ const Templates = () => {
         
         {/* Update Alert Banner */}
         <AnimatePresence>
-          {updateAvailable && (
+          {updateInfo && (
             <motion.div
               initial={{ height: 0, opacity: 0, marginBottom: 0 }}
               animate={{ height: 'auto', opacity: 1, marginBottom: 24 }}
@@ -552,7 +554,7 @@ const Templates = () => {
                       New Intelligence Update Available
                     </div>
                     <div style={{ fontSize: 11, color: S.orange, opacity: 0.8, fontFamily: S.mono }}>
-                      VER_1.0.2 // STABILITY_PATCH_DEPLOYED
+                      VER_{updateInfo.version} // SYSTEM_SYNC_REQUIRED
                     </div>
                   </div>
                 </div>
