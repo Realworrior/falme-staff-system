@@ -37,14 +37,14 @@ const formatDateForUI = (mode, offset) => {
   
   const now = new Date();
   let baseDate = subDays(new Date(now), offset);
-  let cycleEnd = setSeconds(setMinutes(setHours(baseDate, 20), 30), 0);
+  let cycleEnd = setSeconds(setMinutes(setHours(baseDate, 20), 35), 0);
   
   if (mode === 'previous') {
-    if (isBefore(now, setSeconds(setMinutes(setHours(new Date(now), 20), 30), 0)) && offset === 0) {
+    if (isBefore(now, setSeconds(setMinutes(setHours(new Date(now), 20), 35), 0)) && offset === 0) {
       cycleEnd = subDays(cycleEnd, 1);
     }
   } else if (mode === 'current') {
-    if (isAfter(now, setSeconds(setMinutes(setHours(new Date(now), 20), 30), 0)) && offset === 0) {
+    if (isAfter(now, setSeconds(setMinutes(setHours(new Date(now), 20), 35), 0)) && offset === 0) {
       cycleEnd = new Date(cycleEnd.getTime() + 86400000);
     }
   }
@@ -184,29 +184,22 @@ function CashbackCalculator() {
     if (!date) return false;
     const h = date.getHours();
     const m = date.getMinutes();
-    // Updated to 8:35 PM window as per new requirement
-    return (h === 20 && m >= 35 && m < 45);
+    return (h === 20 && m >= 35 && m < 40);
   };
 
   const handleCopySummary = (day, lineIndex = null) => {
     const netLoss = Math.max(0, day.deposits - day.withdrawals);
     const cb = netLoss * 0.1;
     
-    // Descriptive timeline and calculation based on user requirements
-    const timeline = `${format(day.start, 'MMM d, 8:35 PM')} to ${format(day.end, 'MMM d, 8:35 PM')}`;
-    
     const lines = [
-      `Cashback is 10% of the difference between total deposits and total withdrawals made from ${timeline}.`,
-      `Example: Deposit KSh 1,000 ✦ Withdraw KSh 600 ✦ Loss = KSh 400 ✦ Cashback = KSh 40.`,
-      `---`,
-      `Total Withdrawals (${timeline}): ${Math.round(day.withdrawals).toLocaleString()} KSh`,
-      `Total Deposits (${timeline}): ${Math.round(day.deposits).toLocaleString()} KSh`,
-      `Cashback Calculation: (${Math.round(day.deposits).toLocaleString()} - ${Math.round(day.withdrawals).toLocaleString()}) * 10% = ${Math.round(cb).toLocaleString()} KSh`
+      `Cashback calculation : (${Math.round(day.deposits).toLocaleString()} - ${Math.round(day.withdrawals).toLocaleString()}) * 10% = ${Math.round(cb).toLocaleString()}ksh`,
+      `Total Withdrawals (Yesterday 8:35 PM to today 8:35 PM): ${Math.round(day.withdrawals).toLocaleString()}KSh`,
+      `Total Deposits (Yesterday 8:35 PM to today 8:35 PM): ${Math.round(day.deposits).toLocaleString()}ksh`
     ];
 
-    const text = lineIndex !== null ? lines[lineIndex + 2] : lines.join('\n');
+    const text = lineIndex !== null ? lines[lineIndex - 1] : lines.join('\n');
     navigator.clipboard.writeText(text);
-    showToast(lineIndex !== null ? `Data Line Copied!` : 'Full Descriptive Report Copied!', 'success');
+    showToast(lineIndex !== null ? `Line ${lineIndex} Copied!` : 'Full Report Copied!', 'success');
   };
 
   const depNum = parseFloat(deposits) || 0;
@@ -541,7 +534,7 @@ Example:
                <ShieldCheck size={14} className="text-accent" />
                <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
              </div>
-             <p className="text-[10px] text-gray-500 leading-relaxed font-medium italic">"Calculated daily from 8:35 PM to 8:35 PM. Note: 8:35 PM–8:45 PM is a technical reset window; deposits within this gap are not counted in the 24hr cycle."</p>
+             <p className="text-[10px] text-gray-500 leading-relaxed font-medium italic">"Calculated daily from 8:35 PM to 8:35 PM. Note: 8:35 PM–8:40 PM is a technical reset window; deposits within this gap are not counted in the 24hr cycle."</p>
           </div>
         </div>
       </div>
