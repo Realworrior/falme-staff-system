@@ -44,68 +44,58 @@ const S = {
   sans: '"Inter", sans-serif'
 };
 
-const emotionalKeywords = [
-  'Deposit', 'Withdrawal', 'bet ID', 'Referral Violation', 'Referral Bonus', 
-  'Submitted', 'Phone number', 'Account Number', 'Cashback', 'Deleted Message', 
-  'Mpesa', 'registered phone number', 'Rolled back', 'Lost'
-];
-
 const VariableHighlighter = ({ text }) => {
   if (!text) return null;
-  
-  // Combine variables {var}, [var] and keywords into one regex
-  // Escape keywords for regex safety
-  const kwPattern = emotionalKeywords.map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  const regex = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|\\b(?:${kwPattern})\\b)`, 'gi');
-  
-  const parts = text.split(regex);
-  
+
+  // Emotional Keywords
+  const emotionalKeywords = [
+    'Deposit', 'Withdrawal', 'bet ID', 'Referral Violation', 'Referral Bonus', 
+    'Submitted', 'Phone number', 'Account Number', 'Cashback', 'Deleted Message', 
+    'Mpesa', 'registered phone number', 'Rolled back', 'Lost'
+  ];
+
+  // Pattern for placeholders: {thing} or [thing]
+  // Pattern for emotional keywords (case insensitive)
+  const pattern = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|${emotionalKeywords.join('|')})`, 'gi');
+  const parts = text.split(pattern);
+
   return (
     <div style={{ fontFamily: S.mono, letterSpacing: '-0.02em' }}>
       {parts.map((part, i) => {
-        if (!part) return null;
-        
-        // Handle Variables {var} or [var]
-        if ((part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'))) {
+        const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
+        const isEmotional = emotionalKeywords.some(k => k.toLowerCase() === part.toLowerCase());
+
+        if (isPlaceholder) {
           return (
             <span key={i} style={{ 
-              color: S.orange, fontWeight: 700, 
-              background: 'rgba(249,115,22,0.15)', 
-              padding: '1px 4px', borderRadius: 4,
+              color: S.orange, fontWeight: 800, 
+              background: 'rgba(249,115,22,0.15)', padding: '0 4px', borderRadius: 4,
               border: '1px solid rgba(249,115,22,0.2)'
             }}>
               {part}
             </span>
           );
         }
-        
-        // Handle Emotional Keywords
-        const lowerPart = part.toLowerCase();
-        const isEmotional = emotionalKeywords.some(kw => kw.toLowerCase() === lowerPart);
-        
+
         if (isEmotional) {
           return (
             <span key={i} style={{ 
               color: '#fff', fontWeight: 900, 
-              background: 'rgba(244, 63, 94, 0.2)', // Rose dim background
-              padding: '1px 6px', borderRadius: 4,
-              border: '1px solid rgba(244, 63, 94, 0.4)',
-              boxShadow: '0 0 8px rgba(244, 63, 94, 0.2)',
-              textTransform: 'uppercase',
-              fontSize: '0.9em'
+              textShadow: '0 0 8px rgba(255,255,255,0.4)',
+              background: 'rgba(255,255,255,0.05)',
+              padding: '0 2px',
+              borderRadius: 2
             }}>
               {part}
             </span>
           );
         }
-        
+
         return <span key={i}>{part}</span>;
       })}
     </div>
   );
 };
-
-
 
 function CopyBtn({ text, id, copiedId, onCopy }) {
   const isCopied = copiedId === id;
@@ -279,7 +269,7 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
         background: 'linear-gradient(to bottom, rgba(249,115,22,0.05), transparent)',
         position: 'relative'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
           <span style={{ fontFamily: S.mono, fontSize: 12, fontWeight: 900, color: S.orange }}>
             SEC_ID: {displayNumber}
           </span>
