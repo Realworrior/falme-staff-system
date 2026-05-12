@@ -486,6 +486,3 @@ const Templates = () => {
 };
 
 export default Templates;
-
-
-export default Templates;
