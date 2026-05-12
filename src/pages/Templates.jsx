@@ -457,38 +457,29 @@ const Templates = () => {
   );
 
   return (
-    <div style={{ minHeight: '100vh', color: S.textPrimary, fontFamily: 'Inter, system-ui, sans-serif', padding: 'clamp(16px, 4vw, 32px)' }}>
-      <div style={{ maxWidth: 1600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 40 }}>
+    <div style={{ minHeight: '100vh', color: S.textPrimary, fontFamily: 'Inter, system-ui, sans-serif', padding: '24px' }}>
+                                <div className="max-w-7xl mx-auto px-4 md:px-0 grid grid-cols-1 md:grid-cols-[1fr_minmax(280px,340px)] gap-6 items-start">
         
-        {/* HEADER AREA */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 24, marginBottom: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ width: 'clamp(48px, 6vw, 56px)', height: 'clamp(48px, 6vw, 56px)', borderRadius: 18, background: S.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 10px 30px ${S.primary}30` }}>
-              <Zap size={28} color="#fff" />
+        {/* LEFT COLUMN */}
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 18, background: S.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 10px 30px ${S.primary}30` }}>
+                <Zap size={28} color="#fff" />
+              </div>
+              <div>
+                <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.03em', margin: 0 }}>Templates</h1>
+                <p style={{ fontSize: 12, fontWeight: 600, color: S.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Support Intelligence Matrix</p>
+              </div>
             </div>
-            <div>
-              <h1 style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 900, letterSpacing: '-0.03em', margin: 0 }}>Templates</h1>
-              <p style={{ fontSize: 10, fontWeight: 600, color: S.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Support Intelligence Matrix</p>
-            </div>
+            <a 
+              href="https://github.com/Realworrior/falme-staff-system/archive/refs/heads/master.zip"
+              target="_blank" rel="noopener noreferrer"
+              style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(59,130,246,0.1) 100%)", color: S.green, border: `1px solid ${S.green}30`, borderRadius: 12, padding: '12px 24px', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
+            >
+              <img src="/favicon.svg" alt="X" style={{ width: 14, height: 14 }} /> Download Extension
+            </a>
           </div>
-          <a 
-            href="https://github.com/Realworrior/falme-staff-system/archive/refs/heads/master.zip"
-            target="_blank" rel="noopener noreferrer"
-            style={{ 
-              background: "linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(59,130,246,0.1) 100%)", 
-              color: S.green, border: `1px solid ${S.green}30`, borderRadius: 12, padding: '10px 20px', 
-              fontSize: 10, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 10, 
-              textDecoration: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-              width: 'auto'
-            }}
-          >
-            <img src="/favicon.svg" alt="X" style={{ width: 14, height: 14 }} /> Download Extension
-          </a>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gridAutoFlow: 'dense', gap: 40, alignItems: 'start' }}>
-          {/* MAIN CONTENT AREA (Takes up more space if possible) */}
-          <div style={{ gridColumn: 'span min(2, 100%)', minWidth: 0 }}>
 
           <div className="tour-template-ai" style={{ marginBottom: 60 }}>
             <div style={{ position: 'relative', zIndex: 10 }}>
@@ -569,8 +560,8 @@ const Templates = () => {
           </div>
         </div>
 
-        {/* SIDEBAR AREA */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* SIDEBAR */}
+        <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div style={{ background: S.surface, border: `1px solid ${S.border}`, borderRadius: 24, padding: 24 }}>
             <div style={{ fontSize: 11, fontWeight: 900, color: S.textMuted, textTransform: 'uppercase', marginBottom: 20 }}>System Administration</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

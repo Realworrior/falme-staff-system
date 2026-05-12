@@ -288,6 +288,12 @@ const Dashboard = () => {
             >
               Access Full Rota <ArrowUpRight size={16} />
             </button>
+            <button 
+              onClick={() => navigate('/templates')}
+              className="w-full mt-4 py-4 rounded-2xl bg-white/[0.02] border border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-white/[0.05] hover:text-white transition-all flex items-center justify-center gap-3"
+            >
+              Admin Templates <ArrowUpRight size={16} />
+            </button>
           </div>
         </div>
 

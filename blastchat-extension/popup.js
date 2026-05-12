@@ -2,37 +2,30 @@
 const SUPABASE_URL = 'https://kgpcruwlejoougjbeouw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtncGNydXdsZWpvb3VnamJlb3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Njg1NTgsImV4cCI6MjA5MjM0NDU1OH0.FUM24PZZdw1Rg5IYePFx0SKWp_GI6adn7etivCUAfgY';
 
-// NLP Dictionaries
-const SWAHILI_MAP = {
-  'doo': 'money', 'pesa': 'money', 'nimechomeka': 'lost everything', 'haraka': 'fast',
-  'saidia': 'help', 'niaje': 'hi', 'wezi': 'thieves', 'rudisha': 'refund'
-};
-
 let allTemplates = [];
 let activeCategory = 'ALL';
+let activeShortcut = null;
 let activeTabId = null;
 let isBlastChat = false;
 
 const EXTENSION_VERSION = "2026-05-12T12:50:00Z";
-const SYSTEM_URL = "https://betmfalme.vercel.app"; // Fallback to Vercel URL for version checks
+const SYSTEM_URL = "https://betmfalme.vercel.app";
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('templates');
   const searchInput = document.getElementById('search-input');
   
-  // 1. Initialise Status UI
-  updateStatus("Initialising...", "orange");
+  updateStatus("Initialising Matrix...", "purple");
 
-  // 2. Check Tab Connection
-  chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+  // 1. Check Tab Connection
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
     if (!activeTab) return;
     activeTabId = activeTab.id;
     isBlastChat = activeTab.url && activeTab.url.includes("blastchat.chat");
     
     if (isBlastChat) {
-      updateStatus("Connected to BlastChat Engine", "green");
-      // Try to capture selected text for auto-matching
+      updateStatus("Matrix Linked to BlastChat", "emerald");
       chrome.tabs.sendMessage(activeTabId, { action: "getSelectedText" }, (response) => {
         if (response && response.text && searchInput) {
           searchInput.value = response.text;
@@ -40,74 +33,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     } else {
-      updateStatus("Waiting for blastchat.chat...", "orange");
+      updateStatus("Waiting for BlastChat...", "orange");
     }
   });
 
-  // 3. Load Templates & Check Updates
+  // 2. Load Templates
   fetchTemplates();
-  checkUpdates();
 
-  async function checkUpdates() {
-    try {
-      const res = await fetch(`${SYSTEM_URL}/version.json?t=${Date.now()}`);
-      const data = await res.json();
-      if (data.timestamp && data.timestamp !== EXTENSION_VERSION) {
-        updateStatus("Matrix Update Available!", "orange");
-      }
-    } catch (e) {}
-  }
-
-  // 4. Setup Search
+  // 3. Setup Search
   if (searchInput) {
-    searchInput.addEventListener('input', () => filterTemplates());
+    searchInput.addEventListener('input', () => {
+      activeShortcut = null;
+      document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
+      filterTemplates();
+    });
   }
 
   async function fetchTemplates() {
-    // Check Cache
     const cached = localStorage.getItem('blastchat_templates');
     if (cached) {
       try {
         const { allTemplates: cachedTemplates, categories } = JSON.parse(cached);
         allTemplates = cachedTemplates;
-        renderCategoryNav(categories);
-        renderTemplates(allTemplates);
-        updateStatus("Matrix Synchronized (Cached)", "green");
-      } catch (e) { console.error("Cache error", e); }
+        renderUI(categories);
+        updateStatus("Matrix Synchronized", "emerald");
+      } catch (e) {}
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
     try {
-      const url = `${SUPABASE_URL}/rest/v1/support_templates?select=*`;
+      const url = `${SUPABASE_URL}/rest/v1/supportTemplates?select=*`;
       const response = await fetch(url, {
-        signal: controller.signal,
         headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
         }
       });
-      clearTimeout(timeoutId);
-      
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       processData(data);
     } catch (err) {
-      console.error("SUPABASE FETCH ERROR:", err);
-      // Try fallback to camelCase if snake_case failed
-      if (err.message.includes('404')) {
-        try {
-          const retryRes = await fetch(`${SUPABASE_URL}/rest/v1/supportTemplates?select=*`, {
-            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-          });
-          if (retryRes.ok) {
-            const retryData = await retryRes.json();
-            processData(retryData);
-            return;
-          }
-        } catch (e) {}
-      }
+      console.error("Fetch error", err);
       if (!cached) showError(`Sync Failed: ${err.message}`);
     }
   }
@@ -122,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
             id: `${catRow.id}-${t.title}`,
             category: catRow.category || "General",
             title: t.title,
-            text: t.responses?.[0]?.text || "",
             responses: t.responses || [],
             triggers: t.triggers || []
           });
@@ -132,11 +96,60 @@ document.addEventListener('DOMContentLoaded', () => {
     
     allTemplates = flattened;
     const categories = [...new Set(data.map(d => d.category))].filter(Boolean);
-    
     localStorage.setItem('blastchat_templates', JSON.stringify({ allTemplates, categories }));
+    renderUI(categories);
+    updateStatus("Matrix Fully Synchronized", "emerald");
+  }
+
+  function renderUI(categories) {
+    renderShortcuts();
     renderCategoryNav(categories);
-    renderTemplates(allTemplates);
-    updateStatus("Matrix Fully Synchronized", "green");
+    filterTemplates();
+  }
+
+  function renderShortcuts() {
+    const area = document.getElementById('shortcut-tags');
+    if (!area) return;
+    area.innerHTML = '';
+
+    const shortcuts = new Set();
+    
+    allTemplates.forEach(t => {
+      // 1. Major Category (Before Hyphen)
+      const major = t.category.split(' — ')[0].replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/[^\w\s&]/g, '').trim();
+      if (major && major.length > 2) shortcuts.add(major);
+
+      // 2. After Hyphen
+      const after = t.category.split(' — ')[1]?.trim();
+      if (after) shortcuts.add(after);
+
+      // 3. Keywords (Triggers) - Max 10 most common/important ones
+      t.triggers.forEach(tr => {
+        if (tr.length > 3) shortcuts.add(tr.toLowerCase());
+      });
+    });
+
+    // Sort and limit shortcuts
+    const list = Array.from(shortcuts).sort((a, b) => a.length - b.length).slice(0, 24);
+
+    list.forEach(label => {
+      const tag = document.createElement('div');
+      tag.className = 'tag-item';
+      tag.textContent = label;
+      tag.onclick = () => {
+        if (activeShortcut === label) {
+          activeShortcut = null;
+          tag.classList.remove('active');
+        } else {
+          document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
+          activeShortcut = label;
+          tag.classList.add('active');
+          if (searchInput) searchInput.value = '';
+        }
+        filterTemplates();
+      };
+      area.appendChild(tag);
+    });
   }
 
   function renderCategoryNav(categories) {
@@ -146,10 +159,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     ['ALL', ...categories.sort()].forEach(cat => {
       const btn = document.createElement('div');
-      btn.className = `nav-item ${activeCategory === cat ? 'active' : ''}`;
-      btn.textContent = cat === 'ALL' ? 'ALL' : cat.split(' ').pop();
+      btn.className = `nav-btn ${activeCategory === cat ? 'active' : ''}`;
+      // Display only the meaningful part or the icon if any
+      btn.textContent = cat === 'ALL' ? 'ALL' : cat.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').split(' — ')[0].trim();
       btn.onclick = () => {
         activeCategory = cat;
+        activeShortcut = null;
+        document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
         renderCategoryNav(categories);
         filterTemplates();
       };
@@ -157,102 +173,118 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function renderTemplates(templatesToRender) {
-    if (!container) return;
-    container.innerHTML = '';
-    
-    const countEl = document.getElementById('match-count');
-    if (countEl) countEl.textContent = `${templatesToRender.length} items`;
-
-    templatesToRender.forEach(t => {
-      const card = document.createElement('div');
-      card.className = 'template-card';
-      card.innerHTML = `
-        <div class="card-header">
-          <div class="card-title">${t.title}</div>
-          <div class="card-category">${t.category.split(' ').pop()}</div>
-        </div>
-      `;
-
-      let currentToneIdx = 0;
-      let activeText = t.responses?.[0]?.text || t.text;
-
-      if (t.responses && t.responses.length > 0) {
-        const carousel = document.createElement('div');
-        carousel.className = 'tone-carousel';
-        
-        const header = document.createElement('div');
-        header.className = 'carousel-header';
-        header.innerHTML = `
-          <div class="carousel-btn prev">←</div>
-          <div class="carousel-info"></div>
-          <div class="carousel-btn next">→</div>
-        `;
-        
-        const preview = document.createElement('div');
-        preview.className = 'response-preview';
-        
-        const dots = document.createElement('div');
-        dots.className = 'carousel-dots';
-        t.responses.forEach((_, i) => {
-          const dot = document.createElement('div');
-          dot.className = i === 0 ? 'dot active' : 'dot';
-          dots.appendChild(dot);
-        });
-
-        const update = (idx) => {
-          currentToneIdx = idx;
-          const r = t.responses[idx];
-          preview.textContent = r.text;
-          activeText = r.text;
-          const info = header.querySelector('.carousel-info');
-          if (info) info.innerHTML = `<span>${idx + 1}/${t.responses.length}</span> <span style="opacity:0.3">|</span> <span>${r.type.toUpperCase()}</span>`;
-          dots.querySelectorAll('.dot').forEach((d, i) => d.className = i === idx ? 'dot active' : 'dot');
-        };
-
-        header.querySelector('.prev').onclick = (e) => { e.stopPropagation(); update((currentToneIdx - 1 + t.responses.length) % t.responses.length); };
-        header.querySelector('.next').onclick = (e) => { e.stopPropagation(); update((currentToneIdx + 1) % t.responses.length); };
-        
-        carousel.appendChild(header);
-        carousel.appendChild(preview);
-        carousel.appendChild(dots);
-        card.appendChild(carousel);
-        update(0);
-      }
-
-      const injectBtn = document.createElement('button');
-      injectBtn.className = 'inject-mini-btn';
-      injectBtn.textContent = 'Inject to Chat';
-      injectBtn.onclick = () => {
-        if (!isBlastChat) { showError("Not on BlastChat!"); return; }
-        injectText(activeText, activeTabId);
-      };
-      card.appendChild(injectBtn);
-      container.appendChild(card);
-    });
-  }
-
   function filterTemplates() {
     const q = searchInput?.value.toLowerCase().trim() || '';
     let filtered = allTemplates;
-    if (activeCategory !== 'ALL') filtered = filtered.filter(t => t.category === activeCategory);
+
+    if (activeCategory !== 'ALL') {
+      filtered = filtered.filter(t => t.category === activeCategory);
+    }
+
+    if (activeShortcut) {
+      const s = activeShortcut.toLowerCase();
+      filtered = filtered.filter(t => 
+        t.category.toLowerCase().includes(s) || 
+        t.title.toLowerCase().includes(s) || 
+        t.triggers.some(tr => tr.toLowerCase().includes(s))
+      );
+    }
+
     if (q) {
       filtered = filtered.filter(t => 
         t.title.toLowerCase().includes(q) || 
         t.category.toLowerCase().includes(q) ||
-        t.triggers.some(tr => tr.toLowerCase().includes(q))
+        t.triggers.some(tr => tr.toLowerCase().includes(q)) ||
+        t.responses.some(r => r.text.toLowerCase().includes(q))
       );
     }
+
     renderTemplates(filtered);
   }
 
-  function updateStatus(text, color) {
-    const sText = document.getElementById('status-text');
-    const sDot = document.getElementById('status-indicator');
-    if (sText) sText.textContent = text;
-    if (sDot) {
-      sDot.style.background = color === 'green' ? 'var(--green)' : 'var(--orange)';
-      sDot.style.boxShadow = `0 0 12px ${color === 'green' ? 'var(--green)' : 'var(--orange)'}`;
+  function renderTemplates(templates) {
+    if (!container) return;
+    container.innerHTML = '';
+    
+    const countEl = document.getElementById('match-count');
+    if (countEl) countEl.textContent = `${templates.length} items`;
+
+    if (templates.length === 0) {
+      container.innerHTML = '<div class="empty-state">No matching intelligence found</div>';
+      return;
+    }
+
+    templates.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      
+      let currentStep = 0;
+      const totalSteps = t.responses.length;
+
+      const renderCardContent = () => {
+        const resp = t.responses[currentStep] || { text: "No content", type: "Standard" };
+        const progress = ((currentStep + 1) / totalSteps) * 100;
+        const majorCat = t.category.split(' — ')[0].trim();
+
+        card.innerHTML = `
+          <div class="card-head">
+            <div class="card-top">
+              <div class="card-title">${t.title}</div>
+              <div class="cat-badge">${majorCat}</div>
+            </div>
+            
+            <div class="tone-selector">
+              <div class="step-nav">
+                <button class="arrow-btn prev" ${currentStep === 0 ? 'disabled' : ''}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <button class="arrow-btn next" ${currentStep === totalSteps - 1 ? 'disabled' : ''}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
+              <div class="step-info">
+                <div class="step-numbers">${currentStep + 1}<span>/${totalSteps}</span></div>
+                <div class="progress-track">
+                  <div class="progress-bar" style="width: ${progress}%"></div>
+                </div>
+                <div class="tone-label">${resp.type}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <div class="response-box">${resp.text}</div>
+            <button class="inject-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+              Inject to Chat
+            </button>
+          </div>
+        `;
+
+        // Re-attach listeners
+        card.querySelector('.prev')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (currentStep > 0) { currentStep--; renderCardContent(); }
+        });
+        card.querySelector('.next')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (currentStep < totalSteps - 1) { currentStep++; renderCardContent(); }
+        });
+        card.querySelector('.inject-btn')?.addEventListener('click', () => {
+          injectText(resp.text);
+        });
+      };
+
+      renderCardContent();
+      container.appendChild(card);
+    });
+  }
+
+  function updateStatus(text, colorVar) {
+    const el = document.getElementById('status-text');
+    if (el) {
+      el.textContent = text;
+      el.style.color = `var(--${colorVar})`;
     }
   }
 
@@ -261,21 +293,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) {
       el.textContent = msg;
       el.style.display = 'block';
-      setTimeout(() => { if (el) el.style.display = 'none'; }, 3000);
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
     }
   }
 
-  function injectText(text, tabId) {
-    chrome.tabs.sendMessage(tabId, { action: "injectText", text }, (res) => {
+  function injectText(text) {
+    if (!isBlastChat) {
+      showError("Please open BlastChat first!");
+      return;
+    }
+    chrome.tabs.sendMessage(activeTabId, { action: "injectText", text }, (res) => {
       if (chrome.runtime.lastError || !res?.success) {
-        chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] }, () => {
-          setTimeout(() => {
-            chrome.tabs.sendMessage(tabId, { action: "injectText", text }, (r) => {
-              if (r?.success) window.close();
-              else showError("Click inside chat input first!");
-            });
-          }, 100);
-        });
+        showError("Click inside chat input first!");
       } else {
         window.close();
       }
