@@ -8,14 +8,17 @@ let activeShortcut = null;
 let activeTabId = null;
 let isBlastChat = false;
 
-const EXTENSION_VERSION = "2026-05-12T12:50:00Z";
-const SYSTEM_URL = "https://betmfalme.vercel.app";
+// Fixed Keywords for Shortcuts
+const SHORTCUT_KEYWORDS = [
+  'Account number', 'Submitted', 'betid', 'Lost Amount', 
+  'pending bet', 'pending cashout', 'violation', 'bonus', 'cashback'
+];
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('templates');
   const searchInput = document.getElementById('search-input');
   
-  updateStatus("Initialising Matrix...", "purple");
+  updateStatus("Initializing Neural Sync...", "orange");
 
   // 1. Check Tab Connection
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -25,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isBlastChat = activeTab.url && activeTab.url.includes("blastchat.chat");
     
     if (isBlastChat) {
-      updateStatus("Matrix Linked to BlastChat", "emerald");
+      updateStatus("Matrix Linked: Live", "orange");
       chrome.tabs.sendMessage(activeTabId, { action: "getSelectedText" }, (response) => {
         if (response && response.text && searchInput) {
           searchInput.value = response.text;
@@ -33,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     } else {
-      updateStatus("Waiting for BlastChat...", "orange");
+      updateStatus("Waiting for Data...", "orange");
     }
   });
 
@@ -44,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       activeShortcut = null;
-      document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
       filterTemplates();
     });
   }
@@ -56,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { allTemplates: cachedTemplates, categories } = JSON.parse(cached);
         allTemplates = cachedTemplates;
         renderUI(categories);
-        updateStatus("Matrix Synchronized", "emerald");
+        updateStatus("Matrix Ready", "orange");
       } catch (e) {}
     }
 
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categories = [...new Set(data.map(d => d.category))].filter(Boolean);
     localStorage.setItem('blastchat_templates', JSON.stringify({ allTemplates, categories }));
     renderUI(categories);
-    updateStatus("Matrix Fully Synchronized", "emerald");
+    updateStatus("Matrix Synced", "orange");
   }
 
   function renderUI(categories) {
@@ -108,40 +111,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderShortcuts() {
-    const area = document.getElementById('shortcut-tags');
+    const area = document.getElementById('shortcuts-row');
     if (!area) return;
     area.innerHTML = '';
 
-    const shortcuts = new Set();
-    
-    allTemplates.forEach(t => {
-      // 1. Major Category (Before Hyphen)
-      const major = t.category.split(' — ')[0].replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/[^\w\s&]/g, '').trim();
-      if (major && major.length > 2) shortcuts.add(major);
-
-      // 2. After Hyphen
-      const after = t.category.split(' — ')[1]?.trim();
-      if (after) shortcuts.add(after);
-
-      // 3. Keywords (Triggers) - Max 10 most common/important ones
-      t.triggers.forEach(tr => {
-        if (tr.length > 3) shortcuts.add(tr.toLowerCase());
-      });
-    });
-
-    // Sort and limit shortcuts
-    const list = Array.from(shortcuts).sort((a, b) => a.length - b.length).slice(0, 24);
-
-    list.forEach(label => {
+    SHORTCUT_KEYWORDS.forEach(label => {
       const tag = document.createElement('div');
-      tag.className = 'tag-item';
+      tag.className = `shortcut-tag ${activeShortcut === label ? 'active' : ''}`;
       tag.textContent = label;
       tag.onclick = () => {
         if (activeShortcut === label) {
           activeShortcut = null;
           tag.classList.remove('active');
         } else {
-          document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
           activeShortcut = label;
           tag.classList.add('active');
           if (searchInput) searchInput.value = '';
@@ -153,19 +136,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderCategoryNav(categories) {
-    const nav = document.getElementById('category-nav');
+    const nav = document.getElementById('category-navbar');
     if (!nav) return;
     nav.innerHTML = '';
     
     ['ALL', ...categories.sort()].forEach(cat => {
       const btn = document.createElement('div');
-      btn.className = `nav-btn ${activeCategory === cat ? 'active' : ''}`;
+      btn.className = `nav-link ${activeCategory === cat ? 'active' : ''}`;
       // Display only the meaningful part or the icon if any
       btn.textContent = cat === 'ALL' ? 'ALL' : cat.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').split(' — ')[0].trim();
       btn.onclick = () => {
         activeCategory = cat;
         activeShortcut = null;
-        document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
         renderCategoryNav(categories);
         filterTemplates();
       };
@@ -206,78 +189,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!container) return;
     container.innerHTML = '';
     
-    const countEl = document.getElementById('match-count');
-    if (countEl) countEl.textContent = `${templates.length} items`;
-
     if (templates.length === 0) {
       container.innerHTML = '<div class="empty-state">No matching intelligence found</div>';
       return;
     }
 
-    templates.forEach(t => {
+    templates.forEach((t, idx) => {
       const card = document.createElement('div');
-      card.className = 'card';
+      card.className = 'matrix-card';
       
-      let currentStep = 0;
-      const totalSteps = t.responses.length;
+      const majorCat = t.category.split(' — ')[0].trim();
+      const responseText = t.responses[0]?.text || "No intelligence found for this module.";
 
-      const renderCardContent = () => {
-        const resp = t.responses[currentStep] || { text: "No content", type: "Standard" };
-        const progress = ((currentStep + 1) / totalSteps) * 100;
-        const majorCat = t.category.split(' — ')[0].trim();
+      card.innerHTML = `
+        <div class="card-header"></div>
+        <div class="card-meta">
+          <div class="card-number">INTEL_REF_${(idx + 1).toString().padStart(3, '0')}</div>
+          <div style="font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase;">${majorCat}</div>
+        </div>
+        <div class="card-title">${t.title}</div>
+        <div class="card-body">
+          <div class="response-text">${highlightPlaceholders(responseText)}</div>
+          <button class="copy-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14m-7-7 7 7-7 7"/>
+            </svg>
+            Inject Logic
+          </button>
+        </div>
+      `;
 
-        card.innerHTML = `
-          <div class="card-head">
-            <div class="card-top">
-              <div class="card-title">${t.title}</div>
-              <div class="cat-badge">${majorCat}</div>
-            </div>
-            
-            <div class="tone-selector">
-              <div class="step-nav">
-                <button class="arrow-btn prev" ${currentStep === 0 ? 'disabled' : ''}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <button class="arrow-btn next" ${currentStep === totalSteps - 1 ? 'disabled' : ''}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
-              </div>
-              <div class="step-info">
-                <div class="step-numbers">${currentStep + 1}<span>/${totalSteps}</span></div>
-                <div class="progress-track">
-                  <div class="progress-bar" style="width: ${progress}%"></div>
-                </div>
-                <div class="tone-label">${resp.type}</div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="card-body">
-            <div class="response-box">${resp.text}</div>
-            <button class="inject-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
-              Inject to Chat
-            </button>
-          </div>
-        `;
+      card.querySelector('.copy-btn').addEventListener('click', () => {
+        injectText(responseText);
+      });
 
-        // Re-attach listeners
-        card.querySelector('.prev')?.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (currentStep > 0) { currentStep--; renderCardContent(); }
-        });
-        card.querySelector('.next')?.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (currentStep < totalSteps - 1) { currentStep++; renderCardContent(); }
-        });
-        card.querySelector('.inject-btn')?.addEventListener('click', () => {
-          injectText(resp.text);
-        });
-      };
-
-      renderCardContent();
       container.appendChild(card);
     });
+  }
+
+  function highlightPlaceholders(text) {
+    return text.replace(/\[([^\]]+)\]/g, '<span class="placeholder-highlight">[$1]</span>');
   }
 
   function updateStatus(text, colorVar) {
@@ -289,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showError(msg) {
-    const el = document.getElementById('error-msg');
+    const el = document.getElementById('error-toast');
     if (el) {
       el.textContent = msg;
       el.style.display = 'block';
@@ -302,42 +253,30 @@ document.addEventListener('DOMContentLoaded', () => {
       showError("Please open BlastChat first!");
       return;
     }
-    updateStatus("Injecting...", "purple");
+    updateStatus("Injecting...", "orange");
     
-    // Attempt standard messaging first
     chrome.tabs.sendMessage(activeTabId, { action: "injectText", text }, (res) => {
       if (chrome.runtime.lastError) {
-        console.log("Messaging failed, attempting auto-repair injection...");
-        
-        // AUTO-REPAIR: Inject content script manually if it's missing
+        // Attempt repair
         chrome.scripting.executeScript({
           target: { tabId: activeTabId },
           files: ['content.js']
         }).then(() => {
-          // Retry after a short delay for script initialization
           setTimeout(() => {
             chrome.tabs.sendMessage(activeTabId, { action: "injectText", text }, (res2) => {
-              if (chrome.runtime.lastError || !res2?.success) {
-                showError("Manual Inject Failed. Refresh Tab.");
-                updateStatus("Link Error", "orange");
-              } else {
-                updateStatus("Repaired & Injected", "emerald");
-                setTimeout(() => window.close(), 800);
+              if (res2?.success) {
+                updateStatus("Injected", "orange");
+                setTimeout(() => window.close(), 500);
               }
             });
           }, 200);
-        }).catch(err => {
-          console.error("Injection Repair Failed:", err);
-          showError("Matrix Link Broken. Refresh BlastChat.");
-          updateStatus("Link Error", "orange");
         });
-      } else if (!res?.success) {
-        console.warn("Injection Failed:", res?.error);
-        showError("Focus Chat Input & Try Again");
-        updateStatus("Focus Required", "orange");
-      } else {
-        updateStatus("Injection Successful", "emerald");
+      } else if (res?.success) {
+        updateStatus("Success", "orange");
         setTimeout(() => window.close(), 100);
+      } else {
+        showError("Focus Chat Input!");
+        updateStatus("Ready", "orange");
       }
     });
   }
