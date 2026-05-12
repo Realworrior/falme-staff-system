@@ -508,20 +508,22 @@ const Templates = () => {
 
       {/* MAIN CONTENT GRID */}
       <main style={{ maxWidth: 1600, margin: '0 auto', padding: '40px' }}>
-        <div className="masonry-grid">
+        <div 
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6"
+          style={{ display: 'grid', alignItems: 'stretch' }}
+        >
           {filteredData.map((cat, idx) => (
-            <div key={idx} className="masonry-item" style={{ breakInside: 'avoid', marginBottom: '1.5rem' }}>
-              <CategoryCard 
-                category={cat.category}
-                items={cat.templates}
-                catId={cat.id}
-                copiedId={copiedId}
-                onCopy={handleCopy}
-                expandedIds={expandedIds}
-                toggleExpand={toggleExpand}
-                index={idx}
-              />
-            </div>
+            <CategoryCard 
+              key={idx}
+              category={cat.category}
+              items={cat.templates}
+              catId={cat.id}
+              copiedId={copiedId}
+              onCopy={handleCopy}
+              expandedIds={expandedIds}
+              toggleExpand={toggleExpand}
+              index={idx}
+            />
           ))}
         </div>
 
@@ -558,23 +560,6 @@ const Templates = () => {
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: ${S.orange}; }
-
-        .masonry-grid {
-          column-count: 1;
-          column-gap: 1.5rem;
-        }
-        @media (min-width: 768px) {
-          .masonry-grid { column-count: 2; }
-        }
-        @media (min-width: 1536px) {
-          .masonry-grid { column-count: 3; }
-        }
-        .masonry-item {
-          break-inside: avoid;
-          margin-bottom: 1.5rem;
-          display: inline-block;
-          width: 100%;
-        }
       `}} />
     </div>
   );
