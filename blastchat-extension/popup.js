@@ -8,10 +8,9 @@ let activeShortcut = null;
 let activeTabId = null;
 let isBlastChat = false;
 
-// Fixed Keywords for Shortcuts with specific query mappings
 const SHORTCUT_MAPPING = {
-  'Account number': 'Account verification request',
-  'Failed deposit': 'Deposits',
+  'Account number': 'Account verification',
+  'Failed deposit': 'Deposit',
   'Case submitted': 'Submitted',
   'Lost amount': 'casino',
   'Unpaid winning bet': 'BetId',
@@ -146,6 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
           document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
           activeShortcut = label;
           tag.classList.add('active');
+          // Clear active category and search input for shortcut priority
+          activeCategory = 'ALL';
+          if (categorySelect) categorySelect.value = 'ALL';
           if (searchInput) searchInput.value = '';
         }
         filterTemplates();
@@ -173,27 +175,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = searchInput?.value.toLowerCase().trim() || '';
     let filtered = allTemplates;
 
-    if (activeCategory !== 'ALL') {
+    // Use Shortcut Mapping if active
+    if (activeShortcut) {
+      const queryStr = SHORTCUT_MAPPING[activeShortcut].toLowerCase();
+      const keywords = queryStr.split(' ');
+      
+      filtered = filtered.filter(t => {
+        // Check if ALL keywords are present in any of the fields
+        return keywords.every(kw => 
+          t.category.toLowerCase().includes(kw) || 
+          t.title.toLowerCase().includes(kw) || 
+          t.triggers.some(tr => tr.toLowerCase().includes(kw)) ||
+          t.responses.some(r => r.text.toLowerCase().includes(kw))
+        );
+      });
+    } else if (activeCategory !== 'ALL') {
       filtered = filtered.filter(t => t.category === activeCategory);
     }
 
-    if (activeShortcut) {
-      // Use the mapping logic
-      const searchQuery = SHORTCUT_MAPPING[activeShortcut].toLowerCase();
-      filtered = filtered.filter(t => 
-        t.category.toLowerCase().includes(searchQuery) || 
-        t.title.toLowerCase().includes(searchQuery) || 
-        t.triggers.some(tr => tr.toLowerCase().includes(searchQuery)) ||
-        t.responses.some(r => r.text.toLowerCase().includes(searchQuery))
-      );
-    }
-
     if (q) {
+      const keywords = q.split(' ');
       filtered = filtered.filter(t => 
-        t.title.toLowerCase().includes(q) || 
-        t.category.toLowerCase().includes(q) ||
-        t.triggers.some(tr => tr.toLowerCase().includes(q)) ||
-        t.responses.some(r => r.text.toLowerCase().includes(q))
+        keywords.every(kw => 
+          t.title.toLowerCase().includes(kw) || 
+          t.category.toLowerCase().includes(kw) ||
+          t.triggers.some(tr => tr.toLowerCase().includes(kw)) ||
+          t.responses.some(r => r.text.toLowerCase().includes(kw))
+        )
       );
     }
 
