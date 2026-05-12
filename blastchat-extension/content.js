@@ -46,7 +46,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "injectText") {
     let target = lastFocusedInput;
     
-    // If last focused is gone or hidden, try to find a suitable one
+    // Check if current active element is an input (even if focus tracking missed it)
+    if (!target || !document.body.contains(target)) {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'TEXTAREA' || active.isContentEditable || (active.tagName === 'INPUT' && active.type === 'text'))) {
+        target = active;
+      }
+    }
+
+    // Fallback: search for visible inputs
     if (!target || !document.body.contains(target) || target.offsetParent === null) {
       const selectors = [
         'textarea', 
@@ -60,7 +68,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       for (let s of selectors) {
         const elements = findInShadows(document, s);
         for (let el of elements) {
-          // Check if visible and not disabled
           if (el.offsetParent !== null && !el.disabled) {
             target = el;
             break;
@@ -71,23 +78,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (target) {
-      console.log("BlastChat Injector: Injecting into", target);
+      console.log("BlastChat Injector: Target identified", target);
       target.focus();
       
       try {
         if (target.isContentEditable || target.getAttribute('role') === 'textbox') {
-          // Attempt execCommand first (best for keeping history/undo)
+          // Force focus and clear range for some editors
+          const selection = window.getSelection();
+          if (selection.rangeCount > 0) {
+             // Keep existing range if possible
+          }
+          
           const successful = document.execCommand('insertText', false, request.text);
           if (!successful) {
-            // Fallback for strict editors
-            if (target.tagName === 'P' || target.tagName === 'DIV') {
-              target.innerText = request.text;
-            } else {
-              target.innerHTML = request.text;
-            }
+            console.log("BlastChat Injector: execCommand failed, using innerText fallback");
+            target.innerText = request.text;
           }
         } else {
-          // Standard input/textarea with React/Vue protection bypass
           const proto = target.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
           const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
           
@@ -98,20 +105,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
         }
 
-        // Broad event dispatch to wake up any framework
+        // Framework event trigger
         const events = ['input', 'change', 'blur', 'keyup', 'keydown'];
         events.forEach(type => {
           target.dispatchEvent(new Event(type, { bubbles: true, composed: true }));
         });
 
-        sendResponse({ success: true });
+        sendResponse({ success: true, frame: window.location.href });
       } catch (e) {
-        console.error("BlastChat Injector: Injection failed:", e);
+        console.error("BlastChat Injector: Error during injection", e);
         sendResponse({ success: false, error: e.message });
       }
     } else {
-      console.warn("BlastChat Injector: No target found for injection");
-      sendResponse({ success: false, error: "No target found" });
+      sendResponse({ success: false, error: "No target found in this frame" });
     }
   } else if (request.action === "getSelectedText") {
     const selection = window.getSelection().toString();
