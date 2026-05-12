@@ -40,6 +40,7 @@ const S = {
   textSecondary: '#a1a1aa',
   textMuted: '#52525b',
   green: '#10b981',
+  purple: '#a855f7',
   mono: '"JetBrains Mono", "Fira Code", monospace',
   sans: '"Inter", sans-serif'
 };
@@ -48,25 +49,17 @@ const VariableHighlighter = ({ text }) => {
   if (!text) return null;
   const parts = text.split(/(\{[^}]+\})/g);
   return (
-    <div style={{ fontFamily: S.mono, letterSpacing: '-0.02em' }}>
+    <>
       {parts.map((part, i) => 
         part.startsWith('{') && part.endsWith('}') ? (
-          <span key={i} style={{ color: S.orange, fontWeight: 700, background: 'rgba(249,115,22,0.1)', padding: '0 4px', borderRadius: 4 }}>{part}</span>
+          <span key={i} style={{ color: S.orange, fontWeight: 700 }}>{part.replace(/[{}]/g, '')}</span>
         ) : (
           <span key={i}>{part}</span>
         )
       )}
-    </div>
+    </>
   );
 };
-
-const MacDots = () => (
-  <div style={{ display: 'flex', gap: 6, marginBottom: 0 }}>
-    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f56' }} />
-    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }} />
-    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#27c93f' }} />
-  </div>
-);
 
 function CopyBtn({ text, id, copiedId, onCopy }) {
   const isCopied = copiedId === id;
@@ -74,25 +67,22 @@ function CopyBtn({ text, id, copiedId, onCopy }) {
     <button
       onClick={() => onCopy(text, id)}
       style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '8px 16px', borderRadius: 4,
-        background: isCopied ? S.green : 'transparent',
-        color: isCopied ? '#000' : S.orange, 
-        border: `1px solid ${isCopied ? S.green : S.orange}`, 
-        cursor: 'pointer', fontSize: 11, fontWeight: 900, 
-        transition: 'all 0.2s', textTransform: 'uppercase', 
-        fontFamily: S.mono,
-        position: 'relative'
+        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+        padding: '14px', borderRadius: 16,
+        background: isCopied ? S.green : S.orange,
+        color: isCopied ? '#fff' : '#000', 
+        border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 900, 
+        transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em',
+        boxShadow: `0 4px 15px ${isCopied ? S.green : S.orange}30`
       }}
     >
-      <span style={{ opacity: 0.5 }}>[</span>
-      {isCopied ? 'OK' : 'COPY'}
-      <span style={{ opacity: 0.5 }}>]</span>
+      {isCopied ? <Check size={18} /> : <Copy size={18} />}
+      {isCopied ? 'COPIED' : 'COPY MESSAGE'}
     </button>
   );
 }
 
-function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, index }) {
+function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
   const [activeType, setActiveType] = useState('Standard');
   const responses = item.responses || [];
   const activeResp = responses.find(r => r.type === activeType) || responses[0] || { text: '' };
@@ -105,44 +95,30 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, index
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       position: 'relative'
     }}>
-      {/* Design C: Thick Left Rule */}
       {expanded && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: S.orange }} />}
       
       <button
         onClick={onToggle}
         style={{
           width: '100%', display: 'flex', alignItems: 'center',
-          gap: 12, padding: '16px 20px',
+          gap: 12, padding: '18px 24px',
           background: 'transparent', border: 'none', cursor: 'pointer',
           color: S.textPrimary, textAlign: 'left',
-          position: 'relative',
-          overflow: 'hidden'
+          position: 'relative'
         }}
       >
-        {/* Design A: $ Prompt */}
-        <span style={{ color: S.orange, fontFamily: S.mono, fontSize: 14, fontWeight: 900, opacity: 0.6 }}>$</span>
+        <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: '#e4e4e7' }}>{item.title}</span>
         
-        <span style={{ 
-          flex: 1, fontSize: 13, fontWeight: 700, 
-          fontFamily: expanded ? S.mono : S.sans,
-          color: expanded ? S.orange : S.textPrimary,
-          transition: 'color 0.2s'
+        {/* Screenshot Badge Style */}
+        <div style={{ 
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: 12,
+          border: '1px solid rgba(255,255,255,0.05)',
+          color: expanded ? S.orange : S.textMuted
         }}>
-          {item.title}
-        </span>
-
-        {/* Design C: Angled Arrow ↗ / ↙ */}
-        <div style={{ color: expanded ? S.orange : S.textMuted, transition: 'all 0.3s' }}>
-          {expanded ? <span style={{ fontSize: 18 }}>↙</span> : <span style={{ fontSize: 18 }}>↗</span>}
+          <div style={{ width: 4, height: 4, borderRadius: '50%', background: expanded ? S.orange : S.textMuted }} />
+          <span style={{ fontSize: 16 }}>{expanded ? '↙' : '↗'}</span>
         </div>
-
-        {/* Design C: Active Underline */}
-        {expanded && (
-          <motion.div 
-            layoutId={`underline-${catId}-${item.title}`}
-            style={{ position: 'absolute', bottom: 0, left: 20, right: 20, height: 1, background: S.orange, opacity: 0.3 }} 
-          />
-        )}
       </button>
 
       <AnimatePresence>
@@ -153,61 +129,65 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, index
             exit={{ height: 0, opacity: 0 }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ padding: '0 20px 24px 48px' }}>
+            <div style={{ padding: '0 24px 24px 24px' }}>
               
-              {/* Custom: Pagination variants [1] [2] */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                <span style={{ fontSize: 10, fontWeight: 900, color: S.textMuted, fontFamily: S.mono, textTransform: 'uppercase' }}>Variant:</span>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {responses.map((r, i) => (
-                    <button
-                      key={r.type}
-                      onClick={(e) => { e.stopPropagation(); setActiveType(r.type); }}
-                      style={{
-                        width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        borderRadius: 4, border: '1px solid',
-                        borderColor: activeType === r.type ? S.orange : S.border,
-                        background: activeType === r.type ? S.orangeDim : 'transparent',
-                        color: activeType === r.type ? S.orange : S.textMuted,
-                        fontSize: 11, fontWeight: 900, cursor: 'pointer', fontFamily: S.mono,
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      [{i + 1}]
-                    </button>
-                  ))}
-                </div>
-                <span style={{ fontSize: 10, color: S.orange, fontWeight: 800, fontFamily: S.mono }}>
-                  // {activeType === 'High Empathy' ? 'SOFT_TONE' : 'DIRECT_TONE'}
-                </span>
+              {/* SELECT TYPE / VARIANT TOGGLES */}
+              <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+                {responses.map(r => (
+                  <button
+                    key={r.type}
+                    onClick={(e) => { e.stopPropagation(); setActiveType(r.type); }}
+                    style={{
+                      padding: '10px 24px', borderRadius: 12, border: 'none',
+                      background: activeType === r.type ? S.orange : 'rgba(255,255,255,0.03)',
+                      color: activeType === r.type ? '#000' : S.textMuted,
+                      fontSize: 12, fontWeight: 900, cursor: 'pointer', textTransform: 'uppercase',
+                      letterSpacing: '0.05em', transition: 'all 0.2s'
+                    }}
+                  >
+                    {r.type === 'High Empathy' ? 'SOFT TONE' : 'SELECT TYPE'}
+                  </button>
+                ))}
               </div>
 
-              {/* Design A: Copy field box with bracket design */}
-              <div style={{ 
-                background: '#000', padding: 20, borderRadius: 8, 
-                fontSize: 14, color: '#e4e4e7', lineHeight: 1.8, marginBottom: 20,
-                border: '1px dashed rgba(255,255,255,0.1)',
-                position: 'relative'
-              }}>
-                <div style={{ position: 'absolute', top: -1, left: -1, width: 10, height: 10, borderTop: `2px solid ${S.orange}`, borderLeft: `2px solid ${S.orange}` }} />
-                <div style={{ position: 'absolute', top: -1, right: -1, width: 10, height: 10, borderTop: `2px solid ${S.orange}`, borderRight: `2px solid ${S.orange}` }} />
-                <div style={{ position: 'absolute', bottom: -1, left: -1, width: 10, height: 10, borderBottom: `2px solid ${S.orange}`, borderLeft: `2px solid ${S.orange}` }} />
-                <div style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderBottom: `2px solid ${S.orange}`, borderRight: `2px solid ${S.orange}` }} />
-                
-                <VariableHighlighter text={activeResp.text} />
+              {/* VARIANT SECTION */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ 
+                  display: 'flex', alignItems: 'center', gap: 8, 
+                  fontSize: 10, fontWeight: 900, color: S.purple, 
+                  textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 
+                }}>
+                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: S.purple }} />
+                  VARIANT
+                </div>
+                <p style={{ fontSize: 13, color: S.textSecondary, lineHeight: 1.6, margin: 0 }}>
+                  {activeType === 'High Empathy' 
+                    ? 'Use this variant for complex inquiries requiring deeper context and softer tone.' 
+                    : 'Standard professional response for general template-based communication.'}
+                </p>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {(item.triggers || []).map((t, i) => (
-                    <span key={i} style={{ 
-                      fontSize: 10, color: S.textMuted, fontFamily: S.mono,
-                      background: 'rgba(255,255,255,0.03)', padding: '2px 8px', borderRadius: 4
-                    }}>#{t}</span>
-                  ))}
+              {/* TEMPLATE SECTION */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ 
+                  display: 'flex', alignItems: 'center', gap: 8, 
+                  fontSize: 10, fontWeight: 900, color: S.orange, 
+                  textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12
+                }}>
+                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: S.orange }} />
+                  TEMPLATE
                 </div>
-                <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
+                <div style={{ 
+                  background: 'rgba(0,0,0,0.4)', padding: 24, borderRadius: 16, 
+                  fontSize: 15, color: '#e4e4e7', lineHeight: 1.8,
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)'
+                }}>
+                  <VariableHighlighter text={activeResp.text} />
+                </div>
               </div>
+
+              <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
             </div>
           </motion.div>
         )}
@@ -216,59 +196,36 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, index
   );
 }
 
-function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, toggleExpand, index }) {
+function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, toggleExpand }) {
   const emojiMatch = category.match(/(\p{Emoji})/u);
   const emoji = emojiMatch ? emojiMatch[0] : '📂';
   const title = category.replace(/(\p{Emoji})/gu, '').trim().toUpperCase();
-  
-  // Design B: 01, 02 numbering
-  const displayNumber = (index + 1).toString().padStart(2, '0');
 
   return (
     <div style={{ 
-      background: S.card, border: `1px solid ${S.border}`, borderRadius: 12, 
+      background: '#0d0d0f', border: `1px solid ${S.border}`, borderRadius: 32, 
       display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%',
-      boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-      position: 'relative'
+      boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
     }}>
-      {/* Design C: Orange Header Band */}
-      <div style={{ height: 4, background: S.orange }} />
-      
-      {/* Card Header */}
+      {/* Screenshot Header Style */}
       <div style={{ 
-        padding: '24px', borderBottom: `1px solid ${S.border}`, 
-        background: 'linear-gradient(to bottom, rgba(249,115,22,0.05), transparent)',
-        position: 'relative'
+        padding: '32px 32px 24px 32px', borderBottom: `1px solid ${S.border}`, 
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: 'linear-gradient(to bottom, rgba(255,255,255,0.02), transparent)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-          <MacDots />
-          <span style={{ fontFamily: S.mono, fontSize: 12, fontWeight: 900, color: S.orange }}>
-            SEC_ID: {displayNumber}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontSize: 32 }}>{emoji}</div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ 
-              fontSize: 16, fontWeight: 900, letterSpacing: '0.1em', margin: 0, color: '#fff',
-              fontFamily: S.mono
-            }}>
-              {title}
-            </h3>
-            <div style={{ fontSize: 10, color: S.textMuted, fontFamily: S.mono, marginTop: 4 }}>
-              STATUS: // SYSTEM_READY
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div style={{ fontSize: 48, filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}>{emoji}</div>
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 900, letterSpacing: '0.05em', margin: 0, color: '#fff' }}>{title}</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
+               <div style={{ width: 40, height: 1, background: 'rgba(249,115,22,0.3)' }} />
+               <span style={{ fontSize: 10, fontWeight: 900, color: S.orange, letterSpacing: '0.2em' }}>TEMPLATES</span>
+               <div style={{ width: 40, height: 1, background: 'rgba(249,115,22,0.3)' }} />
             </div>
           </div>
         </div>
-
-        <div style={{ 
-          position: 'absolute', bottom: -10, right: 24,
-          padding: '4px 12px', borderRadius: 4, background: S.orange, 
-          color: '#000', fontSize: 11, fontWeight: 900, fontFamily: S.mono,
-          boxShadow: `0 4px 12px ${S.orange}40`
-        }}>
-          COUNT: {items.length}
+        <div style={{ fontSize: 42, fontWeight: 900, color: S.orange, opacity: 0.2, fontFamily: S.mono }}>
+          {items.length}
         </div>
       </div>
 
@@ -282,13 +239,13 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
             onCopy={onCopy}
             expanded={expandedIds.includes(`${catId}-${item.title}`)}
             onToggle={() => toggleExpand(`${catId}-${item.title}`)}
-            index={idx}
           />
         ))}
       </div>
     </div>
   );
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN TEMPLATES COMPONENT
@@ -477,7 +434,6 @@ const Templates = () => {
               onCopy={handleCopy}
               expandedIds={expandedIds}
               toggleExpand={toggleExpand}
-              index={idx}
             />
           ))}
         </div>
