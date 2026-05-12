@@ -91,17 +91,22 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
   const activeResp = responses.find(r => r.type === activeType) || responses[0] || { text: '' };
   const copyId = `${catId}-${item.title}-${activeType}`;
 
+  const hasStandard = responses.some(r => r.type === 'Standard');
+  const hasEmpathy = responses.some(r => r.type === 'High Empathy');
+
   return (
     <div style={{
       borderBottom: `1px solid ${S.border}`,
-      background: expanded ? 'rgba(255,255,255,0.02)' : 'transparent',
-      transition: 'all 0.2s'
+      background: expanded ? 'rgba(249, 115, 22, 0.03)' : 'transparent',
+      transition: 'all 0.2s',
+      position: 'relative'
     }}>
+      {expanded && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: S.orange }} />}
       <button
         onClick={onToggle}
         style={{
           width: '100%', display: 'flex', alignItems: 'center',
-          gap: 12, padding: '12px 16px',
+          gap: 12, padding: '14px 16px',
           background: 'transparent', border: 'none', cursor: 'pointer',
           color: S.textPrimary, textAlign: 'left',
         }}
@@ -109,11 +114,24 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
         <motion.span animate={{ rotate: expanded ? 90 : 0 }} style={{ color: expanded ? S.orange : S.textMuted }}>
           <ChevronRight size={14} />
         </motion.span>
-        <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{item.title}</span>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {responses.map(r => (
-            <div key={r.type} style={{ width: 6, height: 6, borderRadius: '50%', background: r.type === 'Standard' ? '#4080e8' : '#e84080' }} />
-          ))}
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em' }}>{item.title}</span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {hasStandard && (
+            <div style={{ 
+              fontSize: 9, fontWeight: 900, color: '#4080e8', 
+              background: 'rgba(64, 128, 232, 0.1)', width: 16, height: 16, 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4,
+              border: '1px solid rgba(64, 128, 232, 0.2)'
+            }}>S</div>
+          )}
+          {hasEmpathy && (
+            <div style={{ 
+              fontSize: 9, fontWeight: 900, color: '#e84080', 
+              background: 'rgba(232, 64, 128, 0.1)', width: 16, height: 16, 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4,
+              border: '1px solid rgba(232, 64, 128, 0.2)'
+            }}>H</div>
+          )}
         </div>
       </button>
 
@@ -125,19 +143,20 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
             exit={{ height: 0, opacity: 0 }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ padding: '0 16px 16px 42px' }}>
+            <div style={{ padding: '0 16px 20px 42px' }}>
               {/* Variant Toggles */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                 {responses.map(r => (
                   <button
                     key={r.type}
                     onClick={(e) => { e.stopPropagation(); setActiveType(r.type); }}
                     style={{
-                      padding: '4px 10px', borderRadius: 6, border: '1px solid',
-                      borderColor: activeType === r.type ? S.orange : 'rgba(255,255,255,0.1)',
-                      background: activeType === r.type ? S.orangeDim : 'transparent',
+                      padding: '6px 12px', borderRadius: 8, border: '1px solid',
+                      borderColor: activeType === r.type ? S.orange : 'rgba(255,255,255,0.05)',
+                      background: activeType === r.type ? S.orangeDim : 'rgba(255,255,255,0.02)',
                       color: activeType === r.type ? S.orange : S.textMuted,
-                      fontSize: 9, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase'
+                      fontSize: 10, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase',
+                      letterSpacing: '0.02em', transition: 'all 0.2s'
                     }}
                   >
                     {r.type === 'High Empathy' ? 'Soft Tone' : 'Direct Tone'}
@@ -147,9 +166,10 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
 
               {/* Template Body */}
               <div style={{ 
-                background: 'rgba(0,0,0,0.3)', padding: 12, borderRadius: 10, 
-                fontSize: 12, color: S.textSecondary, lineHeight: 1.6, marginBottom: 12,
-                border: '1px solid rgba(255,255,255,0.03)'
+                background: '#000', padding: 16, borderRadius: 12, 
+                fontSize: 13, color: '#e4e4e7', lineHeight: 1.7, marginBottom: 16,
+                border: '1px solid rgba(255,255,255,0.05)',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)'
               }}>
                 <VariableHighlighter text={activeResp.text} />
               </div>
@@ -158,7 +178,10 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {(item.triggers || []).map((t, i) => (
-                    <span key={i} style={{ fontSize: 9, color: S.textMuted }}>#{t}</span>
+                    <span key={i} style={{ 
+                      fontSize: 10, color: S.textMuted, background: 'rgba(255,255,255,0.03)', 
+                      padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.03)' 
+                    }}>#{t}</span>
                   ))}
                 </div>
                 <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
@@ -177,47 +200,39 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
   const emoji = emojiMatch ? emojiMatch[0] : '📂';
   const title = category.replace(/(\p{Emoji})/gu, '').trim().toUpperCase();
 
-  // Check for S and H presence across all items
-  const hasStandard = items.some(item => item.responses.some(r => r.type === 'Standard'));
-  const hasEmpathy = items.some(item => item.responses.some(r => r.type === 'High Empathy'));
+  const hasAnyStandard = items.some(item => item.responses.some(r => r.type === 'Standard'));
+  const hasAnyEmpathy = items.some(item => item.responses.some(r => r.type === 'High Empathy'));
 
   return (
     <div style={{ 
       background: S.card, border: `1px solid ${S.border}`, borderRadius: 24, 
       display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%',
-      transition: 'transform 0.2s, border-color 0.2s',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
-    }}
-    onMouseEnter={(e) => e.currentTarget.style.borderColor = S.borderHover}
-    onMouseLeave={(e) => e.currentTarget.style.borderColor = S.border}
-    >
+      boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+    }}>
       {/* Card Header */}
       <div style={{ 
-        padding: '18px 20px', borderBottom: `1px solid ${S.border}`, 
+        padding: '20px 24px', borderBottom: `1px solid ${S.border}`, 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         background: 'linear-gradient(to bottom, rgba(255,255,255,0.02), transparent)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          <span style={{ fontSize: 20 }}>{emoji}</span>
-          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-            <h3 style={{ 
-              fontSize: 12, fontWeight: 900, letterSpacing: '0.08em', margin: 0, 
-              color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-            }}>{title}</h3>
-            <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-              {hasStandard && (
-                <span style={{ fontSize: 8, fontWeight: 900, color: S.blue, background: 'rgba(59,130,246,0.1)', padding: '1px 5px', borderRadius: 4 }}>S</span>
-              )}
-              {hasEmpathy && (
-                <span style={{ fontSize: 8, fontWeight: 900, color: S.pink, background: 'rgba(244,114,182,0.1)', padding: '1px 5px', borderRadius: 4 }}>H</span>
-              )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ 
+            width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.03)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.05)'
+          }}>
+            <span style={{ fontSize: 18 }}>{emoji}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <h3 style={{ fontSize: 14, fontWeight: 900, letterSpacing: '0.05em', margin: 0, color: '#fff' }}>{title}</h3>
+            <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+               {hasAnyStandard && <span style={{ fontSize: 8, fontWeight: 900, color: '#4080e8', opacity: 0.8 }}>[S]</span>}
+               {hasAnyEmpathy && <span style={{ fontSize: 8, fontWeight: 900, color: '#e84080', opacity: 0.8 }}>[H]</span>}
             </div>
           </div>
         </div>
         <div style={{ 
-          padding: '4px 10px', borderRadius: 10, background: S.orangeDim, 
-          color: S.orangeText, fontSize: 11, fontWeight: 900,
-          border: '1px solid rgba(249, 115, 22, 0.2)'
+          padding: '4px 10px', borderRadius: 8, background: S.orangeDim, 
+          color: S.orange, fontSize: 11, fontWeight: 900, border: `1px solid ${S.orange}20`
         }}>
           {items.length}
         </div>
