@@ -336,7 +336,7 @@ const Templates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [updateInfo, setUpdateInfo] = useState(null);
-  const currentVersion = "1.0.2"; 
+  const currentVersion = "1.0.3"; 
   
   // Update Detection Logic
   useEffect(() => {
@@ -345,13 +345,16 @@ const Templates = () => {
         const res = await fetch('/version.json?t=' + Date.now());
         if (!res.ok) return;
         const versionData = await res.json();
+        
         if (versionData.version !== currentVersion) {
-          // Check if this version was already dismissed
-          const dismissed = localStorage.getItem('dismissedVersion');
-          if (dismissed !== versionData.version) {
+          // If we've already "refreshed" for this version, don't show alert again
+          const acknowledged = localStorage.getItem('acknowledgedVersion');
+          if (acknowledged !== versionData.version) {
             setUpdateInfo(versionData);
           }
         } else {
+          // Sync complete: clean up acknowledgment for next update cycle
+          localStorage.removeItem('acknowledgedVersion');
           setUpdateInfo(null);
         }
       } catch (e) { /* ignore */ }
@@ -578,7 +581,10 @@ const Templates = () => {
                     DISMISS
                   </button>
                   <button 
-                    onClick={() => window.location.reload()}
+                    onClick={() => {
+                      localStorage.setItem('acknowledgedVersion', updateInfo.version);
+                      window.location.reload();
+                    }}
                     style={{ 
                       background: S.orange, color: '#fff', border: 'none', 
                       borderRadius: 8, padding: '8px 20px', fontSize: 11, 
