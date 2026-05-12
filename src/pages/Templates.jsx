@@ -335,7 +335,26 @@ const Templates = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const currentVersion = "1.0.1"; // Current Build
   
+  // Update Detection Logic
+  useEffect(() => {
+    const checkUpdate = async () => {
+      try {
+        const res = await fetch('/version.json?t=' + Date.now());
+        const data = await res.json();
+        if (data.version !== currentVersion) {
+          setUpdateAvailable(true);
+        }
+      } catch (e) { /* ignore */ }
+    };
+    
+    checkUpdate();
+    const interval = setInterval(checkUpdate, 300000); // Check every 5 mins
+    return () => clearInterval(interval);
+  }, []);
+
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ category: '', title: '', standardText: '', empathyText: '' });
@@ -508,6 +527,51 @@ const Templates = () => {
 
       {/* MAIN CONTENT GRID */}
       <main style={{ maxWidth: 1600, margin: '0 auto', padding: '40px' }}>
+        
+        {/* Update Alert Banner */}
+        <AnimatePresence>
+          {updateAvailable && (
+            <motion.div
+              initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+              animate={{ height: 'auto', opacity: 1, marginBottom: 24 }}
+              exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div style={{ 
+                background: S.orangeDim, border: `1px solid ${S.orange}40`, 
+                padding: '16px 24px', borderRadius: 12, display: 'flex', 
+                alignItems: 'center', justifyContent: 'space-between',
+                boxShadow: `0 0 20px ${S.orange}20`
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ color: S.orange }}>
+                    <Zap size={20} fill={S.orange} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      New Intelligence Update Available
+                    </div>
+                    <div style={{ fontSize: 11, color: S.orange, opacity: 0.8, fontFamily: S.mono }}>
+                      VER_1.0.2 // STABILITY_PATCH_DEPLOYED
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => window.location.reload()}
+                  style={{ 
+                    background: S.orange, color: '#fff', border: 'none', 
+                    borderRadius: 8, padding: '8px 20px', fontSize: 11, 
+                    fontWeight: 900, cursor: 'pointer', fontFamily: S.mono,
+                    boxShadow: `0 4px 12px ${S.orange}40`
+                  }}
+                >
+                  [ REFRESH_TERMINAL ]
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div 
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6"
           style={{ display: 'grid', alignItems: 'stretch' }}
