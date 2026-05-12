@@ -184,22 +184,29 @@ function CashbackCalculator() {
     if (!date) return false;
     const h = date.getHours();
     const m = date.getMinutes();
-    return (h === 20 && m >= 30 && m < 40);
+    // Updated to 8:35 PM window as per new requirement
+    return (h === 20 && m >= 35 && m < 45);
   };
 
   const handleCopySummary = (day, lineIndex = null) => {
     const netLoss = Math.max(0, day.deposits - day.withdrawals);
     const cb = netLoss * 0.1;
     
+    // Descriptive timeline and calculation based on user requirements
+    const timeline = `${format(day.start, 'MMM d, 8:35 PM')} to ${format(day.end, 'MMM d, 8:35 PM')}`;
+    
     const lines = [
-      `Total Withdrawals (Yesterday to today): ${Math.round(day.withdrawals).toLocaleString()}KSh`,
-      `Total Deposits from 8:30pm (Yesterday to today) : ${Math.round(day.deposits).toLocaleString()}ksh`,
-      `Cashback calculation : (${Math.round(day.deposits).toLocaleString()} - ${Math.round(day.withdrawals).toLocaleString()}) * 10% = ${Math.round(cb).toLocaleString()}ksh`
+      `Cashback is 10% of the difference between total deposits and total withdrawals made from ${timeline}.`,
+      `Example: Deposit KSh 1,000 ✦ Withdraw KSh 600 ✦ Loss = KSh 400 ✦ Cashback = KSh 40.`,
+      `---`,
+      `Total Withdrawals (${timeline}): ${Math.round(day.withdrawals).toLocaleString()} KSh`,
+      `Total Deposits (${timeline}): ${Math.round(day.deposits).toLocaleString()} KSh`,
+      `Cashback Calculation: (${Math.round(day.deposits).toLocaleString()} - ${Math.round(day.withdrawals).toLocaleString()}) * 10% = ${Math.round(cb).toLocaleString()} KSh`
     ];
 
-    const text = lineIndex !== null ? lines[lineIndex - 1] : lines.join('\n');
+    const text = lineIndex !== null ? lines[lineIndex + 2] : lines.join('\n');
     navigator.clipboard.writeText(text);
-    showToast(lineIndex !== null ? `Line ${lineIndex} Copied!` : 'Full Report Copied!', 'success');
+    showToast(lineIndex !== null ? `Data Line Copied!` : 'Full Descriptive Report Copied!', 'success');
   };
 
   const depNum = parseFloat(deposits) || 0;
@@ -296,10 +303,10 @@ function CashbackCalculator() {
     if (parsedTx.length === 0) return;
     let totalDep = 0; let totalWith = 0;
     const now = new Date();
-    let cEnd = setSeconds(setMinutes(setHours(subDays(new Date(now), cycleOffset), 20), 30), 0);
-    if (cycleMode === 'previous' && isBefore(now, setSeconds(setMinutes(setHours(new Date(now), 20), 30), 0)) && cycleOffset === 0) {
+    let cEnd = setSeconds(setMinutes(setHours(subDays(new Date(now), cycleOffset), 20), 35), 0);
+    if (cycleMode === 'previous' && isBefore(now, setSeconds(setMinutes(setHours(new Date(now), 20), 35), 0)) && cycleOffset === 0) {
       cEnd = subDays(cEnd, 1);
-    } else if (cycleMode === 'current' && isAfter(now, setSeconds(setMinutes(setHours(new Date(now), 20), 30), 0)) && cycleOffset === 0) {
+    } else if (cycleMode === 'current' && isAfter(now, setSeconds(setMinutes(setHours(new Date(now), 20), 35), 0)) && cycleOffset === 0) {
       cEnd = new Date(cEnd.getTime() + 86400000);
     }
     const cStart = subDays(cEnd, 1);
@@ -320,7 +327,7 @@ function CashbackCalculator() {
     const groups = {};
     parsedTx.forEach(tx => {
       if (!tx.date || tx.ignored || isResetWindow(tx.date)) return;
-      let cEnd = setSeconds(setMinutes(setHours(new Date(tx.date), 20), 30), 0);
+      let cEnd = setSeconds(setMinutes(setHours(new Date(tx.date), 20), 35), 0);
       if (isAfter(tx.date, cEnd)) cEnd = new Date(cEnd.getTime() + 86400000);
       const key = format(cEnd, 'yyyy-MM-dd');
       if (!groups[key]) groups[key] = { start: subDays(cEnd, 1), end: cEnd, deposits: 0, withdrawals: 0, count: 0, label: isAfter(cEnd, new Date()) ? "Current" : "History" };
@@ -534,7 +541,7 @@ Example:
                <ShieldCheck size={14} className="text-accent" />
                <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
              </div>
-             <p className="text-[10px] text-gray-500 leading-relaxed font-medium italic">"Calculated daily from 8:30 PM to 8:30 PM. Note: 8:30 PM–8:40 PM is a technical reset window; deposits within this gap are not counted in the 24hr cycle."</p>
+             <p className="text-[10px] text-gray-500 leading-relaxed font-medium italic">"Calculated daily from 8:35 PM to 8:35 PM. Note: 8:35 PM–8:45 PM is a technical reset window; deposits within this gap are not counted in the 24hr cycle."</p>
           </div>
         </div>
       </div>
