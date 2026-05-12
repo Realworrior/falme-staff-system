@@ -177,24 +177,47 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
   const emoji = emojiMatch ? emojiMatch[0] : '📂';
   const title = category.replace(/(\p{Emoji})/gu, '').trim().toUpperCase();
 
+  // Check for S and H presence across all items
+  const hasStandard = items.some(item => item.responses.some(r => r.type === 'Standard'));
+  const hasEmpathy = items.some(item => item.responses.some(r => r.type === 'High Empathy'));
+
   return (
     <div style={{ 
-      background: S.card, border: `1px solid ${S.border}`, borderRadius: 20, 
-      display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%'
-    }}>
+      background: S.card, border: `1px solid ${S.border}`, borderRadius: 24, 
+      display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%',
+      transition: 'transform 0.2s, border-color 0.2s',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+    }}
+    onMouseEnter={(e) => e.currentTarget.style.borderColor = S.borderHover}
+    onMouseLeave={(e) => e.currentTarget.style.borderColor = S.border}
+    >
       {/* Card Header */}
       <div style={{ 
-        padding: '16px 20px', borderBottom: `1px solid ${S.border}`, 
+        padding: '18px 20px', borderBottom: `1px solid ${S.border}`, 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'rgba(255,255,255,0.01)'
+        background: 'linear-gradient(to bottom, rgba(255,255,255,0.02), transparent)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 18 }}>{emoji}</span>
-          <h3 style={{ fontSize: 13, fontWeight: 900, letterSpacing: '0.05em', margin: 0 }}>{title}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <span style={{ fontSize: 20 }}>{emoji}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <h3 style={{ 
+              fontSize: 12, fontWeight: 900, letterSpacing: '0.08em', margin: 0, 
+              color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+            }}>{title}</h3>
+            <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+              {hasStandard && (
+                <span style={{ fontSize: 8, fontWeight: 900, color: S.blue, background: 'rgba(59,130,246,0.1)', padding: '1px 5px', borderRadius: 4 }}>S</span>
+              )}
+              {hasEmpathy && (
+                <span style={{ fontSize: 8, fontWeight: 900, color: S.pink, background: 'rgba(244,114,182,0.1)', padding: '1px 5px', borderRadius: 4 }}>H</span>
+              )}
+            </div>
+          </div>
         </div>
         <div style={{ 
-          padding: '2px 8px', borderRadius: 6, background: S.orangeDim, 
-          color: S.orange, fontSize: 10, fontWeight: 900 
+          padding: '4px 10px', borderRadius: 10, background: S.orangeDim, 
+          color: S.orangeText, fontSize: 11, fontWeight: 900,
+          border: '1px solid rgba(249, 115, 22, 0.2)'
         }}>
           {items.length}
         </div>
