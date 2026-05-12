@@ -16,7 +16,8 @@ const SHORTCUT_MAPPING = {
   'Lost amount': 'casino',
   'Unpaid winning bet': 'BetId',
   'Pending betslip': 'BetId',
-  'Account closure': 'Delete'
+  'Account closure': 'Delete',
+  'Cashback': 'cashback'
 };
 
 const SHORTCUT_KEYWORDS = Object.keys(SHORTCUT_MAPPING);
