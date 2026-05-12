@@ -264,7 +264,7 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
   return (
     <div style={{ 
       background: S.card, border: `1px solid ${S.border}`, borderRadius: 12, 
-      display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%',
+      display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 'auto',
       boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
       position: 'relative'
     }}>
@@ -363,16 +363,19 @@ const Templates = () => {
 
   const filteredData = useMemo(() => {
     if (!data) return [];
-    if (!searchQuery) return data;
-    const q = searchQuery.toLowerCase();
-    return data.map(cat => ({
-      ...cat,
-      templates: cat.templates.filter(t => 
-        t.title.toLowerCase().includes(q) ||
-        (t.triggers || []).some(tr => tr.toLowerCase().includes(q)) ||
-        t.responses.some(r => r.text.toLowerCase().includes(q))
-      )
-    })).filter(cat => cat.templates.length > 0);
+    let processed = searchQuery 
+      ? data.map(cat => ({
+          ...cat,
+          templates: cat.templates.filter(t => 
+            t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (t.triggers || []).some(tr => tr.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            t.responses.some(r => r.text.toLowerCase().includes(searchQuery.toLowerCase()))
+          )
+        })).filter(cat => cat.templates.length > 0)
+      : [...data];
+
+    // Grouping/Sorting Logic: Sort by count to minimize white space in rows
+    return processed.sort((a, b) => a.templates.length - b.templates.length);
   }, [data, searchQuery]);
 
   const availableCategories = useMemo(() => {
@@ -506,8 +509,8 @@ const Templates = () => {
       {/* MAIN CONTENT GRID */}
       <main style={{ maxWidth: 1600, margin: '0 auto', padding: '40px' }}>
         <div 
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6 auto-rows-fr"
-          style={{ display: 'grid', gridAutoRows: 'minmax(400px, 1fr)' }}
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6"
+          style={{ display: 'grid', alignItems: 'start' }}
         >
           {filteredData.map((cat, idx) => (
             <CategoryCard 
