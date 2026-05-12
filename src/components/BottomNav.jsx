@@ -59,7 +59,7 @@ const BottomNav = ({ className }) => {
             className={({ isActive }) =>
               cn(
                 "flex flex-col items-center justify-center gap-1.5 transition-all duration-300 group relative min-w-[50px] md:w-full",
-                isActive ? "text-accent" : "text-gray-500 hover:text-gray-300"
+                isActive ? "text-accent" : "text-gray-400 hover:text-white"
               )
             }
           >
@@ -93,7 +93,7 @@ const BottomNav = ({ className }) => {
                 </div>
                 <span className={cn(
                   "text-[9px] font-black uppercase tracking-wider transition-all",
-                  isActive ? "opacity-100" : "opacity-40 group-hover:opacity-80"
+                  isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
                 )}>
                   {item.label}
                 </span>
