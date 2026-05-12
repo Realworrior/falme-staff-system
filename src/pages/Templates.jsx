@@ -85,53 +85,73 @@ function CopyBtn({ text, id, copiedId, onCopy }) {
   );
 }
 
-function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
+function TemplateItem({ item, index, catId, copiedId, onCopy, expanded, onToggle }) {
   const [activeType, setActiveType] = useState('Standard');
   const responses = item.responses || [];
   const activeResp = responses.find(r => r.type === activeType) || responses[0] || { text: '' };
   const copyId = `${catId}-${item.title}-${activeType}`;
-
-  const hasStandard = responses.some(r => r.type === 'Standard');
-  const hasEmpathy = responses.some(r => r.type === 'High Empathy');
+  const displayIndex = (index + 1).toString().padStart(2, '0');
 
   return (
     <div style={{
+      position: 'relative',
       borderBottom: `1px solid ${S.border}`,
-      background: expanded ? 'rgba(249, 115, 22, 0.03)' : 'transparent',
-      transition: 'all 0.2s',
-      position: 'relative'
+      background: expanded ? '#000' : 'transparent',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      overflow: 'hidden'
     }}>
-      {expanded && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: S.orange }} />}
+      {/* Design B: Hover Accent Bar */}
+      <div className="hover-accent" style={{
+        position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
+        background: 'linear-gradient(to bottom, #8b5cf6, #3b82f6)',
+        transform: 'translateX(-100%)',
+        transition: 'transform 0.2s ease',
+        zIndex: 10
+      }} />
+
       <button
         onClick={onToggle}
+        className="item-row-btn"
         style={{
           width: '100%', display: 'flex', alignItems: 'center',
-          gap: 12, padding: '14px 16px',
+          gap: 12, padding: '16px 20px',
           background: 'transparent', border: 'none', cursor: 'pointer',
-          color: S.textPrimary, textAlign: 'left',
+          color: expanded ? S.orange : S.textPrimary, textAlign: 'left',
+          position: 'relative', zIndex: 5
         }}
       >
-        <motion.span animate={{ rotate: expanded ? 90 : 0 }} style={{ color: expanded ? S.orange : S.textMuted }}>
-          <ChevronRight size={14} />
-        </motion.span>
-        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em' }}>{item.title}</span>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {hasStandard && (
-            <div style={{ 
-              fontSize: 9, fontWeight: 900, color: '#4080e8', 
-              background: 'rgba(64, 128, 232, 0.1)', width: 16, height: 16, 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4,
-              border: '1px solid rgba(64, 128, 232, 0.2)'
-            }}>S</div>
+        {/* Design B: Numbering + Design A: Prompt */}
+        <span style={{ 
+          fontSize: 10, fontFamily: 'monospace', color: S.textMuted, width: 45, 
+          display: 'flex', alignItems: 'center', gap: 8 
+        }}>
+          <span style={{ color: expanded ? S.primary : '#52525b' }}>{displayIndex}</span>
+          <span style={{ opacity: 0.5 }}>$</span>
+        </span>
+
+        <span style={{ 
+          flex: 1, fontSize: 13, fontWeight: 700, 
+          letterSpacing: '-0.01em',
+          fontFamily: 'Inter, sans-serif'
+        }}>
+          {item.title}
+          {/* Design C: Underline on active */}
+          {expanded && (
+            <motion.div layoutId={`underline-${catId}`} style={{ height: 2, background: S.orange, marginTop: 4, width: 40 }} />
           )}
-          {hasEmpathy && (
-            <div style={{ 
-              fontSize: 9, fontWeight: 900, color: '#e84080', 
-              background: 'rgba(232, 64, 128, 0.1)', width: 16, height: 16, 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4,
-              border: '1px solid rgba(232, 64, 128, 0.2)'
-            }}>H</div>
-          )}
+        </span>
+
+        {/* Design B: Rotating circular chevron with Design C: Arrow icon (represented by chevron) */}
+        <div style={{
+          width: 28, height: 28, borderRadius: '50%',
+          border: `1px solid ${expanded ? S.orange : 'rgba(255,255,255,0.1)'}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 0.3s',
+          background: expanded ? S.orangeDim : 'transparent'
+        }}>
+          <motion.div animate={{ rotate: expanded ? 180 : 0 }}>
+             <ChevronDown size={14} color={expanded ? S.orange : S.textMuted} />
+          </motion.div>
         </div>
       </button>
 
@@ -141,50 +161,61 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            style={{ overflow: 'hidden' }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
-            <div style={{ padding: '0 16px 20px 42px' }}>
-              {/* Variant Toggles */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                {responses.map(r => (
-                  <button
-                    key={r.type}
-                    onClick={(e) => { e.stopPropagation(); setActiveType(r.type); }}
-                    style={{
-                      padding: '6px 12px', borderRadius: 8, border: '1px solid',
-                      borderColor: activeType === r.type ? S.orange : 'rgba(255,255,255,0.05)',
-                      background: activeType === r.type ? S.orangeDim : 'rgba(255,255,255,0.02)',
-                      color: activeType === r.type ? S.orange : S.textMuted,
-                      fontSize: 10, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase',
-                      letterSpacing: '0.02em', transition: 'all 0.2s'
-                    }}
-                  >
-                    {r.type === 'High Empathy' ? 'Soft Tone' : 'Direct Tone'}
-                  </button>
-                ))}
-              </div>
-
-              {/* Template Body */}
-              <div style={{ 
-                background: '#000', padding: 16, borderRadius: 12, 
-                fontSize: 13, color: '#e4e4e7', lineHeight: 1.7, marginBottom: 16,
-                border: '1px solid rgba(255,255,255,0.05)',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)'
+            {/* Design C: Thick solid orange left rule + Design A: Dashed Border Panel */}
+            <div style={{ 
+              padding: '0 24px 24px 64px', 
+              position: 'relative',
+              borderLeft: `4px solid ${S.orange}`
+            }}>
+              <div style={{
+                border: '1px dashed rgba(255,255,255,0.1)',
+                borderRadius: 12,
+                padding: 20,
+                background: 'rgba(255,255,255,0.02)'
               }}>
-                <VariableHighlighter text={activeResp.text} />
-              </div>
-
-              {/* Tags & Actions */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {(item.triggers || []).map((t, i) => (
-                    <span key={i} style={{ 
-                      fontSize: 10, color: S.textMuted, background: 'rgba(255,255,255,0.03)', 
-                      padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.03)' 
-                    }}>#{t}</span>
+                {/* Variant Toggles (screenshot style) */}
+                <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
+                  {responses.map(r => (
+                    <button
+                      key={r.type}
+                      onClick={(e) => { e.stopPropagation(); setActiveType(r.type); }}
+                      style={{
+                        padding: '8px 16px', borderRadius: 4, border: 'none',
+                        background: activeType === r.type ? S.orange : 'rgba(255,255,255,0.05)',
+                        color: activeType === r.type ? '#000' : S.textMuted,
+                        fontSize: 10, fontWeight: 900, cursor: 'pointer', textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      {r.type === 'High Empathy' ? 'Soft Tone' : 'Direct Tone'}
+                    </button>
                   ))}
                 </div>
-                <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
+
+                <div style={{ fontSize: 10, color: S.primary, fontWeight: 900, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8 }}>
+                  // Template Output
+                </div>
+
+                <div style={{ 
+                  color: '#e4e4e7', fontSize: 13, lineHeight: 1.8, marginBottom: 20,
+                  fontFamily: 'Inter, sans-serif'
+                }}>
+                  <VariableHighlighter text={activeResp.text} />
+                </div>
+
+                {/* Design A: #tag keyword chips */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {(item.triggers || []).map((t, i) => (
+                      <span key={i} style={{ 
+                        fontSize: 10, color: S.textMuted, fontFamily: 'monospace'
+                      }}>#{t}</span>
+                    ))}
+                  </div>
+                  <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
+                </div>
               </div>
             </div>
           </motion.div>
@@ -195,55 +226,63 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle }) {
 }
 
 function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, toggleExpand }) {
-  // Extract emoji and clean title
   const emojiMatch = category.match(/(\p{Emoji})/u);
   const emoji = emojiMatch ? emojiMatch[0] : '📂';
   const title = category.replace(/(\p{Emoji})/gu, '').trim().toUpperCase();
 
-  const hasAnyStandard = items.some(item => item.responses.some(r => r.type === 'Standard'));
-  const hasAnyEmpathy = items.some(item => item.responses.some(r => r.type === 'High Empathy'));
-
   return (
     <div style={{ 
-      background: S.card, border: `1px solid ${S.border}`, borderRadius: 24, 
+      background: S.card, border: `1px solid ${S.border}`, borderRadius: 16, 
       display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%',
-      boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+      boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+      position: 'relative'
     }}>
-      {/* Card Header */}
+      {/* Design B: Gradient top strip */}
+      <div style={{ height: 2, background: 'linear-gradient(90deg, #8b5cf6, #3b82f6)' }} />
+
+      {/* Design A: Mac window chrome (traffic lights) */}
       <div style={{ 
-        padding: '20px 24px', borderBottom: `1px solid ${S.border}`, 
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'linear-gradient(to bottom, rgba(255,255,255,0.02), transparent)'
+        padding: '12px 20px 4px', display: 'flex', gap: 6
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff5f56' }} />
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ffbd2e' }} />
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#27c93f' }} />
+      </div>
+
+      {/* Design C: High-contrast orange-tinted header band */}
+      <div style={{ 
+        padding: '16px 24px 24px',
+        background: 'linear-gradient(to bottom, rgba(249, 115, 22, 0.08), transparent)',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+        borderBottom: `1px solid ${S.border}`
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ 
-            width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.03)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.05)'
+            width: 48, height: 48, borderRadius: 12, background: '#1a1a1c',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            border: '1px solid rgba(255,255,255,0.05)',
+            fontSize: 24, boxShadow: '0 8px 16px rgba(0,0,0,0.5)'
           }}>
-            <span style={{ fontSize: 18 }}>{emoji}</span>
+            {emoji}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ fontSize: 14, fontWeight: 900, letterSpacing: '0.05em', margin: 0, color: '#fff' }}>{title}</h3>
-            <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-               {hasAnyStandard && <span style={{ fontSize: 8, fontWeight: 900, color: '#4080e8', opacity: 0.8 }}>[S]</span>}
-               {hasAnyEmpathy && <span style={{ fontSize: 8, fontWeight: 900, color: '#e84080', opacity: 0.8 }}>[H]</span>}
-            </div>
+          <div>
+            <div style={{ fontSize: 9, fontWeight: 900, color: S.primary, letterSpacing: '0.2em', marginBottom: 4, opacity: 0.6 }}>CATEGORY</div>
+            <h3 style={{ fontSize: 16, fontWeight: 900, letterSpacing: '0.02em', margin: 0, color: '#fff' }}>{title}</h3>
           </div>
         </div>
-        <div style={{ 
-          padding: '4px 10px', borderRadius: 8, background: S.orangeDim, 
-          color: S.orange, fontSize: 11, fontWeight: 900, border: `1px solid ${S.orange}20`
-        }}>
-          {items.length}
+        <div style={{ textAlign: 'right' }}>
+           <div style={{ fontSize: 24, fontWeight: 900, color: 'rgba(255,255,255,0.1)', lineHeight: 1 }}>{items.length}</div>
+           <div style={{ fontSize: 8, fontWeight: 900, color: S.textMuted, letterSpacing: '0.1em' }}>TEMPLATES</div>
         </div>
       </div>
 
-      {/* Items List (Scrollable) */}
-      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }} className="custom-scrollbar">
+      {/* Scrollable items with numbered rows */}
+      <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
         {items.map((item, idx) => (
           <TemplateItem 
             key={idx} 
             item={item} 
+            index={idx}
             catId={catId} 
             copiedId={copiedId} 
             onCopy={onCopy}
@@ -252,6 +291,11 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
           />
         ))}
       </div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        .item-row-btn:hover ~ .hover-accent,
+        .item-row-btn:hover .hover-accent { transform: translateX(0); }
+        .item-row-btn:hover { background: rgba(255,255,255,0.02); }
+      `}} />
     </div>
   );
 }
