@@ -2,26 +2,42 @@ let lastFocusedInput = null;
 
 // Track focus across the document and within shadow roots
 function trackFocus(root) {
-  root.addEventListener('focusin', (e) => {
-    const target = e.composedPath()[0]; // Get the actual element even through shadow boundaries
-    const isInput = target.tagName === 'TEXTAREA' || 
-                    (target.tagName === 'INPUT' && (target.type === 'text' || target.type === 'search')) || 
-                    target.isContentEditable;
-    if (isInput) {
-      lastFocusedInput = target;
-    }
+  // Use mousedown to capture the element before focus even shifts
+  root.addEventListener('mousedown', (e) => {
+    const target = e.composedPath()[0];
+    checkAndSetTarget(target);
   }, true);
+
+  root.addEventListener('focusin', (e) => {
+    const target = e.composedPath()[0];
+    checkAndSetTarget(target);
+  }, true);
+}
+
+function checkAndSetTarget(target) {
+  if (!target) return;
+  
+  const isInput = target.tagName === 'TEXTAREA' || 
+                  (target.tagName === 'INPUT' && (target.type === 'text' || target.type === 'search' || target.type === 'email')) || 
+                  target.isContentEditable ||
+                  target.getAttribute('role') === 'textbox' ||
+                  target.classList.contains('public-DraftEditor-content');
+
+  if (isInput) {
+    lastFocusedInput = target;
+    console.log("BlastChat Injector: Target captured", target);
+  }
 }
 
 trackFocus(document);
 
 // Helper to find elements in Shadow DOMs
 function findInShadows(root, selector) {
-  const elements = Array.from(root.querySelectorAll(selector));
+  let elements = Array.from(root.querySelectorAll(selector));
   const shadows = Array.from(root.querySelectorAll('*')).map(el => el.shadowRoot).filter(Boolean);
   
   for (const shadow of shadows) {
-    elements.push(...findInShadows(shadow, selector));
+    elements = elements.concat(findInShadows(shadow, selector));
   }
   return elements;
 }
@@ -30,11 +46,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "injectText") {
     let target = lastFocusedInput;
     
-    if (!target || !document.body.contains(target)) {
-      const selectors = ['textarea', '[contenteditable="true"]', 'input[type="text"]', 'input[type="search"]', '.public-DraftEditor-content'];
+    // If last focused is gone or hidden, try to find a suitable one
+    if (!target || !document.body.contains(target) || target.offsetParent === null) {
+      const selectors = [
+        'textarea', 
+        '[contenteditable="true"]', 
+        '[role="textbox"]',
+        '.public-DraftEditor-content',
+        'input[type="text"]', 
+        'input[type="search"]'
+      ];
+      
       for (let s of selectors) {
         const elements = findInShadows(document, s);
         for (let el of elements) {
+          // Check if visible and not disabled
           if (el.offsetParent !== null && !el.disabled) {
             target = el;
             break;
@@ -45,15 +71,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (target) {
+      console.log("BlastChat Injector: Injecting into", target);
       target.focus();
       
       try {
-        if (target.isContentEditable) {
+        if (target.isContentEditable || target.getAttribute('role') === 'textbox') {
           // Attempt execCommand first (best for keeping history/undo)
           const successful = document.execCommand('insertText', false, request.text);
           if (!successful) {
-            // Fallback for strict editors: manually set text and dispatch events
-            target.innerText = request.text;
+            // Fallback for strict editors
+            if (target.tagName === 'P' || target.tagName === 'DIV') {
+              target.innerText = request.text;
+            } else {
+              target.innerHTML = request.text;
+            }
           }
         } else {
           // Standard input/textarea with React/Vue protection bypass
@@ -67,19 +98,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
         }
 
-        // Broad event dispatch to wake up any framework (React, Vue, Angular, Svelte)
-        const events = ['input', 'change', 'blur'];
+        // Broad event dispatch to wake up any framework
+        const events = ['input', 'change', 'blur', 'keyup', 'keydown'];
         events.forEach(type => {
           target.dispatchEvent(new Event(type, { bubbles: true, composed: true }));
         });
 
         sendResponse({ success: true });
       } catch (e) {
-        console.error("Injection failed:", e);
-        sendResponse({ success: false });
+        console.error("BlastChat Injector: Injection failed:", e);
+        sendResponse({ success: false, error: e.message });
       }
     } else {
-      sendResponse({ success: false });
+      console.warn("BlastChat Injector: No target found for injection");
+      sendResponse({ success: false, error: "No target found" });
     }
   } else if (request.action === "getSelectedText") {
     const selection = window.getSelection().toString();

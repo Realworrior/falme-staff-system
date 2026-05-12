@@ -302,11 +302,19 @@ document.addEventListener('DOMContentLoaded', () => {
       showError("Please open BlastChat first!");
       return;
     }
+    updateStatus("Injecting...", "purple");
     chrome.tabs.sendMessage(activeTabId, { action: "injectText", text }, (res) => {
-      if (chrome.runtime.lastError || !res?.success) {
-        showError("Click inside chat input first!");
+      if (chrome.runtime.lastError) {
+        console.error("Runtime Error:", chrome.runtime.lastError);
+        showError("Matrix Link Broken. Refresh BlastChat.");
+        updateStatus("Link Error", "orange");
+      } else if (!res?.success) {
+        console.warn("Injection Failed:", res?.error);
+        showError("Focus Chat Input & Try Again");
+        updateStatus("Focus Required", "orange");
       } else {
-        window.close();
+        updateStatus("Injection Successful", "emerald");
+        setTimeout(() => window.close(), 100);
       }
     });
   }
