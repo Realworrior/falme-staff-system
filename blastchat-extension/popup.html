@@ -20,7 +20,7 @@
     * { box-sizing: border-box; }
 
     body { 
-      width: 480px; 
+      width: 640px; 
       height: 600px;
       margin: 0;
       padding: 0;
@@ -33,7 +33,7 @@
     }
 
     /* SCROLLBAR */
-    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--orange); }
@@ -98,6 +98,7 @@
       z-index: 50;
       border-bottom: 1px solid var(--border);
       padding-bottom: 16px;
+      width: 100%;
     }
 
     /* SEARCH */
@@ -131,17 +132,34 @@
       border-color: var(--orange);
     }
 
-    /* SHORTCUTS */
-    .shortcuts-row {
+    /* SHORTCUTS & CATEGORIES CAROUSEL FIX */
+    .carousel-container {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .shortcuts-row, .category-navbar {
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      scrollbar-width: none;
-      padding-bottom: 2px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      width: 100%;
     }
-    .shortcuts-row::-webkit-scrollbar { display: none; }
+
+    /* Hide scrollbar for Chrome/Safari but keep scrollable */
+    .shortcuts-row::-webkit-scrollbar, .category-navbar::-webkit-scrollbar {
+      height: 2px;
+    }
+    .shortcuts-row::-webkit-scrollbar-thumb, .category-navbar::-webkit-scrollbar-thumb {
+      background: rgba(249, 115, 22, 0.2);
+      border-radius: 10px;
+    }
 
     .shortcut-tag {
+      flex-shrink: 0;
       padding: 6px 12px;
       background: var(--orange-dim);
       border: 1px solid rgba(249, 115, 22, 0.2);
@@ -161,17 +179,15 @@
       border-color: var(--orange);
     }
 
-    /* CATEGORY NAVBAR */
-    .category-navbar {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      padding: 4px 0;
+    .shortcut-tag.active {
+      background: var(--orange);
+      color: #fff;
+      border-color: var(--orange);
+      box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
     }
-    .category-navbar::-webkit-scrollbar { display: none; }
 
     .nav-link {
+      flex-shrink: 0;
       font-size: 11px;
       font-weight: 900;
       color: var(--text-muted);
@@ -179,7 +195,7 @@
       letter-spacing: 0.05em;
       cursor: pointer;
       white-space: nowrap;
-      padding: 4px 0;
+      padding: 4px 8px;
       position: relative;
       transition: color 0.2s;
     }
@@ -206,8 +222,8 @@
     }
 
     .template-stack {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
 
@@ -219,6 +235,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      height: 100%;
     }
 
     .card-header {

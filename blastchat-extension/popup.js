@@ -169,7 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
       filtered = filtered.filter(t => 
         t.category.toLowerCase().includes(s) || 
         t.title.toLowerCase().includes(s) || 
-        t.triggers.some(tr => tr.toLowerCase().includes(s))
+        t.triggers.some(tr => tr.toLowerCase().includes(s)) ||
+        t.responses.some(r => r.text.toLowerCase().includes(s))
       );
     }
 
