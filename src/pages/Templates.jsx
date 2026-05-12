@@ -336,16 +336,21 @@ const Templates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [updateInfo, setUpdateInfo] = useState(null);
-  const currentVersion = "1.0.1"; // Current Build
+  const currentVersion = "1.0.2"; 
   
   // Update Detection Logic
   useEffect(() => {
     const checkUpdate = async () => {
       try {
         const res = await fetch('/version.json?t=' + Date.now());
-        const data = await res.json();
-        if (data.version !== currentVersion) {
-          setUpdateInfo(data);
+        if (!res.ok) return;
+        const versionData = await res.json();
+        if (versionData.version !== currentVersion) {
+          // Check if this version was already dismissed
+          const dismissed = localStorage.getItem('dismissedVersion');
+          if (dismissed !== versionData.version) {
+            setUpdateInfo(versionData);
+          }
         } else {
           setUpdateInfo(null);
         }
@@ -558,17 +563,32 @@ const Templates = () => {
                     </div>
                   </div>
                 </div>
-                <button 
-                  onClick={() => window.location.reload()}
-                  style={{ 
-                    background: S.orange, color: '#fff', border: 'none', 
-                    borderRadius: 8, padding: '8px 20px', fontSize: 11, 
-                    fontWeight: 900, cursor: 'pointer', fontFamily: S.mono,
-                    boxShadow: `0 4px 12px ${S.orange}40`
-                  }}
-                >
-                  [ REFRESH_TERMINAL ]
-                </button>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button 
+                    onClick={() => {
+                      localStorage.setItem('dismissedVersion', updateInfo.version);
+                      setUpdateInfo(null);
+                    }}
+                    style={{ 
+                      background: 'transparent', color: S.textMuted, border: `1px solid ${S.border}`, 
+                      borderRadius: 8, padding: '8px 16px', fontSize: 11, 
+                      fontWeight: 700, cursor: 'pointer', fontFamily: S.mono 
+                    }}
+                  >
+                    DISMISS
+                  </button>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    style={{ 
+                      background: S.orange, color: '#fff', border: 'none', 
+                      borderRadius: 8, padding: '8px 20px', fontSize: 11, 
+                      fontWeight: 900, cursor: 'pointer', fontFamily: S.mono,
+                      boxShadow: `0 4px 12px ${S.orange}40`
+                    }}
+                  >
+                    [ REFRESH_TERMINAL ]
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
