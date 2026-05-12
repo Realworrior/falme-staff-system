@@ -335,36 +335,7 @@ const Templates = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
-  const [updateInfo, setUpdateInfo] = useState(null);
-  const currentVersion = "1.0.3"; 
   
-  // Update Detection Logic
-  useEffect(() => {
-    const checkUpdate = async () => {
-      try {
-        const res = await fetch('/version.json?t=' + Date.now());
-        if (!res.ok) return;
-        const versionData = await res.json();
-        
-        if (versionData.version !== currentVersion) {
-          // If we've already "refreshed" for this version, don't show alert again
-          const acknowledged = localStorage.getItem('acknowledgedVersion');
-          if (acknowledged !== versionData.version) {
-            setUpdateInfo(versionData);
-          }
-        } else {
-          // Sync complete: clean up acknowledgment for next update cycle
-          localStorage.removeItem('acknowledgedVersion');
-          setUpdateInfo(null);
-        }
-      } catch (e) { /* ignore */ }
-    };
-    
-    checkUpdate();
-    const interval = setInterval(checkUpdate, 300000); 
-    return () => clearInterval(interval);
-  }, []);
-
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ category: '', title: '', standardText: '', empathyText: '' });
@@ -537,68 +508,6 @@ const Templates = () => {
 
       {/* MAIN CONTENT GRID */}
       <main style={{ maxWidth: 1600, margin: '0 auto', padding: '40px' }}>
-        
-        {/* Update Alert Banner */}
-        <AnimatePresence>
-          {updateInfo && (
-            <motion.div
-              initial={{ height: 0, opacity: 0, marginBottom: 0 }}
-              animate={{ height: 'auto', opacity: 1, marginBottom: 24 }}
-              exit={{ height: 0, opacity: 0, marginBottom: 0 }}
-              style={{ overflow: 'hidden' }}
-            >
-              <div style={{ 
-                background: S.orangeDim, border: `1px solid ${S.orange}40`, 
-                padding: '16px 24px', borderRadius: 12, display: 'flex', 
-                alignItems: 'center', justifyContent: 'space-between',
-                boxShadow: `0 0 20px ${S.orange}20`
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ color: S.orange }}>
-                    <Zap size={20} fill={S.orange} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      New Intelligence Update Available
-                    </div>
-                    <div style={{ fontSize: 11, color: S.orange, opacity: 0.8, fontFamily: S.mono }}>
-                      VER_{updateInfo.version} // SYSTEM_SYNC_REQUIRED
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button 
-                    onClick={() => {
-                      localStorage.setItem('dismissedVersion', updateInfo.version);
-                      setUpdateInfo(null);
-                    }}
-                    style={{ 
-                      background: 'transparent', color: S.textMuted, border: `1px solid ${S.border}`, 
-                      borderRadius: 8, padding: '8px 16px', fontSize: 11, 
-                      fontWeight: 700, cursor: 'pointer', fontFamily: S.mono 
-                    }}
-                  >
-                    DISMISS
-                  </button>
-                  <button 
-                    onClick={() => {
-                      localStorage.setItem('acknowledgedVersion', updateInfo.version);
-                      window.location.reload();
-                    }}
-                    style={{ 
-                      background: S.orange, color: '#fff', border: 'none', 
-                      borderRadius: 8, padding: '8px 20px', fontSize: 11, 
-                      fontWeight: 900, cursor: 'pointer', fontFamily: S.mono,
-                      boxShadow: `0 4px 12px ${S.orange}40`
-                    }}
-                  >
-                    [ REFRESH_TERMINAL ]
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         <div 
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6"
