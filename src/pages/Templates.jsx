@@ -345,7 +345,12 @@ const Templates = () => {
   const [expandedIds, setExpandedIds] = useState([]);
 
   const toggleExpand = useCallback((id) => {
-    setExpandedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    setExpandedIds(prev => {
+      if (prev.includes(id)) return prev.filter(i => i !== id);
+      const next = [...prev, id];
+      if (next.length > 3) return next.slice(1); // Keep only last 3
+      return next;
+    });
   }, []);
 
   const handleCopy = useCallback((text, id) => {
@@ -500,7 +505,7 @@ const Templates = () => {
       {/* MAIN CONTENT GRID */}
       <main style={{ maxWidth: 1600, margin: '0 auto', padding: '40px' }}>
         <div 
-          className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6 auto-rows-fr"
+          className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6 auto-rows-fr"
           style={{ display: 'grid', gridAutoRows: 'minmax(400px, 1fr)' }}
         >
           {filteredData.map((cat, idx) => (
