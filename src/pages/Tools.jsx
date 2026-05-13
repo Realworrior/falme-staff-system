@@ -191,11 +191,14 @@ function CashbackCalculator() {
     const netLoss = Math.max(0, day.deposits - day.withdrawals);
     const cb = netLoss * 0.1;
     
-    // Lines ordered to match UI labels: Line 1 = Withdrawals, Line 2 = Deposits, Line 3 = Calculation
+    const startStr = format(day.start, 'MMM d, h:mm a');
+    const endStr = format(day.end, 'MMM d, h:mm a');
+    
+    // Improved Breakdown: Logical order (Deposits - Withdrawals = Calculation)
     const lines = [
-      `Total Withdrawals (Yesterday 8:30 PM to today 8:30 PM): ${Math.round(day.withdrawals).toLocaleString()}KSh`,
-      `Total Deposits (Yesterday 8:30 PM to today 8:30 PM): ${Math.round(day.deposits).toLocaleString()}ksh`,
-      `Cashback calculation : (${Math.round(day.deposits).toLocaleString()} - ${Math.round(day.withdrawals).toLocaleString()}) * 10% = ${Math.round(cb).toLocaleString()}ksh`
+      `Total Deposits (${startStr} – ${endStr}): ${day.deposits.toLocaleString()} ksh`,
+      `Total Withdrawals (${startStr} – ${endStr}): ${day.withdrawals.toLocaleString()} KSh`,
+      `Cashback calculation : (${day.deposits.toLocaleString()} - ${day.withdrawals.toLocaleString()}) * 10% = ${cb.toLocaleString()} ksh`
     ];
 
     const text = lineIndex !== null ? lines[lineIndex - 1] : lines.join('\n');
@@ -474,7 +477,7 @@ Example:
                     </div>
                     <div className="text-right flex flex-col items-end">
                       <span className="text-[8px] font-black text-accent uppercase block tracking-widest">Cashback Due</span>
-                      <span className="text-xl font-black text-emerald-500">KSh {Math.round(cb).toLocaleString()}</span>
+                      <span className="text-xl font-black text-emerald-500">KSh {cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
 
@@ -482,8 +485,8 @@ Example:
                     {/* Line 1 */}
                     <div className="flex items-center justify-between group/row">
                       <div className="flex flex-col">
-                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 1: Withdrawals</span>
-                        <span className="text-[10px] font-bold text-gray-300">KSh {Math.round(day.withdrawals).toLocaleString()}</span>
+                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 1: Deposits</span>
+                        <span className="text-[10px] font-bold text-gray-300">KSh {day.deposits.toLocaleString()}</span>
                       </div>
                       <button onClick={() => handleCopySummary(day, 1)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-500 hover:text-accent transition-all">
                         <Copy size={10} />
@@ -493,8 +496,8 @@ Example:
                     {/* Line 2 */}
                     <div className="flex items-center justify-between group/row">
                       <div className="flex flex-col">
-                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 2: Deposits</span>
-                        <span className="text-[10px] font-bold text-gray-300">KSh {Math.round(day.deposits).toLocaleString()}</span>
+                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 2: Withdrawals</span>
+                        <span className="text-[10px] font-bold text-gray-300">KSh {day.withdrawals.toLocaleString()}</span>
                       </div>
                       <button onClick={() => handleCopySummary(day, 2)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-500 hover:text-accent transition-all">
                         <Copy size={10} />
