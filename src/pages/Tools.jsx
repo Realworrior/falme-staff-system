@@ -205,10 +205,14 @@ function CashbackCalculator() {
     const depBreakdown = formatBreakdown(day.depList, day.deposits);
     const withBreakdown = formatBreakdown(day.withList, day.withdrawals);
     
+    const calculationLine = cb > 0 
+      ? `Cashback calculation : (${day.deposits.toLocaleString()} - ${day.withdrawals.toLocaleString()}) * 10% = ${cb.toLocaleString()} ksh`
+      : `Cashback calculation: You are currently on profit, hence not eligible for cashback.`;
+
     const lines = [
       `Total Deposits (${startStr} – ${endStr}): ${depBreakdown} ksh`,
       `Total Withdrawals (${startStr} – ${endStr}): ${withBreakdown} KSh`,
-      `Cashback calculation : (${day.deposits.toLocaleString()} - ${day.withdrawals.toLocaleString()}) * 10% = ${cb.toLocaleString()} ksh`
+      calculationLine
     ];
 
     const text = lineIndex !== null ? lines[lineIndex - 1] : lines.join('\n');
