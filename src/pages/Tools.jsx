@@ -194,10 +194,20 @@ function CashbackCalculator() {
     const startStr = format(day.start, 'MMM d, h:mm a');
     const endStr = format(day.end, 'MMM d, h:mm a');
     
-    // Improved Breakdown: Logical order (Deposits - Withdrawals = Calculation)
+    // Helper to format the breakdown string (e.g., "100 + 200 = 300")
+    const formatBreakdown = (list, total) => {
+      if (!list || list.length === 0) return "0";
+      if (list.length === 1) return list[0].toLocaleString();
+      // Reverse to show chronological order (since parsedTx is desc)
+      return `${[...list].reverse().map(n => n.toLocaleString()).join(' + ')} = ${total.toLocaleString()}`;
+    };
+
+    const depBreakdown = formatBreakdown(day.depList, day.deposits);
+    const withBreakdown = formatBreakdown(day.withList, day.withdrawals);
+    
     const lines = [
-      `Total Deposits (${startStr} – ${endStr}): ${day.deposits.toLocaleString()} ksh`,
-      `Total Withdrawals (${startStr} – ${endStr}): ${day.withdrawals.toLocaleString()} KSh`,
+      `Total Deposits (${startStr} – ${endStr}): ${depBreakdown} ksh`,
+      `Total Withdrawals (${startStr} – ${endStr}): ${withBreakdown} KSh`,
       `Cashback calculation : (${day.deposits.toLocaleString()} - ${day.withdrawals.toLocaleString()}) * 10% = ${cb.toLocaleString()} ksh`
     ];
 
@@ -327,9 +337,23 @@ function CashbackCalculator() {
       let cEnd = setSeconds(setMinutes(setHours(new Date(tx.date), 20), 30), 0);
       if (isAfter(tx.date, cEnd)) cEnd = new Date(cEnd.getTime() + 86400000);
       const key = format(cEnd, 'yyyy-MM-dd');
-      if (!groups[key]) groups[key] = { start: subDays(cEnd, 1), end: cEnd, deposits: 0, withdrawals: 0, count: 0, label: isAfter(cEnd, new Date()) ? "Current" : "History" };
-      if (tx.type === 'deposit') groups[key].deposits += tx.amount;
-      else if (tx.type === 'withdrawal') groups[key].withdrawals += tx.amount;
+      if (!groups[key]) groups[key] = { 
+        start: subDays(cEnd, 1), 
+        end: cEnd, 
+        deposits: 0, 
+        withdrawals: 0, 
+        depList: [], 
+        withList: [],
+        count: 0, 
+        label: isAfter(cEnd, new Date()) ? "Current" : "History" 
+      };
+      if (tx.type === 'deposit') {
+        groups[key].deposits += tx.amount;
+        groups[key].depList.push(tx.amount);
+      } else if (tx.type === 'withdrawal') {
+        groups[key].withdrawals += tx.amount;
+        groups[key].withList.push(tx.amount);
+      }
       groups[key].count++;
     });
     return Object.values(groups).sort((a, b) => b.end.getTime() - a.end.getTime());
