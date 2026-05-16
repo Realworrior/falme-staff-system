@@ -227,10 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="card-header"></div>
         <div class="card-meta">
-          <div class="card-number">INTEL_REF_${(idx + 1).toString().padStart(3, '0')}</div>
-          <div style="font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase;">${majorCat}</div>
+          <div class="card-number" style="font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--orange); opacity: 0.6; letter-spacing: 0.05em;">INTEL_REF_${(idx + 1).toString().padStart(3, '0')}</div>
+          <div style="font-family: var(--mono); font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em;">${majorCat}</div>
         </div>
-        <div class="card-title">${t.title}</div>
+        <div class="card-title" style="font-family: var(--mono);">${t.title}</div>
         <div class="card-body">
           <div class="response-text">${highlightText(responseText)}</div>
           <button class="copy-btn">
