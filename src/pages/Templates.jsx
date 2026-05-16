@@ -132,7 +132,7 @@ function CopyBtn({ text, id, copiedId, onCopy }) {
   );
 }
 
-function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, index }) {
+function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, onEdit, onDelete, index }) {
   const [activeType, setActiveType] = useState('Standard');
   const responses = item.responses || [];
   const activeResp = responses.find(r => r.type === activeType) || responses[0] || { text: '' };
@@ -243,6 +243,20 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, index
                     }}>#{t}</span>
                   ))}
                 </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onEdit(item, catId); }}
+                    style={{ background: 'transparent', border: 'none', color: S.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <Edit3 size={12} /> <span style={{ fontSize: 10, fontFamily: S.mono }}>EDIT</span>
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onDelete(item, catId); }}
+                    style={{ background: 'transparent', border: 'none', color: '#ef444460', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <Trash2 size={12} /> <span style={{ fontSize: 10, fontFamily: S.mono }}>DELETE</span>
+                  </button>
+                </div>
                 <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
               </div>
             </div>
@@ -253,7 +267,7 @@ function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, index
   );
 }
 
-function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, toggleExpand, index }) {
+function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, toggleExpand, onEdit, onDelete, index }) {
   const emojiMatch = category.match(/(\p{Emoji})/u);
   const emoji = emojiMatch ? emojiMatch[0] : '📂';
   const title = category.replace(/(\p{Emoji})/gu, '').trim().toUpperCase();
@@ -318,6 +332,8 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
             onCopy={onCopy}
             expanded={expandedIds.includes(`${catId}-${item.title}`)}
             onToggle={() => toggleExpand(`${catId}-${item.title}`)}
+            onEdit={onEdit}
+            onDelete={onDelete}
             index={idx}
           />
         ))}
@@ -338,7 +354,16 @@ const Templates = () => {
   
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
-  const [newTemplate, setNewTemplate] = useState({ category: '', title: '', standardText: '', empathyText: '' });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [newTemplate, setNewTemplate] = useState({ 
+    category: '', 
+    title: '', 
+    standardText: '', 
+    empathyText: '', 
+    securityText: '',
+    triggers: '' 
+  });
   const [isNewCategory, setIsNewCategory] = useState(false);
   
   // Expansion Logic: Max 3 at a time
@@ -383,6 +408,53 @@ const Templates = () => {
     return data.map(d => d.category).sort();
   }, [data]);
 
+  const handleEdit = (item, catId) => {
+    setIsEditing(true);
+    setEditId(catId);
+    const standard = item.responses.find(r => r.type === 'Standard')?.text || '';
+    const empathy = item.responses.find(r => r.type === 'High Empathy')?.text || '';
+    const security = item.responses.find(r => r.type === 'Security')?.text || '';
+    
+    setNewTemplate({
+      category: data.find(c => c.id === catId)?.category || '',
+      title: item.title,
+      standardText: standard,
+      empathyText: empathy,
+      securityText: security,
+      triggers: (item.triggers || []).join(', ')
+    });
+    setModalOpen(true);
+  };
+
+  const handleDelete = async (item, catId) => {
+    if (!window.confirm(`Are you sure you want to delete "${item.title}"?`)) return;
+    
+    const category = data.find(c => c.id === catId);
+    if (!category) return;
+
+    const updatedTemplates = category.templates.filter(t => t.title !== item.title);
+    
+    try {
+      let success;
+      if (updatedTemplates.length === 0) {
+        // If it's the last template, delete the whole category record
+        success = await actions.deleteRecord('supportTemplates', catId);
+      } else {
+        // Otherwise update the templates array
+        success = await actions.updateRecord('supportTemplates', catId, {
+          templates: updatedTemplates
+        });
+      }
+
+      if (success) {
+        showToast('Template purged from matrix.', 'success');
+        actions.refreshAll();
+      }
+    } catch (err) {
+      showToast('Purge failed.', 'error');
+    }
+  };
+
   const handleCreate = async () => {
     if (!newTemplate.category || !newTemplate.title || !newTemplate.standardText) {
       showToast('Please fill required fields', 'error');
@@ -391,25 +463,46 @@ const Templates = () => {
 
     const responses = [{ type: 'Standard', text: newTemplate.standardText }];
     if (newTemplate.empathyText) responses.push({ type: 'High Empathy', text: newTemplate.empathyText });
+    if (newTemplate.securityText) responses.push({ type: 'Security', text: newTemplate.securityText });
+
+    const triggers = newTemplate.triggers 
+      ? newTemplate.triggers.split(',').map(t => t.trim().toLowerCase())
+      : [newTemplate.title.toLowerCase()];
 
     try {
-      const success = await actions.createRecord('supportTemplates', {
-        category: newTemplate.category,
-        templates: [{
-          title: newTemplate.title,
-          responses: responses,
-          triggers: [newTemplate.title.toLowerCase()]
-        }]
-      });
+      let success;
+      if (isEditing) {
+        const category = data.find(c => c.id === editId);
+        const otherTemplates = category.templates.filter(t => t.title !== newTemplate.title);
+        success = await actions.updateRecord('supportTemplates', editId, {
+          category: newTemplate.category,
+          templates: [...otherTemplates, {
+            title: newTemplate.title,
+            responses: responses,
+            triggers: triggers
+          }]
+        });
+      } else {
+        success = await actions.createRecord('supportTemplates', {
+          category: newTemplate.category,
+          templates: [{
+            title: newTemplate.title,
+            responses: responses,
+            triggers: triggers
+          }]
+        });
+      }
 
       if (success) {
-        showToast('Template deployed!', 'success');
+        showToast(isEditing ? 'Template updated!' : 'Template deployed!', 'success');
         setModalOpen(false);
-        setNewTemplate({ category: '', title: '', standardText: '', empathyText: '' });
+        setIsEditing(false);
+        setEditId(null);
+        setNewTemplate({ category: '', title: '', standardText: '', empathyText: '', securityText: '', triggers: '' });
         actions.refreshAll();
       }
     } catch (err) {
-      showToast('Error deploying template', 'error');
+      showToast('Operation failed', 'error');
     }
   };
 
@@ -523,6 +616,8 @@ const Templates = () => {
               onCopy={handleCopy}
               expandedIds={expandedIds}
               toggleExpand={toggleExpand}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
               index={idx}
             />
           ))}
@@ -540,19 +635,32 @@ const Templates = () => {
       </main>
 
       {/* MODAL (Same as before but styled to match) */}
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ style: { background: S.surface, borderRadius: 24, border: `1px solid ${S.border}`, color: '#fff' } }}>
-        <DialogTitle style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: 16, padding: '24px 32px' }}>Deploy Template</DialogTitle>
+      <Dialog open={modalOpen} onClose={() => { setModalOpen(false); setIsEditing(false); }} maxWidth="sm" fullWidth PaperProps={{ style: { background: S.surface, borderRadius: 24, border: `1px solid ${S.border}`, color: '#fff' } }}>
+        <DialogTitle style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: 16, padding: '24px 32px' }}>
+          {isEditing ? 'Edit Template' : 'Deploy Template'}
+        </DialogTitle>
         <DialogContent style={{ padding: '32px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <FormControl fullWidth><InputLabel style={{ color: S.textMuted }}>Category</InputLabel><Select label="Category" value={isNewCategory ? "NEW" : newTemplate.category} onChange={e => { if (e.target.value === "NEW") { setIsNewCategory(true); setNewTemplate({ ...newTemplate, category: "" }); } else { setIsNewCategory(false); setNewTemplate({ ...newTemplate, category: e.target.value }); } }} style={{ color: '#fff', background: '#000', borderRadius: 12 }}>{availableCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}<MenuItem value="NEW" style={{ color: S.orange }}>+ NEW CATEGORY</MenuItem></Select></FormControl>
             {isNewCategory && <TextField label="New Category Name" fullWidth variant="outlined" value={newTemplate.category} onChange={e => setNewTemplate({ ...newTemplate, category: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} autoFocus />}
             <TextField label="Title" fullWidth variant="outlined" value={newTemplate.title} onChange={e => setNewTemplate({ ...newTemplate, title: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
-            <TextField label="Response" fullWidth multiline rows={4} value={newTemplate.standardText} onChange={e => setNewTemplate({ ...newTemplate, standardText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
+            <TextField label="Triggers (comma separated keywords)" fullWidth variant="outlined" value={newTemplate.triggers} onChange={e => setNewTemplate({ ...newTemplate, triggers: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
+            
+            <div style={{ borderTop: `1px solid ${S.border}`, pt: 16 }}>
+               <h4 style={{ fontSize: 10, fontWeight: 900, color: S.orange, marginBottom: 12, textTransform: 'uppercase' }}>Response Variants</h4>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                 <TextField label="Standard Response" fullWidth multiline rows={3} value={newTemplate.standardText} onChange={e => setNewTemplate({ ...newTemplate, standardText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
+                 <TextField label="High Empathy Response" fullWidth multiline rows={3} value={newTemplate.empathyText} onChange={e => setNewTemplate({ ...newTemplate, empathyText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
+                 <TextField label="Security/Alert Response" fullWidth multiline rows={3} value={newTemplate.securityText} onChange={e => setNewTemplate({ ...newTemplate, securityText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
+               </div>
+            </div>
           </div>
         </DialogContent>
         <DialogActions style={{ padding: '24px 32px' }}>
-          <button onClick={() => setModalOpen(false)} style={{ background: 'transparent', border: 'none', color: S.textMuted, fontWeight: 700, cursor: 'pointer' }}>CANCEL</button>
-          <button onClick={handleCreate} style={{ background: S.orange, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 32px', fontWeight: 900, cursor: 'pointer' }}>DEPLOY</button>
+          <button onClick={() => { setModalOpen(false); setIsEditing(false); }} style={{ background: 'transparent', border: 'none', color: S.textMuted, fontWeight: 700, cursor: 'pointer' }}>CANCEL</button>
+          <button onClick={handleCreate} style={{ background: S.orange, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 32px', fontWeight: 900, cursor: 'pointer' }}>
+            {isEditing ? 'SAVE CHANGES' : 'DEPLOY'}
+          </button>
         </DialogActions>
       </Dialog>
 

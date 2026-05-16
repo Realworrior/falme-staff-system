@@ -228,11 +228,11 @@ export function analyzeClientMessage(input, templatesData) {
   } else if (isAccountIssue) {
     const accountTpl = matches.find(m => m.item.title.toLowerCase().includes('deletion'))?.item || matches[0]?.item;
     
-    if (accountTpl && accountTpl.title.toLowerCase().includes('deletion')) {
-      // Special bundle for Deletion
+    if (accountTpl && (accountTpl.title.toLowerCase().includes('deletion') || accountTpl.title.toLowerCase().includes('closure'))) {
+      // Special bundle for Deletion/Closure
       const v = accountTpl.responses;
-      aiSuggestion = `[OPTION 1: STANDARD]\n${v[0].text}\n\n[OPTION 2: HIGH EMPATHY]\n${v[1].text}\n\n[OPTION 3: SECURITY ALERT]\n${v[2].text}\n\nREQUIRED: Please share your registered phone number so we can process the 72-hour manual block immediately.`;
-      aiReasoning = "Security-sensitive: Account Deletion detected. Providing all 3 variations (Standard, Empathy, Alert) to allow agent choice based on client mood.";
+      aiSuggestion = `[OPTION 1: ADVISORY]\n${v[0].text}\n\n[PRO-TIP]\nAfter activating self-exclusion, please ensure there is no activity on the account for the next 72 hours to ensure the system synchronization is finalized.`;
+      aiReasoning = "Detected Account Closure/Deletion. Providing advisory-first response focusing on post-exclusion instructions.";
     } else {
       aiSuggestion = accountTpl 
         ? `${accountTpl.responses[0].text}\n\nCould you also please share your registered phone number so we can look into this for you?` 

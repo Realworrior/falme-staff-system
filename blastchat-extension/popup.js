@@ -246,6 +246,13 @@ document.addEventListener('DOMContentLoaded', () => {
         injectText(responseText);
       });
 
+      card.querySelector('.response-text').addEventListener('click', () => {
+        navigator.clipboard.writeText(responseText).then(() => {
+          updateStatus("Copied to Clipboard", "orange");
+          setTimeout(() => updateStatus("Ready", "orange"), 2000);
+        });
+      });
+
       container.appendChild(card);
     });
   }
