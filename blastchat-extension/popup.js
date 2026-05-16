@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="card-title">${t.title}</div>
         <div class="card-body">
-          <div class="response-text">${highlightPlaceholders(responseText)}</div>
+          <div class="response-text">${highlightText(responseText)}</div>
           <button class="copy-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 12h14m-7-7 7 7-7 7"/>
@@ -257,8 +257,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function highlightPlaceholders(text) {
-    return text.replace(/\[([^\]]+)\]/g, '<span class="placeholder-highlight">[$1]</span>');
+  function highlightText(text) {
+    if (!text) return '';
+
+    const categories = {
+      danger: ['Referral Violation', 'Deleted Message', 'Lost', 'Rolled back'],
+      success: ['Submitted', 'Cashback', 'Referral Bonus'],
+      info: ['Deposit', 'Withdrawal', 'bet ID', 'Mpesa'],
+      data: ['Phone number', 'Account Number', 'registered phone number']
+    };
+
+    const allKeywords = Object.values(categories).flat();
+    const pattern = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|${allKeywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+
+    return text.split(pattern).map(part => {
+      if (!part) return '';
+      
+      const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
+      if (isPlaceholder) return `<span class="var-highlight">${part}</span>`;
+
+      const k = part.toLowerCase();
+      if (categories.danger.some(v => v.toLowerCase() === k)) return `<span class="danger-highlight">${part}</span>`;
+      if (categories.success.some(v => v.toLowerCase() === k)) return `<span class="success-highlight">${part}</span>`;
+      if (categories.info.some(v => v.toLowerCase() === k)) return `<span class="info-highlight">${part}</span>`;
+      if (categories.data.some(v => v.toLowerCase() === k)) return `<span class="data-highlight">${part}</span>`;
+
+      return part;
+    }).join('');
   }
 
   function updateStatus(text, colorVar) {
