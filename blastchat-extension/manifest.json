@@ -1,5 +1,14 @@
 {
   "manifest_version": 3,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "blastchat-matrix@blastchat.chat",
+      "strict_min_version": "109.0",
+      "data_collection_permissions": [
+        "none"
+      ]
+    }
+  },
   "name": "BlastChat Matrix",
   "version": "1.1",
   "description": "Auto-populates responses directly into BlastChat agent views.",

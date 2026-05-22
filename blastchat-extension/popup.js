@@ -483,13 +483,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderUI(categories) {
     renderShortcuts();
     renderCategoryDropdown(categories);
-    filterTemplates();
-  }
-
-  function renderShortcuts() {
+    function renderShortcuts() {
     const area = document.getElementById('shortcuts-row');
     if (!area) return;
-    area.innerHTML = '';
+    area.textContent = '';
 
     SHORTCUT_KEYWORDS.forEach(label => {
       const tag = document.createElement('div');
@@ -517,7 +514,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderCategoryDropdown(categories) {
     if (!categorySelect) return;
     // Keep the "ALL" option
-    categorySelect.innerHTML = '<option value="ALL">All Categories</option>';
+    categorySelect.textContent = '';
+    const allOpt = document.createElement('option');
+    allOpt.value = 'ALL';
+    allOpt.textContent = 'All Categories';
+    categorySelect.appendChild(allOpt);
     
     categories.sort().forEach(cat => {
       const option = document.createElement('option');
@@ -598,82 +599,238 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderTemplates(filtered);
 
-    // AI fetch integration
-    if (q && q.length > 5) {
-      window.aiTimeout = setTimeout(async () => {
-        try {
-          updateStatus("AI Analyzing...", "orange");
-          const response = await fetch('http://localhost:5000/api/agent-search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ queryText: q })
-          });
-          if (response.ok) {
-            const aiData = await response.json();
-            if (aiData) {
-              renderAITemplate(aiData);
-              updateStatus("AI Enhanced", "orange");
+    // If no templates matched, immediately show local AI suggestion
+    if (filtered.length === 0 && q) {
+      const localAiData = analyzeClientMessageLocal(q, allTemplates);
+      renderAITemplate(localAiData);
+      updateStatus("Local AI Active", "orange");
+    } else {
+      // AI fetch integration
+      if (q && q.length > 0) {
+        window.aiTimeout = setTimeout(async () => {
+          try {
+            updateStatus("AI Analyzing...", "orange");
+            const response = await fetch('http://localhost:5000/api/agent-search', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ queryText: q })
+            });
+            if (response.ok) {
+              const aiData = await response.json();
+              if (aiData) {
+                renderAITemplate(aiData);
+                updateStatus("AI Enhanced", "orange");
+              } else {
+                throw new Error("Empty AI response");
+              }
             } else {
-              throw new Error("Empty AI response");
+              throw new Error(`Server returned ${response.status}`);
             }
-          } else {
-            throw new Error(`Server returned ${response.status}`);
+          } catch (e) {
+            console.warn("Express backend search offline or failed, falling back to local NLP...", e);
+            const localAiData = analyzeClientMessageLocal(q, allTemplates);
+            renderAITemplate(localAiData);
+            updateStatus("Local AI Active", "orange");
           }
-        } catch (e) {
-          console.warn("Express backend search offline or failed, falling back to local NLP...", e);
-          const localAiData = analyzeClientMessageLocal(q, allTemplates);
-          renderAITemplate(localAiData);
-          updateStatus("Local AI Active", "orange");
-        }
-      }, 500);
+        }, 500);
+      }
     }
+  }
+
+  function appendHighlightedText(container, text) {
+    if (!text) return;
+
+    const categories = {
+      danger: ['Referral Violation', 'Deleted Message', 'Lost', 'Rolled back'],
+      success: ['Submitted', 'Cashback', 'Referral Bonus'],
+      info: ['Deposit', 'Withdrawal', 'bet ID', 'Mpesa'],
+      data: ['Phone number', 'Account Number', 'registered phone number']
+    };
+
+    const allKeywords = Object.values(categories).flat();
+    const pattern = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|${allKeywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+
+    const parts = text.split(pattern);
+    parts.forEach(part => {
+      if (!part) return;
+      
+      const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
+      if (isPlaceholder) {
+        const span = document.createElement('span');
+        span.className = 'var-highlight';
+        span.textContent = part;
+        container.appendChild(span);
+        return;
+      }
+
+      const k = part.toLowerCase();
+      let matchedClass = '';
+      if (categories.danger.some(v => v.toLowerCase() === k)) matchedClass = 'danger-highlight';
+      else if (categories.success.some(v => v.toLowerCase() === k)) matchedClass = 'success-highlight';
+      else if (categories.info.some(v => v.toLowerCase() === k)) matchedClass = 'info-highlight';
+      else if (categories.data.some(v => v.toLowerCase() === k)) matchedClass = 'data-highlight';
+
+      if (matchedClass) {
+        const span = document.createElement('span');
+        span.className = matchedClass;
+        span.textContent = part;
+        container.appendChild(span);
+      } else {
+        container.appendChild(document.createTextNode(part));
+      }
+    });
+  }
+
+  function createCardElement({
+    className = '',
+    style = {},
+    cardNumber = '',
+    cardMetaText = '',
+    cardTitle = '',
+    cardTitleStyle = {},
+    responseText = '',
+    responseTextStyle = {},
+    buttonText = '',
+    buttonStyle = {},
+    buttonClass = 'copy-btn',
+    onButtonClick = null,
+    onResponseClick = null
+  }) {
+    const card = document.createElement('div');
+    card.className = `matrix-card ${className}`.trim();
+    for (const [k, v] of Object.entries(style)) {
+      card.style[k] = v;
+    }
+
+    const header = document.createElement('div');
+    header.className = 'card-header';
+    card.appendChild(header);
+
+    const meta = document.createElement('div');
+    meta.className = 'card-meta';
+
+    const numDiv = document.createElement('div');
+    numDiv.className = 'card-number';
+    numDiv.style.fontFamily = 'var(--mono)';
+    numDiv.style.fontSize = '10px';
+    numDiv.style.fontWeight = '800';
+    numDiv.style.color = 'var(--orange)';
+    numDiv.style.opacity = '0.6';
+    numDiv.style.letterSpacing = '0.05em';
+    numDiv.textContent = cardNumber;
+    meta.appendChild(numDiv);
+
+    const metaTextDiv = document.createElement('div');
+    metaTextDiv.style.fontFamily = 'var(--mono)';
+    metaTextDiv.style.fontSize = '8px';
+    metaTextDiv.style.fontWeight = '900';
+    metaTextDiv.style.color = 'var(--orange)';
+    metaTextDiv.style.textTransform = 'uppercase';
+    metaTextDiv.style.letterSpacing = '0.1em';
+    metaTextDiv.textContent = cardMetaText;
+    meta.appendChild(metaTextDiv);
+
+    card.appendChild(meta);
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'card-title';
+    titleDiv.style.fontFamily = 'var(--mono)';
+    for (const [k, v] of Object.entries(cardTitleStyle)) {
+      titleDiv.style[k] = v;
+    }
+    titleDiv.textContent = cardTitle;
+    card.appendChild(titleDiv);
+
+    const body = document.createElement('div');
+    body.className = 'card-body';
+
+    const respDiv = document.createElement('div');
+    respDiv.className = 'response-text';
+    for (const [k, v] of Object.entries(responseTextStyle)) {
+      respDiv.style[k] = v;
+    }
+    appendHighlightedText(respDiv, responseText);
+    body.appendChild(respDiv);
+
+    const btn = document.createElement('button');
+    btn.className = buttonClass;
+    for (const [k, v] of Object.entries(buttonStyle)) {
+      btn.style[k] = v;
+    }
+
+    // Create SVG icon safely
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '14');
+    svg.setAttribute('height', '14');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '3');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M5 12h14m-7-7 7 7-7 7');
+    svg.appendChild(path);
+
+    btn.appendChild(svg);
+    btn.appendChild(document.createTextNode(' ' + buttonText));
+    
+    if (onButtonClick) {
+      btn.addEventListener('click', onButtonClick);
+    }
+    if (onResponseClick) {
+      respDiv.addEventListener('click', onResponseClick);
+    }
+
+    body.appendChild(btn);
+    card.appendChild(body);
+
+    return card;
   }
 
   function renderAITemplate(aiData) {
     if (!container) return;
     
-    // Remove existing AI card if any
-    const existingAi = container.querySelectorAll('.ai-card');
-    existingAi.forEach(el => el.remove());
+    // Remove any existing AI cards and empty state messages
+    const oldElements = container.querySelectorAll('.ai-card, .empty-state');
+    oldElements.forEach(el => el.remove());
 
     const fragment = document.createDocumentFragment();
 
     // 1. Synthesized Response
     if (aiData.aiSuggestion) {
-      const aiCard = document.createElement('div');
-      aiCard.className = 'matrix-card ai-card synthesized';
-      aiCard.style.border = '1px solid var(--orange)';
-      aiCard.style.boxShadow = '0 0 15px rgba(255,102,0,0.1)';
-      
-      aiCard.innerHTML = `
-        <div class="card-header"></div>
-        <div class="card-meta">
-          <div class="card-number" style="font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--orange); opacity: 0.6; letter-spacing: 0.05em;">⚡ GEMINI_SYNTHESIS</div>
-          <div style="font-family: var(--mono); font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em;">${aiData.emotion ? aiData.emotion.label : 'Cloud'}</div>
-        </div>
-        <div class="card-title" style="font-family: var(--mono); color: var(--orange);">✨ AI Synthesized Response</div>
-        <div class="card-body">
-          <div class="response-text" style="font-weight: 600;">${highlightText(aiData.aiSuggestion)}</div>
-          <button class="copy-btn ai-copy-btn" style="background: rgba(255,102,0,0.1); border-color: var(--orange); color: var(--orange);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14m-7-7 7 7-7 7"/>
-            </svg>
-            Inject AI Logic
-          </button>
-        </div>
-      `;
-
-      aiCard.querySelector('.ai-copy-btn').addEventListener('click', () => {
-        injectText(aiData.aiSuggestion);
+      const aiCard = createCardElement({
+        className: 'ai-card synthesized',
+        style: {
+          border: '1px solid var(--orange)',
+          boxShadow: '0 0 15px rgba(255,102,0,0.1)'
+        },
+        cardNumber: '⚡ GEMINI_SYNTHESIS',
+        cardMetaText: aiData.emotion ? aiData.emotion.label : 'Cloud',
+        cardTitle: '✨ AI Synthesized Response',
+        cardTitleStyle: {
+          color: 'var(--orange)'
+        },
+        responseText: aiData.aiSuggestion,
+        responseTextStyle: {
+          fontWeight: '600'
+        },
+        buttonText: 'Inject AI Logic',
+        buttonStyle: {
+          background: 'rgba(255,102,0,0.1)',
+          borderColor: 'var(--orange)',
+          color: 'var(--orange)'
+        },
+        buttonClass: 'copy-btn ai-copy-btn',
+        onButtonClick: () => injectText(aiData.aiSuggestion),
+        onResponseClick: () => {
+          navigator.clipboard.writeText(aiData.aiSuggestion).then(() => {
+            updateStatus("AI Copied to Clipboard", "orange");
+            setTimeout(() => updateStatus("Ready", "orange"), 2000);
+          });
+        }
       });
-
-      aiCard.querySelector('.response-text').addEventListener('click', () => {
-        navigator.clipboard.writeText(aiData.aiSuggestion).then(() => {
-          updateStatus("AI Copied to Clipboard", "orange");
-          setTimeout(() => updateStatus("Ready", "orange"), 2000);
-        });
-      });
-      
       fragment.appendChild(aiCard);
     }
 
@@ -681,44 +838,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiData.matches && aiData.matches.length > 0) {
       aiData.matches.forEach((match, idx) => {
         const tone = aiData.suggestedTone;
-          const candidates = match.item?.responses?.filter(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || [];
-          const selectedText = selectResponse(candidates);
-          const resp = selectedText ? { text: selectedText } : (match.item?.responses?.[0] || { text: '' });
+        const candidates = match.item?.responses?.filter(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || [];
+        const selectedText = selectResponse(candidates);
+        const resp = selectedText ? { text: selectedText } : (match.item?.responses?.[0] || { text: '' });
         if (!resp.text) return;
         
-        const matchCard = document.createElement('div');
-        matchCard.className = 'matrix-card ai-card alternative';
-        matchCard.style.border = '1px dashed rgba(255,102,0,0.4)';
-        
-        matchCard.innerHTML = `
-          <div class="card-header"></div>
-          <div class="card-meta">
-            <div class="card-number" style="font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--orange); opacity: 0.6; letter-spacing: 0.05em;">AI_ALT_${(idx + 1).toString().padStart(3, '0')}</div>
-            <div style="font-family: var(--mono); font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em;">Match: ${match.confidence || 'High'}</div>
-          </div>
-          <div class="card-title" style="font-family: var(--mono); color: rgba(255,102,0,0.8);">${match.item?.title || 'Alternative Option'}</div>
-          <div class="card-body">
-            <div class="response-text">${highlightText(resp.text)}</div>
-            <button class="copy-btn ai-copy-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14m-7-7 7 7-7 7"/>
-              </svg>
-              Inject Alternative
-            </button>
-          </div>
-        `;
-
-        matchCard.querySelector('.ai-copy-btn').addEventListener('click', () => {
-          injectText(resp.text);
+        const matchCard = createCardElement({
+          className: 'ai-card alternative',
+          style: {
+            border: '1px dashed rgba(255,102,0,0.4)'
+          },
+          cardNumber: `AI_ALT_${(idx + 1).toString().padStart(3, '0')}`,
+          cardMetaText: `Match: ${match.confidence || 'High'}`,
+          cardTitle: match.item?.title || 'Alternative Option',
+          cardTitleStyle: {
+            color: 'rgba(255,102,0,0.8)'
+          },
+          responseText: resp.text,
+          buttonText: 'Inject Alternative',
+          buttonClass: 'copy-btn ai-copy-btn',
+          onButtonClick: () => injectText(resp.text),
+          onResponseClick: () => {
+            navigator.clipboard.writeText(resp.text).then(() => {
+              updateStatus("AI Copied to Clipboard", "orange");
+              setTimeout(() => updateStatus("Ready", "orange"), 2000);
+            });
+          }
         });
-
-        matchCard.querySelector('.response-text').addEventListener('click', () => {
-          navigator.clipboard.writeText(resp.text).then(() => {
-            updateStatus("AI Copied to Clipboard", "orange");
-            setTimeout(() => updateStatus("Ready", "orange"), 2000);
-          });
-        });
-        
         fragment.appendChild(matchCard);
       });
     }
@@ -733,80 +879,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTemplates(templates) {
     if (!container) return;
-    container.innerHTML = '';
+    container.textContent = '';
     
     if (templates.length === 0) {
-      container.innerHTML = '<div class="empty-state">No matching intelligence found</div>';
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'empty-state';
+      emptyDiv.textContent = 'No matching intelligence found';
+      container.appendChild(emptyDiv);
       return;
     }
 
     templates.forEach((t, idx) => {
-      const card = document.createElement('div');
-      card.className = 'matrix-card';
-      
       const majorCat = t.category.split(' — ')[0].trim();
       const responseText = t.responses[0]?.text || "No intelligence found for this module.";
 
-      card.innerHTML = `
-        <div class="card-header"></div>
-        <div class="card-meta">
-          <div class="card-number" style="font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--orange); opacity: 0.6; letter-spacing: 0.05em;">INTEL_REF_${(idx + 1).toString().padStart(3, '0')}</div>
-          <div style="font-family: var(--mono); font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em;">${majorCat}</div>
-        </div>
-        <div class="card-title" style="font-family: var(--mono);">${t.title}</div>
-        <div class="card-body">
-          <div class="response-text">${highlightText(responseText)}</div>
-          <button class="copy-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14m-7-7 7 7-7 7"/>
-            </svg>
-            Inject Logic
-          </button>
-        </div>
-      `;
-
-      card.querySelector('.copy-btn').addEventListener('click', () => {
-        injectText(responseText);
+      const card = createCardElement({
+        cardNumber: `INTEL_REF_${(idx + 1).toString().padStart(3, '0')}`,
+        cardMetaText: majorCat,
+        cardTitle: t.title,
+        responseText: responseText,
+        buttonText: 'Inject Logic',
+        onButtonClick: () => injectText(responseText),
+        onResponseClick: () => {
+          navigator.clipboard.writeText(responseText).then(() => {
+            updateStatus("Copied to Clipboard", "orange");
+            setTimeout(() => updateStatus("Ready", "orange"), 2000);
+          });
+        }
       });
-
-      card.querySelector('.response-text').addEventListener('click', () => {
-        navigator.clipboard.writeText(responseText).then(() => {
-          updateStatus("Copied to Clipboard", "orange");
-          setTimeout(() => updateStatus("Ready", "orange"), 2000);
-        });
-      });
-
       container.appendChild(card);
     });
-  }
-
-  function highlightText(text) {
-    if (!text) return '';
-
-    const categories = {
-      danger: ['Referral Violation', 'Deleted Message', 'Lost', 'Rolled back'],
-      success: ['Submitted', 'Cashback', 'Referral Bonus'],
-      info: ['Deposit', 'Withdrawal', 'bet ID', 'Mpesa'],
-      data: ['Phone number', 'Account Number', 'registered phone number']
-    };
-
-    const allKeywords = Object.values(categories).flat();
-    const pattern = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|${allKeywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
-
-    return text.split(pattern).map(part => {
-      if (!part) return '';
-      
-      const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
-      if (isPlaceholder) return `<span class="var-highlight">${part}</span>`;
-
-      const k = part.toLowerCase();
-      if (categories.danger.some(v => v.toLowerCase() === k)) return `<span class="danger-highlight">${part}</span>`;
-      if (categories.success.some(v => v.toLowerCase() === k)) return `<span class="success-highlight">${part}</span>`;
-      if (categories.info.some(v => v.toLowerCase() === k)) return `<span class="info-highlight">${part}</span>`;
-      if (categories.data.some(v => v.toLowerCase() === k)) return `<span class="data-highlight">${part}</span>`;
-
-      return part;
-    }).join('');
   }
 
   function updateStatus(text, colorVar) {
