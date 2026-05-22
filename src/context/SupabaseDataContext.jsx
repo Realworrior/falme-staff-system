@@ -74,7 +74,7 @@ export const SupabaseDataProvider = ({ children }) => {
       .on('postgres_changes', { event: '*', table: 'tickets', schema: 'public' }, (payload) => {
         if (payload.eventType === 'INSERT') setTickets(prev => [payload.new, ...prev]);
         else if (payload.eventType === 'UPDATE') setTickets(prev => prev.map(t => t.id === payload.new.id ? payload.new : t));
-        else if (payload.eventType === 'DELETE') setTickets(prev => prev.filter(t => t.id === payload.old.id));
+        else if (payload.eventType === 'DELETE') setTickets(prev => prev.filter(t => t.id !== payload.old.id));
       })
       .on('postgres_changes', { event: '*', table: 'support_templates', schema: 'public' }, () => {
         supabase.from('support_templates').select('*').then(({data}) => setTemplates(data || []));
@@ -86,7 +86,7 @@ export const SupabaseDataProvider = ({ children }) => {
             return [payload.new, ...prev];
           });
         } else if (payload.eventType === 'DELETE') {
-          setLogs(prev => prev.filter(l => l.id === payload.old.id));
+          setLogs(prev => prev.filter(l => l.id !== payload.old.id));
         } else if (payload.eventType === 'UPDATE') {
           setLogs(prev => prev.map(l => l.id === payload.new.id ? payload.new : l));
         }
@@ -256,6 +256,7 @@ export const SupabaseDataProvider = ({ children }) => {
 
 
   const deleteTicket = async (id) => {
+    setTickets(prev => prev.filter(t => t.id !== id));
     const { error } = await supabase
       .from('tickets')
       .delete()
@@ -373,7 +374,10 @@ export const SupabaseDataProvider = ({ children }) => {
   const deleteRecord = async (table, recordId) => {
     let targetTable = table;
     if (table === 'supportTemplates') targetTable = 'support_templates';
-    if (table === 'aviatorLogs') targetTable = 'aviator_logs';
+    if (table === 'aviatorLogs') {
+      targetTable = 'aviator_logs';
+      setLogs(prev => prev.filter(l => l.id !== recordId));
+    }
     
     return supabase.from(targetTable).delete().eq('id', recordId);
   };

@@ -140,7 +140,7 @@ const SlotTracker = () => {
       >
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white mb-2 font-heading tracking-tight">Aviator Tracker</h1>
-          <p className="text-gray-500 text-sm md:text-base font-medium">Record and analyze real-time slot failure performance</p>
+          <p className="text-gray-300 text-sm md:text-base font-medium">Record and analyze real-time slot failure performance</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto">
@@ -226,11 +226,11 @@ const SlotTracker = () => {
             <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5 bg-black/40">
-                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">#</th>
-                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">SLOT IDENTIFIER</th>
-                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">DATE</th>
-                <th className="text-left py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest">TIME</th>
-                <th className="text-right py-4 px-6 text-gray-600 text-[11px] font-black uppercase tracking-widest text-center">MANAGE</th>
+                <th className="text-left py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest">#</th>
+                <th className="text-left py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest">SLOT IDENTIFIER</th>
+                <th className="text-left py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest">DATE</th>
+                <th className="text-left py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest">TIME</th>
+                <th className="text-right py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest text-center">MANAGE</th>
               </tr>
             </thead>
             <tbody>
@@ -244,7 +244,7 @@ const SlotTracker = () => {
                     layout
                     className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group"
                   >
-                    <td className="py-4 px-6 text-gray-500 font-bold text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                    <td className="py-4 px-6 text-gray-400 font-bold text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td className="py-4 px-6">
                       <div className="flex gap-2">
                         {(log.type === 'Slot 1' || log.type === 'Both') && (
@@ -259,12 +259,12 @@ const SlotTracker = () => {
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-gray-400 font-bold text-xs">{new Date(log.ts).toLocaleDateString()}</td>
-                    <td className="py-4 px-6 text-gray-400 font-bold text-xs font-mono">{new Date(log.ts).toLocaleTimeString('en-GB')}</td>
+                    <td className="py-4 px-6 text-gray-300 font-bold text-xs">{new Date(log.ts).toLocaleDateString()}</td>
+                    <td className="py-4 px-6 text-gray-300 font-bold text-xs font-mono">{new Date(log.ts).toLocaleTimeString('en-GB')}</td>
                     <td className="py-4 px-6 text-right">
                       <button 
                         onClick={() => handleDeleteRecord(log.id)}
-                        className="p-1.5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                        className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-60 group-hover:opacity-100"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -306,14 +306,14 @@ const SlotTracker = () => {
                   
                   <div className="flex items-center justify-between mt-4">
                     <div>
-                      <span className="block text-gray-500 text-[9px] uppercase tracking-widest mb-1.5 font-bold">Date & Time</span>
+                      <span className="block text-gray-400 text-[9px] uppercase tracking-widest mb-1.5 font-bold">Date & Time</span>
                       <div className="text-gray-300 text-xs font-bold">
-                        {new Date(log.ts).toLocaleDateString()} <span className="font-mono text-gray-500 ml-1">{new Date(log.ts).toLocaleTimeString('en-GB')}</span>
+                        {new Date(log.ts).toLocaleDateString()} <span className="font-mono text-gray-400 ml-1">{new Date(log.ts).toLocaleTimeString('en-GB')}</span>
                       </div>
                     </div>
                     <button 
-                      onClick={handleSafeWipe}
-                      className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/10 transition-all bg-white/5"
+                      onClick={() => handleDeleteRecord(log.id)}
+                      className="p-2.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/10 transition-all bg-white/5"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -361,17 +361,17 @@ const SlotTracker = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white font-heading">7-Day Performance</h2>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Historical trend analysis</p>
+              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Historical trend analysis</p>
             </div>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-dull-red shadow-[0_0_8px_rgba(239,68,68,0.3)]" />
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Slot 1</span>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Slot 1</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-dull-green shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Slot 2</span>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Slot 2</span>
             </div>
           </div>
         </div>
@@ -383,13 +383,13 @@ const SlotTracker = () => {
                 dataKey="day" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'oklch(0.439 0 0)', fontSize: 10, fontWeight: 900 }}
+                tick={{ fill: 'rgba(255, 255, 255, 0.45)', fontSize: 10, fontWeight: 900 }}
                 dy={10}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'oklch(0.439 0 0)', fontSize: 10, fontWeight: 900 }}
+                tick={{ fill: 'rgba(255, 255, 255, 0.45)', fontSize: 10, fontWeight: 900 }}
               />
               <Tooltip 
                 contentStyle={{ 

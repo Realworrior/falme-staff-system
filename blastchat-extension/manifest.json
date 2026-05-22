@@ -10,7 +10,8 @@
   "host_permissions": [
     "https://blastchat.chat/*",
     "https://*.blastchat.chat/*",
-    "https://kgpcruwlejoougjbeouw.supabase.co/*"
+    "https://kgpcruwlejoougjbeouw.supabase.co/*",
+    "http://localhost:5000/*"
   ],
   "icons": {
     "16": "icon16.png",
