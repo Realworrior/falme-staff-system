@@ -206,6 +206,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     renderTemplates(filtered);
+
+    // AI fetch integration
+    if (q && q.length > 5) {
+      if (window.aiTimeout) clearTimeout(window.aiTimeout);
+      window.aiTimeout = setTimeout(async () => {
+        try {
+          updateStatus("AI Analyzing...", "orange");
+          const response = await fetch('http://localhost:5000/api/agent-search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ queryText: q })
+          });
+          if (response.ok) {
+            const aiData = await response.json();
+            if (aiData.aiSuggestion) {
+              renderAITemplate(aiData.aiSuggestion, aiData.emotion);
+              updateStatus("AI Enhanced", "orange");
+            }
+          }
+        } catch (e) {
+          // backend not running, fail silently and keep local templates
+        }
+      }, 500);
+    }
+  }
+
+  function renderAITemplate(aiSuggestion, emotion) {
+    if (!container) return;
+    
+    // Remove existing AI card if any
+    const existingAi = container.querySelector('.ai-card');
+    if (existingAi) existingAi.remove();
+
+    const aiCard = document.createElement('div');
+    aiCard.className = 'matrix-card ai-card';
+    aiCard.style.border = '1px solid var(--orange)';
+    aiCard.style.boxShadow = '0 0 15px rgba(255,102,0,0.1)';
+    
+    aiCard.innerHTML = `
+      <div class="card-header"></div>
+      <div class="card-meta">
+        <div class="card-number" style="font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--orange); opacity: 0.6; letter-spacing: 0.05em;">⚡ GEMINI_AI</div>
+        <div style="font-family: var(--mono); font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em;">${emotion ? emotion.label : 'Cloud'}</div>
+      </div>
+      <div class="card-title" style="font-family: var(--mono); color: var(--orange);">✨ AI Synthesized Response</div>
+      <div class="card-body">
+        <div class="response-text" style="font-weight: 600;">${highlightText(aiSuggestion)}</div>
+        <button class="copy-btn ai-copy-btn" style="background: rgba(255,102,0,0.1); border-color: var(--orange); color: var(--orange);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14m-7-7 7 7-7 7"/>
+          </svg>
+          Inject AI Logic
+        </button>
+      </div>
+    `;
+
+    aiCard.querySelector('.ai-copy-btn').addEventListener('click', () => {
+      injectText(aiSuggestion);
+    });
+
+    aiCard.querySelector('.response-text').addEventListener('click', () => {
+      navigator.clipboard.writeText(aiSuggestion).then(() => {
+        updateStatus("AI Copied to Clipboard", "orange");
+        setTimeout(() => updateStatus("Ready", "orange"), 2000);
+      });
+    });
+
+    // Prepend to container
+    if (container.firstChild) {
+      container.insertBefore(aiCard, container.firstChild);
+    } else {
+      container.appendChild(aiCard);
+    }
   }
 
   function renderTemplates(templates) {

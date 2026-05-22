@@ -81,7 +81,10 @@ export const SupabaseDataProvider = ({ children }) => {
       })
       .on('postgres_changes', { event: '*', table: 'aviator_logs', schema: 'public' }, (payload) => {
         if (payload.eventType === 'INSERT') {
-          setLogs(prev => [payload.new, ...prev]);
+          setLogs(prev => {
+            if (prev.some(l => l.id === payload.new.id)) return prev;
+            return [payload.new, ...prev];
+          });
         } else if (payload.eventType === 'DELETE') {
           setLogs(prev => prev.filter(l => l.id === payload.old.id));
         } else if (payload.eventType === 'UPDATE') {
@@ -358,7 +361,11 @@ export const SupabaseDataProvider = ({ children }) => {
   const createRecord = async (table, record) => {
     let targetTable = table;
     if (table === 'supportTemplates') targetTable = 'support_templates';
-    if (table === 'aviatorLogs') targetTable = 'aviator_logs';
+    if (table === 'aviatorLogs') {
+      targetTable = 'aviator_logs';
+      // Optimistic UI update to make the UI feel instant
+      setLogs(prev => [record, ...prev]);
+    }
     
     return supabase.from(targetTable).insert([record]);
   };

@@ -14,7 +14,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Tooltip } from '@mui/material';
-import { analyzeClientMessage } from '../utils/aiMatcher';
+import { analyzeClientMessageAsync, fetchGeminiPoolStatus } from '../utils/aiMatcher';
 
 /**
  * SmartAssistant - A floating AI search and knowledge agent
@@ -28,7 +28,19 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
     { role: 'assistant', content: "Hello! I'm your Falme Knowledge Assistant. Ask me anything about our support templates or sportsbook rules." }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [poolStatus, setPoolStatus] = useState(null);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchGeminiPoolStatus().then(setPoolStatus);
+      const interval = setInterval(() => {
+        fetchGeminiPoolStatus().then(setPoolStatus);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -72,16 +84,24 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
     setTimeout(() => executeSearch(query), 1500);
   };
 
-  const executeSearch = (searchQuery) => {
-      const result = analyzeClientMessage(searchQuery, templates);
+  const executeSearch = async (searchQuery) => {
+      const result = await analyzeClientMessageAsync(searchQuery, templates);
       
       const responseContent = (
         <div className="space-y-4 pt-2">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
-              {result.emotion.emoji} {result.emotion.label} Detected
+              {(result.emotion?.emoji || '😐')} {(result.emotion?.label || 'Neutral')} Detected
             </span>
             <div className="flex-1 h-px bg-white/5" />
+            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1 ${
+              result.isCloud 
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${result.isCloud ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              {result.isCloud ? 'Cloud AI' : 'Local NLP'}
+            </span>
           </div>
 
           {/* AI Suggestion if no direct match */}
@@ -101,15 +121,15 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
           )}
 
           {/* Top Matches */}
-          {result.matches.map((m, i) => {
+          {(result.matches || []).map((m, i) => {
             const tone = result.suggestedTone;
-            const resp = m.item.responses.find(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || m.item.responses[0];
+            const resp = m.item?.responses?.find(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || m.item?.responses?.[0] || { text: '' };
             
             return (
               <div key={i} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 hover:bg-white/[0.05] transition-all group relative">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[8px] font-black text-red-500/80 uppercase tracking-[0.2em]">
-                    {m.item.title} ({m.confidence})
+                    {m.item?.title || 'Template'} ({m.confidence || 'Medium'})
                   </span>
                   <button 
                     onClick={() => navigator.clipboard.writeText(resp.text)}
@@ -123,7 +143,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   <p className="text-[11px] leading-relaxed text-gray-300 font-medium whitespace-pre-wrap">{resp.text}</p>
                 </div>
                 <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-1 opacity-60">
-                  Category: {m.item.category}
+                  Category: {m.item?.category || 'General'}
                 </p>
               </div>
             );
@@ -132,7 +152,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
           <div className="flex items-center gap-2 mt-4 px-2">
             <Sparkles size={10} className="text-red-500" />
             <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">
-              AI Insight Engine Online ({result.detectedLanguage.toUpperCase()})
+              AI Insight Engine Online ({(result.detectedLanguage || 'EN').toUpperCase()})
             </p>
           </div>
         </div>
@@ -178,18 +198,67 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
             className="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-[380px] md:w-[420px] h-[calc(100vh-120px)] sm:h-[600px] max-h-[800px] bg-card border border-border rounded-2xl shadow-xl z-[999] flex flex-col overflow-hidden backdrop-blur-xl"
           >
             {/* Header */}
-            <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
-                <Sparkles size={20} className="text-red-500" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-white uppercase tracking-widest font-heading">Falme AI Assistant</h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Active Knowledge Base</span>
+            <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                  <Sparkles size={20} className="text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white uppercase tracking-widest font-heading">Falme AI Assistant</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Active Knowledge Base</span>
+                  </div>
                 </div>
               </div>
+              <button 
+                onClick={() => setShowDiagnostics(!showDiagnostics)}
+                className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded transition-all border ${showDiagnostics ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'}`}
+              >
+                {showDiagnostics ? 'Hide Diagnostics' : 'Pool Status'}
+              </button>
             </div>
+
+            {/* Diagnostics Panel */}
+            <AnimatePresence>
+              {showDiagnostics && poolStatus && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden border-b border-white/5 bg-black/40"
+                >
+                  <div className="p-4 space-y-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Live Key Pool Status</span>
+                      <span className="text-[8px] font-black text-purple-400 uppercase tracking-widest">Active Route: {poolStatus.activeKeyLabel}</span>
+                    </div>
+                    {poolStatus.pool.map((k, i) => (
+                      <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg p-2 border border-white/5">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${k.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+                          <div>
+                            <p className="text-[10px] font-bold text-white">{k.label}</p>
+                            <p className="text-[8px] text-gray-500 font-mono">{k.maskedKey}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {k.status === 'depleted' ? (
+                            <span className="text-[9px] font-black text-red-400 uppercase">Cooldown: {Math.ceil(k.cooldownRemainingMs / 1000)}s</span>
+                          ) : (
+                            <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Active</span>
+                          )}
+                          <div className="flex gap-2 text-[8px] font-bold text-gray-500 mt-0.5">
+                            <span className="text-emerald-500/70">{k.successCount} OK</span>
+                            <span className="text-red-500/70">{k.failCount} ERR</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Categories */}
             <div className="px-6 py-3 border-b border-white/5 bg-black/20">

@@ -277,3 +277,57 @@ export function analyzeClientMessage(input, templatesData) {
     detectedTopics: Array.from(new Set(matches.map(m => m.item.category.split(' ').pop())))
   };
 }
+
+/**
+ * Async client message analyzer that communicates with the secure Express server.
+ * Gracefully falls back to local NLP matching if the backend is unavailable.
+ */
+export async function analyzeClientMessageAsync(input, templatesData) {
+  try {
+    const response = await fetch('http://localhost:5000/api/agent-search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ queryText: input })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    // Ensure detectedTopics is derived correctly from matches
+    const detectedTopics = Array.from(
+      new Set((result.matches || []).map(m => m.item?.category?.split(' ').pop()).filter(Boolean))
+    );
+
+    return {
+      ...result,
+      detectedTopics,
+      isCloud: true
+    };
+  } catch (err) {
+    console.warn("[aiMatcher] Cloud search failed or backend offline. Falling back to local NLP engine.", err.message);
+    const localResult = analyzeClientMessage(input, templatesData);
+    return {
+      ...localResult,
+      isCloud: false
+    };
+  }
+}
+
+/**
+ * Fetches the current live status of the Gemini key pool.
+ */
+export async function fetchGeminiPoolStatus() {
+  try {
+    const response = await fetch('http://localhost:5000/api/gemini-pool-status');
+    if (!response.ok) throw new Error('Status endpoint unavailable');
+    return await response.json();
+  } catch (err) {
+    console.warn("[aiMatcher] Could not fetch Gemini pool status:", err.message);
+    return null;
+  }
+}
