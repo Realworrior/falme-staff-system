@@ -643,7 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Synthesized Response
     if (aiData.aiSuggestion) {
       const aiCard = document.createElement('div');
-      aiCard.className = 'matrix-card ai-card';
+      aiCard.className = 'matrix-card ai-card synthesized';
       aiCard.style.border = '1px solid var(--orange)';
       aiCard.style.boxShadow = '0 0 15px rgba(255,102,0,0.1)';
       

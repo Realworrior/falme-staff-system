@@ -719,15 +719,16 @@ useEffect(() => {
           ))}
         </div>
 
-        {filteredData.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '100px 0' }}>
-            <div style={{ display: 'inline-flex', padding: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.02)', marginBottom: 20 }}>
+                {filteredData.length === 0 && (
+          <div className="matrix-card ai-card alternative" style={{ background: 'var(--secondary)', border: '1px dashed var(--orange)', padding: '40px', borderRadius: '12px', textAlign: 'center' }}>
+            <div style={{ display: 'inline-flex', padding: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', marginBottom: 20 }}>
               <Search size={40} color={S.textMuted} />
             </div>
-            <h2 style={{ fontSize: 24, fontWeight: 900, color: S.textPrimary, margin: '0 0 8px' }}>No Intel Found</h2>
-            <p style={{ color: S.textMuted, margin: 0 }}>Try adjusting your search or filtering by another keyword.</p>
+            <h2 style={{ fontSize: 24, fontWeight: 900, color: S.textPrimary, margin: '0 0 8px' }}>No matching intelligence found</h2>
+            <p style={{ color: S.textMuted, margin: 0 }}>Try adjusting your search or use the AI suggestions above.</p>
           </div>
         )}
+
       </main>
 
       {/* MODAL (Same as before but styled to match) */}

@@ -151,6 +151,17 @@ body {
     @apply bg-card border border-border;
   }
 
+  .ai-card.synthesized {
+  background: linear-gradient(135deg, rgba(255,102,0,0.15), rgba(255,0,150,0.15));
+  border: 1px solid var(--orange);
+  backdrop-filter: blur(8px);
+}
+.ai-card.alternative {
+  background: var(--secondary);
+  border: 1px dashed var(--orange);
+  backdrop-filter: blur(6px);
+}
+
   .accent-flat {
     @apply bg-accent text-accent-foreground;
   }
