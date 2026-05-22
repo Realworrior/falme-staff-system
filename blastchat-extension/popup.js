@@ -353,10 +353,14 @@ function analyzeClientMessageLocal(input, templatesData) {
     aiSuggestion = professionalClosing;
     aiReasoning = "Local NLP matching: Detected thank you or closing words. Providing standard closing template.";
   } else if (matches.length > 0) {
-    const topMatch = matches[0].item;
-    const toneResponse = topMatch.responses.find(r => r.type === (suggestedTone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || topMatch.responses[0];
-    aiSuggestion = resolvePlaceholders(toneResponse.text);
-    aiReasoning = `Local NLP matching: Found high relevance match "${topMatch.title}". Resolving placeholders.`;
+// Integrate response selector for varied responses
+import { selectResponse } from './responseSelector.js';
+
+// ... later in the code where topMatch is used
+const topMatch = matches[0].item;
+const toneResponse = selectResponse(topMatch.responses);
+aiSuggestion = resolvePlaceholders(toneResponse.text);
+aiReasoning = `Local NLP matching: Found high relevance match "${topMatch.title}". Resolving placeholders.`;
   } else {
     if (tokens.length > 0) {
       aiSuggestion = `We understand you're inquiring about ${tokens.join(' and ')}. To help us provide the most accurate assistance, could you please share a bit more detail or your registered phone number? We'll look into this for you immediately!`;

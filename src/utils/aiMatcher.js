@@ -96,6 +96,7 @@ const DISTRESS_WORDS = ['lost everything', 'all my money', 'desperate', 'stresse
 // ─────────────────────────────────────────────
 
 export function analyzeClientMessage(input, templatesData) {
+  const { selectResponse } = require('./responseSelector');
   const lower = input.toLowerCase().trim();
   
   if (!lower) {
@@ -212,56 +213,59 @@ export function analyzeClientMessage(input, templatesData) {
 
   const matches = scored.slice(0, 4);
 
-  // 5. Contextual AI Suggestion (Copy-Paste Ready for Staff)
-  let aiSuggestion = '';
-  let aiReasoning = '';
-
-  const professionalGreeting = "Hello! 👋 Thank you for reaching out to us. How can we assist you with your Betfalme account today?";
-  const professionalClosing = "You're very welcome! 🙏 We're glad we could help. Have a wonderful day, and feel free to reach out if you have any other questions.";
-
-  if (isDepositIssue) {
-    const depositTpl = matches.find(m => m.item.title.toLowerCase().includes('deposit'))?.item;
-    aiSuggestion = depositTpl 
-      ? `${depositTpl.responses[0].text}\n\nPlease share your MPESA message or transaction code for manual verification.` 
-      : "We're sorry to hear your deposit hasn't reflected yet. Please share your MPESA message or transaction code so we can verify and update your balance immediately.";
-    aiReasoning = "Detected deposit issue. Prioritizing Mpesa message/code request as per protocol.";
-  } else if (isAccountIssue) {
-    const accountTpl = matches.find(m => m.item.title.toLowerCase().includes('deletion'))?.item || matches[0]?.item;
-    
-    if (accountTpl && (accountTpl.title.toLowerCase().includes('deletion') || accountTpl.title.toLowerCase().includes('closure'))) {
-      // Special bundle for Deletion/Closure
-      const v = accountTpl.responses;
-      aiSuggestion = `[OPTION 1: ADVISORY]\n${v[0].text}\n\n[PRO-TIP]\nAfter activating self-exclusion, please ensure there is no activity on the account for the next 72 hours to ensure the system synchronization is finalized.`;
-      aiReasoning = "Detected Account Closure/Deletion. Providing advisory-first response focusing on post-exclusion instructions.";
+    // Use response selector for varied suggestions
+    const pickResponse = (responses) => selectResponse(responses);
+    if (isDepositIssue) {
+      const depositTpl = matches.find(m => m.item.title.toLowerCase().includes('deposit'))?.item;
+      aiSuggestion = depositTpl
+        ? `${pickResponse(depositTpl.responses)}\n\nPlease share your MPESA message or transaction code for manual verification.`
+        : "We're sorry to hear your deposit hasn't reflected yet. Please share your MPESA message or transaction code so we can verify and update your balance immediately.";
+      aiReasoning = "Detected deposit issue. Prioritizing Mpesa message/code request as per protocol.";
+    } else if (isAccountIssue) {
+      const accountTpl = matches.find(m => m.item.title.toLowerCase().includes('deletion'))?.item || matches[0]?.item;
+      if (accountTpl && (accountTpl.title.toLowerCase().includes('deletion') || accountTpl.title.toLowerCase().includes('closure'))) {
+        const v = accountTpl.responses;
+        aiSuggestion = `[OPTION 1: ADVISORY]\n${pickResponse(v)}\n\n[PRO-TIP]\nAfter activating self-exclusion, please ensure there is no activity on the account for the next 72 hours to ensure the system synchronization is finalized.`;
+        aiReasoning = "Detected Account Closure/Deletion. Providing advisory-first response focusing on post-exclusion instructions.";
+      } else {
+        aiSuggestion = accountTpl
+          ? `${pickResponse(accountTpl.responses)}\n\nCould you also please share your registered phone number so we can look into this for you?`
+          : "We'd be happy to help you with that. Could you please share your registered phone number so we can check your account status?";
+        aiReasoning = "Detected account/withdrawal issue. Prioritizing registered phone number request.";
+      }
+    } else if (isCashbackIssue) {
+      const cashbackTpl = matches.find(m => m.item.title.toLowerCase().includes('cashback'))?.item;
+      aiSuggestion = cashbackTpl
+        ? `${pickResponse(cashbackTpl.responses)}\n\nPlease share your registered phone number so we can check your cashback eligibility and status.`
+        : "Could you please share your registered phone number? We'll check your cashback status and get back to you immediately.";
+      aiReasoning = "Detected cashback inquiry. Prioritizing phone number request and cashback templates.";
+    } else if (isComplexGreeting || (isGreeting && tokens.length === 0)) {
+      aiSuggestion = professionalGreeting;
+      aiReasoning = "Detected a friendly greeting. Providing a professional opening response for the agent to use.";
+    } else if (isClosing && tokens.length === 0) {
+      aiSuggestion = professionalClosing;
+      aiReasoning = "Detected a closing or gratitude phrase. Providing a polite wrap-up response.";
+    } else if (matches.length > 0) {
+      const topMatch = matches[0].item;
+      aiSuggestion = pickResponse(topMatch.responses);
+      aiReasoning = `High-confidence match (Score: ${matches[0].score}) for "${topMatch.title}". Providing the standard response directly.`;
     } else {
-      aiSuggestion = accountTpl 
-        ? `${accountTpl.responses[0].text}\n\nCould you also please share your registered phone number so we can look into this for you?` 
-        : "We'd be happy to help you with that. Could you please share your registered phone number so we can check your account status?";
-      aiReasoning = "Detected account/withdrawal issue. Prioritizing registered phone number request.";
+      if (tokens.length > 0) {
+        aiSuggestion = `We understand you're inquiring about ${tokens.join(' and ')}. To help us provide the most accurate assistance, could you please share a bit more detail or your registered phone number? We'll look into this for you immediately!`;
+        aiReasoning = "Identified keywords but no perfect template match. Providing a helpful, conversational probe.";
+      } else {
+        aiSuggestion = "Thank you for reaching out! 👋 To assist you better, could you please share more details about your request or your registered phone number? We're here to help!";
+        aiReasoning = "Low information density in query. Requesting more context from the customer.";
+      }
     }
-  } else if (isCashbackIssue) {
-    const cashbackTpl = matches.find(m => m.item.title.toLowerCase().includes('cashback'))?.item;
-    aiSuggestion = cashbackTpl 
-      ? `${cashbackTpl.responses[0].text}\n\nPlease share your registered phone number so we can check your cashback eligibility and status.` 
-      : "Could you please share your registered phone number? We'll check your cashback status and get back to you immediately.";
-    aiReasoning = "Detected cashback inquiry. Prioritizing phone number request and cashback templates.";
-  } else if (isComplexGreeting || (isGreeting && tokens.length === 0)) {
-    aiSuggestion = professionalGreeting;
-    aiReasoning = "Detected a friendly greeting. Providing a professional opening response for the agent to use.";
-  } else if (isClosing && tokens.length === 0) {
-    aiSuggestion = professionalClosing;
-    aiReasoning = "Detected a closing or gratitude phrase. Providing a polite wrap-up response.";
-  } else if (matches.length > 0) {
-    const topMatch = matches[0].item;
-    aiSuggestion = topMatch.responses[0].text;
-    aiReasoning = `High-confidence match (Score: ${matches[0].score}) for "${topMatch.title}". Providing the standard response directly.`;
-  } else {
-    if (tokens.length > 0) {
-      aiSuggestion = `We understand you're inquiring about ${tokens.join(' and ')}. To help us provide the most accurate assistance, could you please share a bit more detail or your registered phone number? We'll look into this for you immediately!`;
-      aiReasoning = "Identified keywords but no perfect template match. Providing a helpful, conversational probe.";
-    } else {
-      aiSuggestion = "Thank you for reaching out! 👋 To assist you better, could you please share more details about your request or your registered phone number? We're here to help!";
-      aiReasoning = "Low information density in query. Requesting more context from the customer.";
+
+  // Paraphrase integration: randomize suggestion to avoid stale responses
+  if (Math.random() < 0.7) {
+    try {
+      const { getRandomParaphrase } = require('./paraphrase');
+      aiSuggestion = getRandomParaphrase(aiSuggestion);
+    } catch (e) {
+      // ignore errors, keep original suggestion
     }
   }
 
