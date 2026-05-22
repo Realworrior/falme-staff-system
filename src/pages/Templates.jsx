@@ -342,10 +342,23 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
   );
 }
 
+function Templates() {
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN TEMPLATES COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-const Templates = () => {
+useEffect(() => {
+    const handler = (e) => {
+      // Focus search input on Ctrl+K (or Cmd+K on macOS)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const input = document.getElementById('templates-search-input');
+        input?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   const { templates: data, loading, error, isReady, actions } = useSupabaseData();
   const { showToast } = useToast();
   
@@ -571,30 +584,113 @@ const Templates = () => {
             </div>
           </div>
 
-          {/* FULL-WIDTH SEARCH BAR */}
-          <div style={{ position: 'relative' }}>
-            <Search size={18} color={S.textMuted} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }} />
-            <input 
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Ask me to find a template or paste a client's message..."
+          {/* PREMIUM SEARCH BAR */}
+          <div 
+            className="templates-search-wrapper"
+            style={{ position: 'relative' }}
+          >
+            {/* Animated gradient glow border */}
+            <div 
+              className="search-glow"
               style={{
-                width: '100%', background: 'rgba(255,255,255,0.03)', border: `1px solid ${S.border}`,
-                borderRadius: 14, padding: '14px 14px 14px 48px', color: '#fff', fontSize: 14,
-                outline: 'none', transition: 'border-color 0.2s'
+                position: 'absolute', inset: -1, borderRadius: 16, 
+                background: searchQuery 
+                  ? `linear-gradient(135deg, ${S.orange}, #ec4899, ${S.orange})` 
+                  : `linear-gradient(135deg, rgba(249,115,22,0.3), rgba(236,72,153,0.15), rgba(249,115,22,0.3))`,
+                backgroundSize: '200% 200%',
+                opacity: searchQuery ? 0.8 : 0.4,
+                transition: 'opacity 0.4s ease',
+                zIndex: 0,
+                pointerEvents: 'none'
               }}
-              onFocus={(e) => e.target.style.borderColor = S.orange}
-              onBlur={(e) => e.target.style.borderColor = S.border}
             />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: S.textMuted, cursor: 'pointer' }}
-              >
-                <X size={16} />
-              </button>
-            )}
+            
+            {/* Inner container */}
+            <div style={{
+              position: 'relative', zIndex: 1,
+              background: 'rgba(10, 10, 14, 0.95)',
+              borderRadius: 15,
+              display: 'flex', alignItems: 'center', gap: 0,
+              backdropFilter: 'blur(20px)'
+            }}>
+              {/* AI badge on left */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '0 0 0 16px',
+                flexShrink: 0
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: `linear-gradient(135deg, ${S.orange}20, ${S.orange}08)`,
+                  border: `1px solid ${S.orange}30`,
+                  borderRadius: 8, padding: '5px 10px'
+                }}>
+                  <Sparkles size={12} color={S.orange} style={{ animation: 'pulse 2s ease-in-out infinite' }} />
+                  <span style={{ fontSize: 9, fontWeight: 900, color: S.orange, textTransform: 'uppercase', letterSpacing: '0.1em' }}>AI</span>
+                </div>
+              </div>
+
+              {/* Search icon */}
+              <Search size={16} color={searchQuery ? S.orange : S.textMuted} style={{ 
+                marginLeft: 12, flexShrink: 0,
+                transition: 'color 0.3s ease'
+              }} />
+
+              {/* Input */}
+              <input 
+                id="templates-search-input"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search templates, paste a client message, or describe the issue..."
+                style={{
+                  flex: 1, background: 'transparent', border: 'none',
+                  padding: '16px 12px', color: '#fff', fontSize: 14,
+                  outline: 'none', fontFamily: S.sans,
+                  letterSpacing: '-0.01em'
+                }}
+              />
+
+              {/* Right side: result count + clear button + shortcut hint */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 16, flexShrink: 0 }}>
+                {searchQuery && (
+                  <>
+                    <span style={{
+                      fontSize: 10, fontWeight: 800, color: filteredData.length > 0 ? S.green : '#ef4444',
+                      background: filteredData.length > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                      border: `1px solid ${filteredData.length > 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                      borderRadius: 6, padding: '3px 8px',
+                      textTransform: 'uppercase', letterSpacing: '0.05em'
+                    }}>
+                      {filteredData.length} {filteredData.length === 1 ? 'match' : 'matches'}
+                    </span>
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      style={{ 
+                        background: 'rgba(255,255,255,0.06)', border: 'none', 
+                        color: '#a1a1aa', cursor: 'pointer', borderRadius: 6,
+                        padding: '4px 6px', display: 'flex', alignItems: 'center',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => { e.target.style.background = 'rgba(239,68,68,0.15)'; e.target.style.color = '#ef4444'; }}
+                      onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.color = '#a1a1aa'; }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </>
+                )}
+                {!searchQuery && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 6, padding: '4px 8px'
+                  }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.25)', fontFamily: S.mono }}>Ctrl+K</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -667,8 +763,21 @@ const Templates = () => {
       <style dangerouslySetInnerHTML={{ __html: `
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: ${S.orange}; }
+        @keyframes pulse {
+          0% { opacity: 0.6; }
+          50% { opacity: 1; }
+          100% { opacity: 0.6; }
+        }
+        @keyframes glow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .search-glow {
+          animation: glow 4s ease infinite;
+        }
       `}} />
     </div>
   );
