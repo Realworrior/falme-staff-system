@@ -2,6 +2,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.search-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
 :root {
   --font-size: 16px;
   /* Premium Deep Dark Palette - Flat & Sophisticated */
