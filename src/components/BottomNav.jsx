@@ -36,7 +36,7 @@ const BottomNav = ({ className }) => {
       animate={{ opacity: 1 }}
       className={cn(
         // Mobile layout (bottom nav)
-        "fixed bottom-0 left-0 right-0 h-20 bg-sidebar/80 backdrop-blur-2xl border-t border-white/5 z-[60] px-2 flex items-center justify-around",
+        "fixed bottom-0 left-0 right-0 h-16 bg-sidebar/80 backdrop-blur-2xl border-t border-white/5 z-[60] px-2 flex items-center justify-around",
         // Desktop layout (vertical sidebar)
         "md:relative md:w-24 md:h-screen md:flex-col md:justify-start md:px-0 md:py-8 md:border-t-0 md:border-r md:bg-[#0a0a0f] md:backdrop-blur-none",
         "tour-nav-bar",
@@ -59,18 +59,18 @@ const BottomNav = ({ className }) => {
             className={({ isActive }) =>
               cn(
                 "flex flex-col items-center justify-center gap-1.5 transition-all duration-300 group relative min-w-[50px] md:w-full",
-                isActive ? "text-accent" : "text-gray-400 hover:text-white"
+                "text-accent hover:text-white"
               )
             }
           >
             {({ isActive }) => (
               <>
                 <div className={cn(
-                  "w-10 h-10 flex items-center justify-center rounded-xl transition-all relative",
+                  "w-8 h-8 flex items-center justify-center rounded-xl transition-all relative",
                   isActive ? "bg-accent/10 border border-accent/20" : "bg-transparent group-hover:bg-white/5"
                 )}>
                   <item.icon className={cn(
-                    "w-5 h-5 transition-transform",
+                    "w-6 h-6 md:w-5 md:h-5 transition-transform",
                     isActive ? "" : "group-hover:scale-110"
                   )} />
                   {item.isNew && (
@@ -82,7 +82,7 @@ const BottomNav = ({ className }) => {
                   )}
                 </div>
                 <span className={cn(
-                  "text-[9px] font-black uppercase tracking-wider transition-all",
+                  "text-[9px] font-black uppercase tracking-wider transition-all hidden md:block",
                   isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
                 )}>
                   {item.label}
