@@ -1,4 +1,6 @@
-// Configuration for Supabase
+// top-level imports
+import { selectResponse } from '../src/utils/responseSelector.js';
+
 const SUPABASE_URL = 'https://kgpcruwlejoougjbeouw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtncGNydXdsZWpvb3VnamJlb3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Njg1NTgsImV4cCI6MjA5MjM0NDU1OH0.FUM24PZZdw1Rg5IYePFx0SKWp_GI6adn7etivCUAfgY';
 
@@ -353,14 +355,10 @@ function analyzeClientMessageLocal(input, templatesData) {
     aiSuggestion = professionalClosing;
     aiReasoning = "Local NLP matching: Detected thank you or closing words. Providing standard closing template.";
   } else if (matches.length > 0) {
-// Integrate response selector for varied responses
-import { selectResponse } from './responseSelector.js';
-
-// ... later in the code where topMatch is used
-const topMatch = matches[0].item;
-const toneResponse = selectResponse(topMatch.responses);
-aiSuggestion = resolvePlaceholders(toneResponse.text);
-aiReasoning = `Local NLP matching: Found high relevance match "${topMatch.title}". Resolving placeholders.`;
+    const topMatch = matches[0].item;
+    const selected = selectResponse(topMatch.responses);
+    aiSuggestion = resolvePlaceholders(selected);
+    aiReasoning = `Local NLP matching: Found high relevance match "${topMatch.title}". Resolving placeholders.`;
   } else {
     if (tokens.length > 0) {
       aiSuggestion = `We understand you're inquiring about ${tokens.join(' and ')}. To help us provide the most accurate assistance, could you please share a bit more detail or your registered phone number? We'll look into this for you immediately!`;
@@ -683,11 +681,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiData.matches && aiData.matches.length > 0) {
       aiData.matches.forEach((match, idx) => {
         const tone = aiData.suggestedTone;
-        const resp = match.item?.responses?.find(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || match.item?.responses?.[0] || { text: '' };
+          const candidates = match.item?.responses?.filter(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || [];
+          const selectedText = selectResponse(candidates);
+          const resp = selectedText ? { text: selectedText } : (match.item?.responses?.[0] || { text: '' });
         if (!resp.text) return;
         
         const matchCard = document.createElement('div');
-        matchCard.className = 'matrix-card ai-card';
+        matchCard.className = 'matrix-card ai-card alternative';
         matchCard.style.border = '1px dashed rgba(255,102,0,0.4)';
         
         matchCard.innerHTML = `
