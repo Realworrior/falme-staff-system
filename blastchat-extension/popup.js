@@ -220,8 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           if (response.ok) {
             const aiData = await response.json();
-            if (aiData.aiSuggestion) {
-              renderAITemplate(aiData.aiSuggestion, aiData.emotion);
+            if (aiData) {
+              renderAITemplate(aiData);
               updateStatus("AI Enhanced", "orange");
             }
           }
@@ -232,52 +232,103 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function renderAITemplate(aiSuggestion, emotion) {
+  function renderAITemplate(aiData) {
     if (!container) return;
     
     // Remove existing AI card if any
-    const existingAi = container.querySelector('.ai-card');
-    if (existingAi) existingAi.remove();
+    const existingAi = container.querySelectorAll('.ai-card');
+    existingAi.forEach(el => el.remove());
 
-    const aiCard = document.createElement('div');
-    aiCard.className = 'matrix-card ai-card';
-    aiCard.style.border = '1px solid var(--orange)';
-    aiCard.style.boxShadow = '0 0 15px rgba(255,102,0,0.1)';
-    
-    aiCard.innerHTML = `
-      <div class="card-header"></div>
-      <div class="card-meta">
-        <div class="card-number" style="font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--orange); opacity: 0.6; letter-spacing: 0.05em;">⚡ GEMINI_AI</div>
-        <div style="font-family: var(--mono); font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em;">${emotion ? emotion.label : 'Cloud'}</div>
-      </div>
-      <div class="card-title" style="font-family: var(--mono); color: var(--orange);">✨ AI Synthesized Response</div>
-      <div class="card-body">
-        <div class="response-text" style="font-weight: 600;">${highlightText(aiSuggestion)}</div>
-        <button class="copy-btn ai-copy-btn" style="background: rgba(255,102,0,0.1); border-color: var(--orange); color: var(--orange);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14m-7-7 7 7-7 7"/>
-          </svg>
-          Inject AI Logic
-        </button>
-      </div>
-    `;
+    const fragment = document.createDocumentFragment();
 
-    aiCard.querySelector('.ai-copy-btn').addEventListener('click', () => {
-      injectText(aiSuggestion);
-    });
+    // 1. Synthesized Response
+    if (aiData.aiSuggestion) {
+      const aiCard = document.createElement('div');
+      aiCard.className = 'matrix-card ai-card';
+      aiCard.style.border = '1px solid var(--orange)';
+      aiCard.style.boxShadow = '0 0 15px rgba(255,102,0,0.1)';
+      
+      aiCard.innerHTML = `
+        <div class="card-header"></div>
+        <div class="card-meta">
+          <div class="card-number" style="font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--orange); opacity: 0.6; letter-spacing: 0.05em;">⚡ GEMINI_SYNTHESIS</div>
+          <div style="font-family: var(--mono); font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em;">${aiData.emotion ? aiData.emotion.label : 'Cloud'}</div>
+        </div>
+        <div class="card-title" style="font-family: var(--mono); color: var(--orange);">✨ AI Synthesized Response</div>
+        <div class="card-body">
+          <div class="response-text" style="font-weight: 600;">${highlightText(aiData.aiSuggestion)}</div>
+          <button class="copy-btn ai-copy-btn" style="background: rgba(255,102,0,0.1); border-color: var(--orange); color: var(--orange);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14m-7-7 7 7-7 7"/>
+            </svg>
+            Inject AI Logic
+          </button>
+        </div>
+      `;
 
-    aiCard.querySelector('.response-text').addEventListener('click', () => {
-      navigator.clipboard.writeText(aiSuggestion).then(() => {
-        updateStatus("AI Copied to Clipboard", "orange");
-        setTimeout(() => updateStatus("Ready", "orange"), 2000);
+      aiCard.querySelector('.ai-copy-btn').addEventListener('click', () => {
+        injectText(aiData.aiSuggestion);
       });
-    });
+
+      aiCard.querySelector('.response-text').addEventListener('click', () => {
+        navigator.clipboard.writeText(aiData.aiSuggestion).then(() => {
+          updateStatus("AI Copied to Clipboard", "orange");
+          setTimeout(() => updateStatus("Ready", "orange"), 2000);
+        });
+      });
+      
+      fragment.appendChild(aiCard);
+    }
+
+    // 2. Alternative Matches
+    if (aiData.matches && aiData.matches.length > 0) {
+      aiData.matches.forEach((match, idx) => {
+        const tone = aiData.suggestedTone;
+        const resp = match.item?.responses?.find(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || match.item?.responses?.[0] || { text: '' };
+        if (!resp.text) return;
+        
+        const matchCard = document.createElement('div');
+        matchCard.className = 'matrix-card ai-card';
+        matchCard.style.border = '1px dashed rgba(255,102,0,0.4)';
+        
+        matchCard.innerHTML = `
+          <div class="card-header"></div>
+          <div class="card-meta">
+            <div class="card-number" style="font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--orange); opacity: 0.6; letter-spacing: 0.05em;">AI_ALT_${(idx + 1).toString().padStart(3, '0')}</div>
+            <div style="font-family: var(--mono); font-size: 8px; font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em;">Match: ${match.confidence || 'High'}</div>
+          </div>
+          <div class="card-title" style="font-family: var(--mono); color: rgba(255,102,0,0.8);">${match.item?.title || 'Alternative Option'}</div>
+          <div class="card-body">
+            <div class="response-text">${highlightText(resp.text)}</div>
+            <button class="copy-btn ai-copy-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14m-7-7 7 7-7 7"/>
+              </svg>
+              Inject Alternative
+            </button>
+          </div>
+        `;
+
+        matchCard.querySelector('.ai-copy-btn').addEventListener('click', () => {
+          injectText(resp.text);
+        });
+
+        matchCard.querySelector('.response-text').addEventListener('click', () => {
+          navigator.clipboard.writeText(resp.text).then(() => {
+            updateStatus("AI Copied to Clipboard", "orange");
+            setTimeout(() => updateStatus("Ready", "orange"), 2000);
+          });
+        });
+        
+        fragment.appendChild(matchCard);
+      });
+    }
 
     // Prepend to container
     if (container.firstChild) {
-      container.insertBefore(aiCard, container.firstChild);
+      container.insertBefore(fragment, container.firstChild);
     } else {
-      container.appendChild(aiCard);
+      container.appendChild(fragment);
     }
   }
 
