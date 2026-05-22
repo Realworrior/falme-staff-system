@@ -557,8 +557,8 @@ const Templates = () => {
                 <Plus size={14} /> New Template
               </button>
               <a 
-                href="https://github.com/Realworrior/falme-staff-system/archive/refs/heads/master.zip"
-                target="_blank" rel="noopener noreferrer"
+                href="/blastchat-extension.zip"
+                download="blastchat-extension.zip"
                 style={{ 
                   background: S.orange, color: '#fff', borderRadius: 10, 
                   padding: '8px 16px', fontSize: 11, fontWeight: 800, 

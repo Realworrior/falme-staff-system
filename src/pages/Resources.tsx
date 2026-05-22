@@ -2649,9 +2649,8 @@ function ToolkitView({ accent }: { accent: string }) {
 
           <div className="flex flex-col gap-3 min-w-[220px]">
              <a 
-               href="https://github.com/Realworrior/falme-staff-system/archive/refs/heads/master.zip"
-               target="_blank"
-               rel="noopener noreferrer"
+               href="/blastchat-extension.zip"
+               download="blastchat-extension.zip"
                className="w-full px-6 py-4 bg-accent text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
              >
                <span>📦</span> Download Extension

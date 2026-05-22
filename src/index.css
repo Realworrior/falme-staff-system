@@ -57,8 +57,8 @@
   --sidebar-ring: #3b82f6;
 
   /* Rota Specifics */
-  --dull-red: #451a1a;
-  --dull-green: #1a452e;
+  --dull-red: #ef4444;
+  --dull-green: #10b981;
 }
 
 @theme inline {
