@@ -137,9 +137,33 @@ export default function RotaPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Transport state derived from special keys in overrides
-  const transportConfig = useMemo(() => {
+  const [activeBranch, setActiveBranch] = useState('betfalme');
+
+  useEffect(() => {
+    if (!isManagerMode) {
+      setActiveBranch('betfalme');
+    }
+  }, [isManagerMode]);
+
+  // Betfalme Transport config
+  const betfalmeTransportConfig = useMemo(() => {
     const dbRecord = (rawOverrides && rawOverrides['config_transport']) || {};
+    const config = dbRecord.shifts || {};
+    const rates = {};
+    STAFF_CONFIG.forEach(s => {
+      rates[s.name] = (config.rates && config.rates[s.name] !== undefined) 
+        ? config.rates[s.name] 
+        : (s.transportRate || 0);
+    });
+    return {
+      rates,
+      history: config.history || []
+    };
+  }, [rawOverrides]);
+
+  // SofaSafi Transport config
+  const sofasafiTransportConfig = useMemo(() => {
+    const dbRecord = (rawOverrides && rawOverrides['sofasafi_config_transport']) || {};
     const config = dbRecord.shifts || {};
     const rates = {};
     STAFF_CONFIG.forEach(s => {
@@ -155,16 +179,27 @@ export default function RotaPage() {
 
   const handleSaveTransportRates = async (rates) => {
     try {
-      // Determine existing transport config safely
       const dbRecord = (rawOverrides && rawOverrides['config_transport']) || {};
       const existingConfig = dbRecord.shifts || {};
       const updatedConfig = { ...existingConfig, rates };
       await actions.updateRecord('rota_overrides', 'config_transport', { shifts: updatedConfig });
-      showToast('Transport rates updated', 'success');
+      showToast('Betfalme transport rates updated', 'success');
     } catch (err) {
-      console.error('Error saving transport rates:', err);
-      const message = err?.message || String(err);
-      showToast(`Failed to save rates: ${message}`, 'error');
+      console.error('Error saving Betfalme transport rates:', err);
+      showToast(`Failed to save rates: ${err.message || String(err)}`, 'error');
+    }
+  };
+
+  const handleSaveSofaSafiTransportRates = async (rates) => {
+    try {
+      const dbRecord = (rawOverrides && rawOverrides['sofasafi_config_transport']) || {};
+      const existingConfig = dbRecord.shifts || {};
+      const updatedConfig = { ...existingConfig, rates };
+      await actions.updateRecord('rota_overrides', 'sofasafi_config_transport', { shifts: updatedConfig });
+      showToast('SofaSafi transport rates updated', 'success');
+    } catch (err) {
+      console.error('Error saving SofaSafi transport rates:', err);
+      showToast(`Failed to save rates: ${err.message || String(err)}`, 'error');
     }
   };
 
@@ -179,35 +214,76 @@ export default function RotaPage() {
           history
         }
       });
-      showToast('Payment milestone recorded', 'success');
+      showToast('Betfalme payment milestone recorded', 'success');
     } catch (err) {
       showToast('Failed to record payment', 'error');
     }
   };
 
-  const overrides = useMemo(() => {
+  const handleProcessSofaSafiPayment = async (payment) => {
+    try {
+      const dbRecord = (rawOverrides && rawOverrides['sofasafi_config_transport']) || {};
+      const currentConfig = dbRecord.shifts || {};
+      const history = [payment, ...(currentConfig.history || [])].slice(0, 50);
+      await actions.updateRecord('rota_overrides', 'sofasafi_config_transport', {
+        shifts: {
+          ...currentConfig,
+          history
+        }
+      });
+      showToast('SofaSafi payment milestone recorded', 'success');
+    } catch (err) {
+      showToast('Failed to record payment', 'error');
+    }
+  };
+
+  const betfalmeOverrides = useMemo(() => {
     if (!isReady || !rawOverrides) return {};
-    
     const mapped = {};
     const items = Array.isArray(rawOverrides) ? rawOverrides : Object.values(rawOverrides);
-    
     items.forEach((item) => {
       const key = item.date || item.id;
-      if (key) {
+      if (key && !key.startsWith('sofasafi_') && key !== 'config_transport') {
         mapped[key] = item.shifts || item;
       }
     });
-    
     return mapped;
   }, [isReady, rawOverrides]);
+
+  const sofasafiOverrides = useMemo(() => {
+    if (!isReady || !rawOverrides) return {};
+    const mapped = {};
+    const items = Array.isArray(rawOverrides) ? rawOverrides : Object.values(rawOverrides);
+    items.forEach((item) => {
+      const key = item.date || item.id;
+      if (key && key.startsWith('sofasafi_') && key !== 'sofasafi_config_transport') {
+        const dateKey = key.replace('sofasafi_', '');
+        mapped[dateKey] = item.shifts || item;
+      }
+    });
+    return mapped;
+  }, [isReady, rawOverrides]);
+
+  const overrides = useMemo(() => {
+    return activeBranch === 'sofasafi' ? sofasafiOverrides : betfalmeOverrides;
+  }, [activeBranch, betfalmeOverrides, sofasafiOverrides]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const schedule = useMemo(() => {
+  const betfalmeSchedule = useMemo(() => {
     if (!isReady) return [];
-    return generateMonthSchedule(year, month, overrides);
-  }, [year, month, overrides, isReady]);
+    return generateMonthSchedule(year, month, betfalmeOverrides);
+  }, [year, month, betfalmeOverrides, isReady]);
+
+  const sofasafiSchedule = useMemo(() => {
+    if (!isReady) return [];
+    return generateMonthSchedule(year, month, sofasafiOverrides);
+  }, [year, month, sofasafiOverrides, isReady]);
+
+  const schedule = useMemo(() => {
+    return activeBranch === 'sofasafi' ? sofasafiSchedule : betfalmeSchedule;
+  }, [activeBranch, betfalmeSchedule, sofasafiSchedule]);
 
   const analytics = useMemo(() => {
     if (!isReady) return null;
@@ -223,7 +299,8 @@ export default function RotaPage() {
   };
 
   const handleOverride = async (date, staff, type) => {
-    await actions.updateRecord('rota_overrides', date, { shifts: { [staff]: type } });
+    const recordId = activeBranch === 'sofasafi' ? `sofasafi_${date}` : date;
+    await actions.updateRecord('rota_overrides', recordId, { shifts: { [staff]: type } });
   };
 
   const handleBulkImport = async (data, shouldReplace = false) => {
@@ -244,7 +321,8 @@ export default function RotaPage() {
           });
         }
         
-        updatesMap[date] = { date, shifts: finalShifts };
+        const recordId = activeBranch === 'sofasafi' ? `sofasafi_${date}` : date;
+        updatesMap[recordId] = { date: recordId, shifts: finalShifts };
       });
 
       await actions.bulkUpdateRecords('rota_overrides', updatesMap, shouldReplace);
@@ -307,6 +385,37 @@ export default function RotaPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              {isManagerMode && (
+                <div className="flex bg-white/5 p-1 rounded-2xl border border-border mr-2">
+                  <button
+                    onClick={() => {
+                      setActiveBranch('betfalme');
+                      showToast('Switched to Betfalme branch', 'info');
+                    }}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                      activeBranch === 'betfalme' 
+                        ? 'bg-white text-black shadow-lg font-black' 
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    Betfalme
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveBranch('sofasafi');
+                      showToast('Switched to SofaSafi branch', 'info');
+                    }}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                      activeBranch === 'sofasafi' 
+                        ? 'bg-amber-600 text-white shadow-lg font-black' 
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    SofaSafi
+                  </button>
+                </div>
+              )}
+
               <div className="flex bg-white/5 p-1 rounded-2xl border border-border">
                 <button 
                   onClick={handlePrevMonth}
@@ -473,11 +582,17 @@ export default function RotaPage() {
               >
                 <TransportDashboard 
                   currentDate={currentDate}
-                  schedule={schedule}
-                  savedRates={transportConfig.rates}
-                  paymentHistory={transportConfig.history}
+                  schedule={betfalmeSchedule}
+                  savedRates={betfalmeTransportConfig.rates}
+                  paymentHistory={betfalmeTransportConfig.history}
                   onSaveRates={handleSaveTransportRates}
                   onPay={handleProcessPayment}
+                  sofasafiSchedule={sofasafiSchedule}
+                  sofasafiSavedRates={sofasafiTransportConfig.rates}
+                  sofasafiPaymentHistory={sofasafiTransportConfig.history}
+                  onSaveSofaSafiRates={handleSaveSofaSafiTransportRates}
+                  onPaySofaSafi={handleProcessSofaSafiPayment}
+                  isLoggedIn={isManagerMode}
                 />
               </motion.div>
             )}
