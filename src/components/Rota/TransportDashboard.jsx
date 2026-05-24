@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
@@ -20,6 +20,9 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
   const [customRange, setCustomRange] = useState({ start: new Date(), end: new Date() });
   const [editingRates, setEditingRates] = useState(false);
   const [tempRates, setTempRates] = useState(savedRates || {});
+  useEffect(() => {
+    setTempRates(savedRates || {});
+  }, [savedRates]);
 
   // Date range logic
   const range = useMemo(() => {
@@ -36,9 +39,11 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
   const allowances = useMemo(() => {
     const stats = {};
     
+    // Determine which rates to use based on edit mode
+    const currentRates = editingRates ? tempRates : savedRates;
     // Initialize stats for all staff
     STAFF_CONFIG.forEach(s => {
-      stats[s.name] = { pm: 0, nt: 0, totalShifts: 0, amount: 0, rate: savedRates[s.name] || 0 };
+      stats[s.name] = { pm: 0, nt: 0, totalShifts: 0, amount: 0, rate: currentRates[s.name] || 0 };
     });
 
     schedule.forEach(day => {
@@ -66,7 +71,7 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
       .map(([name, data]) => ({ name, ...data }))
       .filter(s => s.totalShifts > 0 || editingRates)
       .sort((a, b) => b.amount - a.amount);
-  }, [schedule, range, savedRates, editingRates]);
+  }, [schedule, range, savedRates, tempRates, editingRates]);
 
   const totalPayout = allowances.reduce((sum, s) => sum + s.amount, 0);
 
