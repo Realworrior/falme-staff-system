@@ -472,6 +472,7 @@ export default function RotaPage() {
                 className="pb-12"
               >
                 <TransportDashboard 
+                  currentDate={currentDate}
                   schedule={schedule}
                   savedRates={transportConfig.rates}
                   paymentHistory={transportConfig.history}

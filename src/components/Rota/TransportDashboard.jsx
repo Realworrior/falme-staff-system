@@ -12,28 +12,49 @@ import {
   Clock,
   ArrowRight
 } from 'lucide-react';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { STAFF_CONFIG, STAFF_THEME } from '../../utils/Rota/scheduleGenerator';
 
-export function TransportDashboard({ schedule, savedRates, paymentHistory, onSaveRates, onPay }) {
+export function TransportDashboard({ currentDate, schedule, savedRates, paymentHistory, onSaveRates, onPay }) {
   const [filterType, setFilterType] = useState('weekly'); // weekly, monthly, custom
   const [customRange, setCustomRange] = useState({ start: new Date(), end: new Date() });
   const [editingRates, setEditingRates] = useState(false);
   const [tempRates, setTempRates] = useState(savedRates || {});
+  
   useEffect(() => {
     setTempRates(savedRates || {});
   }, [savedRates]);
 
+  // Determine active month anchor date from schedule or current page selection
+  const anchorDate = useMemo(() => {
+    const now = new Date();
+    const refDate = currentDate || (schedule[0]?.date) || now;
+    if (now.getMonth() === refDate.getMonth() && now.getFullYear() === refDate.getFullYear()) {
+      return now;
+    }
+    return startOfMonth(refDate);
+  }, [currentDate, schedule]);
+
+  // Pre-fill customRange start & end dates dynamically when active month shifts
+  useEffect(() => {
+    setCustomRange({
+      start: startOfDay(startOfMonth(anchorDate)),
+      end: endOfDay(endOfMonth(anchorDate))
+    });
+  }, [anchorDate]);
+
   // Date range logic
   const range = useMemo(() => {
-    const now = new Date();
     if (filterType === 'weekly') {
-      return { start: startOfWeek(now), end: endOfWeek(now) };
+      return { start: startOfDay(startOfWeek(anchorDate)), end: endOfDay(endOfWeek(anchorDate)) };
     } else if (filterType === 'monthly') {
-      return { start: startOfMonth(now), end: endOfMonth(now) };
+      return { start: startOfDay(startOfMonth(anchorDate)), end: endOfDay(endOfMonth(anchorDate)) };
     }
-    return customRange;
-  }, [filterType, customRange]);
+    return {
+      start: startOfDay(customRange.start),
+      end: endOfDay(customRange.end)
+    };
+  }, [filterType, anchorDate, customRange]);
 
   // Calculate allowances
   const allowances = useMemo(() => {
@@ -94,58 +115,77 @@ export function TransportDashboard({ schedule, savedRates, paymentHistory, onSav
 
   return (
     <div className="space-y-8">
-      {/* Premium Header Card */}
-      <div className="relative overflow-hidden p-8 md:p-12 rounded-2xl bg-accent border border-white/10 shadow-lg">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+      {/* Sleek Compact Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-card border border-border">
+        <div>
+          <h2 className="text-xl font-black text-white uppercase tracking-tighter">Transport Allowances</h2>
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Automated calculations for PM and NT shifts</p>
+        </div>
+        
+        <div className="flex items-center gap-6 bg-white/5 px-6 py-3 rounded-xl border border-white/5">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-black uppercase tracking-[0.2em] text-white">
-                Financial Operations
-              </div>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase mb-2">
-              Transport <br /> Allowances
-            </h2>
-            <p className="text-blue-100 text-sm font-medium max-w-md">
-              Automated KSh calculations for PM and NT shifts based on staff distance configurations.
-            </p>
-          </div>
-
-          <div className="bg-black/20 backdrop-blur-2xl p-8 rounded-xl border border-white/10 min-w-[280px]">
-            <p className="text-blue-200 text-[10px] font-black uppercase tracking-widest mb-2">Total Estimated Payout</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-white tracking-tighter">
-                {totalPayout.toLocaleString()}
-              </span>
-              <span className="text-xl font-bold text-blue-300">KSh</span>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <button 
-                onClick={handlePay}
-                className="flex-1 py-3 bg-white text-blue-600 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-50 transition-all shadow-lg"
-              >
-                Mark Paid
-              </button>
+            <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest">Estimated Payout</p>
+            <div className="flex items-baseline gap-1 mt-0.5">
+              <span className="text-2xl font-black text-white tracking-tighter">{totalPayout.toLocaleString()}</span>
+              <span className="text-xs font-bold text-accent">KSh</span>
             </div>
           </div>
+          <button 
+            onClick={handlePay}
+            className="px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-black uppercase text-[9px] tracking-widest transition-all shadow-lg"
+          >
+            Mark Paid
+          </button>
         </div>
       </div>
 
       {/* Filters & Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
-        <div className="flex bg-white/5 p-1 rounded-xl border border-border">
-          {['weekly', 'monthly', 'custom'].map(type => (
-            <button
-              key={type}
-              onClick={() => setFilterType(type)}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                filterType === type ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'
-              }`}
-            >
-              {type}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex bg-white/5 p-1 rounded-xl border border-border">
+            {['weekly', 'monthly', 'custom'].map(type => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  filterType === type ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+
+          {filterType === 'custom' && (
+            <div className="flex flex-wrap items-center gap-4 bg-white/5 p-1.5 rounded-xl border border-border">
+              <div className="flex items-center gap-2 px-2">
+                <span className="text-[9px] font-black uppercase text-gray-500">From</span>
+                <input 
+                  type="date"
+                  value={format(customRange.start, 'yyyy-MM-dd')}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setCustomRange(prev => ({ ...prev, start: new Date(e.target.value + 'T00:00:00') }));
+                    }
+                  }}
+                  className="bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-xs text-white font-bold focus:outline-none focus:border-accent [color-scheme:dark]"
+                />
+              </div>
+              <div className="flex items-center gap-2 px-2 border-l border-white/10">
+                <span className="text-[9px] font-black uppercase text-gray-500">To</span>
+                <input 
+                  type="date"
+                  value={format(customRange.end, 'yyyy-MM-dd')}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setCustomRange(prev => ({ ...prev, end: new Date(e.target.value + 'T23:59:59') }));
+                    }
+                  }}
+                  className="bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-xs text-white font-bold focus:outline-none focus:border-accent [color-scheme:dark]"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <button 
