@@ -429,15 +429,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function fetchTemplates() {
-    const cached = localStorage.getItem('blastchat_templates');
-    if (cached) {
-      try {
-        const { allTemplates: cachedTemplates, categories } = JSON.parse(cached);
-        allTemplates = cachedTemplates;
-        renderUI(categories);
-        updateStatus("Matrix Ready", "orange");
-      } catch (e) {}
-    }
+    // Remove cached fallback – always fetch fresh data from Supabase
+    // (the cache will be refreshed after successful fetch)
+    // Previously: const cached = localStorage.getItem('blastchat_templates');
+    // if (cached) { ... return; }
+
 
     try {
       const url = `${SUPABASE_URL}/rest/v1/support_templates?select=*`;
@@ -452,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
       processData(data);
     } catch (err) {
       console.error("Fetch error", err);
-      if (!cached) showError(`Sync Failed: ${err.message}`);
+      showError(`Sync Failed: ${err.message}`);
     }
   }
 
