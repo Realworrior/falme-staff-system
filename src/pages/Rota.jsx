@@ -139,33 +139,45 @@ export default function RotaPage() {
 
   // Transport state derived from special keys in overrides
   const transportConfig = useMemo(() => {
-    const config = (rawOverrides && rawOverrides['config_transport']) || {};
+    const dbRecord = (rawOverrides && rawOverrides['config_transport']) || {};
+    const config = dbRecord.shifts || {};
+    const rates = {};
+    STAFF_CONFIG.forEach(s => {
+      rates[s.name] = (config.rates && config.rates[s.name] !== undefined) 
+        ? config.rates[s.name] 
+        : (s.transportRate || 0);
+    });
     return {
-      rates: config.rates || {},
+      rates,
       history: config.history || []
     };
   }, [rawOverrides]);
 
   const handleSaveTransportRates = async (rates) => {
     try {
-      const currentConfig = (rawOverrides && rawOverrides['config_transport']) || {};
-      await actions.updateRecord('rota_overrides', 'config_transport', { 
-        ...currentConfig,
-        rates 
-      });
+      // Determine existing transport config safely
+      const dbRecord = (rawOverrides && rawOverrides['config_transport']) || {};
+      const existingConfig = dbRecord.shifts || {};
+      const updatedConfig = { ...existingConfig, rates };
+      await actions.updateRecord('rota_overrides', 'config_transport', { shifts: updatedConfig });
       showToast('Transport rates updated', 'success');
     } catch (err) {
-      showToast('Failed to save rates', 'error');
+      console.error('Error saving transport rates:', err);
+      const message = err?.message || String(err);
+      showToast(`Failed to save rates: ${message}`, 'error');
     }
   };
 
   const handleProcessPayment = async (payment) => {
     try {
-      const currentConfig = (rawOverrides && rawOverrides['config_transport']) || {};
+      const dbRecord = (rawOverrides && rawOverrides['config_transport']) || {};
+      const currentConfig = dbRecord.shifts || {};
       const history = [payment, ...(currentConfig.history || [])].slice(0, 50);
       await actions.updateRecord('rota_overrides', 'config_transport', {
-        ...currentConfig,
-        history
+        shifts: {
+          ...currentConfig,
+          history
+        }
       });
       showToast('Payment milestone recorded', 'success');
     } catch (err) {
