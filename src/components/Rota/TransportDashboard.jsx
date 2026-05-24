@@ -13,7 +13,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, parseISO, startOfDay, endOfDay } from 'date-fns';
-import { STAFF_CONFIG, STAFF_THEME } from '../../utils/Rota/scheduleGenerator';
+import { STAFF_CONFIG, SOFASAFI_STAFF_CONFIG, STAFF_THEME } from '../../utils/Rota/scheduleGenerator';
 
 export function TransportDashboard({ 
   currentDate, 
@@ -131,7 +131,7 @@ export function TransportDashboard({
     const currentRates = (editingRates && activeSubTab === 'sofasafi') ? sofasafiTempRates : sofasafiSavedRates;
     
     // Initialize stats for all staff
-    STAFF_CONFIG.forEach(s => {
+    SOFASAFI_STAFF_CONFIG.forEach(s => {
       stats[s.name] = { pm: 0, nt: 0, totalShifts: 0, amount: 0, rate: currentRates[s.name] || 0 };
     });
 
@@ -180,7 +180,8 @@ export function TransportDashboard({
     if (!isLoggedIn) return [];
     
     const stats = {};
-    STAFF_CONFIG.forEach(s => {
+    const allStaff = [...STAFF_CONFIG, ...SOFASAFI_STAFF_CONFIG];
+    allStaff.forEach(s => {
       stats[s.name] = {
         name: s.name,
         betfalmePM: 0,

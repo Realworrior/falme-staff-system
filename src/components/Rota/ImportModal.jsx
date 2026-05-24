@@ -10,10 +10,10 @@ import {
 } from '../ui/dialog';
 import { Upload, FileText, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { STAFF_CONFIG } from '../../utils/Rota/scheduleGenerator';
+import { STAFF_CONFIG, SOFASAFI_STAFF_CONFIG } from '../../utils/Rota/scheduleGenerator';
 import { predictMonthRota, validateRota } from '../../utils/Rota/smartPredictor';
 
-export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrides = {} }) {
+export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrides = {}, activeBranch = 'betfalme' }) {
   const [activeTab, setActiveTab] = useState('excel');
   const [file, setFile] = useState(null);
   const [parsedData, setParsedData] = useState(null);
@@ -144,7 +144,9 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
     const headers = parsedData[0].map(h => h?.trim().toLowerCase() || '');
     let staffIndices = [];
     
-    STAFF_CONFIG.forEach(staff => {
+    const staffList = activeBranch === 'sofasafi' ? SOFASAFI_STAFF_CONFIG : STAFF_CONFIG;
+    
+    staffList.forEach(staff => {
       const lowerName = staff.name.toLowerCase();
       const index = headers.findIndex(h => h.includes(lowerName) || lowerName.includes(h));
       if (index > 0) {
@@ -156,7 +158,9 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
     // assume the standard 10-column layout from the spreadsheet:
     // Date, Chris, Faye, Joyce, Linda, Nickson, Pauline, Sylvia, Terry, Ascar
     if (staffIndices.length === 0 && parsedData[0].length >= 9) {
-      const standardOrder = ['Chris', 'Faye', 'Joyce', 'Linda', 'Nickson', 'Pauline', 'Sylvia', 'Terry', 'Ascar'];
+      const standardOrder = activeBranch === 'sofasafi'
+        ? ['Mary', 'Joan', 'Ian K', 'Jonathan', 'Fabrice', 'Ian R', 'Kelvin', 'Shellah', 'Colins']
+        : ['Chris', 'Faye', 'Joyce', 'Linda', 'Nickson', 'Pauline', 'Sylvia', 'Terry', 'Ascar'];
       staffIndices = standardOrder.map((name, idx) => ({ name, index: idx + 1 }));
     } else if (staffIndices.length === 0) {
       setError('Could not identify any staff columns. Ensure headers match staff names or the columns follow the standard layout.');
@@ -204,18 +208,19 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
 
   const handlePredict = () => {
     try {
-      const predicted = predictMonthRota(year, month, allOverrides);
+      const predicted = predictMonthRota(year, month, allOverrides, activeBranch);
       setPredictionResult(predicted);
       
       const { errors } = validateRota(predicted);
       setValidationErrors(errors);
       
       const dates = Object.keys(predicted).sort();
-      const headers = ['Date', ...STAFF_CONFIG.map(s => s.name)];
+      const staffList = activeBranch === 'sofasafi' ? SOFASAFI_STAFF_CONFIG : STAFF_CONFIG;
+      const headers = ['Date', ...staffList.map(s => s.name)];
       setPreviewHeaders(headers);
       
       const previewRows = dates.slice(0, 10).map(date => {
-        return [date, ...STAFF_CONFIG.map(s => predicted[date][s.name])];
+        return [date, ...staffList.map(s => predicted[date][s.name])];
       });
       setPreviewRows(previewRows);
       setError(null);

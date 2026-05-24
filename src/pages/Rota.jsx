@@ -20,6 +20,7 @@ import { ImportModal } from '../components/Rota/ImportModal';
 import { TransportDashboard } from '../components/Rota/TransportDashboard';
 import { 
   STAFF_CONFIG, 
+  SOFASAFI_STAFF_CONFIG,
   STAFF_COLORS, 
   generateMonthSchedule, 
   calculateMonthlyAnalytics,
@@ -166,7 +167,7 @@ export default function RotaPage() {
     const dbRecord = (rawOverrides && rawOverrides['sofasafi_config_transport']) || {};
     const config = dbRecord.shifts || {};
     const rates = {};
-    STAFF_CONFIG.forEach(s => {
+    SOFASAFI_STAFF_CONFIG.forEach(s => {
       rates[s.name] = (config.rates && config.rates[s.name] !== undefined) 
         ? config.rates[s.name] 
         : (s.transportRate || 0);
@@ -278,7 +279,7 @@ export default function RotaPage() {
 
   const sofasafiSchedule = useMemo(() => {
     if (!isReady) return [];
-    return generateMonthSchedule(year, month, sofasafiOverrides);
+    return generateMonthSchedule(year, month, sofasafiOverrides, 'sofasafi');
   }, [year, month, sofasafiOverrides, isReady]);
 
   const schedule = useMemo(() => {
@@ -287,8 +288,8 @@ export default function RotaPage() {
 
   const analytics = useMemo(() => {
     if (!isReady) return null;
-    return calculateMonthlyAnalytics(year, month, overrides);
-  }, [year, month, overrides, isReady]);
+    return calculateMonthlyAnalytics(year, month, overrides, activeBranch);
+  }, [year, month, overrides, activeBranch, isReady]);
 
   const handlePrevMonth = () => { setCurrentDate(new Date(year, month - 1, 1)); setSelectedDate(null); };
   const handleNextMonth = () => { setCurrentDate(new Date(year, month + 1, 1)); setSelectedDate(null); };
@@ -316,7 +317,8 @@ export default function RotaPage() {
         
         if (shouldReplace) {
           finalShifts = {};
-          STAFF_CONFIG.forEach(staff => {
+          const staffList = activeBranch === 'sofasafi' ? SOFASAFI_STAFF_CONFIG : STAFF_CONFIG;
+          staffList.forEach(staff => {
             finalShifts[staff.name] = staffOverrides[staff.name] || 'OFF';
           });
         }
@@ -348,7 +350,7 @@ export default function RotaPage() {
   };
 
   const handleExportCSV = () => {
-    const csvContent = exportScheduleToCSV(schedule, year, month);
+    const csvContent = exportScheduleToCSV(schedule, activeBranch);
     downloadCSV(csvContent, `Rota_Export_${format(currentDate, 'MMM_yyyy')}.csv`);
     showToast('CSV Export Ready', 'success');
   };
@@ -468,7 +470,7 @@ export default function RotaPage() {
               
               <div className="w-[1px] h-4 bg-white/10 mx-1 hidden md:block"></div>
               
-              {STAFF_CONFIG.map(staff => (
+              {(activeBranch === 'sofasafi' ? SOFASAFI_STAFF_CONFIG : STAFF_CONFIG).map(staff => (
                 <button 
                   key={staff.name} 
                   onClick={() => setSelectedStaff(staff.name)}
@@ -660,6 +662,7 @@ export default function RotaPage() {
           year={year}
           month={month}
           allOverrides={overrides}
+          activeBranch={activeBranch}
         />
 
         {/* Send Email Modal */}

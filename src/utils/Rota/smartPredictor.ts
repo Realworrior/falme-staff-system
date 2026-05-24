@@ -1,10 +1,11 @@
 import { addDays, format, startOfMonth, endOfMonth, differenceInDays } from 'date-fns';
-import { STAFF_CONFIG, ShiftType, CYCLE_18 } from './scheduleGenerator';
+import { STAFF_CONFIG, SOFASAFI_STAFF_CONFIG, ShiftType, CYCLE_18 } from './scheduleGenerator';
 
 export function predictMonthRota(
   targetYear: number,
   targetMonth: number,
-  previousMonthOverrides: Record<string, any>
+  previousMonthOverrides: Record<string, any>,
+  branch: string = 'betfalme'
 ): Record<string, Record<string, ShiftType>> {
   const result: Record<string, Record<string, ShiftType>> = {};
   
@@ -13,7 +14,8 @@ export function predictMonthRota(
   const lastDayOfPrevMonth = endOfMonth(new Date(prevYear, prevMonth));
   const lastDayKey = format(lastDayOfPrevMonth, 'yyyy-MM-dd');
   
-  const sortedStaff = [...STAFF_CONFIG].sort((a, b) => a.name.localeCompare(b.name));
+  const staffList = branch === 'sofasafi' ? SOFASAFI_STAFF_CONFIG : STAFF_CONFIG;
+  const sortedStaff = [...staffList].sort((a, b) => a.name.localeCompare(b.name));
 
   // 1. Calculate the 'ideal' next position in the 18-day cycle
   const idealPositions = sortedStaff.map((staff, index) => {

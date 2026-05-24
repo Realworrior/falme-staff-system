@@ -47,7 +47,9 @@ const Dashboard = () => {
     const items = Array.isArray(rawOverrides) ? rawOverrides : Object.values(rawOverrides);
     items.forEach(item => {
       const key = item.date || item.id;
-      if (key) mapped[key] = item.shifts || item;
+      if (key && !key.startsWith('sofasafi_') && key !== 'config_transport') {
+        mapped[key] = item.shifts || item;
+      }
     });
     return mapped;
   }, [rawOverrides]);

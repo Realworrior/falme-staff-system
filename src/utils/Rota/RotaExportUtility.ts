@@ -1,15 +1,16 @@
-import { DailySchedule, STAFF_CONFIG } from './scheduleGenerator';
+import { DailySchedule, STAFF_CONFIG, SOFASAFI_STAFF_CONFIG } from './scheduleGenerator';
 import { format } from 'date-fns';
 
 /**
  * Exports the current schedule view to a Matrix-formatted CSV string.
  * Format: Date, Name1, Name2, Name3...
  */
-export function exportScheduleToCSV(schedule: DailySchedule[]): string {
+export function exportScheduleToCSV(schedule: DailySchedule[], branch: string = 'betfalme'): string {
   if (schedule.length === 0) return '';
 
   // Get staff names from config
-  const staffNames = STAFF_CONFIG.map(s => s.name);
+  const staffList = branch === 'sofasafi' ? SOFASAFI_STAFF_CONFIG : STAFF_CONFIG;
+  const staffNames = staffList.map(s => s.name);
   
   // Header row: Date, Staff1, Staff2...
   const headers = ['Date', ...staffNames];
