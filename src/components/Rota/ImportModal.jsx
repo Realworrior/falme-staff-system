@@ -31,29 +31,61 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
       .replace(/[\u200B-\u200D\uFEFF]/g, '')
       .replace(/(\d+)(st|nd|rd|th)/i, '$1')
       .replace(/\s+/g, ' ');
-    
-    // Robust match for "Fri, , 1" or "Fri, 1" or just "1" with any amount of spacing/commas
-    const dayMatch = clean.match(/(?:[a-zA-Z]{2,10}|,|\s)*\s*(\d{1,2})$/i);
-    if (dayMatch) {
-      const dayNum = parseInt(dayMatch[1]);
-      if (dayNum >= 1 && dayNum <= 31) {
-        try {
-          const d = new Date(year, month, dayNum);
-          if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
-        } catch (e) { return null; }
-      }
-    }
 
-    const dmyMatch = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
-    if (dmyMatch) {
-      const day = parseInt(dmyMatch[1]);
-      const monthIdx = parseInt(dmyMatch[2]) - 1;
-      let fullYear = parseInt(dmyMatch[3]);
-      if (fullYear < 100) fullYear += 2000;
+    // 1. Try ISO / YYYY-MM-DD first to avoid matching year digits in dayMatch
+    const isoMatch = clean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (isoMatch) {
+      const fullYear = parseInt(isoMatch[1]);
+      const monthIdx = parseInt(isoMatch[2]) - 1;
+      const day = parseInt(isoMatch[3]);
       const d = new Date(fullYear, monthIdx, day);
       if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
     }
 
+    // 2. Try DD/MM/YYYY or MM/DD/YYYY
+    const dmyMatch = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+    if (dmyMatch) {
+      const p1 = parseInt(dmyMatch[1]);
+      const p2 = parseInt(dmyMatch[2]);
+      let fullYear = parseInt(dmyMatch[3]);
+      if (fullYear < 100) fullYear += 2000;
+      
+      let day = p1;
+      let monthIdx = p2 - 1;
+      if (p2 > 12) {
+        day = p2;
+        monthIdx = p1 - 1;
+      } else if (p1 <= 12 && p2 <= 12) {
+        // Disambiguate based on UI active month context
+        if (p2 - 1 === month) {
+          day = p1;
+          monthIdx = p2 - 1;
+        } else if (p1 - 1 === month) {
+          day = p2;
+          monthIdx = p1 - 1;
+        }
+      }
+      
+      const d = new Date(fullYear, monthIdx, day);
+      if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
+    }
+
+    // 3. Fallback to day match only if it doesn't end with a 2 or 4 digit year suffix
+    const hasYearSuffix = clean.match(/[-/]\d{2,4}$/) || clean.match(/^\d{4}/);
+    if (!hasYearSuffix) {
+      const dayMatch = clean.match(/(?:[a-zA-Z]{2,10}|,|\s)*\s*(\d{1,2})$/i);
+      if (dayMatch) {
+        const dayNum = parseInt(dayMatch[1]);
+        if (dayNum >= 1 && dayNum <= 31) {
+          try {
+            const d = new Date(year, month, dayNum);
+            if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
+          } catch (e) { return null; }
+        }
+      }
+    }
+
+    // 4. Native Date parsing
     try {
       const d = new Date(clean);
       if (!isNaN(d.getTime())) return format(d, 'yyyy-MM-dd');
@@ -146,11 +178,27 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
     
     const staffList = activeBranch === 'sofasafi' ? SOFASAFI_STAFF_CONFIG : STAFF_CONFIG;
     
+    const cleanName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const matchedIndices = new Set();
+
     staffList.forEach(staff => {
-      const lowerName = staff.name.toLowerCase();
-      const index = headers.findIndex(h => h.includes(lowerName) || lowerName.includes(h));
+      const cleanStaff = cleanName(staff.name);
+      
+      // Try exact cleaned match first
+      let index = headers.findIndex((h, idx) => !matchedIndices.has(idx) && cleanName(h) === cleanStaff);
+      
+      // Fallback to partial cleaned match
+      if (index === -1) {
+        index = headers.findIndex((h, idx) => {
+          if (matchedIndices.has(idx)) return false;
+          const cleanH = cleanName(h);
+          return cleanH.length > 1 && (cleanH.includes(cleanStaff) || cleanStaff.includes(cleanH));
+        });
+      }
+
       if (index > 0) {
         staffIndices.push({ name: staff.name, index });
+        matchedIndices.add(index);
       }
     });
 
@@ -170,9 +218,15 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
     const result = {};
     let processedRows = 0;
 
-    // If we used the fallback, we need to process from row 0 instead of row 1 
-    // because row 0 might be actual data, not a header row.
-    const startRow = headers.some(h => h.includes('date') || h.includes('chris') || h.includes('faye')) ? 1 : 0;
+    // Determine start row branch-agnostically by checking for "date" or any staff member in the active branch
+    const startRow = headers.some(h => {
+      const cleanH = cleanName(h);
+      if (cleanH.includes('date')) return true;
+      return staffList.some(s => {
+        const cleanStaff = cleanName(s.name);
+        return cleanH.includes(cleanStaff) || cleanStaff.includes(cleanH);
+      });
+    }) ? 1 : 0;
 
     parsedData.slice(startRow).forEach((row) => {
       const rawDate = row[0]?.trim();
