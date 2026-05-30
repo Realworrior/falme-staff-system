@@ -1,3 +1,6 @@
+import { selectResponse } from './responseSelector';
+import { getRandomParaphrase } from './paraphrase';
+
 // ─────────────────────────────────────────────
 // NLP TOKENS & DICTIONARIES
 // ─────────────────────────────────────────────
@@ -91,12 +94,16 @@ const ANGRY_WORDS = ['stupid', 'useless', 'terrible', 'fraud', 'scam', 'thieves'
 const URGENT_WORDS = ['urgent', 'immediately', 'asap', 'right now', 'right away', 'quickly', 'emergency', 'hurry'];
 const DISTRESS_WORDS = ['lost everything', 'all my money', 'desperate', 'stressed', 'addicted', 'suicide', 'cant afford', 'depressed'];
 
+const professionalGreeting = "Hello! 👋 Thank you for reaching out to us. How can we assist you with your Betfalme account today?";
+const professionalClosing = "You're very welcome! 🙏 We're glad we could help. Have a wonderful day, and feel free to reach out if you have any other questions.";
+
 // ─────────────────────────────────────────────
 // MAIN AI ENGINE
 // ─────────────────────────────────────────────
 
 export function analyzeClientMessage(input, templatesData) {
-  const { selectResponse } = require('./responseSelector');
+  let aiSuggestion = '';
+  let aiReasoning = '';
   const lower = input.toLowerCase().trim();
   
   if (!lower) {
@@ -262,9 +269,8 @@ export function analyzeClientMessage(input, templatesData) {
   // Paraphrase integration: randomize suggestion to avoid stale responses
   if (Math.random() < 0.7) {
     try {
-      const { getRandomParaphrase } = require('./paraphrase');
       aiSuggestion = getRandomParaphrase(aiSuggestion);
-    } catch (e) {
+    } catch {
       // ignore errors, keep original suggestion
     }
   }

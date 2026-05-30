@@ -30,18 +30,19 @@ let activeShortcut = null;
 let activeTabId = null;
 let isBlastChat = false;
 
+// Maps each shortcut label to the EXACT local template IDs it should display
 const SHORTCUT_MAPPING = {
-  'failed deposit': 'Failed Deposit',
-  'airtel/bank': 'Airtel Bank',
-  'account number': 'Account Verification',
-  'case submitted': 'Case Submitted',
-  'lost amount': 'Lost Amount',
-  'Not lost': 'No Lost Amount',
-  'violation': 'Violation',
-  'reset': 'Reset',
-  'Betslip': 'Betslip',
-  'Account closure': 'Account Closure',
-  'cashback': 'Cashback'
+  'failed deposit':  ['local-failed-deposit'],
+  'airtel/bank':     ['local-airtel-bank'],
+  'account number':  ['local-account-number'],
+  'case submitted':  ['local-case-submitted'],
+  'lost amount':     ['local-lost-amount-1', 'local-lost-amount-2'],
+  'Not lost':        ['local-no-lost-amount'],
+  'violation':       ['local-violation'],
+  'reset':           ['local-reset-1', 'local-reset-2'],
+  'Betslip':         ['local-betslip-1', 'local-betslip-2', 'local-betslip-3', 'local-betslip-4'],
+  'Account closure': ['local-closure-1', 'local-closure-2', 'local-closure-3'],
+  'cashback':        ['local-cashback-1', 'local-cashback-2', 'local-cashback-3', 'local-cashback-4', 'local-cashback-5']
 };
 
 const SHORTCUT_KEYWORDS = Object.keys(SHORTCUT_MAPPING);
@@ -759,19 +760,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderCategoryDropdown(categories) {
     if (!categorySelect) return;
-    // Keep the "ALL" option
     categorySelect.textContent = '';
+
     const allOpt = document.createElement('option');
     allOpt.value = 'ALL';
     allOpt.textContent = 'All Categories';
     categorySelect.appendChild(allOpt);
-    
-    categories.sort().forEach(cat => {
+
+    // Extract unique major categories (part before ' — ')
+    const majorCats = [...new Set(
+      categories.map(cat => cat.split(' — ')[0].trim())
+    )].sort();
+
+    majorCats.forEach(major => {
       const option = document.createElement('option');
-      option.value = cat;
-      // Clean up category name for dropdown
-      option.textContent = cat.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').split(' — ')[0].trim();
-      if (activeCategory === cat) option.selected = true;
+      option.value = major;
+      option.textContent = major;
+      if (activeCategory === major) option.selected = true;
       categorySelect.appendChild(option);
     });
   }
@@ -782,21 +787,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = searchInput?.value.toLowerCase().trim() || '';
     let filtered = allTemplates;
 
-    // Use Shortcut Mapping if active
+    // Use Shortcut Mapping if active — show ONLY the exact mapped templates
     if (activeShortcut) {
-      const queryStr = SHORTCUT_MAPPING[activeShortcut].toLowerCase();
-      const keywords = queryStr.split(' ');
-      
-      filtered = filtered.filter(t => {
-        return keywords.every(kw => 
-          t.category.toLowerCase().includes(kw) || 
-          t.title.toLowerCase().includes(kw) || 
-          t.triggers.some(tr => tr.toLowerCase().includes(kw)) ||
-          t.responses.some(r => r.text.toLowerCase().includes(kw))
-        );
-      });
+      const ids = new Set(SHORTCUT_MAPPING[activeShortcut] || []);
+      filtered = filtered.filter(t => ids.has(t.id));
     } else if (activeCategory !== 'ALL') {
-      filtered = filtered.filter(t => t.category === activeCategory);
+      filtered = filtered.filter(t => t.category.split(' — ')[0].trim() === activeCategory);
     }
 
     if (q) {

@@ -1,28 +1,23 @@
 // src/utils/responseSelector.js
 // Utility to select a varied response per category, tracking usage to avoid repetition.
-// Stores simple usage statistics in a JSON file (responseStats.json) next to this module.
+// Stores simple usage statistics in localStorage.
 
-import fs from 'fs';
-import path from 'path';
-
-const statsFile = path.resolve(import.meta.url.replace('file://', ''), '../responseStats.json');
-
-/** Load usage stats, creating the file if missing */
+/** Load usage stats */
 function loadStats() {
   try {
-    const data = fs.readFileSync(statsFile, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    // Initialize empty stats
-    const empty = {};
-    fs.writeFileSync(statsFile, JSON.stringify(empty, null, 2));
-    return empty;
+    return JSON.parse(localStorage.getItem('blastchat_response_stats') || '{}');
+  } catch {
+    return {};
   }
 }
 
 /** Persist stats */
 function saveStats(stats) {
-  fs.writeFileSync(statsFile, JSON.stringify(stats, null, 2));
+  try {
+    localStorage.setItem('blastchat_response_stats', JSON.stringify(stats));
+  } catch {
+    // ignore
+  }
 }
 
 /**
@@ -36,19 +31,19 @@ export function selectResponse(responses) {
   }
   const stats = loadStats();
   // Ensure each response has an entry in stats
-  responses.forEach((r, idx) => {
-    const key = `r${idx}`;
+  responses.forEach((r) => {
+    const key = `r_${r.text.substring(0, 30)}`;
     if (!stats[key]) stats[key] = 0;
   });
   // Find minimum usage count
-  const minUsage = Math.min(...responses.map((_, idx) => stats[`r${idx}`]));
+  const minUsage = Math.min(...responses.map(r => stats[`r_${r.text.substring(0, 30)}`] || 0));
   // Gather candidates with min usage
-  const candidates = responses.filter((_, idx) => stats[`r${idx}`] === minUsage);
+  const candidates = responses.filter(r => (stats[`r_${r.text.substring(0, 30)}`] || 0) === minUsage);
   // Randomly pick among candidates
   const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-  // Update usage for the chosen index
-  const chosenIdx = responses.indexOf(chosen);
-  stats[`r${chosenIdx}`] = (stats[`r${chosenIdx}`] || 0) + 1;
+  // Update usage for the chosen key
+  const chosenKey = `r_${chosen.text.substring(0, 30)}`;
+  stats[chosenKey] = (stats[chosenKey] || 0) + 1;
   saveStats(stats);
   return chosen.text;
 }
