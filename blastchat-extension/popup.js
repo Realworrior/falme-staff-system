@@ -1658,7 +1658,8 @@ document.addEventListener('DOMContentLoaded', () => {
           'padding:8px 0 6px;margin:14px 0 8px;',
           'border-bottom:1px solid rgba(255,102,0,0.25);',
           'font-family:var(--mono);font-size:9px;font-weight:900;',
-          'color:var(--orange);text-transform:uppercase;letter-spacing:0.12em;'
+          'color:var(--orange);text-transform:uppercase;letter-spacing:0.12em;',
+          'grid-column:1 / -1;' // Force header to span all columns
         ].join('');
 
         const dot = document.createElement('span');
