@@ -4,13 +4,14 @@
     "gecko": {
       "id": "blastchat-matrix@blastchat.chat",
       "strict_min_version": "109.0",
-      "data_collection_permissions": [
-        "none"
-      ]
+      "data_collection_permissions": {
+        "required": [],
+        "optional": []
+      }
     }
   },
   "name": "BlastChat Matrix",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Auto-populates responses directly into BlastChat agent views.",
   "permissions": [
     "activeTab",
@@ -19,8 +20,7 @@
   "host_permissions": [
     "https://blastchat.chat/*",
     "https://*.blastchat.chat/*",
-    "https://kgpcruwlejoougjbeouw.supabase.co/*",
-    "http://localhost:5000/*"
+    "https://kgpcruwlejoougjbeouw.supabase.co/*"
   ],
   "icons": {
     "16": "icon16.png",
@@ -49,3 +49,4 @@
     }
   ]
 }
+
