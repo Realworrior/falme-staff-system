@@ -49,204 +49,592 @@ const SHORTCUT_KEYWORDS = Object.keys(SHORTCUT_MAPPING);
 
 const LOCAL_TEMPLATES = [
   {
-    id: 'local-failed-deposit',
-    category: 'Deposit — Failed',
-    title: 'Failed Deposit — M-PESA Code Required',
-    responses: [
-      { type: 'Standard', text: 'Failed Deposit — M-PESA Code Required' }
+    "id": "local-failed-deposit",
+    "category": "💰 DEPOSITS — M-PESA",
+    "title": "Failed Deposit — M-PESA Code Required",
+    "responses": [
+      {
+        "text": "If your deposit was unsuccessful, please share the full M-PESA transaction message as text or send the 10-character transaction code from the SMS. Example: UA58134GTJ · Mini-statement codes are not accepted. Please do not send a screenshot — share the message as text.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand this can be frustrating 🙏 Kindly send the full M-PESA confirmation message as text or the 10-character transaction code from the SMS so we can assist quickly. Mini-statements are not accepted and screenshots are not required.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "Share M-PESA code (e.g. UA58134GTJ) or full SMS text. Screenshots not needed. Mini-statement codes not accepted.",
+        "type": "Alt Fast"
+      }
     ],
-    triggers: ['failed', 'deposit', 'm-pesa', 'mpesa', 'code', 'required']
+    "triggers": [
+      "failed deposit",
+      "mpesa code",
+      "transaction message",
+      "10-character",
+      "UA58134GTJ",
+      "code",
+      "deposited",
+      "reflect",
+      "reflecting",
+      "not showing",
+      "not reflected",
+      "my money",
+      "funds",
+      "kindly assist",
+      "assist",
+      "money"
+    ]
   },
   {
-    id: 'local-airtel-bank',
-    category: 'Deposit — Airtel/Bank',
-    title: 'Airtel or Bank Deposit — Not Supported',
-    responses: [
-      { type: 'Standard', text: 'Airtel or Bank Deposit — Not Supported' }
+    "id": "local-airtel-bank",
+    "category": "💰 DEPOSITS — M-PESA",
+    "title": "Airtel or Bank Deposit — Not Supported",
+    "responses": [
+      {
+        "text": "Betfalme currently supports M-PESA only. Please contact your service provider to request a reversal, then deposit using M-PESA.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand the inconvenience 🙏 At the moment we only support M-PESA deposits. Kindly request a reversal from your provider and deposit again using M-PESA.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "After the reversal is processed, you can deposit via M-PESA. Or share a Safaricom number for transfer if needed. We'll assist once confirmed.",
+        "type": "Alt Solution"
+      }
     ],
-    triggers: ['airtel', 'bank', 'deposit', 'not', 'supported']
+    "triggers": [
+      "airtel",
+      "bank deposit",
+      "not supported",
+      "reversal"
+    ]
   },
   {
-    id: 'local-account-number',
-    category: 'Account — Verification',
-    title: 'Account Verification Request',
-    responses: [
-      { type: 'Standard', text: 'Account Verification Request' }
+    "id": "local-account-number",
+    "category": "👤 ACCOUNT MANAGEMENT",
+    "title": "Account Verification Request",
+    "responses": [
+      {
+        "text": "Kindly share your registered phone number so we can verify your account and assist you.",
+        "type": "Standard"
+      },
+      {
+        "text": "We're happy to help 🙂 Please share your registered phone number so we can verify your account and assist faster.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "To verify your account, kindly share your registered phone number and confirm the name used at registration. This helps us locate and assist you quickly.",
+        "type": "Alt"
+      }
     ],
-    triggers: ['account', 'number', 'verification', 'request']
+    "triggers": [
+      "verify",
+      "verification",
+      "registered phone",
+      "confirm name"
+    ]
   },
   {
-    id: 'local-case-submitted',
-    category: 'Technical — Support',
-    title: 'Case Submitted to Technical Team',
-    responses: [
-      { type: 'Standard', text: 'Case Submitted to Technical Team' }
+    "id": "local-case-submitted",
+    "category": "⏳ CLIENT PATIENCE / UNDER REVIEW",
+    "title": "Case Submitted to Technical Team",
+    "responses": [
+      {
+        "text": "Your issue has been submitted to our Technical Team for review. We will update you once we receive feedback. Thank you for your patience.",
+        "type": "Standard"
+      },
+      {
+        "text": "Your request has been received and is now under technical review 🔄 We'll update you once completed.",
+        "type": "Alt 1"
+      },
+      {
+        "text": "Your issue has been escalated and is currently being processed. We'll update you soon.",
+        "type": "Alt 2"
+      },
+      {
+        "text": "Your request is already in progress with our Technical Team. We'll notify you once done.",
+        "type": "Alt 3"
+      },
+      {
+        "text": "We've forwarded your case for review. Feedback will be shared once available.",
+        "type": "Alt 4"
+      },
+      {
+        "text": "We understand waiting can be stressful. Your issue is under review and we will update you as soon as possible. Thank you for your patience 🙏",
+        "type": "High Empathy 1"
+      },
+      {
+        "text": "We understand the wait 🙏 Your case is being actively handled. We'll update you shortly.",
+        "type": "High Empathy 2"
+      },
+      {
+        "text": "We know this is important 🙏 Your issue is already under review.",
+        "type": "High Empathy 3"
+      },
+      {
+        "text": "We appreciate your patience 🙏 The team is working on your request.",
+        "type": "High Empathy 4"
+      }
     ],
-    triggers: ['case', 'submitted', 'technical', 'team']
+    "triggers": [
+      "review",
+      "check",
+      "technical",
+      "wait",
+      "pending",
+      "status",
+      "feedback"
+    ]
   },
   {
-    id: 'local-lost-amount-1',
-    category: 'Casino — Lost Amount',
-    title: 'Lost Amount Report — Aviator, Jet X, Crash Games',
-    responses: [
-      { type: 'Standard', text: 'Lost Amount Report — Aviator, Jet X, Crash Games' }
+    "id": "local-lost-amount-1",
+    "category": "🎰 CASINO GAMES",
+    "title": "Lost Amount Report — Aviator, Jet X, Crash Games",
+    "responses": [
+      {
+        "text": "Please provide your phone number, game played, the exact amount lost, and the exact time of each round. Do not combine amounts. Each round must be shared separately.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand how concerning this is 🙏 Kindly share your phone number, the exact amount lost, and the exact time for each round separately. Please do not sum the amounts so we can check accurately.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "To trace your rounds accurately 🔍 please send: phone number ✦ game name ✦ exact amount per round ✦ exact time per round. Please list each round one by one.",
+        "type": "Alt"
+      }
     ],
-    triggers: ['lost', 'amount', 'report', 'aviator', 'jet', 'crash']
+    "triggers": [
+      "lost amount",
+      "lost money",
+      "aviator lost",
+      "crash lost",
+      "round",
+      "separately"
+    ]
   },
   {
-    id: 'local-lost-amount-2',
-    category: 'Casino — Lost Amount',
-    title: 'Pending Cashout — Crash / Aviator',
-    responses: [
-      { type: 'Standard', text: 'Pending Cashout — Crash / Aviator' }
+    "id": "local-lost-amount-2",
+    "category": "🎰 CASINO GAMES",
+    "title": "Pending Cashout — Crash / Aviator",
+    "responses": [
+      {
+        "text": "Please share a screenshot of the specific game showing the bet, the exact time of the round, and your registered phone number.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand this can be worrying 🙏 Kindly send the game screenshot, include the exact time of the round and your phone number so we can assist quickly.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "To check your pending cashout, please send a screenshot of the round, your registered number, and the exact time the round occurred.",
+        "type": "Alt"
+      }
     ],
-    triggers: ['pending', 'cashout', 'crash', 'aviator']
+    "triggers": [
+      "pending cashout",
+      "aviator cashout",
+      "crash cashout",
+      "screenshot",
+      "worrying"
+    ]
   },
   {
-    id: 'local-no-lost-amount',
-    category: 'Casino — Lost Amount',
-    title: 'No Lost Amount — All Transactions Correct',
-    responses: [
-      { type: 'Standard', text: 'no lost amount - all transactions correct' }
+    "id": "local-no-lost-amount",
+    "category": "⏳ CLIENT PATIENCE / UNDER REVIEW",
+    "title": "No Lost Amount — All Transactions Correct",
+    "responses": [
+      {
+        "text": "After reviewing your account, our Technical Team has confirmed that all transactions were processed correctly and no funds were lost. Please take a moment to check your account activity.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand your concern and appreciate your patience 🙏 After carefully reviewing your account, our Technical Team has confirmed that all transactions were processed correctly and no funds were lost. Please check your account activity. If you still notice anything unusual, let us know so we can assist further.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "We've completed a full review 🔍 All transactions on your account show as correct and no funds are missing. If you still have concerns, kindly share the specific time and amount so we can double-check.",
+        "type": "Alt"
+      }
     ],
-    triggers: ['not', 'lost', 'amount', 'transactions', 'correct']
+    "triggers": [
+      "no loss",
+      "missing",
+      "correct",
+      "review",
+      "activity"
+    ]
   },
   {
-    id: 'local-violation',
-    category: 'Referral — Violation',
-    title: 'Referral Terms Violation Notice',
-    responses: [
-      { type: 'Standard', text: 'Following a review of your account activity, we have found that our referral terms were violated due to the creation of multiple accounts under the same identity to obtain the KSh 10 referral bonus. Based on internal checks including device verification, connection history, referral activity, and location data, withdrawals have been restricted. To restore withdrawal access, the account will need to be reset, which will clear all current funds. Kindly confirm if you agree to proceed with the account reset.' }
+    "id": "local-violation",
+    "category": "👤 ACCOUNT MANAGEMENT",
+    "title": "Referral Violation — Multiple Accounts Detected",
+    "responses": [
+      {
+        "text": "Following a review of your account activity, we have found that our referral terms were violated due to the creation of multiple accounts under the same identity to obtain the KSh 10 referral bonus. Based on internal checks including device verification, connection history, referral activity, and location data, withdrawals have been restricted. To restore withdrawal access, the account will need to be reset, which will clear all current funds. Kindly confirm if you agree to proceed with the account reset.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand this may be disappointing 🙏 After reviewing your account activity, our system detected a violation of the referral terms due to multiple accounts being created under the same identity to claim the KSh 10 bonus. Based on checks including device verification, connection history, referral behaviour, and location data, withdrawals have been restricted. To restore access, the account will need to be reset, which clears the current funds. Please confirm if you would like us to proceed with the reset.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "As previously advised, withdrawals remain restricted due to a confirmed referral policy violation. To restore access, an account reset is required. Please confirm your decision so we can proceed accordingly.",
+        "type": "Final Notice"
+      }
     ],
-    triggers: ['violation', 'referral', 'terms', 'multiple', 'accounts']
+    "triggers": [
+      "multiple accounts",
+      "referral violation",
+      "bonus abuse",
+      "restriction",
+      "reset",
+      "identity"
+    ]
   },
   {
-    id: 'local-reset-1',
-    category: 'Account — Reset',
-    title: 'Account Reset — Failed / Alternative new account',
-    responses: [
-      { type: 'Standard', text: 'We are currently experiencing a technical limitation affecting the account reset option. As an alternative, you may create a new account. Please ensure all future activity follows our platform policies and referral rules.' }
+    "id": "local-reset-1",
+    "category": "👤 ACCOUNT MANAGEMENT",
+    "title": "Suspicious Reset Request — Technical Limitation",
+    "responses": [
+      {
+        "text": "We are currently experiencing a technical limitation affecting the account reset option. As an alternative, you may create a new account. Please ensure all future activity follows our platform policies and referral rules.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand the inconvenience this may cause 🙏 At the moment, the account reset option is temporarily unavailable due to a technical limitation. You may create a new account instead, and we kindly ask that all future activity follows our platform and referral policies.",
+        "type": "High Empathy"
+      }
     ],
-    triggers: ['reset', 'failed', 'limitation']
+    "triggers": [
+      "reset unavailable",
+      "technical limitation",
+      "cannot reset",
+      "new account",
+      "limitation"
+    ]
   },
   {
-    id: 'local-reset-2',
-    category: 'Account — Reset',
-    title: 'Account Reset — Successful',
-    responses: [
-      { type: 'Standard', text: 'Your account has been successfully reset. You can now log in and continue using your account. Please ensure all future activity follows our referral and platform policies.' }
+    "id": "local-reset-2",
+    "category": "👤 ACCOUNT MANAGEMENT",
+    "title": "Account Reset Confirmation",
+    "responses": [
+      {
+        "text": "Your account has been successfully reset. You can now log in and continue using your account. Please ensure all future activity follows our referral and platform policies.",
+        "type": "Standard"
+      },
+      {
+        "text": "Your account has now been successfully reset 🙂 You can log in and continue using your account. Please ensure future activity follows our referral and platform rules to avoid any further restrictions. If you need help, we're here to assist.",
+        "type": "High Empathy"
+      }
     ],
-    triggers: ['reset', 'successful', 'success', 'policies']
+    "triggers": [
+      "reset complete",
+      "account reset",
+      "successful reset",
+      "restored"
+    ]
   },
   {
-    id: 'local-betslip-1',
-    category: 'Betting — Betslip',
-    title: 'Betslip Verification Request',
-    responses: [
-      { type: 'Standard', text: 'Please share a screenshot of the betslip, the Bet ID (for example #678534), and your registered phone number so we can assist.' }
+    "id": "local-betslip-1",
+    "category": "⚽ SPORTS BETTING",
+    "title": "Unpaid Winning Bet",
+    "responses": [
+      {
+        "text": "Please share a screenshot of the betslip, the Bet ID (for example #678534), and your registered phone number so we can assist.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand your concern 🙏 Kindly send the betslip screenshot, Bet ID, and your registered phone number so we can check quickly.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "We'll look into this right away 🔍 Please send your Bet ID (e.g. #678534), betslip screenshot, and registered number.",
+        "type": "Alt"
+      }
     ],
-    triggers: ['betslip', 'verification', 'screenshot']
+    "triggers": [
+      "winning bet",
+      "not paid",
+      "unpaid",
+      "won",
+      "won bet",
+      "bet id"
+    ]
   },
   {
-    id: 'local-betslip-2',
-    category: 'Betting — Betslip',
-    title: 'Bet Cashout Investigation',
-    responses: [
-      { type: 'Standard', text: 'Please share the Bet ID, the exact time you attempted the cash out, and your registered phone number so we can investigate.' }
+    "id": "local-betslip-2",
+    "category": "⚽ SPORTS BETTING",
+    "title": "Cash Out Not Processed",
+    "responses": [
+      {
+        "text": "Please share the Bet ID, the exact time you attempted the cash out, and your registered phone number so we can investigate.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand this is frustrating 🙏 Cash out requests are time-sensitive. Kindly send the Bet ID, exact time, and your phone number so we can review what happened.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "Please note that cash out may be unavailable during live odds fluctuations or high traffic. If your cash out failed, share your Bet ID and time so we can check.",
+        "type": "System Note"
+      }
     ],
-    triggers: ['cash', 'out', 'investigate', 'attempted']
+    "triggers": [
+      "cash out",
+      "cashout failed",
+      "not processed",
+      "attempted",
+      "fluctuations"
+    ]
   },
   {
-    id: 'local-betslip-3',
-    category: 'Betting — Betslip',
-    title: 'Bet Not Accepted / Rejected',
-    responses: [
-      { type: 'Standard', text: 'Bet Not Accepted / Rejected' }
+    "id": "local-betslip-3",
+    "category": "⚽ SPORTS BETTING",
+    "title": "Bet Not Accepted / Rejected",
+    "responses": [
+      {
+        "text": "Please share a screenshot of the error message and your registered phone number so we can check why the bet was not accepted.",
+        "type": "Standard"
+      },
+      {
+        "text": "We're sorry that happened 🙏 Bets can be declined due to odds changes, stake limits, or market closure. Kindly share the error screenshot and your number so we can assist.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "Bets may be declined because the market closed before submission · odds shifted during loading · or the stake exceeds the allowed limit for that market. If the issue persists, share a screenshot and we'll investigate.",
+        "type": "Common Reasons"
+      }
     ],
-    triggers: ['rejected', 'not', 'accepted']
+    "triggers": [
+      "rejected",
+      "not accepted",
+      "error message",
+      "declined",
+      "limit"
+    ]
   },
   {
-    id: 'local-betslip-4',
-    category: 'Betting — Betslip',
-    title: 'Pending Betslip — Postponed Game',
-    responses: [
-      { type: 'Standard', text: 'Pending Betslip — Postponed Game' }
+    "id": "local-betslip-4",
+    "category": "⚽ SPORTS BETTING",
+    "title": "Pending Betslip — Postponed Game",
+    "responses": [
+      {
+        "text": "Postponed games are settled within 24 hours after the scheduled match time. Your betslip will update automatically.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand the wait can be frustrating 🙏 Postponed games are processed within 24 hours after the scheduled match time. Your betslip will update on its own. No action needed.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "No need to worry 🙂 Postponed match betslips settle automatically within 24 hours of the original match time.",
+        "type": "Alt"
+      }
     ],
-    triggers: ['postponed', 'game', 'pending']
+    "triggers": [
+      "postponed",
+      "cancelled match",
+      "not played",
+      "match time",
+      "settled",
+      "betslip"
+    ]
   },
   {
-    id: 'local-closure-1',
-    category: 'Account — Closure',
-    title: 'Self-Exclusion Request',
-    responses: [
-      { type: 'Standard', text: 'Self-Exclusion Request' }
+    "id": "local-closure-1",
+    "category": "👤 ACCOUNT MANAGEMENT",
+    "title": "Account Closure / Self-Exclusion",
+    "responses": [
+      {
+        "text": "To delete your account, please visit betfalme.ke/delete-account ✦ Once there: go to Profile ✦ click DELETE Account ✦ select Period of Exclusion ✦ click Continue To Delete Account ✦ type DELETE to confirm (no spaces) ✦ then confirm deletion. After confirming deletion, it's recommended to avoid depositing or requesting OTP for at least 48 hours. Otherwise, the process will be undone",
+        "type": "Standard"
+      },
+      {
+        "text": "We're sorry to see you go 🙏 To delete your account, please visit betfalme.ke/delete-account ✦ Follow the steps: Profile ✦ DELETE Account ✦ select your exclusion period ✦ Continue ✦ type DELETE to confirm ✦ then confirm. After confirming deletion, it's recommended to avoid depositing or requesting OTP for at least 48 hours. Otherwise, the process will be undone",
+        "type": "High Empathy"
+      }
     ],
-    triggers: ['self', 'exclusion']
+    "triggers": [
+      "permanently close",
+      "delete my account",
+      "close account",
+      "closure steps",
+      "deactivate"
+    ]
   },
   {
-    id: 'local-closure-2',
-    category: 'Account — Closure',
-    title: 'Account Closure',
-    responses: [
-      { type: 'Standard', text: 'Account Closure' }
+    "id": "local-closure-2",
+    "category": "👤 ACCOUNT MANAGEMENT",
+    "title": "Account Closure / Self-Exclusion",
+    "responses": [
+      {
+        "text": "To delete your account, please visit betfalme.ke/delete-account ✦ Once there: go to Profile ✦ click DELETE Account ✦ select Period of Exclusion ✦ click Continue To Delete Account ✦ type DELETE to confirm (no spaces) ✦ then confirm deletion. After confirming deletion, it's recommended to avoid depositing or requesting OTP for at least 48 hours. Otherwise, the process will be undone",
+        "type": "Standard"
+      },
+      {
+        "text": "We're sorry to see you go 🙏 To delete your account, please visit betfalme.ke/delete-account ✦ Follow the steps: Profile ✦ DELETE Account ✦ select your exclusion period ✦ Continue ✦ type DELETE to confirm ✦ then confirm. After confirming deletion, it's recommended to avoid depositing or requesting OTP for at least 48 hours. Otherwise, the process will be undone",
+        "type": "High Empathy"
+      }
     ],
-    triggers: ['closure', 'close']
+    "triggers": [
+      "permanently close",
+      "delete my account",
+      "close account",
+      "closure steps",
+      "deactivate"
+    ]
   },
   {
-    id: 'local-closure-3',
-    category: 'Account — Closure',
-    title: 'Self-Exclusion',
-    responses: [
-      { type: 'Standard', text: 'Self-Exclusion' }
+    "id": "local-closure-3",
+    "category": "👤 ACCOUNT MANAGEMENT",
+    "title": "Account Closure / Self-Exclusion",
+    "responses": [
+      {
+        "text": "To delete your account, please visit betfalme.ke/delete-account ✦ Once there: go to Profile ✦ click DELETE Account ✦ select Period of Exclusion ✦ click Continue To Delete Account ✦ type DELETE to confirm (no spaces) ✦ then confirm deletion. After confirming deletion, it's recommended to avoid depositing or requesting OTP for at least 48 hours. Otherwise, the process will be undone",
+        "type": "Standard"
+      },
+      {
+        "text": "We're sorry to see you go 🙏 To delete your account, please visit betfalme.ke/delete-account ✦ Follow the steps: Profile ✦ DELETE Account ✦ select your exclusion period ✦ Continue ✦ type DELETE to confirm ✦ then confirm. After confirming deletion, it's recommended to avoid depositing or requesting OTP for at least 48 hours. Otherwise, the process will be undone",
+        "type": "High Empathy"
+      }
     ],
-    triggers: ['exclusion', 'deactivate']
+    "triggers": [
+      "permanently close",
+      "delete my account",
+      "close account",
+      "closure steps",
+      "deactivate"
+    ]
   },
   {
-    id: 'local-cashback-1',
-    category: 'Cashback — Support',
-    title: 'How to Calculate Cashback',
-    responses: [
-      { type: 'Standard', text: 'How to Calculate Cashback' }
+    "id": "local-cashback-1",
+    "category": "🔄 CASHBACK — 10%",
+    "title": "How to Calculate Cashback",
+    "responses": [
+      {
+        "text": "Cashback is 10% of the difference between total deposits and total withdrawals made from yesterday 8:35 PM to today 8:35 PM. For example: Deposit KSh 1,000 ✦ Withdraw KSh 600 ✦ Loss = KSh 400 ✦ Cashback = KSh 40.",
+        "type": "Standard"
+      },
+      {
+        "text": "To calculate 🙂 subtract withdrawals from deposits between 8:35 PM yesterday and 8:35 PM today. If there is a loss, 10% of that amount is credited at 8:35 PM.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "Formula: Deposits minus Withdrawals = Net loss. 10% of net loss = Cashback. Example: 1000 minus 600 = 400. 400 × 10% = KSh 40 cashback 🙂",
+        "type": "Simple Formula"
+      }
     ],
-    triggers: ['calculate', 'cashback']
+    "triggers": [
+      "how to calculate",
+      "formula",
+      "subtract",
+      "example"
+    ]
   },
   {
-    id: 'local-cashback-2',
-    category: 'Cashback — Support',
-    title: 'Will I Get Cashback Today',
-    responses: [
-      { type: 'Standard', text: 'Will I Get Cashback Today' }
+    "id": "local-cashback-2",
+    "category": "🔄 CASHBACK — 10%",
+    "title": "Will I Get Cashback Today",
+    "responses": [
+      {
+        "text": "You will receive cashback today at 8:35 PM if: deposits were made between yesterday 9:00 PM and today 8:35 PM ✦ withdrawals are less than deposits ✦ your account shows a net loss.",
+        "type": "Standard"
+      },
+      {
+        "text": "If you meet the conditions and recorded a net loss 🙂 cashback will reflect automatically at 8:35 PM. No action needed!",
+        "type": "High Empathy"
+      },
+      {
+        "text": "Check at 8:35 PM. If deposits are greater than withdrawals, cashback is guaranteed. If not, none will be issued.",
+        "type": "Alt Fast"
+      }
     ],
-    triggers: ['get', 'today']
+    "triggers": [
+      "get cashback today",
+      "guaranteed",
+      "conditions"
+    ]
   },
   {
-    id: 'local-cashback-3',
-    category: 'Cashback — Support',
-    title: 'Daily Cashback Reset Window',
-    responses: [
-      { type: 'Standard', text: 'Daily Cashback Reset Window' }
+    "id": "local-cashback-3",
+    "category": "🔄 CASHBACK — 10%",
+    "title": "Daily Cashback Reset Window",
+    "responses": [
+      {
+        "text": "Our daily cashback calculation includes a 10-minute system reset window between 8:30 PM and 8:40 PM. Please note that any deposits made within this specific window are not captured in the current 24-hour cycle to prevent synchronization errors during the daily reset.",
+        "type": "Standard"
+      },
+      {
+        "text": "I'd like to clarify our cashback timing for you! Our system performs a daily reset between 8:30 PM and 8:40 PM. Because of this, any deposits made in those 10 minutes aren't always counted in the immediate 24-hour cycle as the system refreshes. We appreciate your patience while we ensure everything is processed accurately!",
+        "type": "High Empathy"
+      }
     ],
-    triggers: ['reset', 'window']
+    "triggers": [
+      "cashback",
+      "not counted",
+      "time",
+      "reset",
+      "calculation",
+      "window",
+      "8:30",
+      "8.30"
+    ]
   },
   {
-    id: 'local-cashback-4',
-    category: 'Cashback — Support',
-    title: 'Where Is My Cashback',
-    responses: [
-      { type: 'Standard', text: 'Where Is My Cashback' }
+    "id": "local-cashback-4",
+    "category": "🔄 CASHBACK — 10%",
+    "title": "Where Is My Cashback",
+    "responses": [
+      {
+        "text": "Cashback is automatically calculated and credited for eligible customers who record a net loss during the cashback period. Cashback is processed daily at 8:35 PM. If it has not reflected yet, please wait until after 8:35 PM.",
+        "type": "Standard"
+      },
+      {
+        "text": "We understand the concern 🙏 Cashback is processed daily at 8:35 PM. If eligible, it will reflect automatically after that time.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "Cashback is not instant. It is calculated and credited once daily at 8:35 PM. If you're eligible, it will appear automatically. No manual request is needed.",
+        "type": "Alt Angry"
+      }
     ],
-    triggers: ['where', 'missing']
+    "triggers": [
+      "where is cashback",
+      "cashback not received",
+      "8:35 PM",
+      "calculate"
+    ]
   },
   {
-    id: 'local-cashback-5',
-    category: 'Cashback — Support',
-    title: 'Cashback Not Received — Conditions Not Met',
-    responses: [
-      { type: 'Standard', text: 'Cashback Not Received — Conditions Not Met' }
+    "id": "local-cashback-5",
+    "category": "🔄 CASHBACK — 10%",
+    "title": "Cashback Not Received — Conditions Not Met",
+    "responses": [
+      {
+        "text": "Cashback is credited only if you made deposits and your total withdrawals are less than your total deposits during the cashback period, resulting in a net loss. If withdrawals are equal to or higher than deposits, no cashback is generated.",
+        "type": "Standard"
+      },
+      {
+        "text": "Cashback is given only when deposits are higher than withdrawals within the cashback period 🙂 If there is no net loss, cashback will not be generated. This is calculated automatically by the system.",
+        "type": "High Empathy"
+      },
+      {
+        "text": "System calculates automatically. If deposits do not exceed withdrawals, no cashback is issued. No net loss = no cashback.",
+        "type": "Alt Firm"
+      }
     ],
-    triggers: ['not', 'received', 'conditions']
+    "triggers": [
+      "no cashback",
+      "not met",
+      "net loss",
+      "withdrawals deposits"
+    ]
   }
 ];
+
+
 
 // NLP dictionaries and local match engine
 const STOP_WORDS = new Set([
@@ -767,16 +1155,14 @@ document.addEventListener('DOMContentLoaded', () => {
     allOpt.textContent = 'All Categories';
     categorySelect.appendChild(allOpt);
 
-    // Extract unique major categories (part before ' — ')
-    const majorCats = [...new Set(
-      categories.map(cat => cat.split(' — ')[0].trim())
-    )].sort();
+    // Use full category names exactly as fetched from Supabase (matches SEC_ID 1–12)
+    const uniqueCats = [...new Set(categories)].sort();
 
-    majorCats.forEach(major => {
+    uniqueCats.forEach(cat => {
       const option = document.createElement('option');
-      option.value = major;
-      option.textContent = major;
-      if (activeCategory === major) option.selected = true;
+      option.value = cat;
+      option.textContent = cat;
+      if (activeCategory === cat) option.selected = true;
       categorySelect.appendChild(option);
     });
   }
@@ -792,7 +1178,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const ids = new Set(SHORTCUT_MAPPING[activeShortcut] || []);
       filtered = filtered.filter(t => ids.has(t.id));
     } else if (activeCategory !== 'ALL') {
-      filtered = filtered.filter(t => t.category.split(' — ')[0].trim() === activeCategory);
+      filtered = filtered.filter(t => t.category === activeCategory);
     }
 
     if (q) {
@@ -1123,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderTemplates(templates) {
     if (!container) return;
     container.textContent = '';
-    
+
     if (templates.length === 0) {
       const emptyDiv = document.createElement('div');
       emptyDiv.className = 'empty-state';
@@ -1133,23 +1519,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     templates.forEach((t, idx) => {
-      const majorCat = t.category.split(' — ')[0].trim();
-      const responseText = t.responses[0]?.text || "No intelligence found for this module.";
+      const responses = Array.isArray(t.responses) && t.responses.length > 0
+        ? t.responses
+        : [{ text: 'No intelligence found for this module.', type: 'Standard' }];
 
-      const card = createCardElement({
-        cardNumber: `INTEL_REF_${(idx + 1).toString().padStart(3, '0')}`,
-        cardMetaText: majorCat,
-        cardTitle: t.title,
-        responseText: responseText,
-        buttonText: 'Inject Logic',
-        onButtonClick: () => injectText(responseText),
-        onResponseClick: () => {
-          navigator.clipboard.writeText(responseText).then(() => {
-            updateStatus("Copied to Clipboard", "orange");
-            setTimeout(() => updateStatus("Ready", "orange"), 2000);
+      // ── Outer card wrapper ──
+      const card = document.createElement('div');
+      card.className = 'matrix-card';
+
+      // Card number + category meta
+      const meta = document.createElement('div');
+      meta.className = 'card-meta';
+
+      const numDiv = document.createElement('div');
+      numDiv.className = 'card-number';
+      numDiv.style.cssText = 'font-family:var(--mono);font-size:10px;font-weight:800;color:var(--orange);opacity:0.6;letter-spacing:0.05em;';
+      numDiv.textContent = `INTEL_REF_${(idx + 1).toString().padStart(3, '0')}`;
+      meta.appendChild(numDiv);
+
+      const catDiv = document.createElement('div');
+      catDiv.style.cssText = 'font-family:var(--mono);font-size:8px;font-weight:900;color:var(--orange);text-transform:uppercase;letter-spacing:0.1em;';
+      catDiv.textContent = t.category;
+      meta.appendChild(catDiv);
+      card.appendChild(meta);
+
+      // Title
+      const titleDiv = document.createElement('div');
+      titleDiv.className = 'card-title';
+      titleDiv.style.fontFamily = 'var(--mono)';
+      titleDiv.textContent = t.title;
+      card.appendChild(titleDiv);
+
+      // ── One body block per response variant ──
+      responses.forEach((resp, rIdx) => {
+        const variantWrap = document.createElement('div');
+        variantWrap.className = 'card-body';
+        variantWrap.style.cssText = rIdx > 0
+          ? 'border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:4px;'
+          : '';
+
+        // Variant label (e.g. "Standard", "High Empathy")
+        const typeLabel = document.createElement('div');
+        typeLabel.style.cssText = 'font-family:var(--mono);font-size:9px;font-weight:900;color:rgba(255,102,0,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
+        typeLabel.textContent = `[${resp.type || 'Variant ' + (rIdx + 1)}]`;
+        variantWrap.appendChild(typeLabel);
+
+        // Response text
+        const respDiv = document.createElement('div');
+        respDiv.className = 'response-text';
+        appendHighlightedText(respDiv, resp.text);
+        variantWrap.appendChild(respDiv);
+
+        // Inject button
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.style.marginTop = '8px';
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '14'); svg.setAttribute('height', '14');
+        svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none');
+        svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '3');
+        svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M5 12h14m-7-7 7 7-7 7');
+        svg.appendChild(path);
+        btn.appendChild(svg);
+        btn.appendChild(document.createTextNode(' Inject'));
+
+        const textToInject = resp.text;
+        btn.addEventListener('click', () => injectText(textToInject));
+        respDiv.addEventListener('click', () => {
+          navigator.clipboard.writeText(textToInject).then(() => {
+            updateStatus('Copied to Clipboard', 'orange');
+            setTimeout(() => updateStatus('Ready', 'orange'), 2000);
           });
-        }
+        });
+
+        variantWrap.appendChild(btn);
+        card.appendChild(variantWrap);
       });
+
       container.appendChild(card);
     });
   }
