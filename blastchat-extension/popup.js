@@ -30,19 +30,19 @@ let activeShortcut = null;
 let activeTabId = null;
 let isBlastChat = false;
 
-// Maps each shortcut label to the EXACT local template IDs it should display
+// Maps each shortcut label to the EXACT template titles it should display
 const SHORTCUT_MAPPING = {
-  'failed deposit':  ['local-failed-deposit'],
-  'airtel/bank':     ['local-airtel-bank'],
-  'account number':  ['local-account-number'],
-  'case submitted':  ['local-case-submitted'],
-  'lost amount':     ['local-lost-amount-1', 'local-lost-amount-2'],
-  'Not lost':        ['local-no-lost-amount'],
-  'violation':       ['local-violation'],
-  'reset':           ['local-reset-1', 'local-reset-2'],
-  'Betslip':         ['local-betslip-1', 'local-betslip-2', 'local-betslip-3', 'local-betslip-4'],
-  'Account closure': ['local-closure-1', 'local-closure-2', 'local-closure-3'],
-  'cashback':        ['local-cashback-1', 'local-cashback-2', 'local-cashback-3', 'local-cashback-4', 'local-cashback-5']
+  'failed deposit':  ['Failed Deposit — M-PESA Code Required'],
+  'airtel/bank':     ['Airtel or Bank Deposit — Not Supported'],
+  'account number':  ['Account Verification Request'],
+  'case submitted':  ['Case Submitted to Technical Team'],
+  'lost amount':     ['Lost Amount Report — Aviator, Jet X, Crash Games', 'Pending Cashout — Crash / Aviator'],
+  'Not lost':        ['No Lost Amount — All Transactions Correct'],
+  'violation':       ['Referral Violation — Multiple Accounts Detected'],
+  'reset':           ['Suspicious Reset Request — Technical Limitation', 'Account Reset Confirmation'],
+  'Betslip':         ['Unpaid Winning Bet', 'Cash Out Not Processed', 'Bet Not Accepted / Rejected', 'Pending Betslip — Postponed Game'],
+  'Account closure': ['Account Closure / Self-Exclusion'],
+  'cashback':        ['How to Calculate Cashback', 'Will I Get Cashback Today', 'Daily Cashback Reset Window', 'Where Is My Cashback', 'Cashback Not Received — Conditions Not Met']
 };
 
 const SHORTCUT_KEYWORDS = Object.keys(SHORTCUT_MAPPING);
@@ -1180,8 +1180,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Use Shortcut Mapping if active — show ONLY the exact mapped templates
     if (activeShortcut) {
-      const ids = new Set(SHORTCUT_MAPPING[activeShortcut] || []);
-      filtered = filtered.filter(t => ids.has(t.id));
+      const titles = new Set(SHORTCUT_MAPPING[activeShortcut] || []);
+      filtered = filtered.filter(t => titles.has(t.title));
     } else if (activeCategory !== 'ALL') {
       filtered = filtered.filter(t => t.category === activeCategory);
     }
