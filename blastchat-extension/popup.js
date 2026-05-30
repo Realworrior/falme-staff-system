@@ -1,5 +1,25 @@
-// top-level imports
-import { selectResponse } from '../src/utils/responseSelector.js';
+// top-level imports - self-contained browser-safe selectResponse function
+function selectResponse(responses) {
+  if (!Array.isArray(responses) || responses.length === 0) {
+    return '';
+  }
+  try {
+    const stats = JSON.parse(localStorage.getItem('blastchat_response_stats') || '{}');
+    responses.forEach((r, idx) => {
+      const key = `r_${r.text.substring(0, 30)}`;
+      if (!stats[key]) stats[key] = 0;
+    });
+    const minUsage = Math.min(...responses.map(r => stats[`r_${r.text.substring(0, 30)}`] || 0));
+    const candidates = responses.filter(r => (stats[`r_${r.text.substring(0, 30)}`] || 0) === minUsage);
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    const chosenKey = `r_${chosen.text.substring(0, 30)}`;
+    stats[chosenKey] = (stats[chosenKey] || 0) + 1;
+    localStorage.setItem('blastchat_response_stats', JSON.stringify(stats));
+    return chosen.text;
+  } catch (e) {
+    return responses[0]?.text || '';
+  }
+}
 
 const SUPABASE_URL = 'https://kgpcruwlejoougjbeouw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtncGNydXdsZWpvb3VnamJlb3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Njg1NTgsImV4cCI6MjA5MjM0NDU1OH0.FUM24PZZdw1Rg5IYePFx0SKWp_GI6adn7etivCUAfgY';
@@ -16,6 +36,7 @@ const SHORTCUT_MAPPING = {
   'account number': 'Account Verification',
   'case submitted': 'Case Submitted',
   'lost amount': 'Lost Amount',
+  'Not lost': 'No Lost Amount',
   'violation': 'Violation',
   'reset': 'Reset',
   'Betslip': 'Betslip',
@@ -79,6 +100,15 @@ const LOCAL_TEMPLATES = [
       { type: 'Standard', text: 'Pending Cashout — Crash / Aviator' }
     ],
     triggers: ['pending', 'cashout', 'crash', 'aviator']
+  },
+  {
+    id: 'local-no-lost-amount',
+    category: 'Casino — Lost Amount',
+    title: 'No Lost Amount — All Transactions Correct',
+    responses: [
+      { type: 'Standard', text: 'No Lost Amount — All Transactions Correct' }
+    ],
+    triggers: ['not', 'lost', 'amount', 'transactions', 'correct']
   },
   {
     id: 'local-violation',
