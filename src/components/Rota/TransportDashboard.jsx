@@ -75,10 +75,13 @@ export function TransportDashboard({
     });
   }, [anchorDate]);
 
-  // Date range logic
+  // Date range logic — weekStartsOn: 1 ensures Monday start for work schedules
   const range = useMemo(() => {
     if (filterType === 'weekly') {
-      return { start: startOfDay(startOfWeek(anchorDate)), end: endOfDay(endOfWeek(anchorDate)) };
+      return { 
+        start: startOfDay(startOfWeek(anchorDate, { weekStartsOn: 1 })), 
+        end: endOfDay(endOfWeek(anchorDate, { weekStartsOn: 1 })) 
+      };
     } else if (filterType === 'monthly') {
       return { start: startOfDay(startOfMonth(anchorDate)), end: endOfDay(endOfMonth(anchorDate)) };
     }
@@ -87,6 +90,15 @@ export function TransportDashboard({
       end: endOfDay(customRange.end)
     };
   }, [filterType, anchorDate, customRange]);
+
+  // Human-readable range label
+  const rangeLabel = useMemo(() => {
+    try {
+      return `${format(range.start, 'MMM d')} – ${format(range.end, 'MMM d, yyyy')}`;
+    } catch {
+      return '';
+    }
+  }, [range]);
 
   // Calculate Betfalme allowances
   const betfalmeAllowances = useMemo(() => {
@@ -235,7 +247,7 @@ export function TransportDashboard({
       const payment = {
         id: Date.now(),
         date: new Date().toISOString(),
-        range: `${format(range.start, 'MMM d')} - ${format(range.end, 'MMM d, yyyy')}`,
+        range: rangeLabel,
         amount: sofasafiTotal,
         staffCount: sofasafiAllowances.filter(s => s.amount > 0).length,
         type: filterType
@@ -245,7 +257,7 @@ export function TransportDashboard({
       const payment = {
         id: Date.now(),
         date: new Date().toISOString(),
-        range: `${format(range.start, 'MMM d')} - ${format(range.end, 'MMM d, yyyy')}`,
+        range: rangeLabel,
         amount: betfalmeTotal,
         staffCount: betfalmeAllowances.filter(s => s.amount > 0).length,
         type: filterType
@@ -257,55 +269,55 @@ export function TransportDashboard({
   // Determine current active display list and registries based on sub tab selection
   const currentList = activeSubTab === 'sofasafi' ? sofasafiAllowances : betfalmeAllowances;
   const currentHistory = activeSubTab === 'sofasafi' ? sofasafiPaymentHistory : paymentHistory;
-  const currentRates = activeSubTab === 'sofasafi' ? sofasafiSavedRates : savedRates;
+  const currentTotal = activeSubTab === 'sofasafi' ? sofasafiTotal : betfalmeTotal;
 
   return (
-    <div className="space-y-8">
-      {/* Sleek Compact Combined Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-6 rounded-2xl bg-card border border-border">
+    <div className="space-y-6 md:space-y-8">
+      {/* ── Header with Totals ── */}
+      <div className="flex flex-col gap-4 p-4 sm:p-6 rounded-2xl bg-card border border-border">
         <div>
-          <h2 className="text-xl font-black text-white uppercase tracking-tighter">Transport Allowances</h2>
-          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+          <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-tighter">Transport Allowances</h2>
+          <p className="text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
             Automated calculations for Late (PM) and Night (NT) commutes
           </p>
         </div>
         
         {isLoggedIn ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/5 p-4 rounded-xl border border-white/5 w-full lg:w-auto">
-            <div className="px-4 py-1 border-b sm:border-b-0 sm:border-r border-white/10">
-              <p className="text-gray-500 text-[8px] font-black uppercase tracking-widest">Combined Total</p>
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-white/5 p-3 sm:p-4 rounded-xl border border-white/5">
+            <div className="px-2 sm:px-4 py-1 border-r border-white/10">
+              <p className="text-gray-500 text-[7px] sm:text-[8px] font-black uppercase tracking-widest">Combined</p>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-xl font-black text-white tracking-tighter">{combinedTotal.toLocaleString()}</span>
-                <span className="text-[10px] font-bold text-accent">KSh</span>
+                <span className="text-base sm:text-xl font-black text-white tracking-tighter">{combinedTotal.toLocaleString()}</span>
+                <span className="text-[8px] sm:text-[10px] font-bold text-accent">KSh</span>
               </div>
             </div>
-            <div className="px-4 py-1 border-b sm:border-b-0 sm:border-r border-white/10">
-              <p className="text-gray-500 text-[8px] font-black uppercase tracking-widest">Betfalme Total</p>
+            <div className="px-2 sm:px-4 py-1 border-r border-white/10">
+              <p className="text-gray-500 text-[7px] sm:text-[8px] font-black uppercase tracking-widest">Betfalme</p>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-xl font-black text-white tracking-tighter">{betfalmeTotal.toLocaleString()}</span>
-                <span className="text-[10px] font-bold text-emerald-400">KSh</span>
+                <span className="text-base sm:text-xl font-black text-white tracking-tighter">{betfalmeTotal.toLocaleString()}</span>
+                <span className="text-[8px] sm:text-[10px] font-bold text-emerald-400">KSh</span>
               </div>
             </div>
-            <div className="px-4 py-1">
-              <p className="text-gray-500 text-[8px] font-black uppercase tracking-widest">SofaSafi Total</p>
+            <div className="px-2 sm:px-4 py-1">
+              <p className="text-gray-500 text-[7px] sm:text-[8px] font-black uppercase tracking-widest">SofaSafi</p>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-xl font-black text-white tracking-tighter">{sofasafiTotal.toLocaleString()}</span>
-                <span className="text-[10px] font-bold text-amber-500">KSh</span>
+                <span className="text-base sm:text-xl font-black text-white tracking-tighter">{sofasafiTotal.toLocaleString()}</span>
+                <span className="text-[8px] sm:text-[10px] font-bold text-amber-500">KSh</span>
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-6 bg-white/5 px-6 py-3 rounded-xl border border-white/5">
+          <div className="flex items-center justify-between gap-4 bg-white/5 px-4 sm:px-6 py-3 rounded-xl border border-white/5">
             <div>
               <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest">Estimated Payout</p>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-black text-white tracking-tighter">{betfalmeTotal.toLocaleString()}</span>
+                <span className="text-xl sm:text-2xl font-black text-white tracking-tighter">{betfalmeTotal.toLocaleString()}</span>
                 <span className="text-xs font-bold text-accent">KSh</span>
               </div>
             </div>
             <button 
               onClick={handlePay}
-              className="px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-black uppercase text-[9px] tracking-widest transition-all shadow-lg"
+              className="px-3 sm:px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-black uppercase text-[9px] tracking-widest transition-all shadow-lg shrink-0"
             >
               Mark Paid
             </button>
@@ -313,16 +325,16 @@ export function TransportDashboard({
         )}
       </div>
 
-      {/* Filters & Actions */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 px-4">
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Main Date Filter */}
+      {/* ── Filters & Branch Tabs ── */}
+      <div className="space-y-3 px-2 sm:px-4">
+        {/* Row 1: Date Filter + Range Badge */}
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex bg-white/5 p-1 rounded-xl border border-border">
             {['weekly', 'monthly', 'custom'].map(type => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
-                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                className={`px-3 sm:px-6 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${
                   filterType === type ? 'bg-white text-black shadow-lg shadow-black/10' : 'text-gray-500 hover:text-gray-300'
                 }`}
               >
@@ -331,54 +343,62 @@ export function TransportDashboard({
             ))}
           </div>
 
-          {/* Custom Range Picker */}
-          {filterType === 'custom' && (
-            <div className="flex flex-wrap items-center gap-4 bg-white/5 p-1.5 rounded-xl border border-border">
-              <div className="flex items-center gap-2 px-2">
-                <span className="text-[9px] font-black uppercase text-gray-500">From</span>
-                <input 
-                  type="date"
-                  value={format(customRange.start, 'yyyy-MM-dd')}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setCustomRange(prev => ({ ...prev, start: new Date(e.target.value + 'T00:00:00') }));
-                    }
-                  }}
-                  className="bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-xs text-white font-bold focus:outline-none focus:border-accent [color-scheme:dark]"
-                />
-              </div>
-              <div className="flex items-center gap-2 px-2 border-l border-white/10">
-                <span className="text-[9px] font-black uppercase text-gray-500">To</span>
-                <input 
-                  type="date"
-                  value={format(customRange.end, 'yyyy-MM-dd')}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setCustomRange(prev => ({ ...prev, end: new Date(e.target.value + 'T23:59:59') }));
-                    }
-                  }}
-                  className="bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-xs text-white font-bold focus:outline-none focus:border-accent [color-scheme:dark]"
-                />
-              </div>
-            </div>
+          {/* Active range badge */}
+          {rangeLabel && (
+            <span className="text-[8px] sm:text-[9px] font-bold text-gray-500 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 whitespace-nowrap">
+              <CalendarIcon size={10} className="inline mr-1.5 -mt-0.5 text-accent" />
+              {rangeLabel}
+            </span>
           )}
         </div>
 
-        {/* Sub-Tabs Switcher for Branches (Only visible when logged in) */}
-        <div className="flex flex-wrap items-center gap-4">
+        {/* Custom Range Picker */}
+        {filterType === 'custom' && (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white/5 p-2 sm:p-1.5 rounded-xl border border-border">
+            <div className="flex items-center gap-2 px-2">
+              <span className="text-[9px] font-black uppercase text-gray-500 shrink-0">From</span>
+              <input 
+                type="date"
+                value={format(customRange.start, 'yyyy-MM-dd')}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setCustomRange(prev => ({ ...prev, start: new Date(e.target.value + 'T00:00:00') }));
+                  }
+                }}
+                className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-accent [color-scheme:dark]"
+              />
+            </div>
+            <div className="flex items-center gap-2 px-2 border-t sm:border-t-0 sm:border-l border-white/10 pt-2 sm:pt-0">
+              <span className="text-[9px] font-black uppercase text-gray-500 shrink-0">To</span>
+              <input 
+                type="date"
+                value={format(customRange.end, 'yyyy-MM-dd')}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setCustomRange(prev => ({ ...prev, end: new Date(e.target.value + 'T23:59:59') }));
+                  }
+                }}
+                className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-accent [color-scheme:dark]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Row 2: Branch Tabs + Configure */}
+        <div className="flex flex-wrap items-center gap-3">
           {isLoggedIn && (
-            <div className="flex bg-white/5 p-1 rounded-xl border border-border">
+            <div className="flex bg-white/5 p-1 rounded-xl border border-border overflow-x-auto no-scrollbar">
               <button
                 onClick={() => { setActiveSubTab('combined'); setEditingRates(false); }}
-                className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                className={`px-3 sm:px-5 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                   activeSubTab === 'combined' ? 'bg-white text-black shadow-lg shadow-black/10' : 'text-gray-500 hover:text-gray-300'
                 }`}
               >
-                Combined View
+                Combined
               </button>
               <button
                 onClick={() => { setActiveSubTab('betfalme'); setEditingRates(false); }}
-                className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                className={`px-3 sm:px-5 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                   activeSubTab === 'betfalme' ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/20' : 'text-gray-500 hover:text-gray-300'
                 }`}
               >
@@ -386,7 +406,7 @@ export function TransportDashboard({
               </button>
               <button
                 onClick={() => { setActiveSubTab('sofasafi'); setEditingRates(false); }}
-                className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                className={`px-3 sm:px-5 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                   activeSubTab === 'sofasafi' ? 'bg-amber-600/20 text-amber-500 border border-amber-500/20' : 'text-gray-500 hover:text-gray-300'
                 }`}
               >
@@ -406,38 +426,40 @@ export function TransportDashboard({
                   setEditingRates(true);
                 }
               }}
-              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest transition-all whitespace-nowrap ${
                 editingRates 
                   ? "bg-emerald-600 text-white shadow-emerald-600/20" 
                   : "bg-white/5 text-gray-400 border border-white/10 hover:border-white/20 hover:text-white"
               }`}
             >
               {editingRates ? <CheckCircle2 size={14} /> : <TrendingUp size={14} />}
-              {editingRates ? "Save Configurations" : "Configure Rates"}
+              {editingRates ? "Save" : "Configure Rates"}
             </button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* ── Main Content Grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Main List */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-3 sm:space-y-4">
           
           {activeSubTab === 'combined' ? (
-            /* Combined View Grid */
-            <div className="space-y-4">
-              <div className="px-6 py-2 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+            /* ── Combined View ── */
+            <div className="space-y-3 sm:space-y-4">
+              {/* Column Headers — hidden on mobile, shown on sm+ */}
+              <div className="hidden sm:flex px-6 py-2 items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
                 <span>Staff Member</span>
-                <div className="flex gap-8 md:gap-16">
+                <div className="flex gap-6 md:gap-12">
                   <span className="w-16 text-center">Betfalme</span>
                   <span className="w-16 text-center">SofaSafi</span>
-                  <span className="w-24 text-right">Combined</span>
+                  <span className="w-20 text-right">Combined</span>
                 </div>
               </div>
 
               <div className="space-y-3">
                 {combinedAllowances.length === 0 ? (
-                  <div className="py-16 text-center bg-card border border-border rounded-2xl">
+                  <div className="py-12 sm:py-16 text-center bg-card border border-border rounded-2xl">
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 italic">No commute records for selected range</p>
                   </div>
                 ) : (
@@ -445,36 +467,39 @@ export function TransportDashboard({
                     <motion.div 
                       layout
                       key={s.name}
-                      className="p-6 rounded-2xl bg-card border border-border hover:border-white/10 transition-all group animate-fade-in"
+                      className="p-4 sm:p-6 rounded-2xl bg-card border border-border hover:border-white/10 transition-all group animate-fade-in"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                      {/* Mobile: stacked layout */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                        {/* Staff Info */}
+                        <div className="flex items-center gap-3 sm:gap-4">
                           <div 
-                            className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black uppercase"
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center text-base sm:text-xl font-black uppercase shrink-0"
                             style={{ backgroundColor: STAFF_THEME[s.name]?.bg || '#334466', color: STAFF_THEME[s.name]?.text || '#fff' }}
                           >
                             {s.name[0]}
                           </div>
-                          <div>
-                            <h4 className="text-lg font-black text-white tracking-tight">{s.name}</h4>
-                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Multiple Branch Commutes</p>
+                          <div className="min-w-0">
+                            <h4 className="text-sm sm:text-lg font-black text-white tracking-tight truncate">{s.name}</h4>
+                            <p className="text-[8px] sm:text-[9px] font-bold text-gray-500 uppercase tracking-widest">Multi-Branch Commute</p>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-8 md:gap-16">
-                          <div className="flex flex-col items-center w-16">
-                            <span className="text-xs font-black text-white">{s.betfalmeShifts} shifts</span>
-                            <span className="text-[8px] font-bold text-emerald-400 tracking-wider uppercase mt-0.5">{s.betfalmeAmount.toLocaleString()} KSh</span>
+                        {/* Stats — horizontal on all sizes, wraps on very small */}
+                        <div className="flex items-center gap-4 sm:gap-6 md:gap-12 pl-13 sm:pl-0">
+                          <div className="flex flex-col items-center min-w-[50px]">
+                            <span className="text-[10px] sm:text-xs font-black text-white">{s.betfalmeShifts} <span className="text-[8px] text-gray-500">shifts</span></span>
+                            <span className="text-[7px] sm:text-[8px] font-bold text-emerald-400 tracking-wider uppercase mt-0.5">{s.betfalmeAmount.toLocaleString()} KSh</span>
                           </div>
-                          <div className="flex flex-col items-center w-16">
-                            <span className="text-xs font-black text-white">{s.sofasafiShifts} shifts</span>
-                            <span className="text-[8px] font-bold text-amber-500 tracking-wider uppercase mt-0.5">{s.sofasafiAmount.toLocaleString()} KSh</span>
+                          <div className="flex flex-col items-center min-w-[50px]">
+                            <span className="text-[10px] sm:text-xs font-black text-white">{s.sofasafiShifts} <span className="text-[8px] text-gray-500">shifts</span></span>
+                            <span className="text-[7px] sm:text-[8px] font-bold text-amber-500 tracking-wider uppercase mt-0.5">{s.sofasafiAmount.toLocaleString()} KSh</span>
                           </div>
-                          <div className="w-24 text-right">
-                            <span className="text-xl font-black text-white tracking-tighter">
+                          <div className="min-w-[60px] text-right ml-auto sm:ml-0">
+                            <span className="text-lg sm:text-xl font-black text-white tracking-tighter">
                               {s.totalAmount.toLocaleString()}
                             </span>
-                            <span className="text-[9px] font-bold text-gray-500 ml-1">KSh</span>
+                            <span className="text-[8px] sm:text-[9px] font-bold text-gray-500 ml-1">KSh</span>
                           </div>
                         </div>
                       </div>
@@ -484,11 +509,12 @@ export function TransportDashboard({
               </div>
             </div>
           ) : (
-            /* Specific Branch Grid (Betfalme or SofaSafi) */
-            <div className="space-y-4">
-              <div className="px-6 py-2 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+            /* ── Specific Branch Grid (Betfalme or SofaSafi) ── */
+            <div className="space-y-3 sm:space-y-4">
+              {/* Column Headers — hidden on mobile */}
+              <div className="hidden sm:flex px-6 py-2 items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
                 <span>Staff Member</span>
-                <div className="flex gap-12">
+                <div className="flex gap-8 sm:gap-12">
                   <span className="w-20 text-center">Shifts (PM/NT)</span>
                   <span className="w-24 text-right">Amount (KSh)</span>
                 </div>
@@ -496,7 +522,7 @@ export function TransportDashboard({
 
               <div className="space-y-3">
                 {currentList.length === 0 ? (
-                  <div className="py-16 text-center bg-card border border-border rounded-2xl">
+                  <div className="py-12 sm:py-16 text-center bg-card border border-border rounded-2xl">
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 italic">No commute records for this branch</p>
                   </div>
                 ) : (
@@ -504,28 +530,30 @@ export function TransportDashboard({
                     <motion.div 
                       layout
                       key={s.name}
-                      className="p-6 rounded-2xl bg-card border border-border hover:border-white/10 transition-all group animate-fade-in"
+                      className="p-4 sm:p-6 rounded-2xl bg-card border border-border hover:border-white/10 transition-all group animate-fade-in"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                        {/* Staff Info */}
+                        <div className="flex items-center gap-3 sm:gap-4">
                           <div 
-                            className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black uppercase"
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center text-base sm:text-xl font-black uppercase shrink-0"
                             style={{ backgroundColor: STAFF_THEME[s.name]?.bg || '#334466', color: STAFF_THEME[s.name]?.text || '#fff' }}
                           >
                             {s.name[0]}
                           </div>
-                          <div>
-                            <h4 className="text-lg font-black text-white tracking-tight">{s.name}</h4>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                          <div className="min-w-0">
+                            <h4 className="text-sm sm:text-lg font-black text-white tracking-tight truncate">{s.name}</h4>
+                            <p className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                               Rate: {editingRates ? '' : `${s.rate} KSh/shift`}
                             </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-12">
+                        {/* Stats / Rate Editor */}
+                        <div className="flex items-center gap-4 sm:gap-8 md:gap-12 pl-13 sm:pl-0">
                           {editingRates ? (
                             <div className="flex items-center bg-black/40 rounded-xl border border-white/10 px-3 py-2">
-                              <DollarSign size={12} className="text-gray-500 mr-2" />
+                              <DollarSign size={12} className="text-gray-500 mr-2 shrink-0" />
                               <input 
                                 type="number"
                                 value={activeSubTab === 'sofasafi' ? (sofasafiTempRates[s.name] || '') : (tempRates[s.name] || '')}
@@ -544,18 +572,18 @@ export function TransportDashboard({
                           ) : (
                             <div className="flex gap-4">
                                <div className="flex flex-col items-center">
-                                  <span className="text-xs font-black text-white">{s.pm}</span>
-                                  <span className="text-[8px] font-bold text-gray-500 uppercase">PM</span>
+                                 <span className="text-xs font-black text-white">{s.pm}</span>
+                                 <span className="text-[8px] font-bold text-gray-500 uppercase">PM</span>
                                </div>
                                <div className="flex flex-col items-center">
-                                  <span className="text-xs font-black text-white">{s.nt}</span>
-                                  <span className="text-[8px] font-bold text-gray-500 uppercase">NT</span>
+                                 <span className="text-xs font-black text-white">{s.nt}</span>
+                                 <span className="text-[8px] font-bold text-gray-500 uppercase">NT</span>
                                </div>
                             </div>
                           )}
                           
-                          <div className="w-24 text-right">
-                            <span className="text-xl font-black text-white tracking-tighter">
+                          <div className="min-w-[60px] text-right ml-auto sm:ml-0">
+                            <span className="text-lg sm:text-xl font-black text-white tracking-tighter">
                               {s.amount.toLocaleString()}
                             </span>
                           </div>
@@ -569,81 +597,81 @@ export function TransportDashboard({
           )}
         </div>
 
-        {/* Sidebar / Registry (Only visible when a specific branch is selected, combined tab shows Policy/Actions) */}
-        <div className="space-y-6">
+        {/* ── Sidebar ── */}
+        <div className="space-y-4 sm:space-y-6">
           {activeSubTab !== 'combined' ? (
             /* Branch Payment Registry */
-            <div className="p-8 rounded-2xl bg-card border border-border animate-fade-in">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-black text-white uppercase tracking-tighter flex items-center gap-2">
-                  <History size={18} className="text-blue-500" />
+            <div className="p-5 sm:p-8 rounded-2xl bg-card border border-border animate-fade-in">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 gap-3">
+                <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tighter flex items-center gap-2">
+                  <History size={18} className="text-blue-500 shrink-0" />
                   Registry
                 </h3>
                 
                 <button 
                   onClick={handlePay}
                   disabled={currentList.length === 0}
-                  className="px-4 py-2 bg-white text-black font-black uppercase text-[9px] tracking-widest rounded-xl hover:bg-gray-100 disabled:opacity-40 transition-all"
+                  className="px-3 sm:px-4 py-2 bg-white text-black font-black uppercase text-[8px] sm:text-[9px] tracking-widest rounded-xl hover:bg-gray-100 disabled:opacity-40 transition-all shrink-0"
                 >
                   Mark Paid
                 </button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {currentHistory.length === 0 && (
-                  <div className="py-12 text-center">
+                  <div className="py-8 sm:py-12 text-center">
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-600 italic">No payments recorded</p>
                   </div>
                 )}
                 {currentHistory.map(h => (
-                  <div key={h.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{h.type} Sync</span>
-                      <span className="text-[9px] text-gray-500 font-bold">{format(parseISO(h.date), 'MMM d, HH:mm')}</span>
+                  <div key={h.id} className="p-3 sm:p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer">
+                    <div className="flex items-center justify-between mb-2 gap-2">
+                      <span className="text-[9px] sm:text-[10px] font-black text-blue-400 uppercase tracking-widest">{h.type} Sync</span>
+                      <span className="text-[8px] sm:text-[9px] text-gray-500 font-bold shrink-0">{format(parseISO(h.date), 'MMM d, HH:mm')}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-black text-white">{h.amount.toLocaleString()} KSh</span>
-                      <span className="text-[9px] text-gray-500 font-bold">{h.staffCount} Personnel</span>
+                      <span className="text-xs sm:text-sm font-black text-white">{h.amount.toLocaleString()} KSh</span>
+                      <span className="text-[8px] sm:text-[9px] text-gray-500 font-bold">{h.staffCount} Personnel</span>
                     </div>
-                    <p className="text-[8px] text-gray-600 mt-2 font-medium">{h.range}</p>
+                    <p className="text-[7px] sm:text-[8px] text-gray-600 mt-1.5 sm:mt-2 font-medium">{h.range}</p>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
             /* Combined Payout Breakdown Card */
-            <div className="p-8 rounded-2xl bg-card border border-border animate-fade-in space-y-6">
-              <h3 className="text-lg font-black text-white uppercase tracking-tighter flex items-center gap-2">
-                <TrendingUp size={18} className="text-accent" />
+            <div className="p-5 sm:p-8 rounded-2xl bg-card border border-border animate-fade-in space-y-4 sm:space-y-6">
+              <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tighter flex items-center gap-2">
+                <TrendingUp size={18} className="text-accent shrink-0" />
                 Branch Breakdown
               </h3>
               
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
-                  <span className="text-[9px] text-emerald-400 font-black uppercase tracking-widest block mb-1">Betfalme</span>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="p-3 sm:p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
+                  <span className="text-[8px] sm:text-[9px] text-emerald-400 font-black uppercase tracking-widest block mb-1">Betfalme</span>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-2xl font-black text-white tracking-tighter">{betfalmeTotal.toLocaleString()} <span className="text-xs font-bold text-gray-500">KSh</span></span>
-                    <span className="text-[10px] text-gray-400 font-bold">{betfalmeAllowances.filter(s => s.amount > 0).length} staff</span>
+                    <span className="text-xl sm:text-2xl font-black text-white tracking-tighter">{betfalmeTotal.toLocaleString()} <span className="text-[10px] sm:text-xs font-bold text-gray-500">KSh</span></span>
+                    <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold">{betfalmeAllowances.filter(s => s.amount > 0).length} staff</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10">
-                  <span className="text-[9px] text-amber-400 font-black uppercase tracking-widest block mb-1">SofaSafi</span>
+                <div className="p-3 sm:p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10">
+                  <span className="text-[8px] sm:text-[9px] text-amber-400 font-black uppercase tracking-widest block mb-1">SofaSafi</span>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-2xl font-black text-white tracking-tighter">{sofasafiTotal.toLocaleString()} <span className="text-xs font-bold text-gray-500">KSh</span></span>
-                    <span className="text-[10px] text-gray-400 font-bold">{sofasafiAllowances.filter(s => s.amount > 0).length} staff</span>
+                    <span className="text-xl sm:text-2xl font-black text-white tracking-tighter">{sofasafiTotal.toLocaleString()} <span className="text-[10px] sm:text-xs font-bold text-gray-500">KSh</span></span>
+                    <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold">{sofasafiAllowances.filter(s => s.amount > 0).length} staff</span>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="p-8 rounded-2xl bg-accent/5 border border-accent/10">
-            <div className="flex items-center gap-3 mb-4">
-              <Info size={16} className="text-blue-500" />
-              <h4 className="text-xs font-black text-white uppercase tracking-widest">Policy Insight</h4>
+          <div className="p-5 sm:p-8 rounded-2xl bg-accent/5 border border-accent/10">
+            <div className="flex items-center gap-3 mb-3 sm:mb-4">
+              <Info size={16} className="text-blue-500 shrink-0" />
+              <h4 className="text-[10px] sm:text-xs font-black text-white uppercase tracking-widest">Policy Insight</h4>
             </div>
-            <p className="text-[11px] text-gray-400 leading-relaxed">
+            <p className="text-[10px] sm:text-[11px] text-gray-400 leading-relaxed">
               Transport allowances are only applicable to Late (PM) and Night (NT) shifts due to commute requirements. Morning (AM) shifts do not qualify.
             </p>
           </div>
