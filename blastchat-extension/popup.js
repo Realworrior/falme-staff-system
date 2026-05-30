@@ -106,7 +106,7 @@ const LOCAL_TEMPLATES = [
     category: 'Casino — Lost Amount',
     title: 'No Lost Amount — All Transactions Correct',
     responses: [
-      { type: 'Standard', text: 'No Lost Amount — All Transactions Correct' }
+      { type: 'Standard', text: 'no lost amount - all transactions correct' }
     ],
     triggers: ['not', 'lost', 'amount', 'transactions', 'correct']
   },
@@ -774,6 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activeCategory === cat) option.selected = true;
       categorySelect.appendChild(option);
     });
+  }
   }
 
   function filterTemplates() {
