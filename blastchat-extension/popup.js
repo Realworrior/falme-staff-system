@@ -11,17 +11,211 @@ let activeTabId = null;
 let isBlastChat = false;
 
 const SHORTCUT_MAPPING = {
-  'Account number': 'Account verification',
-  'Failed deposit': 'Deposit',
-  'Case submitted': 'Submitted',
-  'Lost amount': 'casino',
-  'Unpaid winning bet': 'BetId',
-  'Pending betslip': 'BetId',
-  'Account closure': 'Delete',
-  'Cashback': 'cashback'
+  'failed deposit': 'Failed Deposit',
+  'airtel/bank': 'Airtel Bank',
+  'account number': 'Account Verification',
+  'case submitted': 'Case Submitted',
+  'lost amount': 'Lost Amount',
+  'violation': 'Violation',
+  'reset': 'Reset',
+  'Betslip': 'Betslip',
+  'Account closure': 'Account Closure',
+  'cashback': 'Cashback'
 };
 
 const SHORTCUT_KEYWORDS = Object.keys(SHORTCUT_MAPPING);
+
+const LOCAL_TEMPLATES = [
+  {
+    id: 'local-failed-deposit',
+    category: 'Deposit — Failed',
+    title: 'Failed Deposit — M-PESA Code Required',
+    responses: [
+      { type: 'Standard', text: 'Failed Deposit — M-PESA Code Required' }
+    ],
+    triggers: ['failed', 'deposit', 'm-pesa', 'mpesa', 'code', 'required']
+  },
+  {
+    id: 'local-airtel-bank',
+    category: 'Deposit — Airtel/Bank',
+    title: 'Airtel or Bank Deposit — Not Supported',
+    responses: [
+      { type: 'Standard', text: 'Airtel or Bank Deposit — Not Supported' }
+    ],
+    triggers: ['airtel', 'bank', 'deposit', 'not', 'supported']
+  },
+  {
+    id: 'local-account-number',
+    category: 'Account — Verification',
+    title: 'Account Verification Request',
+    responses: [
+      { type: 'Standard', text: 'Account Verification Request' }
+    ],
+    triggers: ['account', 'number', 'verification', 'request']
+  },
+  {
+    id: 'local-case-submitted',
+    category: 'Technical — Support',
+    title: 'Case Submitted to Technical Team',
+    responses: [
+      { type: 'Standard', text: 'Case Submitted to Technical Team' }
+    ],
+    triggers: ['case', 'submitted', 'technical', 'team']
+  },
+  {
+    id: 'local-lost-amount-1',
+    category: 'Casino — Lost Amount',
+    title: 'Lost Amount Report — Aviator, Jet X, Crash Games',
+    responses: [
+      { type: 'Standard', text: 'Lost Amount Report — Aviator, Jet X, Crash Games' }
+    ],
+    triggers: ['lost', 'amount', 'report', 'aviator', 'jet', 'crash']
+  },
+  {
+    id: 'local-lost-amount-2',
+    category: 'Casino — Lost Amount',
+    title: 'Pending Cashout — Crash / Aviator',
+    responses: [
+      { type: 'Standard', text: 'Pending Cashout — Crash / Aviator' }
+    ],
+    triggers: ['pending', 'cashout', 'crash', 'aviator']
+  },
+  {
+    id: 'local-violation',
+    category: 'Referral — Violation',
+    title: 'Referral Terms Violation Notice',
+    responses: [
+      { type: 'Standard', text: 'Following a review of your account activity, we have found that our referral terms were violated due to the creation of multiple accounts under the same identity to obtain the KSh 10 referral bonus. Based on internal checks including device verification, connection history, referral activity, and location data, withdrawals have been restricted. To restore withdrawal access, the account will need to be reset, which will clear all current funds. Kindly confirm if you agree to proceed with the account reset.' }
+    ],
+    triggers: ['violation', 'referral', 'terms', 'multiple', 'accounts']
+  },
+  {
+    id: 'local-reset-1',
+    category: 'Account — Reset',
+    title: 'Account Reset — Failed / Alternative new account',
+    responses: [
+      { type: 'Standard', text: 'We are currently experiencing a technical limitation affecting the account reset option. As an alternative, you may create a new account. Please ensure all future activity follows our platform policies and referral rules.' }
+    ],
+    triggers: ['reset', 'failed', 'limitation']
+  },
+  {
+    id: 'local-reset-2',
+    category: 'Account — Reset',
+    title: 'Account Reset — Successful',
+    responses: [
+      { type: 'Standard', text: 'Your account has been successfully reset. You can now log in and continue using your account. Please ensure all future activity follows our referral and platform policies.' }
+    ],
+    triggers: ['reset', 'successful', 'success', 'policies']
+  },
+  {
+    id: 'local-betslip-1',
+    category: 'Betting — Betslip',
+    title: 'Betslip Verification Request',
+    responses: [
+      { type: 'Standard', text: 'Please share a screenshot of the betslip, the Bet ID (for example #678534), and your registered phone number so we can assist.' }
+    ],
+    triggers: ['betslip', 'verification', 'screenshot']
+  },
+  {
+    id: 'local-betslip-2',
+    category: 'Betting — Betslip',
+    title: 'Bet Cashout Investigation',
+    responses: [
+      { type: 'Standard', text: 'Please share the Bet ID, the exact time you attempted the cash out, and your registered phone number so we can investigate.' }
+    ],
+    triggers: ['cash', 'out', 'investigate', 'attempted']
+  },
+  {
+    id: 'local-betslip-3',
+    category: 'Betting — Betslip',
+    title: 'Bet Not Accepted / Rejected',
+    responses: [
+      { type: 'Standard', text: 'Bet Not Accepted / Rejected' }
+    ],
+    triggers: ['rejected', 'not', 'accepted']
+  },
+  {
+    id: 'local-betslip-4',
+    category: 'Betting — Betslip',
+    title: 'Pending Betslip — Postponed Game',
+    responses: [
+      { type: 'Standard', text: 'Pending Betslip — Postponed Game' }
+    ],
+    triggers: ['postponed', 'game', 'pending']
+  },
+  {
+    id: 'local-closure-1',
+    category: 'Account — Closure',
+    title: 'Self-Exclusion Request',
+    responses: [
+      { type: 'Standard', text: 'Self-Exclusion Request' }
+    ],
+    triggers: ['self', 'exclusion']
+  },
+  {
+    id: 'local-closure-2',
+    category: 'Account — Closure',
+    title: 'Account Closure',
+    responses: [
+      { type: 'Standard', text: 'Account Closure' }
+    ],
+    triggers: ['closure', 'close']
+  },
+  {
+    id: 'local-closure-3',
+    category: 'Account — Closure',
+    title: 'Self-Exclusion',
+    responses: [
+      { type: 'Standard', text: 'Self-Exclusion' }
+    ],
+    triggers: ['exclusion', 'deactivate']
+  },
+  {
+    id: 'local-cashback-1',
+    category: 'Cashback — Support',
+    title: 'How to Calculate Cashback',
+    responses: [
+      { type: 'Standard', text: 'How to Calculate Cashback' }
+    ],
+    triggers: ['calculate', 'cashback']
+  },
+  {
+    id: 'local-cashback-2',
+    category: 'Cashback — Support',
+    title: 'Will I Get Cashback Today',
+    responses: [
+      { type: 'Standard', text: 'Will I Get Cashback Today' }
+    ],
+    triggers: ['get', 'today']
+  },
+  {
+    id: 'local-cashback-3',
+    category: 'Cashback — Support',
+    title: 'Daily Cashback Reset Window',
+    responses: [
+      { type: 'Standard', text: 'Daily Cashback Reset Window' }
+    ],
+    triggers: ['reset', 'window']
+  },
+  {
+    id: 'local-cashback-4',
+    category: 'Cashback — Support',
+    title: 'Where Is My Cashback',
+    responses: [
+      { type: 'Standard', text: 'Where Is My Cashback' }
+    ],
+    triggers: ['where', 'missing']
+  },
+  {
+    id: 'local-cashback-5',
+    category: 'Cashback — Support',
+    title: 'Cashback Not Received — Conditions Not Met',
+    responses: [
+      { type: 'Standard', text: 'Cashback Not Received — Conditions Not Met' }
+    ],
+    triggers: ['not', 'received', 'conditions']
+  }
+];
 
 // NLP dictionaries and local match engine
 const STOP_WORDS = new Set([
@@ -449,6 +643,28 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error("Fetch error", err);
       showError(`Sync Failed: ${err.message}`);
+      
+      // Fallback: load local templates always
+      const cached = localStorage.getItem('blastchat_templates');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          // Merge local templates into cached ones if not already present
+          const cachedIds = new Set(parsed.allTemplates.map(t => t.id));
+          const uniqueLocals = LOCAL_TEMPLATES.filter(t => !cachedIds.has(t.id));
+          allTemplates = [...parsed.allTemplates, ...uniqueLocals];
+          const categories = [...new Set(allTemplates.map(t => t.category))].filter(Boolean);
+          renderUI(categories);
+        } catch (e) {
+          allTemplates = LOCAL_TEMPLATES;
+          const categories = [...new Set(allTemplates.map(t => t.category))].filter(Boolean);
+          renderUI(categories);
+        }
+      } else {
+        allTemplates = LOCAL_TEMPLATES;
+        const categories = [...new Set(allTemplates.map(t => t.category))].filter(Boolean);
+        renderUI(categories);
+      }
     }
   }
 
@@ -469,8 +685,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    allTemplates = flattened;
-    const categories = [...new Set(data.map(d => d.category))].filter(Boolean);
+    // Always merge local templates to guarantee they are present
+    const flattenedIds = new Set(flattened.map(t => t.id));
+    const uniqueLocals = LOCAL_TEMPLATES.filter(t => !flattenedIds.has(t.id));
+    allTemplates = [...flattened, ...uniqueLocals];
+    
+    const categories = [...new Set(allTemplates.map(t => t.category))].filter(Boolean);
     localStorage.setItem('blastchat_templates', JSON.stringify({ allTemplates, categories }));
     renderUI(categories);
     updateStatus("Matrix Synced", "orange");
