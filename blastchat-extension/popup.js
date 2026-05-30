@@ -1104,9 +1104,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // Always merge local templates to guarantee they are present
-    const flattenedIds = new Set(flattened.map(t => t.id));
-    const uniqueLocals = LOCAL_TEMPLATES.filter(t => !flattenedIds.has(t.id));
+    // Merge local templates — deduplicate by title+category so Supabase originals win
+    const flattenedKeys = new Set(flattened.map(t => `${t.category}||${t.title}`));
+    const uniqueLocals = LOCAL_TEMPLATES.filter(
+      t => !flattenedKeys.has(`${t.category}||${t.title}`)
+    );
     allTemplates = [...flattened, ...uniqueLocals];
     
     const categories = [...new Set(allTemplates.map(t => t.category))].filter(Boolean);
@@ -1509,6 +1511,112 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ─── Single card with clickable variant tabs ───────────────────────────────
+  function buildSwitcherCard(t, idx) {
+    const responses = Array.isArray(t.responses) && t.responses.length > 0
+      ? t.responses
+      : [{ text: 'No intelligence found for this module.', type: 'Standard' }];
+
+    const card = document.createElement('div');
+    card.className = 'matrix-card';
+
+    // Meta row
+    const meta = document.createElement('div');
+    meta.className = 'card-meta';
+    const numDiv = document.createElement('div');
+    numDiv.className = 'card-number';
+    numDiv.style.cssText = 'font-family:var(--mono);font-size:10px;font-weight:800;color:var(--orange);opacity:0.6;letter-spacing:0.05em;';
+    numDiv.textContent = `INTEL_REF_${(idx + 1).toString().padStart(3, '0')}`;
+    meta.appendChild(numDiv);
+    const catDiv = document.createElement('div');
+    catDiv.style.cssText = 'font-family:var(--mono);font-size:8px;font-weight:900;color:var(--orange);text-transform:uppercase;letter-spacing:0.1em;';
+    catDiv.textContent = t.category;
+    meta.appendChild(catDiv);
+    card.appendChild(meta);
+
+    // Title
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'card-title';
+    titleDiv.style.fontFamily = 'var(--mono)';
+    titleDiv.textContent = t.title;
+    card.appendChild(titleDiv);
+
+    // Variant tab row (shown only when there are multiple responses)
+    const tabs = [];
+    if (responses.length > 1) {
+      const tabsRow = document.createElement('div');
+      tabsRow.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.04);';
+
+      const varLabel = document.createElement('span');
+      varLabel.style.cssText = 'font-family:var(--mono);font-size:9px;font-weight:900;color:rgba(255,102,0,0.4);text-transform:uppercase;letter-spacing:0.08em;flex-shrink:0;';
+      varLabel.textContent = 'Variant:';
+      tabsRow.appendChild(varLabel);
+
+      responses.forEach((r, rIdx) => {
+        const tab = document.createElement('button');
+        tab.textContent = r.type || `${rIdx + 1}`;
+        tab.style.cssText = 'padding:2px 8px;border-radius:3px;border:1px solid;font-family:var(--mono);font-size:9px;font-weight:900;cursor:pointer;transition:all 0.15s;white-space:nowrap;';
+        tabs.push(tab);
+        tabsRow.appendChild(tab);
+      });
+      card.appendChild(tabsRow);
+    }
+
+    // Body — single response displayed at a time
+    const body = document.createElement('div');
+    body.className = 'card-body';
+
+    const respDiv = document.createElement('div');
+    respDiv.className = 'response-text';
+    body.appendChild(respDiv);
+
+    // Inject button
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.style.marginTop = '8px';
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '14'); svg.setAttribute('height', '14');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '3');
+    svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
+    const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    arrowPath.setAttribute('d', 'M5 12h14m-7-7 7 7-7 7');
+    svg.appendChild(arrowPath);
+    btn.appendChild(svg);
+    const btnLabel = document.createTextNode(' Inject');
+    btn.appendChild(btnLabel);
+    body.appendChild(btn);
+    card.appendChild(body);
+
+    // ── Switch variant: update text + button + tab styles ──
+    function setVariant(i) {
+      const resp = responses[i];
+      respDiv.textContent = '';
+      appendHighlightedText(respDiv, resp.text);
+
+      btn.onclick = () => injectText(resp.text);
+      respDiv.onclick = () => {
+        navigator.clipboard.writeText(resp.text).then(() => {
+          updateStatus('Copied to Clipboard', 'orange');
+          setTimeout(() => updateStatus('Ready', 'orange'), 2000);
+        });
+      };
+
+      tabs.forEach((tab, tIdx) => {
+        const active = tIdx === i;
+        tab.style.borderColor  = active ? 'var(--orange)' : 'rgba(255,255,255,0.1)';
+        tab.style.background   = active ? 'rgba(255,102,0,0.12)' : 'transparent';
+        tab.style.color        = active ? 'var(--orange)' : 'rgba(255,255,255,0.3)';
+      });
+    }
+
+    tabs.forEach((tab, tIdx) => { tab.onclick = () => setVariant(tIdx); });
+    setVariant(0); // default: first variant active
+
+    return card;
+  }
+
+  // ─── Render templates list ─────────────────────────────────────────────────
   function renderTemplates(templates) {
     if (!container) return;
     container.textContent = '';
@@ -1521,89 +1629,52 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    templates.forEach((t, idx) => {
-      const responses = Array.isArray(t.responses) && t.responses.length > 0
-        ? t.responses
-        : [{ text: 'No intelligence found for this module.', type: 'Standard' }];
+    // Deduplicate by title+category at render time (belt-and-suspenders)
+    const seen = new Set();
+    const unique = templates.filter(t => {
+      const key = `${t.category}||${t.title}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
-      // ── Outer card wrapper ──
-      const card = document.createElement('div');
-      card.className = 'matrix-card';
-
-      // Card number + category meta
-      const meta = document.createElement('div');
-      meta.className = 'card-meta';
-
-      const numDiv = document.createElement('div');
-      numDiv.className = 'card-number';
-      numDiv.style.cssText = 'font-family:var(--mono);font-size:10px;font-weight:800;color:var(--orange);opacity:0.6;letter-spacing:0.05em;';
-      numDiv.textContent = `INTEL_REF_${(idx + 1).toString().padStart(3, '0')}`;
-      meta.appendChild(numDiv);
-
-      const catDiv = document.createElement('div');
-      catDiv.style.cssText = 'font-family:var(--mono);font-size:8px;font-weight:900;color:var(--orange);text-transform:uppercase;letter-spacing:0.1em;';
-      catDiv.textContent = t.category;
-      meta.appendChild(catDiv);
-      card.appendChild(meta);
-
-      // Title
-      const titleDiv = document.createElement('div');
-      titleDiv.className = 'card-title';
-      titleDiv.style.fontFamily = 'var(--mono)';
-      titleDiv.textContent = t.title;
-      card.appendChild(titleDiv);
-
-      // ── One body block per response variant ──
-      responses.forEach((resp, rIdx) => {
-        const variantWrap = document.createElement('div');
-        variantWrap.className = 'card-body';
-        variantWrap.style.cssText = rIdx > 0
-          ? 'border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:4px;'
-          : '';
-
-        // Variant label (e.g. "Standard", "High Empathy")
-        const typeLabel = document.createElement('div');
-        typeLabel.style.cssText = 'font-family:var(--mono);font-size:9px;font-weight:900;color:rgba(255,102,0,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
-        typeLabel.textContent = `[${resp.type || 'Variant ' + (rIdx + 1)}]`;
-        variantWrap.appendChild(typeLabel);
-
-        // Response text
-        const respDiv = document.createElement('div');
-        respDiv.className = 'response-text';
-        appendHighlightedText(respDiv, resp.text);
-        variantWrap.appendChild(respDiv);
-
-        // Inject button
-        const btn = document.createElement('button');
-        btn.className = 'copy-btn';
-        btn.style.marginTop = '8px';
-
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', '14'); svg.setAttribute('height', '14');
-        svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none');
-        svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '3');
-        svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M5 12h14m-7-7 7 7-7 7');
-        svg.appendChild(path);
-        btn.appendChild(svg);
-        btn.appendChild(document.createTextNode(' Inject'));
-
-        const textToInject = resp.text;
-        btn.addEventListener('click', () => injectText(textToInject));
-        respDiv.addEventListener('click', () => {
-          navigator.clipboard.writeText(textToInject).then(() => {
-            updateStatus('Copied to Clipboard', 'orange');
-            setTimeout(() => updateStatus('Ready', 'orange'), 2000);
-          });
-        });
-
-        variantWrap.appendChild(btn);
-        card.appendChild(variantWrap);
+    if (activeShortcut) {
+      // ── Shortcut view: flat list, one switcher-card per template ──
+      unique.forEach((t, idx) => container.appendChild(buildSwitcherCard(t, idx)));
+    } else {
+      // ── Default / search / category view: group by category ──
+      const groups = new Map();
+      unique.forEach(t => {
+        if (!groups.has(t.category)) groups.set(t.category, []);
+        groups.get(t.category).push(t);
       });
 
-      container.appendChild(card);
-    });
+      let globalIdx = 0;
+      groups.forEach((items, cat) => {
+        // Category section header
+        const header = document.createElement('div');
+        header.style.cssText = [
+          'display:flex;align-items:center;gap:10px;',
+          'padding:8px 0 6px;margin:14px 0 8px;',
+          'border-bottom:1px solid rgba(255,102,0,0.25);',
+          'font-family:var(--mono);font-size:9px;font-weight:900;',
+          'color:var(--orange);text-transform:uppercase;letter-spacing:0.12em;'
+        ].join('');
+
+        const dot = document.createElement('span');
+        dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;flex-shrink:0;';
+        header.appendChild(dot);
+        header.appendChild(document.createTextNode(cat));
+
+        const count = document.createElement('span');
+        count.style.cssText = 'margin-left:auto;font-size:8px;opacity:0.5;';
+        count.textContent = `COUNT: ${items.length}`;
+        header.appendChild(count);
+
+        container.appendChild(header);
+        items.forEach(t => container.appendChild(buildSwitcherCard(t, globalIdx++)));
+      });
+    }
   }
 
   function updateStatus(text, colorVar) {
