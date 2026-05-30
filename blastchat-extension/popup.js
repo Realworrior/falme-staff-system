@@ -1118,54 +1118,57 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderUI(categories) {
     renderShortcuts();
     renderCategoryDropdown(categories);
+    // Immediately populate the card list with all templates (no blank on open)
+    filterTemplates();
+
     function renderShortcuts() {
-    const area = document.getElementById('shortcuts-row');
-    if (!area) return;
-    area.textContent = '';
+      const area = document.getElementById('shortcuts-row');
+      if (!area) return;
+      area.textContent = '';
 
-    SHORTCUT_KEYWORDS.forEach(label => {
-      const tag = document.createElement('div');
-      tag.className = `shortcut-tag ${activeShortcut === label ? 'active' : ''}`;
-      tag.textContent = label;
-      tag.onclick = () => {
-        if (activeShortcut === label) {
-          activeShortcut = null;
-          tag.classList.remove('active');
-        } else {
-          document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
-          activeShortcut = label;
-          tag.classList.add('active');
-          // Clear active category and search input for shortcut priority
-          activeCategory = 'ALL';
-          if (categorySelect) categorySelect.value = 'ALL';
-          if (searchInput) searchInput.value = '';
-        }
-        filterTemplates();
-      };
-      area.appendChild(tag);
-    });
-  }
+      SHORTCUT_KEYWORDS.forEach(label => {
+        const tag = document.createElement('div');
+        tag.className = `shortcut-tag ${activeShortcut === label ? 'active' : ''}`;
+        tag.textContent = label;
+        tag.onclick = () => {
+          if (activeShortcut === label) {
+            activeShortcut = null;
+            tag.classList.remove('active');
+          } else {
+            document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
+            activeShortcut = label;
+            tag.classList.add('active');
+            // Clear active category and search input for shortcut priority
+            activeCategory = 'ALL';
+            if (categorySelect) categorySelect.value = 'ALL';
+            if (searchInput) searchInput.value = '';
+          }
+          filterTemplates();
+        };
+        area.appendChild(tag);
+      });
+    }
 
-  function renderCategoryDropdown(categories) {
-    if (!categorySelect) return;
-    categorySelect.textContent = '';
+    function renderCategoryDropdown(categories) {
+      if (!categorySelect) return;
+      categorySelect.textContent = '';
 
-    const allOpt = document.createElement('option');
-    allOpt.value = 'ALL';
-    allOpt.textContent = 'All Categories';
-    categorySelect.appendChild(allOpt);
+      const allOpt = document.createElement('option');
+      allOpt.value = 'ALL';
+      allOpt.textContent = 'All Categories';
+      categorySelect.appendChild(allOpt);
 
-    // Use full category names exactly as fetched from Supabase (matches SEC_ID 1–12)
-    const uniqueCats = [...new Set(categories)].sort();
+      // Use full category names exactly as fetched from Supabase (matches SEC_ID 1–12)
+      const uniqueCats = [...new Set(categories)].sort();
 
-    uniqueCats.forEach(cat => {
-      const option = document.createElement('option');
-      option.value = cat;
-      option.textContent = cat;
-      if (activeCategory === cat) option.selected = true;
-      categorySelect.appendChild(option);
-    });
-  }
+      uniqueCats.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        if (activeCategory === cat) option.selected = true;
+        categorySelect.appendChild(option);
+      });
+    }
   }
 
   function filterTemplates() {
