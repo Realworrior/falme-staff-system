@@ -579,7 +579,18 @@ useEffect(() => {
                   textDecoration: 'none', boxShadow: `0 4px 15px ${S.orange}30` 
                 }}
               >
-                <Download size={14} /> Download Extension
+                <Download size={14} /> Download Extension (Chrome)
+              </a>
+              <a 
+                href="/templates/2ed051c2d4a1455d8485-1.2.xpi"
+                style={{ 
+                  background: '#ea580c', color: '#fff', borderRadius: 10, 
+                  padding: '8px 16px', fontSize: 11, fontWeight: 800, 
+                  display: 'flex', alignItems: 'center', gap: 8, 
+                  textDecoration: 'none', boxShadow: `0 4px 15px rgba(234,88,12,0.3)` 
+                }}
+              >
+                <span>🦊</span> Install Add-on (Firefox)
               </a>
             </div>
           </div>

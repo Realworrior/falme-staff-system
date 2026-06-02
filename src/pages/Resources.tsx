@@ -2653,15 +2653,31 @@ function ToolkitView({ accent }: { accent: string }) {
                download="blastchat-extension.zip"
                className="w-full px-6 py-4 bg-accent text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
              >
-               <span>📦</span> Download Extension
+               <span>📦</span> Download Extension (Chrome)
+             </a>
+
+             <a 
+               href="/templates/2ed051c2d4a1455d8485-1.2.xpi"
+               className="w-full px-6 py-4 bg-orange-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(234,88,12,0.3)] hover:shadow-[0_15px_30px_rgba(234,88,12,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
+             >
+               <span>🦊</span> Install Add-on (Firefox)
              </a>
              
-             <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-[10px] text-white/40 leading-relaxed">
-                <span className="text-accent font-black">INSTALLATION:</span><br/>
-                1. Unzip download<br/>
-                2. Go to <span className="text-white/60">chrome://extensions</span><br/>
-                3. Enable <span className="text-white/60">Developer Mode</span><br/>
-                4. Drag <span className="text-white/60">/blastchat-extension</span> folder in
+             <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-[10px] text-white/40 leading-relaxed space-y-2">
+                <div>
+                  <span className="text-accent font-black">CHROME INSTALLATION:</span><br/>
+                  1. Unzip .zip download<br/>
+                  2. Go to <span className="text-white/60">chrome://extensions</span><br/>
+                  3. Enable <span className="text-white/60">Developer Mode</span><br/>
+                  4. Click <span className="text-white/60">Load unpacked</span> and select folder
+                </div>
+                <div className="border-t border-white/5 pt-2">
+                  <span className="text-orange-500 font-black">FIREFOX INSTALLATION:</span><br/>
+                  1. Download the Firefox Add-on (.xpi)<br/>
+                  2. Go to <span className="text-white/60">about:addons</span><br/>
+                  3. Click the <span className="text-white/60">gear icon</span> (Settings)<br/>
+                  4. Select <span className="text-white/60">Install Add-on From File...</span> and select .xpi
+                </div>
              </div>
           </div>
         </div>
