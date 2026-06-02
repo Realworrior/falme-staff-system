@@ -4,6 +4,7 @@
     "gecko": {
       "id": "blastchat-matrix@blastchat.chat",
       "strict_min_version": "109.0",
+      "update_url": "https://betmfalme.vercel.app/templates/updates.json",
       "data_collection_permissions": {
         "required": [
           "none"

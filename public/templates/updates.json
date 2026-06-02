@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "blastchat-matrix@blastchat.chat": {
+      "updates": [
+        {
+          "version": "1.2",
+          "update_link": "https://betmfalme.vercel.app/templates/blastchat-extension-1.2.xpi"
+        }
+      ]
+    }
+  }
+}
