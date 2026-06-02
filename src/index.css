@@ -177,4 +177,11 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  @keyframes logoScalePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  .animate-logo-pulse {
+    animation: logoScalePulse 3s infinite ease-in-out;
+  }
 }
