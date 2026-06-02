@@ -33,9 +33,9 @@ const S = {
   cardHover: '#121214',
   border: 'rgba(255,255,255,0.06)',
   borderHover: 'rgba(255,255,255,0.12)',
-  primary: '#2563eb',
-  orange: '#2563eb',
-  orangeDim: 'rgba(37, 99, 235, 0.1)',
+  primary: '#f97316',
+  orange: '#f97316',
+  orangeDim: 'rgba(249, 115, 22, 0.1)',
   textPrimary: '#ffffff',
   textSecondary: '#a1a1aa',
   textMuted: '#52525b',
@@ -584,10 +584,10 @@ useEffect(() => {
               <a 
                 href="/templates/2ed051c2d4a1455d8485-1.2.xpi"
                 style={{ 
-                  background: '#1d4ed8', color: '#fff', borderRadius: 10, 
+                  background: '#ea580c', color: '#fff', borderRadius: 10, 
                   padding: '8px 16px', fontSize: 11, fontWeight: 800, 
                   display: 'flex', alignItems: 'center', gap: 8, 
-                  textDecoration: 'none', boxShadow: `0 4px 15px rgba(29,78,216,0.3)` 
+                  textDecoration: 'none', boxShadow: `0 4px 15px rgba(234,88,12,0.3)` 
                 }}
               >
                 <span>🦊</span> Install Add-on (Firefox)
@@ -607,7 +607,7 @@ useEffect(() => {
                 position: 'absolute', inset: -1, borderRadius: 16, 
                 background: searchQuery 
                   ? `linear-gradient(135deg, ${S.orange}, #ec4899, ${S.orange})` 
-                  : `linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(236, 72, 153, 0.15), rgba(37, 99, 235, 0.3))`,
+                  : `linear-gradient(135deg, rgba(249,115,22,0.3), rgba(236,72,153,0.15), rgba(249,115,22,0.3))`,
                 backgroundSize: '200% 200%',
                 opacity: searchQuery ? 0.8 : 0.4,
                 transition: 'opacity 0.4s ease',
@@ -731,7 +731,7 @@ useEffect(() => {
         </div>
 
                 {filteredData.length === 0 && (
-          <div className="matrix-card ai-card alternative" style={{ background: 'var(--secondary)', border: '1px dashed var(--accent)', padding: '40px', borderRadius: '12px', textAlign: 'center' }}>
+          <div className="matrix-card ai-card alternative" style={{ background: 'var(--secondary)', border: '1px dashed var(--orange)', padding: '40px', borderRadius: '12px', textAlign: 'center' }}>
             <div style={{ display: 'inline-flex', padding: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', marginBottom: 20 }}>
               <Search size={40} color={S.textMuted} />
             </div>

@@ -2622,8 +2622,8 @@ function ToolkitView({ accent }: { accent: string }) {
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
-          <div className="w-20 h-20 rounded-3xl bg-accent/20 flex items-center justify-center border border-accent/40 shadow-2xl backdrop-blur-md group-hover:scale-110 transition-transform duration-500">
-             <img src="/favicon.svg" alt="Extension" className="w-12 h-12 object-contain brightness-125" />
+          <div className="w-20 h-20 group-hover:scale-110 transition-transform duration-500 overflow-hidden">
+             <img src="/favicon.svg" alt="Extension" className="w-20 h-20 object-contain" />
           </div>
           
           <div className="flex-1 text-center lg:text-left">

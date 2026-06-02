@@ -44,8 +44,8 @@ const BottomNav = ({ className }) => {
       )}
     >
       <NavLink to="/" className="hidden md:flex flex-col items-center justify-center mb-12 relative group no-underline">
-         <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center border border-white/10 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 overflow-hidden shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]">
-           <img src="/favicon.svg" alt="Falme" className="w-8 h-8 object-contain brightness-110" />
+         <div className="w-12 h-12 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 overflow-hidden">
+           <img src="/favicon.svg" alt="Falme" className="w-12 h-12 object-contain" />
          </div>
          <div className="absolute -bottom-6 text-[9px] font-black tracking-[0.3em] uppercase text-gray-400 group-hover:text-accent transition-colors duration-300">Falme</div>
       </NavLink>
