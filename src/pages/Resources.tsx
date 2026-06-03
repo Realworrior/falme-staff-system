@@ -2657,7 +2657,7 @@ function ToolkitView({ accent }: { accent: string }) {
              </a>
 
              <a 
-               href="/templates/2ed051c2d4a1455d8485-1.2.xpi"
+               href="/templates/blastchat-extension.xpi"
                className="w-full px-6 py-4 bg-orange-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(234,88,12,0.3)] hover:shadow-[0_15px_30px_rgba(234,88,12,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
              >
                <span>🦊</span> Install Add-on (Firefox)

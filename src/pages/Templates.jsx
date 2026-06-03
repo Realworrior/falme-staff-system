@@ -582,7 +582,7 @@ useEffect(() => {
                 <Download size={14} /> Download Extension (Chrome)
               </a>
               <a 
-                href="/templates/2ed051c2d4a1455d8485-1.2.xpi"
+                href="/templates/blastchat-extension.xpi"
                 style={{ 
                   background: '#ea580c', color: '#fff', borderRadius: 10, 
                   padding: '8px 16px', fontSize: 11, fontWeight: 800, 
