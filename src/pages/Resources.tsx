@@ -2623,7 +2623,7 @@ function ToolkitView({ accent }: { accent: string }) {
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
           <div className="w-20 h-20 group-hover:scale-110 transition-transform duration-500 overflow-hidden">
-             <img src="/favicon.svg" alt="Extension" className="w-20 h-20 object-contain" />
+             <img src="/favicon.svg" alt="Extension" className="w-20 h-20 object-contain animate-logo-pulse" />
           </div>
           
           <div className="flex-1 text-center lg:text-left">
