@@ -664,7 +664,10 @@ document.addEventListener('input', async (e) => {
   );
   if (!isInput) return;
 
-  const value = target.value || target.textContent || '';
+  let value = target.value || target.textContent || '';
+  
+  // Clean zero-width space and other non-printable characters, then trim leading whitespace
+  value = value.replace(/^[\u200B\u200C\u200D\uFEFF]+/g, '').trimStart();
 
   // Check if the input starts with "/"
   if (value.startsWith('/')) {
@@ -880,8 +883,17 @@ function setupChatObserver() {
     }, 1500); // Wait 1.5s after DOM settles
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
-  console.log('[BlastChat] Chat observer active — inline suggestions enabled.');
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+    console.log('[BlastChat] Chat observer active — inline suggestions enabled.');
+  } else {
+    window.addEventListener('DOMContentLoaded', () => {
+      if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
+        console.log('[BlastChat] Chat observer active — inline suggestions enabled.');
+      }
+    });
+  }
 }
 
 // Start the chat observer after a short delay to let the page load
