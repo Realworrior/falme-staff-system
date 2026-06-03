@@ -567,9 +567,6 @@ function selectAutocompleteItem(idx) {
       if (setter) setter.call(target, '');
       else target.value = '';
       target.dispatchEvent(new Event('input', { bubbles: true }));
-    } else if (target.isContentEditable) {
-      target.textContent = '';
-      target.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     // Now inject the formatted text using the enhanced injector
