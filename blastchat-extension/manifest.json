@@ -16,7 +16,7 @@
     }
   },
   "name": "BlastChat Matrix",
-  "version": "1.3",
+  "version": "1.4",
   "description": "Auto-populates responses directly into BlastChat agent views.",
   "permissions": [
     "activeTab",
@@ -51,6 +51,12 @@
         "content.js"
       ],
       "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["page_injector.js"],
+      "matches": ["https://blastchat.chat/*", "https://*.blastchat.chat/*"]
     }
   ]
 }
