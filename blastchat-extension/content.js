@@ -441,6 +441,14 @@ function createAutocompleteUI() {
       margin-top: 4px;
       font-weight: 600;
     }
+    #blastchat-autocomplete .bc-ac-item.ai-suggested {
+      border-left: 3px solid #10b981;
+      background: rgba(16, 185, 129, 0.05);
+    }
+    #blastchat-autocomplete .bc-ac-item.ai-suggested:hover,
+    #blastchat-autocomplete .bc-ac-item.ai-suggested.active {
+      background: rgba(16, 185, 129, 0.15);
+    }
   `;
   document.head.appendChild(style);
   document.body.appendChild(autocompleteContainer);
@@ -488,11 +496,30 @@ function renderAutocompleteItems(items, query) {
   items.forEach((item, idx) => {
     const div = document.createElement('div');
     div.className = 'bc-ac-item' + (idx === autocompleteSelectedIdx ? ' active' : '');
+    if (item.isAISuggested) {
+      div.classList.add('ai-suggested');
+    }
     div.dataset.index = idx;
 
     const cat = document.createElement('div');
     cat.className = 'bc-ac-category';
-    cat.textContent = item.category;
+    cat.style.display = 'flex';
+    cat.style.justifyContent = 'space-between';
+    cat.style.width = '100%';
+    
+    const catName = document.createElement('span');
+    catName.textContent = item.category;
+    cat.appendChild(catName);
+
+    if (item.isAISuggested) {
+      const aiBadge = document.createElement('span');
+      aiBadge.textContent = '🧠 AI RECOMMENDED';
+      aiBadge.style.color = '#10b981';
+      aiBadge.style.fontWeight = '900';
+      aiBadge.style.fontSize = '8px';
+      aiBadge.style.letterSpacing = '0.05em';
+      cat.appendChild(aiBadge);
+    }
     div.appendChild(cat);
 
     const title = document.createElement('div');
@@ -519,7 +546,7 @@ function renderAutocompleteItems(items, query) {
 function filterTemplates(query, templates) {
   if (!query) return templates.slice(0, 12);
 
-  const lower = query.toLowerCase();
+  const lower = query.toLowerCase().trim();
   const tokens = lower.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length >= 2);
 
   const scored = templates.map(t => {
@@ -527,15 +554,38 @@ function filterTemplates(query, templates) {
     const titleLower = t.title.toLowerCase();
     const triggers = (t.triggers || []).map(tr => tr.toLowerCase());
 
-    for (const token of tokens) {
-      if (triggers.includes(token)) score += 25;
-      else if (triggers.some(tr => tr.includes(token))) score += 12;
-      if (titleLower.includes(token)) score += 15;
-      if (t.category.toLowerCase().includes(token)) score += 5;
+    // 1. Check exact/substring match of the entire query against triggers (shortcuts)
+    if (triggers.includes(lower)) {
+      score += 60; // Exact trigger match gets highest priority
+    } else if (triggers.some(tr => tr.startsWith(lower))) {
+      score += 40; // Trigger prefix match
+    } else if (triggers.some(tr => tr.includes(lower))) {
+      score += 25; // Trigger substring match
     }
 
-    // Also match the raw query as a substring of the title
-    if (titleLower.includes(lower)) score += 20;
+    // 2. Token-level matches on triggers (shortcuts)
+    for (const token of tokens) {
+      if (triggers.includes(token)) score += 20;
+      else if (triggers.some(tr => tr.includes(token))) score += 10;
+    }
+
+    // 3. Title matches
+    if (titleLower.includes(lower)) {
+      score += 30; // Substring match on title
+    } else {
+      for (const token of tokens) {
+        if (titleLower.includes(token)) score += 10;
+      }
+    }
+
+    // 4. Category matches
+    if (t.category.toLowerCase().includes(lower)) {
+      score += 15;
+    } else {
+      for (const token of tokens) {
+        if (t.category.toLowerCase().includes(token)) score += 5;
+      }
+    }
 
     return { item: t, score };
   });
@@ -674,9 +724,29 @@ document.addEventListener('input', async (e) => {
     const query = value.substring(1).trim();
     autocompleteQuery = query;
 
-    // Fetch templates if not cached
+    // Fetch templates and get AI recommendations on demand
     const templates = await fetchTemplatesForAutocomplete();
-    autocompleteItems = filterTemplates(query, templates);
+    const aiSuggestions = await getAISuggestions();
+    const aiTitles = new Set(aiSuggestions.map(t => t.title));
+
+    let displayItems = [];
+    if (!query) {
+      // Put AI suggestions at the top of the autocomplete list
+      displayItems = [...aiSuggestions];
+      // Append normal templates up to 12 items total, avoiding duplicates
+      const others = templates.filter(t => !aiTitles.has(t.title));
+      displayItems = displayItems.concat(others.slice(0, 12 - displayItems.length));
+    } else {
+      // Filter templates normally by query
+      displayItems = filterTemplates(query, templates);
+    }
+
+    // Mark AI suggested items for green styling in render
+    displayItems.forEach(item => {
+      item.isAISuggested = aiTitles.has(item.title);
+    });
+
+    autocompleteItems = displayItems;
     autocompleteSelectedIdx = 0;
 
     showAutocomplete(target);
@@ -693,211 +763,25 @@ document.addEventListener('click', (e) => {
   }
 }, true);
 
-// ─── 6. Inline AI Suggestion Bar (MutationObserver) ──────────────────────────
-let suggestionBar = null;
-let lastAnalyzedText = '';
+// ─── 6. On-Demand AI Recommendations ─────────────────────────────────────────
 
-function createSuggestionBar() {
-  if (suggestionBar) return;
+async function getAISuggestions() {
+  try {
+    const allMsgs = scrapeChatMessages();
+    const activeMsgs = getActiveContext(allMsgs);
+    const clientMsgs = activeMsgs.filter(m => m.sender === 'client');
+    if (clientMsgs.length === 0) return [];
 
-  suggestionBar = document.createElement('div');
-  suggestionBar.id = 'blastchat-suggestions';
-  suggestionBar.style.cssText = `
-    position: fixed;
-    bottom: 70px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2147483646;
-    display: none;
-    max-width: 700px;
-    width: 90%;
-    padding: 10px;
-    background: rgba(10, 10, 20, 0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(37,99,235,0.3);
-    border-radius: 14px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  `;
+    const latestClientMsg = clientMsgs[clientMsgs.length - 1].text;
+    if (!latestClientMsg || latestClientMsg.length < 3) return [];
 
-  const style = document.createElement('style');
-  style.textContent = `
-    #blastchat-suggestions .bc-sg-label {
-      font-size: 8px;
-      font-weight: 900;
-      color: rgba(37,99,235,0.6);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    #blastchat-suggestions .bc-sg-label .pulse {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #2563eb;
-      animation: bcPulse 2s infinite;
-    }
-    @keyframes bcPulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
-    #blastchat-suggestions .bc-sg-chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    #blastchat-suggestions .bc-sg-chip {
-      padding: 8px 14px;
-      background: rgba(37,99,235,0.08);
-      border: 1px solid rgba(37,99,235,0.2);
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.8);
-      cursor: pointer;
-      transition: all 0.2s;
-      max-width: 300px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    #blastchat-suggestions .bc-sg-chip:hover {
-      background: rgba(37,99,235,0.2);
-      border-color: rgba(37,99,235,0.5);
-      color: #fff;
-    }
-    #blastchat-suggestions .bc-sg-close {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      font-size: 14px;
-      color: rgba(255,255,255,0.3);
-      cursor: pointer;
-      background: none;
-      border: none;
-      line-height: 1;
-    }
-    #blastchat-suggestions .bc-sg-close:hover { color: #fff; }
-  `;
-  document.head.appendChild(style);
-  document.body.appendChild(suggestionBar);
-}
-
-function showSuggestions(suggestions) {
-  createSuggestionBar();
-  if (suggestions.length === 0) {
-    suggestionBar.style.display = 'none';
-    return;
-  }
-
-  suggestionBar.innerHTML = '';
-  suggestionBar.style.display = 'block';
-
-  // Close button
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'bc-sg-close';
-  closeBtn.textContent = '✕';
-  closeBtn.onclick = () => { suggestionBar.style.display = 'none'; };
-  suggestionBar.appendChild(closeBtn);
-
-  // Label
-  const label = document.createElement('div');
-  label.className = 'bc-sg-label';
-  label.innerHTML = '<span class="pulse"></span> AI SUGGESTED RESPONSES';
-  suggestionBar.appendChild(label);
-
-  // Chips
-  const chips = document.createElement('div');
-  chips.className = 'bc-sg-chips';
-
-  suggestions.forEach(s => {
-    const chip = document.createElement('div');
-    chip.className = 'bc-sg-chip';
-    const displayText = s.text.substring(0, 60) + (s.text.length > 60 ? '…' : '');
-    chip.textContent = `${s.title}: ${displayText}`;
-    chip.title = s.text; // Full text on hover
-    chip.addEventListener('click', () => {
-      const formatted = formatForBlastChat(s.text);
-      const target = lastFocusedInput || document.activeElement;
-      if (target) {
-        injectTextEnhanced(target, formatted);
-        // Also do DOM-level injection as fallback
-        if ('value' in target) {
-          const proto = target.tagName === 'TEXTAREA'
-            ? window.HTMLTextAreaElement.prototype
-            : window.HTMLInputElement.prototype;
-          const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
-          if (setter) setter.call(target, formatted);
-          else target.value = formatted;
-        }
-        ['input', 'change', 'keydown', 'keyup'].forEach(type => {
-          target.dispatchEvent(new Event(type, { bubbles: true, composed: true }));
-        });
-      }
-      suggestionBar.style.display = 'none';
-    });
-    chips.appendChild(chip);
-  });
-
-  suggestionBar.appendChild(chips);
-}
-
-/**
- * Observe the chat container for new client messages and trigger
- * inline suggestions automatically.
- */
-function setupChatObserver() {
-  // We use a debounced MutationObserver on the document body
-  // since we don't know the exact chat container selector
-  let debounceTimer = null;
-
-  const observer = new MutationObserver((mutations) => {
-    // Only react to added nodes (new messages)
-    const hasNewNodes = mutations.some(m => m.addedNodes.length > 0);
-    if (!hasNewNodes) return;
-
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-      const contextSummary = buildContextSummary();
-      if (!contextSummary || contextSummary === lastAnalyzedText) return;
-      lastAnalyzedText = contextSummary;
-
-      // Run the last client message through the NLP matcher
-      const allMsgs = scrapeChatMessages();
-      const activeMsgs = getActiveContext(allMsgs);
-      const clientMsgs = activeMsgs.filter(m => m.sender === 'client');
-      if (clientMsgs.length === 0) return;
-
-      const latestClientMsg = clientMsgs[clientMsgs.length - 1].text;
-      if (!latestClientMsg || latestClientMsg.length < 3) return;
-
-      // Match against templates
-      const templates = await fetchTemplatesForAutocomplete();
-      const matches = filterTemplates(latestClientMsg, templates);
-
-      if (matches.length > 0) {
-        const suggestions = matches.slice(0, 3).map(m => ({
-          title: m.title,
-          text: m.responses[0]?.text || m.title
-        }));
-        showSuggestions(suggestions);
-      }
-    }, 1500); // Wait 1.5s after DOM settles
-  });
-
-  if (document.body) {
-    observer.observe(document.body, { childList: true, subtree: true });
-    console.log('[BlastChat] Chat observer active — inline suggestions enabled.');
-  } else {
-    window.addEventListener('DOMContentLoaded', () => {
-      if (document.body) {
-        observer.observe(document.body, { childList: true, subtree: true });
-        console.log('[BlastChat] Chat observer active — inline suggestions enabled.');
-      }
-    });
+    const templates = await fetchTemplatesForAutocomplete();
+    return filterTemplates(latestClientMsg, templates).slice(0, 3);
+  } catch (e) {
+    console.warn('[BlastChat] Error getting AI suggestions:', e);
+    return [];
   }
 }
-
-// Start the chat observer after a short delay to let the page load
-setTimeout(setupChatObserver, 3000);
 
 // Pre-fetch templates on load
 fetchTemplatesForAutocomplete();
