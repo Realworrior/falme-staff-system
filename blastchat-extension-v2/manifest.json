@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "blastchat-matrix@blastchat.chat",
+      "strict_min_version": "140.0",
+      "update_url": "https://betmfalme.vercel.app/templates/updates.json",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  },
+  "name": "BlastChat Matrix",
+  "version": "1.3",
+  "description": "Auto-populates responses directly into BlastChat agent views.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://blastchat.chat/*",
+    "https://*.blastchat.chat/*",
+    "https://kgpcruwlejoougjbeouw.supabase.co/*"
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "BlastChat Matrix",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://blastchat.chat/*",
+        "https://*.blastchat.chat/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "all_frames": true
+    }
+  ]
+}
+
