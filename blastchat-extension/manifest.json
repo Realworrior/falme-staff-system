@@ -16,7 +16,7 @@
     }
   },
   "name": "BlastChat Matrix",
-  "version": "1.5",
+  "version": "1.6",
   "description": "Auto-populates responses directly into BlastChat agent views.",
   "permissions": [
     "activeTab",
