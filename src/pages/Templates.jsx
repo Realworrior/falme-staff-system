@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Plus, Search, ArrowUpRight, Copy, Check,
-  X, Edit3, Trash2, RotateCcw, Download, Sparkles
+  Plus, Search, X, RotateCcw, Download, MoreHorizontal, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, 
@@ -13,186 +12,211 @@ import { useSupabaseData } from '../context/SupabaseDataContext';
 import { useToast } from '../context/ToastContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// COMPONENT: Variable Highlighter
+// Variable Highlighter
 // ─────────────────────────────────────────────────────────────────────────────
 const VariableHighlighter = ({ text }) => {
   if (!text) return null;
-  const categories = {
-    danger: ['Referral Violation', 'Deleted Message', 'Lost', 'Rolled back'],
-    success: ['Submitted', 'Cashback', 'Referral Bonus'],
-    info: ['Deposit', 'Withdrawal', 'bet ID', 'Mpesa'],
-    data: ['Phone number', 'Account Number', 'registered phone number']
-  };
-
-  const allKeywords = Object.values(categories).flat();
-  const pattern = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|${allKeywords.join('|')})`, 'gi');
+  const pattern = /(\{[^}]+\}|\[[^\]]+\])/g;
   const parts = text.split(pattern);
-
-  const getColor = (keyword) => {
-    const k = keyword.toLowerCase();
-    if (categories.danger.some(v => v.toLowerCase() === k)) return '#ff4d4d';
-    if (categories.success.some(v => v.toLowerCase() === k)) return '#baff55';
-    if (categories.info.some(v => v.toLowerCase() === k)) return '#3b82f6';
-    if (categories.data.some(v => v.toLowerCase() === k)) return '#ffd24d';
-    return '#fff';
-  };
-
   return (
-    <div style={{ letterSpacing: '-0.01em', lineHeight: '1.6' }}>
+    <span>
       {parts.map((part, i) => {
-        const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
-        const isEmotional = allKeywords.some(k => k.toLowerCase() === part.toLowerCase());
-
-        if (isPlaceholder) {
-          return (
-            <span key={i} className="bg-[#baff55]/10 text-[#baff55] font-semibold px-1 rounded mx-0.5 border border-[#baff55]/20">
-              {part}
-            </span>
-          );
+        const isVar = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
+        if (isVar) {
+          return <span key={i} className="font-bold text-white">{part}</span>;
         }
-
-        if (isEmotional) {
-          const color = getColor(part);
-          return (
-            <span key={i} style={{ color, background: `${color}15`, borderColor: `${color}30` }} className="font-semibold px-1 rounded mx-0.5 border">
-              {part}
-            </span>
-          );
-        }
-
         return <span key={i}>{part}</span>;
       })}
-    </div>
+    </span>
   );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// COMPONENT: Matte Template Card (Cutout Signature Design)
+// Single Template Row (inside a category card)
 // ─────────────────────────────────────────────────────────────────────────────
-function MatteTemplateCard({ item, category, catId, copiedId, onCopy, onEdit, onDelete }) {
-  const [expanded, setExpanded] = useState(false);
-  const [activeType, setActiveType] = useState('Standard');
+function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEdit, onDelete }) {
+  const [activeVariant, setActiveVariant] = useState(0);
   const responses = item.responses || [];
-  const activeResp = responses.find(r => r.type === activeType) || responses[0] || { text: '' };
-  const copyId = `${catId}-${item.title}-${activeType}`;
+  const activeResp = responses[activeVariant] || { text: '', type: 'Standard' };
+  const copyId = `${catId}-${item.title}-${activeVariant}`;
   const isCopied = copiedId === copyId;
 
   return (
-    <div className="relative w-full">
-      {/* 
-        The Card 
-        We use the 'cutout-card' class from index.css for the visual effect.
-      */}
-      <div className="cutout-card p-8 flex flex-col min-h-[220px] transition-all hover:bg-[#2d2f34]">
+    <div>
+      {/* Row Header */}
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.02] transition-colors text-left group"
+      >
+        {/* Status Dot */}
+        <div className={`w-2 h-2 rounded-full shrink-0 transition-colors ${isExpanded ? 'bg-[#baff55]' : 'bg-[#4a4b50]'}`} />
         
-        {/* Top Right Action Button nestled in the cutout */}
-        <div className="absolute top-2 right-2">
-          <button 
-            onClick={() => setExpanded(!expanded)}
-            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all border border-[#3a3b3f] ${expanded ? 'bg-[#baff55] text-black border-transparent' : 'bg-[#161616] text-white hover:bg-[#3a3b3f]'}`}
-            style={{ boxShadow: '0 0 0 6px #161616' }} // Adds the illusion of a gap
+        {/* Title */}
+        <span className={`flex-1 text-sm font-medium transition-colors ${isExpanded ? 'text-white' : 'text-[#c0c0c5] group-hover:text-white'}`}>
+          {item.title}
+        </span>
+
+        {/* Arrow */}
+        <span className={`shrink-0 transition-colors ${isExpanded ? 'text-[#baff55]' : 'text-[#4a4b50] group-hover:text-[#8e8e93]'}`}>
+          {isExpanded ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+        </span>
+      </button>
+
+      {/* Expanded Content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
           >
-            <ArrowUpRight size={20} className={`transform transition-transform ${expanded ? 'rotate-45' : ''}`} />
-          </button>
-        </div>
+            <div className="px-4 pb-5 space-y-4">
+              {/* Variant Selectors */}
+              {responses.length > 1 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-[#8e8e93] font-medium mr-1">Variant</span>
+                  {responses.map((r, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => { e.stopPropagation(); setActiveVariant(i); }}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-all ${
+                        activeVariant === i
+                          ? 'bg-[#baff55] text-black border-[#baff55]'
+                          : 'bg-transparent text-[#8e8e93] border-[#3a3b3f] hover:border-[#8e8e93] hover:text-white'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-        {/* Card Header */}
-        <div className="pr-16">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-8 h-8 rounded-full bg-[#161616] flex items-center justify-center border border-[#3a3b3f]">
-              <span className="text-white text-xs">{category.match(/(\p{Emoji})/u)?.[0] || '📂'}</span>
-            </span>
-            <span className="text-[#8e8e93] text-sm font-medium">{category.replace(/(\p{Emoji})/gu, '').trim()}</span>
-          </div>
-          <h3 className="text-white text-xl font-semibold leading-tight">{item.title}</h3>
-        </div>
-
-        {/* Snippet Preview (if not expanded) */}
-        {!expanded && (
-          <div className="mt-6 mb-6 line-clamp-2 text-[#8e8e93] text-sm">
-            {activeResp.text}
-          </div>
-        )}
-
-        {/* Expanded View Content */}
-        <AnimatePresence>
-          {expanded && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden mt-6"
-            >
-              <div className="flex gap-2 mb-4">
-                {responses.map((r) => (
-                  <button
-                    key={r.type}
-                    onClick={() => setActiveType(r.type)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                      activeType === r.type 
-                        ? 'bg-[#baff55] text-black' 
-                        : 'bg-[#161616] text-[#8e8e93] hover:text-white border border-[#3a3b3f]'
-                    }`}
-                  >
-                    {r.type}
-                  </button>
-                ))}
-              </div>
-
-              <div className="bg-[#161616] p-4 rounded-2xl text-sm text-[#e4e4e7] border border-[#3a3b3f] mb-6">
+              {/* Text Content */}
+              <div className="bg-[#161616] rounded-2xl p-4 text-sm text-[#c0c0c5] leading-relaxed border border-[#3a3b3f]">
                 <VariableHighlighter text={activeResp.text} />
               </div>
 
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex gap-4">
-                  <button onClick={() => onEdit(item, catId)} className="text-[#8e8e93] hover:text-white flex items-center gap-2 text-xs font-semibold transition-colors">
-                    <Edit3 size={14} /> EDIT
-                  </button>
-                  <button onClick={() => onDelete(item, catId)} className="text-[#ff4d4d]/80 hover:text-[#ff4d4d] flex items-center gap-2 text-xs font-semibold transition-colors">
-                    <Trash2 size={14} /> DELETE
-                  </button>
+              {/* Tags */}
+              {item.triggers && item.triggers.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {item.triggers.map((t, i) => (
+                    <span key={i} className="text-xs text-[#8e8e93] bg-[#1e1f22] px-2 py-0.5 rounded-full border border-[#3a3b3f]">
+                      #{t}
+                    </span>
+                  ))}
                 </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex items-center gap-4">
+                <button onClick={() => onEdit(item, catId)} className="text-sm text-[#8e8e93] hover:text-white transition-colors font-medium">
+                  Edit
+                </button>
+                <button onClick={() => onDelete(item, catId)} className="text-sm text-red-500 hover:text-red-400 transition-colors font-medium">
+                  Delete
+                </button>
                 <button
                   onClick={() => onCopy(activeResp.text, copyId)}
-                  className={`px-5 py-2 rounded-full flex items-center gap-2 text-xs font-semibold transition-all ${
-                    isCopied ? 'bg-[#baff55] text-black' : 'bg-white text-black hover:bg-gray-200'
+                  className={`ml-auto px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all ${
+                    isCopied
+                      ? 'bg-[#baff55] text-black border-[#baff55]'
+                      : 'bg-transparent text-[#baff55] border-[#baff55] hover:bg-[#baff55]/10'
                   }`}
                 >
-                  {isCopied ? <Check size={14} /> : <Copy size={14} />}
-                  {isCopied ? 'COPIED' : 'COPY TEXT'}
+                  {isCopied ? 'Copied!' : 'Copy'}
                 </button>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
-        {/* Card Footer (Tags & Status) */}
-        <div className="mt-auto pt-4 flex items-center justify-between">
-          <div className="flex flex-col gap-2">
-             <span className="text-xs text-[#8e8e93] font-medium">Source</span>
-             <div className="flex gap-2 flex-wrap">
-               {item.triggers && item.triggers.length > 0 ? (
-                 item.triggers.slice(0, 2).map((t, i) => (
-                   <span key={i} className="pill-dark text-[11px] px-3 py-1 font-semibold capitalize">{t}</span>
-                 ))
-               ) : (
-                 <span className="pill-dark text-[11px] px-3 py-1 font-semibold text-[#8e8e93]">General</span>
-               )}
-             </div>
+// ─────────────────────────────────────────────────────────────────────────────
+// Category Card
+// ─────────────────────────────────────────────────────────────────────────────
+function CategoryCard({ category, items, catId, copiedId, onCopy, onEdit, onDelete, index }) {
+  const [expandedTitle, setExpandedTitle] = useState(null);
+
+  const emojiMatch = category.match(/(\p{Emoji})/u);
+  const emoji = emojiMatch ? emojiMatch[0] : '📂';
+  const categoryLabel = category.replace(/(\p{Emoji})/gu, '').trim();
+
+  // Derive a "type" label from the category name for display
+  const typeLabel = (() => {
+    const lower = categoryLabel.toLowerCase();
+    if (lower.includes('support') || lower.includes('patience') || lower.includes('client')) return 'SUPPORT';
+    if (lower.includes('casino') || lower.includes('gaming') || lower.includes('game')) return 'GAMING';
+    if (lower.includes('aviator') || lower.includes('slot')) return 'AVIATOR';
+    if (lower.includes('deposit') || lower.includes('withdraw') || lower.includes('payment')) return 'FINANCE';
+    if (lower.includes('referral') || lower.includes('bonus')) return 'PROMOTIONS';
+    if (lower.includes('security') || lower.includes('account')) return 'SECURITY';
+    return 'SYSTEM';
+  })();
+
+  const statusLabel = index % 3 === 0 ? 'Live' : index % 3 === 1 ? 'Ready' : 'System';
+  const statusColor = statusLabel === 'Live' ? 'bg-[#ff7a2a]' : 'bg-[#baff55]/20 text-[#baff55]';
+
+  const toggleItem = (title) => {
+    setExpandedTitle(prev => prev === title ? null : title);
+  };
+
+  return (
+    <div className="bg-[#1e1f22] rounded-[24px] overflow-hidden flex flex-col">
+      {/* Card Top Row */}
+      <div className="flex items-start justify-between p-5 pb-3">
+        {/* Left: Icon + Menu */}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#2a2b2f] flex items-center justify-center text-lg">
+            {emoji}
           </div>
+          <button className="text-[#4a4b50] hover:text-[#8e8e93] transition-colors">
+            <MoreHorizontal size={16} />
+          </button>
+        </div>
 
-          <div className="flex flex-col items-end gap-2">
-             <span className="text-xs text-[#8e8e93] font-medium">Score</span>
-             <div className="flex gap-1.5 bg-[#161616] p-1.5 rounded-full border border-[#3a3b3f]">
-               <div className="status-dot-red" />
-               <div className="status-dot-orange" />
-               <div className="status-dot-yellow" />
-               <div className={responses.length > 1 ? "status-dot-green" : "status-dot-gray"} />
-               <div className={responses.length > 2 ? "status-dot-green" : "status-dot-gray"} />
-             </div>
+        {/* Right: Count Badge */}
+        <div className="bg-[#baff55] rounded-2xl px-4 py-3 flex flex-col items-center min-w-[80px] -mt-1 -mr-1">
+          <span className="text-black text-3xl font-black leading-none tracking-tight">
+            {String(items.length).padStart(2, '0')}
+          </span>
+          <span className="text-black/70 text-[9px] font-bold uppercase tracking-widest mt-1">RESPONSES</span>
+          <div className={`mt-2 px-3 py-0.5 rounded-full text-[9px] font-bold ${
+            statusLabel === 'Live' ? 'bg-[#ff7a2a] text-white' : 'bg-black/20 text-black'
+          }`}>
+            {statusLabel}
           </div>
         </div>
-        
+      </div>
+
+      {/* Category Label + Title */}
+      <div className="px-5 pb-4">
+        <p className="text-[10px] font-bold text-[#8e8e93] uppercase tracking-widest mb-1">{typeLabel}</p>
+        <h3 className="text-white text-base font-bold leading-snug">{categoryLabel}</h3>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-[#2a2b2f] mx-5" />
+
+      {/* Template Rows */}
+      <div className="flex-1 divide-y divide-[#2a2b2f]/60">
+        {items.map((item, idx) => (
+          <TemplateRow
+            key={idx}
+            item={item}
+            catId={catId}
+            copiedId={copiedId}
+            onCopy={onCopy}
+            isExpanded={expandedTitle === item.title}
+            onToggle={() => toggleItem(item.title)}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
       </div>
     </div>
   );
@@ -206,8 +230,7 @@ function Templates() {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        const input = document.getElementById('templates-search-input');
-        input?.focus();
+        document.getElementById('templates-search-input')?.focus();
       }
     };
     window.addEventListener('keydown', handler);
@@ -219,7 +242,6 @@ function Templates() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
-  
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -227,100 +249,74 @@ function Templates() {
     category: '', title: '', standardText: '', empathyText: '', securityText: '', triggers: '' 
   });
   const [isNewCategory, setIsNewCategory] = useState(false);
-  
-  const handleCopy = (text, id) => {
+
+  const handleCopy = useCallback((text, id) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
-    showToast('Copied to clipboard!', 'success');
+    showToast('Copied!', 'success');
     setTimeout(() => setCopiedId(null), 2000);
-  };
+  }, [showToast]);
 
-  // Flatten the grouped data into a list of individual templates for the new grid layout
-  const flatTemplates = useMemo(() => {
+  const filteredData = useMemo(() => {
     if (!data) return [];
-    const all = [];
-    data.forEach(cat => {
-      cat.templates.forEach(t => {
-        all.push({ ...t, categoryName: cat.category, catId: cat.id });
-      });
-    });
-
-    if (!searchQuery) return all;
-
-    return all.filter(t => 
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.triggers || []).some(tr => tr.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      t.responses.some(r => r.text.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      t.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    if (!searchQuery) return data;
+    const q = searchQuery.toLowerCase();
+    return data.map(cat => ({
+      ...cat,
+      templates: cat.templates.filter(t =>
+        t.title.toLowerCase().includes(q) ||
+        (t.triggers || []).some(tr => tr.toLowerCase().includes(q)) ||
+        t.responses.some(r => r.text.toLowerCase().includes(q)) ||
+        cat.category.toLowerCase().includes(q)
+      )
+    })).filter(cat => cat.templates.length > 0);
   }, [data, searchQuery]);
 
-  const availableCategories = useMemo(() => {
-    if (!data) return [];
-    return data.map(d => d.category).sort();
-  }, [data]);
+  const availableCategories = useMemo(() => data?.map(d => d.category).sort() || [], [data]);
 
   const handleEdit = (item, catId) => {
     setIsEditing(true);
     setEditId(catId);
-    const standard = item.responses.find(r => r.type === 'Standard')?.text || '';
-    const empathy = item.responses.find(r => r.type === 'High Empathy')?.text || '';
-    const security = item.responses.find(r => r.type === 'Security')?.text || '';
-    
     setNewTemplate({
       category: data.find(c => c.id === catId)?.category || '',
       title: item.title,
-      standardText: standard,
-      empathyText: empathy,
-      securityText: security,
+      standardText: item.responses.find(r => r.type === 'Standard')?.text || '',
+      empathyText: item.responses.find(r => r.type === 'High Empathy')?.text || '',
+      securityText: item.responses.find(r => r.type === 'Security')?.text || '',
       triggers: (item.triggers || []).join(', ')
     });
     setModalOpen(true);
   };
 
   const handleDelete = async (item, catId) => {
-    if (!window.confirm(`Are you sure you want to delete "${item.title}"?`)) return;
+    if (!window.confirm(`Delete "${item.title}"?`)) return;
     const category = data.find(c => c.id === catId);
     if (!category) return;
     const updatedTemplates = category.templates.filter(t => t.title !== item.title);
-    
     try {
-      let success;
-      if (updatedTemplates.length === 0) {
-        success = await actions.deleteRecord('supportTemplates', catId);
-      } else {
-        success = await actions.updateRecord('supportTemplates', catId, { templates: updatedTemplates });
-      }
-      if (success) {
-        showToast('Template purged.', 'success');
-        actions.refreshAll();
-      }
-    } catch (err) {
-      showToast('Purge failed.', 'error');
-    }
+      const success = updatedTemplates.length === 0
+        ? await actions.deleteRecord('supportTemplates', catId)
+        : await actions.updateRecord('supportTemplates', catId, { templates: updatedTemplates });
+      if (success) { showToast('Template deleted.', 'success'); actions.refreshAll(); }
+    } catch { showToast('Delete failed.', 'error'); }
   };
 
   const handleCreate = async () => {
     if (!newTemplate.category || !newTemplate.title || !newTemplate.standardText) {
-      showToast('Please fill required fields', 'error');
-      return;
+      showToast('Please fill required fields', 'error'); return;
     }
     const responses = [{ type: 'Standard', text: newTemplate.standardText }];
     if (newTemplate.empathyText) responses.push({ type: 'High Empathy', text: newTemplate.empathyText });
     if (newTemplate.securityText) responses.push({ type: 'Security', text: newTemplate.securityText });
-
-    const triggers = newTemplate.triggers 
-      ? newTemplate.triggers.split(',').map(t => t.trim().toLowerCase())
-      : [newTemplate.title.toLowerCase()];
-
+    const triggers = newTemplate.triggers ? newTemplate.triggers.split(',').map(t => t.trim().toLowerCase()) : [newTemplate.title.toLowerCase()];
     try {
       let success;
       if (isEditing) {
-        const category = data.find(c => c.id === editId);
-        const otherTemplates = category.templates.filter(t => t.title !== newTemplate.title);
+        const cat = data.find(c => c.id === editId);
+        const others = cat.templates.filter(t => t.title !== newTemplate.title);
         success = await actions.updateRecord('supportTemplates', editId, {
           category: newTemplate.category,
-          templates: [...otherTemplates, { title: newTemplate.title, responses, triggers }]
+          templates: [...others, { title: newTemplate.title, responses, triggers }]
         });
       } else {
         success = await actions.createRecord('supportTemplates', {
@@ -328,150 +324,146 @@ function Templates() {
           templates: [{ title: newTemplate.title, responses, triggers }]
         });
       }
-
       if (success) {
-        showToast(isEditing ? 'Template updated!' : 'Template deployed!', 'success');
-        setModalOpen(false);
-        setIsEditing(false);
-        setEditId(null);
+        showToast(isEditing ? 'Updated!' : 'Deployed!', 'success');
+        setModalOpen(false); setIsEditing(false); setEditId(null);
         setNewTemplate({ category: '', title: '', standardText: '', empathyText: '', securityText: '', triggers: '' });
         actions.refreshAll();
       }
-    } catch (err) {
-      showToast('Operation failed', 'error');
-    }
+    } catch { showToast('Operation failed', 'error'); }
   };
 
   if (loading.templates && !isReady) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="text-[#baff55]">
-        <RotateCcw size={40} />
+      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
+        <RotateCcw size={32} className="text-[#baff55]" />
       </motion.div>
-      <p className="text-xs font-semibold text-[#8e8e93]">Loading Matrix...</p>
+      <p className="text-sm text-[#8e8e93]">Loading templates...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen text-white w-full flex flex-col bg-[#161616]">
+    <div className="min-h-screen bg-[#161616] text-white flex flex-col">
       
-      {/* HEADER SECTION */}
-      <header className="sticky top-0 z-50 bg-[#161616] border-b border-[#3a3b3f] py-6 px-10">
-        <div className="max-w-[1600px] mx-auto flex flex-col gap-6">
+      {/* TOP HEADER */}
+      <header className="sticky top-0 z-50 bg-[#161616] border-b border-[#2a2b2f] px-6 md:px-10 py-5">
+        <div className="max-w-[1600px] mx-auto flex flex-col gap-5">
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          {/* Row 1: Filter Pills + Actions */}
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-2 flex-wrap">
               <button className="pill-white">All</button>
               <button className="pill-dark flex items-center gap-2">
-                <span className="text-[#ff4d4d]">🔥</span> Hot
+                <span className="text-[#ff4d4d] text-base">🔥</span> Hot
               </button>
               <button className="pill-dark">Due Today</button>
             </div>
-
             <div className="flex items-center gap-3">
               <button onClick={() => setModalOpen(true)} className="pill-white flex items-center gap-2">
-                <Plus size={16} /> New Task
+                <Plus size={15} /> New Template
               </button>
-              <button className="icon-btn-dark"><Download size={18} /></button>
-              <button className="icon-btn-dark"><Sparkles size={18} /></button>
+              <a href="/blastchat-extension.zip" download className="icon-btn-dark">
+                <Download size={18} />
+              </a>
             </div>
           </div>
 
-          {/* SEARCH BAR (Matte Style) */}
-          <div className="relative max-w-2xl w-full">
-            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-              <Search size={20} className="text-[#8e8e93]" />
-            </div>
-            <input 
+          {/* Row 2: Search */}
+          <div className="relative max-w-xl w-full">
+            <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-[#8e8e93]" />
+            <input
               id="templates-search-input"
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search templates..."
-              className="w-full bg-[#2a2b2f] border border-[#3a3b3f] text-white rounded-full py-4 pl-14 pr-16 focus:outline-none focus:border-[#baff55] transition-colors"
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search templates, paste client message..."
+              className="w-full bg-[#2a2b2f] border border-[#3a3b3f] rounded-full pl-12 pr-12 py-3.5 text-sm text-white focus:outline-none focus:border-[#baff55] transition-colors placeholder:text-[#4a4b50]"
             />
-            <div className="absolute inset-y-0 right-0 pr-6 flex items-center">
-               {!searchQuery ? (
-                 <span className="text-xs font-semibold text-[#8e8e93] bg-[#161616] px-2 py-1 rounded-md border border-[#3a3b3f]">Ctrl+K</span>
-               ) : (
-                 <button onClick={() => setSearchQuery('')} className="text-[#8e8e93] hover:text-white"><X size={16}/></button>
-               )}
-            </div>
+            {searchQuery ? (
+              <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8e8e93] hover:text-white">
+                <X size={16} />
+              </button>
+            ) : (
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-[#4a4b50] bg-[#161616] px-1.5 py-0.5 rounded border border-[#3a3b3f]">
+                Ctrl+K
+              </span>
+            )}
           </div>
 
         </div>
       </header>
 
-      {/* TEMPLATES GRID */}
-      <main className="max-w-[1600px] mx-auto w-full p-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {flatTemplates.map((t, idx) => (
-            <MatteTemplateCard 
-              key={`${t.catId}-${idx}`}
-              item={t}
-              category={t.categoryName}
-              catId={t.catId}
-              copiedId={copiedId}
-              onCopy={handleCopy}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-
-        {flatTemplates.length === 0 && (
-          <div className="mt-20 flex flex-col items-center justify-center">
-            <div className="w-20 h-20 bg-[#2a2b2f] rounded-full flex items-center justify-center mb-6">
-              <Search size={32} className="text-[#8e8e93]" />
+      {/* GRID */}
+      <main className="max-w-[1600px] mx-auto w-full p-6 md:p-10">
+        {filteredData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center mt-24">
+            <div className="w-16 h-16 bg-[#2a2b2f] rounded-full flex items-center justify-center mb-5">
+              <Search size={28} className="text-[#4a4b50]" />
             </div>
-            <h2 className="text-2xl font-semibold text-white mb-2">No templates found</h2>
-            <p className="text-[#8e8e93]">Try adjusting your search criteria.</p>
+            <h2 className="text-xl font-semibold text-white mb-2">No templates found</h2>
+            <p className="text-[#8e8e93] text-sm">Try adjusting your search.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredData.map((cat, idx) => (
+              <CategoryCard
+                key={cat.id || idx}
+                category={cat.category}
+                items={cat.templates}
+                catId={cat.id}
+                copiedId={copiedId}
+                onCopy={handleCopy}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                index={idx}
+              />
+            ))}
           </div>
         )}
       </main>
 
-      {/* CREATE/EDIT MODAL */}
-      <Dialog 
-        open={modalOpen} 
-        onClose={() => { setModalOpen(false); setIsEditing(false); }} 
-        maxWidth="sm" 
-        fullWidth 
-        PaperProps={{ style: { background: '#2a2b2f', borderRadius: 32, border: '1px solid #3a3b3f', color: '#fff', padding: 16 } }}
+      {/* MODAL */}
+      <Dialog
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setIsEditing(false); }}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ style: { background: '#1e1f22', borderRadius: 28, border: '1px solid #2a2b2f', color: '#fff', padding: 8 } }}
       >
-        <DialogTitle className="font-semibold text-xl text-white">
+        <DialogTitle className="font-semibold text-lg text-white px-6 pt-4">
           {isEditing ? 'Edit Template' : 'New Template'}
         </DialogTitle>
-        <DialogContent className="pt-4">
-          <div className="flex flex-col gap-5 mt-2">
+        <DialogContent className="px-6 pb-2">
+          <div className="flex flex-col gap-5 mt-3">
             <FormControl fullWidth>
               <InputLabel style={{ color: '#8e8e93' }}>Category</InputLabel>
-              <Select 
-                label="Category" 
-                value={isNewCategory ? "NEW" : newTemplate.category} 
-                onChange={e => { 
-                  if (e.target.value === "NEW") { setIsNewCategory(true); setNewTemplate({ ...newTemplate, category: "" }); } 
-                  else { setIsNewCategory(false); setNewTemplate({ ...newTemplate, category: e.target.value }); } 
-                }} 
+              <Select
+                label="Category"
+                value={isNewCategory ? 'NEW' : newTemplate.category}
+                onChange={e => {
+                  if (e.target.value === 'NEW') { setIsNewCategory(true); setNewTemplate({ ...newTemplate, category: '' }); }
+                  else { setIsNewCategory(false); setNewTemplate({ ...newTemplate, category: e.target.value }); }
+                }}
                 style={{ color: '#fff', background: '#161616', borderRadius: 16 }}
               >
                 {availableCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-                <MenuItem value="NEW" style={{ color: '#baff55' }}>+ NEW CATEGORY</MenuItem>
+                <MenuItem value="NEW" style={{ color: '#baff55' }}>+ New Category</MenuItem>
               </Select>
             </FormControl>
-            {isNewCategory && <TextField label="New Category Name" fullWidth variant="outlined" value={newTemplate.category} onChange={e => setNewTemplate({ ...newTemplate, category: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} autoFocus />}
-            <TextField label="Title" fullWidth variant="outlined" value={newTemplate.title} onChange={e => setNewTemplate({ ...newTemplate, title: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
-            <TextField label="Source / Triggers (comma separated)" fullWidth variant="outlined" value={newTemplate.triggers} onChange={e => setNewTemplate({ ...newTemplate, triggers: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
-            
-            <div className="border-t border-[#3a3b3f] pt-4">
-               <h4 className="text-xs font-semibold text-[#8e8e93] mb-4">Response Variants</h4>
-               <div className="flex flex-col gap-4">
-                 <TextField label="Standard Response" fullWidth multiline rows={3} value={newTemplate.standardText} onChange={e => setNewTemplate({ ...newTemplate, standardText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
-                 <TextField label="Alternative Response 1" fullWidth multiline rows={2} value={newTemplate.empathyText} onChange={e => setNewTemplate({ ...newTemplate, empathyText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
-               </div>
+            {isNewCategory && <TextField label="New Category Name" fullWidth value={newTemplate.category} onChange={e => setNewTemplate({ ...newTemplate, category: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} autoFocus />}
+            <TextField label="Title *" fullWidth value={newTemplate.title} onChange={e => setNewTemplate({ ...newTemplate, title: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
+            <TextField label="Source / Triggers (comma separated)" fullWidth value={newTemplate.triggers} onChange={e => setNewTemplate({ ...newTemplate, triggers: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
+            <div className="border-t border-[#2a2b2f] pt-4">
+              <p className="text-xs font-semibold text-[#8e8e93] mb-4">Response Variants</p>
+              <div className="flex flex-col gap-4">
+                <TextField label="Standard Response *" fullWidth multiline rows={3} value={newTemplate.standardText} onChange={e => setNewTemplate({ ...newTemplate, standardText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
+                <TextField label="Alternative Response" fullWidth multiline rows={2} value={newTemplate.empathyText} onChange={e => setNewTemplate({ ...newTemplate, empathyText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
+              </div>
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="pr-4 pb-4">
-          <button onClick={() => { setModalOpen(false); setIsEditing(false); }} className="pill-dark mr-2">Cancel</button>
+        <DialogActions className="px-6 pb-5 gap-3">
+          <button onClick={() => { setModalOpen(false); setIsEditing(false); }} className="pill-dark">Cancel</button>
           <button onClick={handleCreate} className="pill-lime">{isEditing ? 'Save Changes' : 'Deploy'}</button>
         </DialogActions>
       </Dialog>

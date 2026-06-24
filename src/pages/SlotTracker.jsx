@@ -117,86 +117,79 @@ const SlotTracker = () => {
   if (loading || !isReady) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-20 min-h-[60vh]">
-        <div className="w-16 h-16 relative">
-          <div className="absolute inset-0 border-4 border-white/5 rounded-full" />
+        <div className="w-14 h-14 relative">
+          <div className="absolute inset-0 border-4 border-[#2a2b2f] rounded-full" />
           <motion.div 
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 border-4 border-red-500 border-t-transparent rounded-full"
+            className="absolute inset-0 border-4 border-[#baff55] border-t-transparent rounded-full"
           />
         </div>
-        <p className="mt-6 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 animate-pulse">Analyzing Performance Data</p>
+        <p className="mt-5 text-sm text-[#8e8e93]">Analyzing Performance Data</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto">
-      {/* 1. Header & Prominent Buttons */}
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="space-y-8"
-      >
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2 font-heading tracking-tight">Aviator Tracker</h1>
-          <p className="text-gray-300 text-sm md:text-base font-medium">Record and analyze real-time slot failure performance</p>
+    <div className="p-4 md:p-8 md:px-12 space-y-8 w-full mx-auto bg-[#161616] min-h-screen">
+      {/* Header & Log Buttons */}
+      <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Aviator Tracker</h1>
+          <p className="text-[#8e8e93] text-sm mt-1">Record and analyze real-time slot failure performance</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto">
-          <motion.button
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
+          <button
             onClick={() => logFailure('Slot 1')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 glass-card hover:border-[#ef4444]/50 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] rounded-2xl transition-all"
+            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-[#ff4d4d]/30"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#ef4444]" />
+            <div className="w-10 h-10 rounded-2xl bg-[#ff4d4d]/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-[#ff4d4d]" />
             </div>
-            <div className="text-left sm:text-center">
-              <span className="block text-xs sm:text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Slot 1</span>
-              <span className="text-[7px] text-red-400/50 font-black uppercase tracking-widest mt-1.5 block">Critical Event</span>
+            <div className="text-left">
+              <span className="block text-sm font-semibold text-white">Slot 1</span>
+              <span className="text-xs text-[#8e8e93]">Critical Event</span>
             </div>
-          </motion.button>
+          </button>
 
-          <motion.button
+          <button
             onClick={() => logFailure('Slot 2')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 glass-card hover:border-[#10b981]/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] rounded-2xl transition-all"
+            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-[#baff55]/30"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#10b981]" />
+            <div className="w-10 h-10 rounded-2xl bg-[#baff55]/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-[#baff55]" />
             </div>
-            <div className="text-left sm:text-center">
-              <span className="block text-xs sm:text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Slot 2</span>
-              <span className="text-[7px] text-green-400/50 font-black uppercase tracking-widest mt-1.5 block">Critical Event</span>
+            <div className="text-left">
+              <span className="block text-sm font-semibold text-white">Slot 2</span>
+              <span className="text-xs text-[#8e8e93]">Critical Event</span>
             </div>
-          </motion.button>
+          </button>
 
-          <motion.button
+          <button
             onClick={() => logFailure('Both')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 glass-card hover:border-white/50 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] rounded-2xl transition-all"
+            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-white/20"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-white" />
             </div>
-            <div className="text-left sm:text-center">
-              <span className="block text-xs sm:text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Both</span>
-              <span className="text-[7px] text-gray-600 font-black uppercase tracking-widest mt-1.5 block">Simultaneous</span>
+            <div className="text-left">
+              <span className="block text-sm font-semibold text-white">Both</span>
+              <span className="text-xs text-[#8e8e93]">Simultaneous</span>
             </div>
-          </motion.button>
+          </button>
         </div>
       </motion.div>
 
-      {/* 2. Failure Log Table (Middle) */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="glass-card overflow-hidden"
+      {/* Failure Log Table */}
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
+        className="bg-[#2a2b2f] rounded-[32px] overflow-hidden"
       >
-        <div className="p-6 border-b border-white/5 bg-black/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-6 border-b border-[#3a3b3f] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-white font-heading">Failure Log History</h2>
-            <div className="px-2 py-0.5 text-[9px] bg-red-500/10 text-red-400 rounded-md border border-red-500/20 uppercase tracking-widest font-black">
-              {logs.length} RECORDS
+            <h2 className="text-lg font-semibold text-white">Failure Log History</h2>
+            <div className="px-3 py-1 text-xs bg-[#ff4d4d]/10 text-[#ff4d4d] rounded-full border border-[#ff4d4d]/20 font-semibold">
+              {logs.length} records
             </div>
           </div>
           
@@ -204,19 +197,19 @@ const SlotTracker = () => {
             <button 
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2 text-gray-500 hover:text-white disabled:opacity-30 transition-colors"
+              className="w-9 h-9 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center text-[#8e8e93] hover:text-white disabled:opacity-30 transition-colors"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={16} />
             </button>
-            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
-              Page {currentPage} of {Math.max(1, totalPages)}
+            <span className="text-xs font-medium text-[#8e8e93] px-2">
+              {currentPage} / {Math.max(1, totalPages)}
             </span>
             <button 
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="p-2 text-gray-500 hover:text-white disabled:opacity-30 transition-colors"
+              className="w-9 h-9 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center text-[#8e8e93] hover:text-white disabled:opacity-30 transition-colors"
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>
@@ -225,12 +218,12 @@ const SlotTracker = () => {
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5 bg-black/40">
-                <th className="text-left py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest">#</th>
-                <th className="text-left py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest">SLOT IDENTIFIER</th>
-                <th className="text-left py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest">DATE</th>
-                <th className="text-left py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest">TIME</th>
-                <th className="text-right py-4 px-6 text-gray-400 text-[11px] font-black uppercase tracking-widest text-center">MANAGE</th>
+              <tr className="border-b border-[#3a3b3f]">
+                <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">#</th>
+                <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">Slot</th>
+                <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">Date</th>
+                <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">Time</th>
+                <th className="text-right py-4 px-6 text-[#8e8e93] text-xs font-medium">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -242,31 +235,31 @@ const SlotTracker = () => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     layout
-                    className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group"
+                    className="border-b border-[#3a3b3f]/50 hover:bg-white/[0.02] transition-colors group"
                   >
-                    <td className="py-4 px-6 text-gray-400 font-bold text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                    <td className="py-4 px-6 text-[#8e8e93] text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td className="py-4 px-6">
                       <div className="flex gap-2">
                         {(log.type === 'Slot 1' || log.type === 'Both') && (
-                          <span className="px-2 py-0.5 rounded-md bg-dull-red/10 text-dull-red border border-dull-red/20 font-black text-[9px] uppercase tracking-widest">
+                          <span className="px-3 py-1 rounded-full bg-[#ff4d4d]/10 text-[#ff4d4d] border border-[#ff4d4d]/20 text-xs font-semibold">
                             Slot 1
                           </span>
                         )}
                         {(log.type === 'Slot 2' || log.type === 'Both') && (
-                          <span className="px-2 py-0.5 rounded-md bg-dull-green/10 text-dull-green border border-dull-green/20 font-black text-[9px] uppercase tracking-widest">
+                          <span className="px-3 py-1 rounded-full bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 text-xs font-semibold">
                             Slot 2
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-gray-300 font-bold text-xs">{new Date(log.ts).toLocaleDateString()}</td>
-                    <td className="py-4 px-6 text-gray-300 font-bold text-xs font-mono">{new Date(log.ts).toLocaleTimeString('en-GB')}</td>
+                    <td className="py-4 px-6 text-white text-xs">{new Date(log.ts).toLocaleDateString()}</td>
+                    <td className="py-4 px-6 text-[#8e8e93] text-xs font-mono">{new Date(log.ts).toLocaleTimeString('en-GB')}</td>
                     <td className="py-4 px-6 text-right">
                       <button 
                         onClick={() => handleDeleteRecord(log.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-60 group-hover:opacity-100"
+                        className="w-8 h-8 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center ml-auto text-[#8e8e93] hover:text-[#ff4d4d] hover:border-[#ff4d4d]/30 transition-all opacity-0 group-hover:opacity-100"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={13} />
                       </button>
                     </td>
                   </motion.tr>
@@ -276,8 +269,8 @@ const SlotTracker = () => {
             </table>
           </div>
 
-          {/* Mobile Stacked Cards Layout (Hidden on Desktop) */}
-          <div className="md:hidden flex flex-col divide-y divide-white/5">
+          {/* Mobile Cards */}
+          <div className="md:hidden flex flex-col divide-y divide-[#3a3b3f]/50">
             <AnimatePresence>
               {paginatedLogs.map((log, index) => (
                 <motion.div 
@@ -286,137 +279,119 @@ const SlotTracker = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   layout
-                  className="p-5 space-y-4 hover:bg-white/[0.02] transition-colors"
+                  className="p-5 flex items-center justify-between"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="space-y-2">
                     <div className="flex gap-2">
                       {(log.type === 'Slot 1' || log.type === 'Both') && (
-                        <span className="px-2 py-0.5 rounded-md bg-dull-red/10 text-dull-red border border-dull-red/20 font-black text-[9px] uppercase tracking-widest">
-                          Slot 1
-                        </span>
+                        <span className="px-3 py-1 rounded-full bg-[#ff4d4d]/10 text-[#ff4d4d] border border-[#ff4d4d]/20 text-xs font-semibold">Slot 1</span>
                       )}
                       {(log.type === 'Slot 2' || log.type === 'Both') && (
-                        <span className="px-2 py-0.5 rounded-md bg-dull-green/10 text-dull-green border border-dull-green/20 font-black text-[9px] uppercase tracking-widest">
-                          Slot 2
-                        </span>
+                        <span className="px-3 py-1 rounded-full bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 text-xs font-semibold">Slot 2</span>
                       )}
                     </div>
-                    <span className="text-red-400/60 font-black text-xs tracking-tighter uppercase italic bg-red-500/5 px-2 py-0.5 border border-red-500/10 rounded">FAILED</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-4">
-                    <div>
-                      <span className="block text-gray-400 text-[9px] uppercase tracking-widest mb-1.5 font-bold">Date & Time</span>
-                      <div className="text-gray-300 text-xs font-bold">
-                        {new Date(log.ts).toLocaleDateString()} <span className="font-mono text-gray-400 ml-1">{new Date(log.ts).toLocaleTimeString('en-GB')}</span>
-                      </div>
+                    <div className="text-xs text-[#8e8e93]">
+                      {new Date(log.ts).toLocaleDateString()} <span className="font-mono ml-1">{new Date(log.ts).toLocaleTimeString('en-GB')}</span>
                     </div>
-                    <button 
-                      onClick={() => handleDeleteRecord(log.id)}
-                      className="p-2.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/10 transition-all bg-white/5"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
+                  <button 
+                    onClick={() => handleDeleteRecord(log.id)}
+                    className="w-9 h-9 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center text-[#8e8e93] hover:text-[#ff4d4d] hover:border-[#ff4d4d]/30 transition-all"
+                  >
+                    <Trash2 size={15} />
+                  </button>
                 </motion.div>
               ))}
             </AnimatePresence>
           </div>
 
           {logs.length === 0 && (
-            <div className="py-16 text-center text-gray-600 font-black uppercase tracking-widest text-[10px] italic">
-              No historical records found
-            </div>
+            <div className="py-16 text-center text-[#8e8e93] text-sm">No historical records found</div>
           )}
         </div>
-        <div className="p-4 bg-black/40 border-t border-white/5 flex justify-center gap-6">
+        <div className="p-4 border-t border-[#3a3b3f] flex justify-center gap-8">
           <button 
             onClick={restoreFromBackup}
-            className="flex items-center gap-2 text-[10px] font-black text-emerald-500/60 hover:text-emerald-400 transition-colors uppercase tracking-widest"
+            className="flex items-center gap-2 text-xs font-medium text-[#baff55]/60 hover:text-[#baff55] transition-colors"
           >
-            <RefreshCw size={10} />
-            Emergency Restore
+            <RefreshCw size={12} /> Emergency Restore
           </button>
           <button 
             onClick={handleSafeWipe}
-            className="flex items-center gap-2 text-[10px] font-black text-gray-600 hover:text-red-400 transition-colors uppercase tracking-widest"
+            className="flex items-center gap-2 text-xs font-medium text-[#8e8e93] hover:text-[#ff4d4d] transition-colors"
           >
-            <Trash2 size={10} />
-            Secure Wipe
+            <Trash2 size={12} /> Secure Wipe
           </button>
         </div>
       </motion.div>
 
-      {/* 3. Performance Chart (Bottom) */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="glass-card p-6"
+      {/* Performance Chart */}
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
+        className="bg-[#2a2b2f] rounded-[32px] p-6"
       >
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-              <Activity className="w-5 h-5 text-gray-400" />
+            <div className="w-10 h-10 rounded-2xl bg-[#161616] border border-[#3a3b3f] flex items-center justify-center">
+              <Activity className="w-5 h-5 text-[#8e8e93]" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white font-heading">7-Day Performance</h2>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Historical trend analysis</p>
+              <h2 className="text-lg font-semibold text-white">7-Day Performance</h2>
+              <p className="text-xs text-[#8e8e93]">Historical trend analysis</p>
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-5">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-dull-red shadow-[0_0_8px_rgba(239,68,68,0.3)]" />
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Slot 1</span>
+              <div className="w-2 h-2 rounded-full bg-[#ff4d4d]" />
+              <span className="text-xs text-[#8e8e93]">Slot 1</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-dull-green shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Slot 2</span>
+              <div className="w-2 h-2 rounded-full bg-[#baff55]" />
+              <span className="text-xs text-[#8e8e93]">Slot 2</span>
             </div>
           </div>
         </div>
         <div className="h-[260px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.02)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
               <XAxis 
                 dataKey="day" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'rgba(255, 255, 255, 0.45)', fontSize: 10, fontWeight: 900 }}
+                tick={{ fill: '#8e8e93', fontSize: 11, fontWeight: 500 }}
                 dy={10}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'rgba(255, 255, 255, 0.45)', fontSize: 10, fontWeight: 900 }}
+                tick={{ fill: '#8e8e93', fontSize: 11, fontWeight: 500 }}
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'rgba(10, 12, 22, 0.9)', 
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-                  backdropFilter: 'blur(8px)'
+                  backgroundColor: '#2a2b2f', 
+                  border: '1px solid #3a3b3f',
+                  borderRadius: '16px',
+                  padding: '12px 16px'
                 }}
-                itemStyle={{ fontWeight: 900, fontSize: '10px', textTransform: 'uppercase' }}
+                itemStyle={{ fontWeight: 600, fontSize: '12px', color: '#fff' }}
+                labelStyle={{ color: '#8e8e93', marginBottom: '4px' }}
               />
               <Area 
                 type="monotone" 
                 dataKey="slot1" 
-                stroke="#ef4444" 
+                stroke="#ff4d4d" 
                 strokeWidth={2}
-                fill="#ef4444"
-                fillOpacity={0.05} 
+                fill="#ff4d4d"
+                fillOpacity={0.06} 
                 animationDuration={1500}
               />
               <Area 
                 type="monotone" 
                 dataKey="slot2" 
-                stroke="#10b981" 
+                stroke="#baff55" 
                 strokeWidth={2}
-                fill="#10b981"
-                fillOpacity={0.05} 
+                fill="#baff55"
+                fillOpacity={0.06} 
                 animationDuration={1500}
               />
             </AreaChart>
