@@ -1,53 +1,22 @@
-import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Plus, Search, Sparkles, Copy, Check, ChevronDown, ChevronRight, 
-  X, Zap, Languages, Heart, MessageSquare, RotateCcw, Shield,
-  Filter, LayoutGrid, Terminal, Trash2, Edit3, Save, Trash, Download
+  Plus, Search, ArrowUpRight, Copy, Check,
+  X, Edit3, Trash2, RotateCcw, Download, Sparkles
 } from 'lucide-react';
 import { 
-  Dialog,
-  DialogTitle,
-  DialogContent, 
-  DialogActions, 
-  TextField,
-  Tooltip,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl
+  Dialog, DialogTitle, DialogContent, DialogActions, 
+  TextField, MenuItem, Select, InputLabel, FormControl
 } from '@mui/material';
 
 import { useSupabaseData } from '../context/SupabaseDataContext';
 import { useToast } from '../context/ToastContext';
-import { analyzeClientMessage } from '../utils/aiMatcher';
-import KeywordHighlighter from '../components/KeywordHighlighter';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PREMIUM DESIGN TOKENS
+// COMPONENT: Variable Highlighter
 // ─────────────────────────────────────────────────────────────────────────────
-const S = {
-  bg: 'transparent',
-  surface: 'var(--card)',
-  card: 'var(--card)',
-  cardHover: 'rgba(255, 255, 255, 0.05)',
-  border: 'var(--border)',
-  borderHover: 'rgba(255, 255, 255, 0.1)',
-  primary: 'var(--primary)',
-  orange: 'var(--brand-orange)',
-  orangeDim: 'rgba(255, 122, 89, 0.1)',
-  textPrimary: 'var(--foreground)',
-  textSecondary: 'var(--muted-foreground)',
-  textMuted: 'var(--muted-foreground)',
-  green: 'var(--brand-emerald)',
-  mono: 'var(--font-mono)',
-  sans: 'var(--font-sans)'
-};
-
 const VariableHighlighter = ({ text }) => {
   if (!text) return null;
-
-  // Emotional Categorization
   const categories = {
     danger: ['Referral Violation', 'Deleted Message', 'Lost', 'Rolled back'],
     success: ['Submitted', 'Cashback', 'Referral Bonus'],
@@ -61,26 +30,22 @@ const VariableHighlighter = ({ text }) => {
 
   const getColor = (keyword) => {
     const k = keyword.toLowerCase();
-    if (categories.danger.some(v => v.toLowerCase() === k)) return '#ff4d4d'; // Red
-    if (categories.success.some(v => v.toLowerCase() === k)) return '#00e676'; // Green
-    if (categories.info.some(v => v.toLowerCase() === k)) return '#4080ff';   // Blue
-    if (categories.data.some(v => v.toLowerCase() === k)) return '#ffea00';   // Yellow
+    if (categories.danger.some(v => v.toLowerCase() === k)) return '#ff4d4d';
+    if (categories.success.some(v => v.toLowerCase() === k)) return '#baff55';
+    if (categories.info.some(v => v.toLowerCase() === k)) return '#3b82f6';
+    if (categories.data.some(v => v.toLowerCase() === k)) return '#ffd24d';
     return '#fff';
   };
 
   return (
-    <div style={{ fontFamily: S.mono, letterSpacing: '-0.02em' }}>
+    <div style={{ letterSpacing: '-0.01em', lineHeight: '1.6' }}>
       {parts.map((part, i) => {
         const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
         const isEmotional = allKeywords.some(k => k.toLowerCase() === part.toLowerCase());
 
         if (isPlaceholder) {
           return (
-            <span key={i} style={{ 
-              color: S.orange, fontWeight: 800, 
-              background: 'rgba(249,115,22,0.15)', padding: '0 4px', borderRadius: 4,
-              border: '1px solid rgba(249,115,22,0.2)'
-            }}>
+            <span key={i} className="bg-[#baff55]/10 text-[#baff55] font-semibold px-1 rounded mx-0.5 border border-[#baff55]/20">
               {part}
             </span>
           );
@@ -89,14 +54,7 @@ const VariableHighlighter = ({ text }) => {
         if (isEmotional) {
           const color = getColor(part);
           return (
-            <span key={i} style={{ 
-              color: color, fontWeight: 900, 
-              textShadow: `0 0 8px ${color}40`,
-              background: `${color}10`,
-              padding: '0 4px',
-              borderRadius: 4,
-              border: `1px solid ${color}20`
-            }}>
+            <span key={i} style={{ color, background: `${color}15`, borderColor: `${color}30` }} className="font-semibold px-1 rounded mx-0.5 border">
               {part}
             </span>
           );
@@ -108,245 +66,144 @@ const VariableHighlighter = ({ text }) => {
   );
 };
 
-function CopyBtn({ text, id, copiedId, onCopy }) {
-  const isCopied = copiedId === id;
-  return (
-    <button
-      onClick={() => onCopy(text, id)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '8px 16px', borderRadius: 4,
-        background: isCopied ? S.green : 'transparent',
-        color: isCopied ? '#000' : S.orange, 
-        border: `1px solid ${isCopied ? S.green : S.orange}`, 
-        cursor: 'pointer', fontSize: 11, fontWeight: 900, 
-        transition: 'all 0.2s', textTransform: 'uppercase', 
-        fontFamily: S.mono,
-        position: 'relative'
-      }}
-    >
-      <span style={{ opacity: 0.5 }}>[</span>
-      {isCopied ? 'OK' : 'COPY'}
-      <span style={{ opacity: 0.5 }}>]</span>
-    </button>
-  );
-}
-
-function TemplateItem({ item, catId, copiedId, onCopy, expanded, onToggle, onEdit, onDelete, index }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPONENT: Matte Template Card (Cutout Signature Design)
+// ─────────────────────────────────────────────────────────────────────────────
+function MatteTemplateCard({ item, category, catId, copiedId, onCopy, onEdit, onDelete }) {
+  const [expanded, setExpanded] = useState(false);
   const [activeType, setActiveType] = useState('Standard');
   const responses = item.responses || [];
   const activeResp = responses.find(r => r.type === activeType) || responses[0] || { text: '' };
   const copyId = `${catId}-${item.title}-${activeType}`;
+  const isCopied = copiedId === copyId;
 
   return (
-    <div style={{
-      borderBottom: `1px solid ${S.border}`,
-      background: expanded ? 'rgba(255, 255, 255, 0.01)' : 'transparent',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      position: 'relative'
-    }}>
-      {/* Design C: Thick Left Rule */}
-      {expanded && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: S.orange }} />}
-      
-      <button
-        onClick={onToggle}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center',
-          gap: 12, padding: '16px 20px',
-          background: 'transparent', border: 'none', cursor: 'pointer',
-          color: S.textPrimary, textAlign: 'left',
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Design A: $ Prompt */}
-        <span style={{ color: S.orange, fontFamily: S.mono, fontSize: 14, fontWeight: 900, opacity: 0.6 }}>$</span>
+    <div className="relative w-full">
+      {/* 
+        The Card 
+        We use the 'cutout-card' class from index.css for the visual effect.
+      */}
+      <div className="cutout-card p-8 flex flex-col min-h-[220px] transition-all hover:bg-[#2d2f34]">
         
-        <span style={{ 
-          flex: 1, fontSize: 13, fontWeight: 700, 
-          fontFamily: expanded ? S.mono : S.sans,
-          color: expanded ? S.orange : S.textPrimary,
-          transition: 'color 0.2s'
-        }}>
-          {item.title}
-        </span>
-
-        {/* Design C: Angled Arrow ↗ / ↙ */}
-        <div style={{ color: expanded ? S.orange : S.textMuted, transition: 'all 0.3s' }}>
-          {expanded ? <span style={{ fontSize: 18 }}>↙</span> : <span style={{ fontSize: 18 }}>↗</span>}
+        {/* Top Right Action Button nestled in the cutout */}
+        <div className="absolute top-2 right-2">
+          <button 
+            onClick={() => setExpanded(!expanded)}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all border border-[#3a3b3f] ${expanded ? 'bg-[#baff55] text-black border-transparent' : 'bg-[#161616] text-white hover:bg-[#3a3b3f]'}`}
+            style={{ boxShadow: '0 0 0 6px #161616' }} // Adds the illusion of a gap
+          >
+            <ArrowUpRight size={20} className={`transform transition-transform ${expanded ? 'rotate-45' : ''}`} />
+          </button>
         </div>
 
-        {/* Design C: Active Underline */}
-        {expanded && (
-          <motion.div 
-            layoutId={`underline-${catId}-${item.title}`}
-            style={{ position: 'absolute', bottom: 0, left: 20, right: 20, height: 1, background: S.orange, opacity: 0.3 }} 
-          />
-        )}
-      </button>
+        {/* Card Header */}
+        <div className="pr-16">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-8 h-8 rounded-full bg-[#161616] flex items-center justify-center border border-[#3a3b3f]">
+              <span className="text-white text-xs">{category.match(/(\p{Emoji})/u)?.[0] || '📂'}</span>
+            </span>
+            <span className="text-[#8e8e93] text-sm font-medium">{category.replace(/(\p{Emoji})/gu, '').trim()}</span>
+          </div>
+          <h3 className="text-white text-xl font-semibold leading-tight">{item.title}</h3>
+        </div>
 
-      <AnimatePresence>
-        {expanded && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            style={{ overflow: 'hidden' }}
-          >
-            <div style={{ padding: '0 20px 24px 48px' }}>
-              
-              {/* Custom: Pagination variants [1] [2] */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                <span style={{ fontSize: 10, fontWeight: 900, color: S.textMuted, fontFamily: S.mono, textTransform: 'uppercase' }}>Variant:</span>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {responses.map((r, i) => (
-                    <button
-                      key={r.type}
-                      onClick={(e) => { e.stopPropagation(); setActiveType(r.type); }}
-                      style={{
-                        width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        borderRadius: 4, border: '1px solid',
-                        borderColor: activeType === r.type ? S.orange : S.border,
-                        background: activeType === r.type ? S.orangeDim : 'transparent',
-                        color: activeType === r.type ? S.orange : S.textMuted,
-                        fontSize: 11, fontWeight: 900, cursor: 'pointer', fontFamily: S.mono,
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      [{i + 1}]
-                    </button>
-                  ))}
-                </div>
+        {/* Snippet Preview (if not expanded) */}
+        {!expanded && (
+          <div className="mt-6 mb-6 line-clamp-2 text-[#8e8e93] text-sm">
+            {activeResp.text}
+          </div>
+        )}
+
+        {/* Expanded View Content */}
+        <AnimatePresence>
+          {expanded && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden mt-6"
+            >
+              <div className="flex gap-2 mb-4">
+                {responses.map((r) => (
+                  <button
+                    key={r.type}
+                    onClick={() => setActiveType(r.type)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                      activeType === r.type 
+                        ? 'bg-[#baff55] text-black' 
+                        : 'bg-[#161616] text-[#8e8e93] hover:text-white border border-[#3a3b3f]'
+                    }`}
+                  >
+                    {r.type}
+                  </button>
+                ))}
               </div>
 
-              {/* Design A: Copy field box with bracket design */}
-              <div style={{ 
-                background: '#000', padding: 20, borderRadius: 8, 
-                fontSize: 14, color: '#e4e4e7', lineHeight: 1.8, marginBottom: 20,
-                border: '1px dashed rgba(255,255,255,0.1)',
-                position: 'relative'
-              }}>
-                <div style={{ position: 'absolute', top: -1, left: -1, width: 10, height: 10, borderTop: `2px solid ${S.orange}`, borderLeft: `2px solid ${S.orange}` }} />
-                <div style={{ position: 'absolute', top: -1, right: -1, width: 10, height: 10, borderTop: `2px solid ${S.orange}`, borderRight: `2px solid ${S.orange}` }} />
-                <div style={{ position: 'absolute', bottom: -1, left: -1, width: 10, height: 10, borderBottom: `2px solid ${S.orange}`, borderLeft: `2px solid ${S.orange}` }} />
-                <div style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderBottom: `2px solid ${S.orange}`, borderRight: `2px solid ${S.orange}` }} />
-                
+              <div className="bg-[#161616] p-4 rounded-2xl text-sm text-[#e4e4e7] border border-[#3a3b3f] mb-6">
                 <VariableHighlighter text={activeResp.text} />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {(item.triggers || []).map((t, i) => (
-                    <span key={i} style={{ 
-                      fontSize: 10, color: S.textMuted, fontFamily: S.mono,
-                      background: 'rgba(255,255,255,0.03)', padding: '2px 8px', borderRadius: 4
-                    }}>#{t}</span>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); onEdit(item, catId); }}
-                    style={{ background: 'transparent', border: 'none', color: S.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                  >
-                    <Edit3 size={12} /> <span style={{ fontSize: 10, fontFamily: S.mono }}>EDIT</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex gap-4">
+                  <button onClick={() => onEdit(item, catId)} className="text-[#8e8e93] hover:text-white flex items-center gap-2 text-xs font-semibold transition-colors">
+                    <Edit3 size={14} /> EDIT
                   </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); onDelete(item, catId); }}
-                    style={{ background: 'transparent', border: 'none', color: '#ef444460', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                  >
-                    <Trash2 size={12} /> <span style={{ fontSize: 10, fontFamily: S.mono }}>DELETE</span>
+                  <button onClick={() => onDelete(item, catId)} className="text-[#ff4d4d]/80 hover:text-[#ff4d4d] flex items-center gap-2 text-xs font-semibold transition-colors">
+                    <Trash2 size={14} /> DELETE
                   </button>
                 </div>
-                <CopyBtn text={activeResp.text} id={copyId} copiedId={copiedId} onCopy={onCopy} />
+                <button
+                  onClick={() => onCopy(activeResp.text, copyId)}
+                  className={`px-5 py-2 rounded-full flex items-center gap-2 text-xs font-semibold transition-all ${
+                    isCopied ? 'bg-[#baff55] text-black' : 'bg-white text-black hover:bg-gray-200'
+                  }`}
+                >
+                  {isCopied ? <Check size={14} /> : <Copy size={14} />}
+                  {isCopied ? 'COPIED' : 'COPY TEXT'}
+                </button>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, toggleExpand, onEdit, onDelete, index }) {
-  const emojiMatch = category.match(/(\p{Emoji})/u);
-  const emoji = emojiMatch ? emojiMatch[0] : '📂';
-  const title = category.replace(/(\p{Emoji})/gu, '').trim().toUpperCase();
-  
-  // Design B: 01, 02 numbering
-  const displayNumber = (index + 1).toString().padStart(2, '0');
+        {/* Card Footer (Tags & Status) */}
+        <div className="mt-auto pt-4 flex items-center justify-between">
+          <div className="flex flex-col gap-2">
+             <span className="text-xs text-[#8e8e93] font-medium">Source</span>
+             <div className="flex gap-2 flex-wrap">
+               {item.triggers && item.triggers.length > 0 ? (
+                 item.triggers.slice(0, 2).map((t, i) => (
+                   <span key={i} className="pill-dark text-[11px] px-3 py-1 font-semibold capitalize">{t}</span>
+                 ))
+               ) : (
+                 <span className="pill-dark text-[11px] px-3 py-1 font-semibold text-[#8e8e93]">General</span>
+               )}
+             </div>
+          </div>
 
-  return (
-    <div className="glass-card" style={{ 
-      display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 'auto',
-      position: 'relative'
-    }}>
-      {/* Design C: Orange Header Band */}
-      <div style={{ height: 4, background: S.orange }} />
-      
-      {/* Card Header */}
-      <div style={{ 
-        padding: '24px', borderBottom: `1px solid ${S.border}`, 
-        background: 'linear-gradient(to bottom, rgba(255, 122, 89, 0.05), transparent)',
-        position: 'relative'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-          <span style={{ fontFamily: S.mono, fontSize: 12, fontWeight: 900, color: S.orange }}>
-            SEC_ID: {displayNumber}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontSize: 32 }}>{emoji}</div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ 
-              fontSize: 16, fontWeight: 900, letterSpacing: '0.1em', margin: 0, color: '#fff',
-              fontFamily: S.mono
-            }}>
-              {title}
-            </h3>
-            <div style={{ fontSize: 10, color: S.textMuted, fontFamily: S.mono, marginTop: 4 }}>
-              STATUS: // SYSTEM_READY
-            </div>
+          <div className="flex flex-col items-end gap-2">
+             <span className="text-xs text-[#8e8e93] font-medium">Score</span>
+             <div className="flex gap-1.5 bg-[#161616] p-1.5 rounded-full border border-[#3a3b3f]">
+               <div className="status-dot-red" />
+               <div className="status-dot-orange" />
+               <div className="status-dot-yellow" />
+               <div className={responses.length > 1 ? "status-dot-green" : "status-dot-gray"} />
+               <div className={responses.length > 2 ? "status-dot-green" : "status-dot-gray"} />
+             </div>
           </div>
         </div>
-
-        <div style={{ 
-          position: 'absolute', bottom: -10, right: 24,
-          padding: '4px 12px', borderRadius: 4, background: S.orange, 
-          color: '#000', fontSize: 11, fontWeight: 900, fontFamily: S.mono,
-          boxShadow: `0 4px 12px ${S.orange}40`
-        }}>
-          COUNT: {items.length}
-        </div>
-      </div>
-
-      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }} className="custom-scrollbar">
-        {items.map((item, idx) => (
-          <TemplateItem 
-            key={idx} 
-            item={item} 
-            catId={catId} 
-            copiedId={copiedId} 
-            onCopy={onCopy}
-            expanded={expandedIds.includes(`${catId}-${item.title}`)}
-            onToggle={() => toggleExpand(`${catId}-${item.title}`)}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            index={idx}
-          />
-        ))}
+        
       </div>
     </div>
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN TEMPLATES PAGE
+// ─────────────────────────────────────────────────────────────────────────────
 function Templates() {
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN TEMPLATES COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
-useEffect(() => {
+  useEffect(() => {
     const handler = (e) => {
-      // Focus search input on Ctrl+K (or Cmd+K on macOS)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         const input = document.getElementById('templates-search-input');
@@ -357,61 +214,45 @@ useEffect(() => {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const { templates: data, loading, error, isReady, actions } = useSupabaseData();
+  const { templates: data, loading, isReady, actions } = useSupabaseData();
   const { showToast } = useToast();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   
-  // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [newTemplate, setNewTemplate] = useState({ 
-    category: '', 
-    title: '', 
-    standardText: '', 
-    empathyText: '', 
-    securityText: '',
-    triggers: '' 
+    category: '', title: '', standardText: '', empathyText: '', securityText: '', triggers: '' 
   });
   const [isNewCategory, setIsNewCategory] = useState(false);
   
-  // Expansion Logic: Max 3 at a time
-  const [expandedIds, setExpandedIds] = useState([]);
-
-  const toggleExpand = useCallback((id) => {
-    setExpandedIds(prev => {
-      if (prev.includes(id)) return prev.filter(i => i !== id);
-      // Limit to 3: remove the oldest one if adding a new one
-      const next = [...prev, id];
-      if (next.length > 3) return next.slice(1);
-      return next;
-    });
-  }, []);
-
-  const handleCopy = useCallback((text, id) => {
+  const handleCopy = (text, id) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     showToast('Copied to clipboard!', 'success');
     setTimeout(() => setCopiedId(null), 2000);
-  }, [showToast]);
+  };
 
-  const filteredData = useMemo(() => {
+  // Flatten the grouped data into a list of individual templates for the new grid layout
+  const flatTemplates = useMemo(() => {
     if (!data) return [];
-    let processed = searchQuery 
-      ? data.map(cat => ({
-          ...cat,
-          templates: cat.templates.filter(t => 
-            t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (t.triggers || []).some(tr => tr.toLowerCase().includes(searchQuery.toLowerCase())) ||
-            t.responses.some(r => r.text.toLowerCase().includes(searchQuery.toLowerCase()))
-          )
-        })).filter(cat => cat.templates.length > 0)
-      : [...data];
+    const all = [];
+    data.forEach(cat => {
+      cat.templates.forEach(t => {
+        all.push({ ...t, categoryName: cat.category, catId: cat.id });
+      });
+    });
 
-    // Grouping/Sorting Logic: Sort by count to minimize white space in rows
-    return processed.sort((a, b) => a.templates.length - b.templates.length);
+    if (!searchQuery) return all;
+
+    return all.filter(t => 
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.triggers || []).some(tr => tr.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      t.responses.some(r => r.text.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      t.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   }, [data, searchQuery]);
 
   const availableCategories = useMemo(() => {
@@ -439,26 +280,19 @@ useEffect(() => {
 
   const handleDelete = async (item, catId) => {
     if (!window.confirm(`Are you sure you want to delete "${item.title}"?`)) return;
-    
     const category = data.find(c => c.id === catId);
     if (!category) return;
-
     const updatedTemplates = category.templates.filter(t => t.title !== item.title);
     
     try {
       let success;
       if (updatedTemplates.length === 0) {
-        // If it's the last template, delete the whole category record
         success = await actions.deleteRecord('supportTemplates', catId);
       } else {
-        // Otherwise update the templates array
-        success = await actions.updateRecord('supportTemplates', catId, {
-          templates: updatedTemplates
-        });
+        success = await actions.updateRecord('supportTemplates', catId, { templates: updatedTemplates });
       }
-
       if (success) {
-        showToast('Template purged from matrix.', 'success');
+        showToast('Template purged.', 'success');
         actions.refreshAll();
       }
     } catch (err) {
@@ -471,7 +305,6 @@ useEffect(() => {
       showToast('Please fill required fields', 'error');
       return;
     }
-
     const responses = [{ type: 'Standard', text: newTemplate.standardText }];
     if (newTemplate.empathyText) responses.push({ type: 'High Empathy', text: newTemplate.empathyText });
     if (newTemplate.securityText) responses.push({ type: 'Security', text: newTemplate.securityText });
@@ -487,20 +320,12 @@ useEffect(() => {
         const otherTemplates = category.templates.filter(t => t.title !== newTemplate.title);
         success = await actions.updateRecord('supportTemplates', editId, {
           category: newTemplate.category,
-          templates: [...otherTemplates, {
-            title: newTemplate.title,
-            responses: responses,
-            triggers: triggers
-          }]
+          templates: [...otherTemplates, { title: newTemplate.title, responses, triggers }]
         });
       } else {
         success = await actions.createRecord('supportTemplates', {
           category: newTemplate.category,
-          templates: [{
-            title: newTemplate.title,
-            responses: responses,
-            triggers: triggers
-          }]
+          templates: [{ title: newTemplate.title, responses, triggers }]
         });
       }
 
@@ -519,275 +344,139 @@ useEffect(() => {
 
   if (loading.templates && !isReady) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="text-orange-500">
+      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="text-[#baff55]">
         <RotateCcw size={40} />
       </motion.div>
-      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Syncing Intelligence Matrix</p>
+      <p className="text-xs font-semibold text-[#8e8e93]">Loading Matrix...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen text-foreground w-full flex flex-col" style={{ fontFamily: S.sans }}>
+    <div className="min-h-screen text-white w-full flex flex-col bg-[#161616]">
       
-      {/* STICKY HEADER */}
-      <header className="glass" style={{ 
-        position: 'sticky', top: 0, zIndex: 100, 
-        padding: '16px 40px', borderBottom: `1px solid ${S.border}`
-      }}>
-        <div style={{ maxWidth: 1600, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div>
-                <h1 style={{ fontSize: 18, fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>Templates / Support Intelligence Matrix</h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                  <div style={{ 
-                    display: 'flex', alignItems: 'center', gap: 6, 
-                    fontSize: 9, fontWeight: 900, color: S.orange, 
-                    textTransform: 'uppercase', letterSpacing: '0.05em' 
-                  }}>
-                    <Sparkles size={10} /> AI-Assisted
-                  </div>
-                  <div style={{ width: 3, height: 3, borderRadius: '50%', background: S.textMuted }} />
-                  <div style={{ fontSize: 9, fontWeight: 700, color: S.textMuted, textTransform: 'uppercase' }}>
-                    {data?.length || 0} Clusters Active
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button 
-                onClick={() => setModalOpen(true)}
-                style={{ 
-                  background: 'rgba(255,255,255,0.05)', color: '#fff', border: `1px solid ${S.border}`, 
-                  borderRadius: 10, padding: '8px 16px', fontSize: 11, fontWeight: 800, 
-                  display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' 
-                }}
-              >
-                <Plus size={14} /> New Template
+      {/* HEADER SECTION */}
+      <header className="sticky top-0 z-50 bg-[#161616] border-b border-[#3a3b3f] py-6 px-10">
+        <div className="max-w-[1600px] mx-auto flex flex-col gap-6">
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button className="pill-white">All</button>
+              <button className="pill-dark flex items-center gap-2">
+                <span className="text-[#ff4d4d]">🔥</span> Hot
               </button>
-              <a 
-                href="/blastchat-extension.zip"
-                download="blastchat-extension.zip"
-                style={{ 
-                  background: S.orange, color: '#fff', borderRadius: 10, 
-                  padding: '8px 16px', fontSize: 11, fontWeight: 800, 
-                  display: 'flex', alignItems: 'center', gap: 8, 
-                  textDecoration: 'none', boxShadow: `0 4px 15px ${S.orange}30` 
-                }}
-              >
-                <Download size={14} /> Download Extension (Chrome)
-              </a>
-              <a 
-                href="/templates/blastchat-extension.xpi"
-                style={{ 
-                  background: '#ea580c', color: '#fff', borderRadius: 10, 
-                  padding: '8px 16px', fontSize: 11, fontWeight: 800, 
-                  display: 'flex', alignItems: 'center', gap: 8, 
-                  textDecoration: 'none', boxShadow: `0 4px 15px rgba(234,88,12,0.3)` 
-                }}
-              >
-                <span>🦊</span> Install Add-on (Firefox)
-              </a>
+              <button className="pill-dark">Due Today</button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button onClick={() => setModalOpen(true)} className="pill-white flex items-center gap-2">
+                <Plus size={16} /> New Task
+              </button>
+              <button className="icon-btn-dark"><Download size={18} /></button>
+              <button className="icon-btn-dark"><Sparkles size={18} /></button>
             </div>
           </div>
 
-          {/* PREMIUM SEARCH BAR */}
-          <div 
-            className="templates-search-wrapper"
-            style={{ position: 'relative' }}
-          >
-            {/* Animated gradient glow border */}
-            <div 
-              className="search-glow"
-              style={{
-                position: 'absolute', inset: -1, borderRadius: 16, 
-                background: searchQuery 
-                  ? `linear-gradient(135deg, ${S.orange}, var(--brand-purple), ${S.orange})` 
-                  : `linear-gradient(135deg, rgba(255,122,89,0.3), rgba(139,92,246,0.15), rgba(255,122,89,0.3))`,
-                backgroundSize: '200% 200%',
-                opacity: searchQuery ? 0.8 : 0.4,
-                transition: 'opacity 0.4s ease',
-                zIndex: 0,
-                pointerEvents: 'none'
-              }}
+          {/* SEARCH BAR (Matte Style) */}
+          <div className="relative max-w-2xl w-full">
+            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+              <Search size={20} className="text-[#8e8e93]" />
+            </div>
+            <input 
+              id="templates-search-input"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search templates..."
+              className="w-full bg-[#2a2b2f] border border-[#3a3b3f] text-white rounded-full py-4 pl-14 pr-16 focus:outline-none focus:border-[#baff55] transition-colors"
             />
-            
-            {/* Inner container */}
-            <div className="bg-panel" style={{
-              position: 'relative', zIndex: 1,
-              borderRadius: 15,
-              display: 'flex', alignItems: 'center', gap: 0,
-            }}>
-              {/* AI badge on left */}
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '0 0 0 16px',
-                flexShrink: 0
-              }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  background: `linear-gradient(135deg, ${S.orange}20, ${S.orange}08)`,
-                  border: `1px solid ${S.orange}30`,
-                  borderRadius: 8, padding: '5px 10px'
-                }}>
-                  <Sparkles size={12} color={S.orange} style={{ animation: 'pulse 2s ease-in-out infinite' }} />
-                  <span style={{ fontSize: 9, fontWeight: 900, color: S.orange, textTransform: 'uppercase', letterSpacing: '0.1em' }}>AI</span>
-                </div>
-              </div>
-
-              {/* Search icon */}
-              <Search size={16} color={searchQuery ? S.orange : S.textMuted} style={{ 
-                marginLeft: 12, flexShrink: 0,
-                transition: 'color 0.3s ease'
-              }} />
-
-              {/* Input */}
-              <input 
-                id="templates-search-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search templates, paste a client message, or describe the issue..."
-                style={{
-                  flex: 1, background: 'transparent', border: 'none',
-                  padding: '16px 12px', color: '#fff', fontSize: 14,
-                  outline: 'none', fontFamily: S.sans,
-                  letterSpacing: '-0.01em'
-                }}
-              />
-
-              {/* Right side: result count + clear button + shortcut hint */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 16, flexShrink: 0 }}>
-                {searchQuery && (
-                  <>
-                    <span style={{
-                      fontSize: 10, fontWeight: 800, color: filteredData.length > 0 ? S.green : '#ef4444',
-                      background: filteredData.length > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                      border: `1px solid ${filteredData.length > 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
-                      borderRadius: 6, padding: '3px 8px',
-                      textTransform: 'uppercase', letterSpacing: '0.05em'
-                    }}>
-                      {filteredData.length} {filteredData.length === 1 ? 'match' : 'matches'}
-                    </span>
-                    <button 
-                      onClick={() => setSearchQuery('')}
-                      style={{ 
-                        background: 'rgba(255,255,255,0.06)', border: 'none', 
-                        color: '#a1a1aa', cursor: 'pointer', borderRadius: 6,
-                        padding: '4px 6px', display: 'flex', alignItems: 'center',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => { e.target.style.background = 'rgba(239,68,68,0.15)'; e.target.style.color = '#ef4444'; }}
-                      onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.color = '#a1a1aa'; }}
-                    >
-                      <X size={14} />
-                    </button>
-                  </>
-                )}
-                {!searchQuery && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 6, padding: '4px 8px'
-                  }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.25)', fontFamily: S.mono }}>Ctrl+K</span>
-                  </div>
-                )}
-              </div>
+            <div className="absolute inset-y-0 right-0 pr-6 flex items-center">
+               {!searchQuery ? (
+                 <span className="text-xs font-semibold text-[#8e8e93] bg-[#161616] px-2 py-1 rounded-md border border-[#3a3b3f]">Ctrl+K</span>
+               ) : (
+                 <button onClick={() => setSearchQuery('')} className="text-[#8e8e93] hover:text-white"><X size={16}/></button>
+               )}
             </div>
           </div>
+
         </div>
       </header>
 
-      {/* MAIN CONTENT GRID */}
-      <main style={{ maxWidth: 1600, margin: '0 auto', padding: '40px' }}>
-
-        <div 
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6"
-          style={{ display: 'grid', alignItems: 'stretch' }}
-        >
-          {filteredData.map((cat, idx) => (
-            <CategoryCard 
-              key={idx}
-              category={cat.category}
-              items={cat.templates}
-              catId={cat.id}
+      {/* TEMPLATES GRID */}
+      <main className="max-w-[1600px] mx-auto w-full p-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {flatTemplates.map((t, idx) => (
+            <MatteTemplateCard 
+              key={`${t.catId}-${idx}`}
+              item={t}
+              category={t.categoryName}
+              catId={t.catId}
               copiedId={copiedId}
               onCopy={handleCopy}
-              expandedIds={expandedIds}
-              toggleExpand={toggleExpand}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              index={idx}
             />
           ))}
         </div>
 
-                {filteredData.length === 0 && (
-          <div className="glass-card" style={{ padding: '40px', borderRadius: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ display: 'inline-flex', padding: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', marginBottom: 20 }}>
-              <Search size={40} color={S.textMuted} />
+        {flatTemplates.length === 0 && (
+          <div className="mt-20 flex flex-col items-center justify-center">
+            <div className="w-20 h-20 bg-[#2a2b2f] rounded-full flex items-center justify-center mb-6">
+              <Search size={32} className="text-[#8e8e93]" />
             </div>
-            <h2 style={{ fontSize: 24, fontWeight: 900, color: S.textPrimary, margin: '0 0 8px' }}>No matching intelligence found</h2>
-            <p style={{ color: S.textMuted, margin: 0 }}>Try adjusting your search or use the AI suggestions above.</p>
+            <h2 className="text-2xl font-semibold text-white mb-2">No templates found</h2>
+            <p className="text-[#8e8e93]">Try adjusting your search criteria.</p>
           </div>
         )}
-
       </main>
 
-      {/* MODAL (Same as before but styled to match) */}
-      <Dialog open={modalOpen} onClose={() => { setModalOpen(false); setIsEditing(false); }} maxWidth="sm" fullWidth PaperProps={{ style: { background: S.surface, borderRadius: 24, border: `1px solid ${S.border}`, color: '#fff' } }}>
-        <DialogTitle style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: 16, padding: '24px 32px' }}>
-          {isEditing ? 'Edit Template' : 'Deploy Template'}
+      {/* CREATE/EDIT MODAL */}
+      <Dialog 
+        open={modalOpen} 
+        onClose={() => { setModalOpen(false); setIsEditing(false); }} 
+        maxWidth="sm" 
+        fullWidth 
+        PaperProps={{ style: { background: '#2a2b2f', borderRadius: 32, border: '1px solid #3a3b3f', color: '#fff', padding: 16 } }}
+      >
+        <DialogTitle className="font-semibold text-xl text-white">
+          {isEditing ? 'Edit Template' : 'New Template'}
         </DialogTitle>
-        <DialogContent style={{ padding: '32px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <FormControl fullWidth><InputLabel style={{ color: S.textMuted }}>Category</InputLabel><Select label="Category" value={isNewCategory ? "NEW" : newTemplate.category} onChange={e => { if (e.target.value === "NEW") { setIsNewCategory(true); setNewTemplate({ ...newTemplate, category: "" }); } else { setIsNewCategory(false); setNewTemplate({ ...newTemplate, category: e.target.value }); } }} style={{ color: '#fff', background: '#000', borderRadius: 12 }}>{availableCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}<MenuItem value="NEW" style={{ color: S.orange }}>+ NEW CATEGORY</MenuItem></Select></FormControl>
-            {isNewCategory && <TextField label="New Category Name" fullWidth variant="outlined" value={newTemplate.category} onChange={e => setNewTemplate({ ...newTemplate, category: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} autoFocus />}
-            <TextField label="Title" fullWidth variant="outlined" value={newTemplate.title} onChange={e => setNewTemplate({ ...newTemplate, title: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
-            <TextField label="Triggers (comma separated keywords)" fullWidth variant="outlined" value={newTemplate.triggers} onChange={e => setNewTemplate({ ...newTemplate, triggers: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
+        <DialogContent className="pt-4">
+          <div className="flex flex-col gap-5 mt-2">
+            <FormControl fullWidth>
+              <InputLabel style={{ color: '#8e8e93' }}>Category</InputLabel>
+              <Select 
+                label="Category" 
+                value={isNewCategory ? "NEW" : newTemplate.category} 
+                onChange={e => { 
+                  if (e.target.value === "NEW") { setIsNewCategory(true); setNewTemplate({ ...newTemplate, category: "" }); } 
+                  else { setIsNewCategory(false); setNewTemplate({ ...newTemplate, category: e.target.value }); } 
+                }} 
+                style={{ color: '#fff', background: '#161616', borderRadius: 16 }}
+              >
+                {availableCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+                <MenuItem value="NEW" style={{ color: '#baff55' }}>+ NEW CATEGORY</MenuItem>
+              </Select>
+            </FormControl>
+            {isNewCategory && <TextField label="New Category Name" fullWidth variant="outlined" value={newTemplate.category} onChange={e => setNewTemplate({ ...newTemplate, category: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} autoFocus />}
+            <TextField label="Title" fullWidth variant="outlined" value={newTemplate.title} onChange={e => setNewTemplate({ ...newTemplate, title: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
+            <TextField label="Source / Triggers (comma separated)" fullWidth variant="outlined" value={newTemplate.triggers} onChange={e => setNewTemplate({ ...newTemplate, triggers: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
             
-            <div style={{ borderTop: `1px solid ${S.border}`, pt: 16 }}>
-               <h4 style={{ fontSize: 10, fontWeight: 900, color: S.orange, marginBottom: 12, textTransform: 'uppercase' }}>Response Variants</h4>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                 <TextField label="Standard Response" fullWidth multiline rows={3} value={newTemplate.standardText} onChange={e => setNewTemplate({ ...newTemplate, standardText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
-                 <TextField label="High Empathy Response" fullWidth multiline rows={3} value={newTemplate.empathyText} onChange={e => setNewTemplate({ ...newTemplate, empathyText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
-                 <TextField label="Security/Alert Response" fullWidth multiline rows={3} value={newTemplate.securityText} onChange={e => setNewTemplate({ ...newTemplate, securityText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#000', borderRadius: 12 } }} InputLabelProps={{ style: { color: S.textMuted } }} />
+            <div className="border-t border-[#3a3b3f] pt-4">
+               <h4 className="text-xs font-semibold text-[#8e8e93] mb-4">Response Variants</h4>
+               <div className="flex flex-col gap-4">
+                 <TextField label="Standard Response" fullWidth multiline rows={3} value={newTemplate.standardText} onChange={e => setNewTemplate({ ...newTemplate, standardText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
+                 <TextField label="Alternative Response 1" fullWidth multiline rows={2} value={newTemplate.empathyText} onChange={e => setNewTemplate({ ...newTemplate, empathyText: e.target.value })} InputProps={{ style: { color: '#fff', background: '#161616', borderRadius: 16 } }} InputLabelProps={{ style: { color: '#8e8e93' } }} />
                </div>
             </div>
           </div>
         </DialogContent>
-        <DialogActions style={{ padding: '24px 32px' }}>
-          <button onClick={() => { setModalOpen(false); setIsEditing(false); }} style={{ background: 'transparent', border: 'none', color: S.textMuted, fontWeight: 700, cursor: 'pointer' }}>CANCEL</button>
-          <button onClick={handleCreate} style={{ background: S.orange, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 32px', fontWeight: 900, cursor: 'pointer' }}>
-            {isEditing ? 'SAVE CHANGES' : 'DEPLOY'}
-          </button>
+        <DialogActions className="pr-4 pb-4">
+          <button onClick={() => { setModalOpen(false); setIsEditing(false); }} className="pill-dark mr-2">Cancel</button>
+          <button onClick={handleCreate} className="pill-lime">{isEditing ? 'Save Changes' : 'Deploy'}</button>
         </DialogActions>
       </Dialog>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: ${S.orange}; }
-        @keyframes pulse {
-          0% { opacity: 0.6; }
-          50% { opacity: 1; }
-          100% { opacity: 0.6; }
-        }
-        @keyframes glow {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .search-glow {
-          animation: glow 4s ease infinite;
-        }
-      `}} />
     </div>
   );
-};
+}
 
 export default Templates;

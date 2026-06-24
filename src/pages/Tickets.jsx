@@ -112,38 +112,37 @@ export default function Tickets() {
   const userRole = user.role || 'staff';
 
   return (
-    <div className="p-4 md:p-8 md:px-12 space-y-10 w-full mx-auto pb-24 md:pb-8 min-h-screen">
-      {/* Header section adapted to Dark Theme */}
+    <div className="p-4 md:p-8 md:px-12 space-y-8 w-full mx-auto pb-24 md:pb-8 min-h-screen bg-[#161616]">
+      {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="flex flex-col md:flex-row md:items-center justify-between gap-6"
       >
         <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center">
-            {userRole === 'staff' ? <User className="text-red-500" /> : <Shield className="text-red-500" />}
+          <div className="w-14 h-14 rounded-2xl bg-[#2a2b2f] border border-[#3a3b3f] flex items-center justify-center">
+            {userRole === 'staff' ? <User className="text-[#baff55]" /> : <Shield className="text-[#baff55]" />}
           </div>
           <div>
-            <div className="flex flex-col md:flex-row md:items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-black text-white font-heading tracking-tighter uppercase">
+            <div className="flex flex-col md:flex-row md:items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
                 {userRole === 'staff' ? 'Support Portal' : 'Technical Ops'}
               </h1>
-              <span className="w-fit px-2 py-0.5 rounded badge-glow-blue text-[8px] font-black uppercase tracking-widest">
-                Logged in as {user.name}
+              <span className="w-fit px-3 py-1 rounded-full bg-[#2a2b2f] border border-[#3a3b3f] text-xs font-semibold text-white">
+                {user.name}
               </span>
             </div>
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2 flex-wrap">
-              <Zap size={10} className="text-[#ff7a59]" />
-              Real-time Issue Tracking Protocol Active
-              <span className="text-gray-500/60 font-mono">• {user.phone}</span>
+            <p className="text-[#8e8e93] text-sm mt-1 flex items-center gap-2">
+              <Zap size={12} className="text-[#baff55]" />
+              Real-time Issue Tracking • {user.phone}
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <button 
             onClick={handleLogout}
-            className="glass px-5 py-3 text-gray-500 hover:text-white font-black text-[9px] uppercase tracking-widest transition-colors rounded-xl"
+            className="pill-dark"
           >
             Log Out
           </button>
@@ -151,9 +150,9 @@ export default function Tickets() {
           {userRole === 'staff' && (
             <button 
               onClick={() => setShowNewTicketModal(true)}
-              className="premium-button px-8 py-4 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em]"
+              className="pill-lime flex items-center gap-2"
             >
-              <Plus size={18} strokeWidth={3} />
+              <Plus size={16} strokeWidth={2.5} />
               New Ticket
             </button>
           )}
@@ -161,44 +160,44 @@ export default function Tickets() {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard label="Pending / Open" value={stats.open} color="text-blue-400" />
-        <StatsCard label="In Progress" value={stats.inProgress} color="text-amber-400" />
-        <StatsCard label="Resolved" value={stats.resolved} color="text-emerald-400" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard label="Pending / Open" value={stats.open} color="text-[#baff55]" />
+        <StatsCard label="In Progress" value={stats.inProgress} color="text-[#ffa64d]" />
+        <StatsCard label="Resolved" value={stats.resolved} color="text-[#3b82f6]" />
         <StatsCard label="Total Tickets" value={stats.total} color="text-white" />
       </div>
 
       {/* Filters & Search */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-[#ff7a59] transition-colors" />
+          <div className="flex-1 relative">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8e8e93]" />
             <input
               type="text"
               placeholder="Search by ID, Phone, or Content..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="premium-input w-full pl-14 pr-6 py-5 rounded-2xl placeholder:text-gray-600"
+              className="w-full bg-[#2a2b2f] border border-[#3a3b3f] text-white pl-14 pr-6 py-4 rounded-full focus:outline-none focus:border-[#baff55] transition-colors placeholder:text-[#8e8e93]"
             />
           </div>
         </div>
 
-        <div className="glass-card overflow-hidden min-h-[400px]">
-          <div className="p-8 border-b border-white/5 flex flex-col md:flex-row items-center justify-between bg-black/20 gap-4">
+        <div className="bg-[#2a2b2f] rounded-[32px] overflow-hidden min-h-[400px]">
+          <div className="p-6 border-b border-[#3a3b3f] flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Filter size={18} className="text-[#ff7a59]" />
-              <h2 className="text-lg font-black text-white font-heading uppercase tracking-tighter">Operational Feed</h2>
+              <Filter size={18} className="text-[#baff55]" />
+              <h2 className="text-lg font-semibold text-white">Operational Feed</h2>
             </div>
             
-            <div className="flex bg-black/40 p-1 rounded-2xl border border-white/5">
+            <div className="flex bg-[#161616] p-1.5 rounded-full border border-[#3a3b3f] gap-1">
               {['all', 'open', 'in-progress', 'resolved'].map((s) => (
                 <button
                   key={s}
                   onClick={() => setFilterStatus(s)}
-                  className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                  className={`px-4 py-2 rounded-full text-xs font-semibold capitalize transition-all ${
                     filterStatus === s 
-                      ? 'bg-[#ff7a59]/10 text-[#ff7a59] border border-[#ff7a59]/20 shadow-[0_0_10px_rgba(255,122,89,0.1)]' 
-                      : 'text-gray-500 hover:text-white'
+                      ? 'bg-[#baff55] text-black' 
+                      : 'text-[#8e8e93] hover:text-white'
                   }`}
                 >
                   {s}
@@ -206,19 +205,19 @@ export default function Tickets() {
               ))}
             </div>
 
-            <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">{filteredTickets.length} Matches</span>
+            <span className="text-sm font-medium text-[#8e8e93]">{filteredTickets.length} results</span>
           </div>
 
-          <div className="p-8 space-y-4">
+          <div className="p-6 space-y-4">
             {loading?.tickets ? (
               <div className="py-24 text-center">
-                <div className="w-12 h-12 mx-auto mb-4 border-4 border-[#ff7a59]/20 border-t-[#ff7a59] rounded-full animate-spin" />
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Syncing with Central database...</p>
+                <div className="w-10 h-10 mx-auto mb-4 border-4 border-[#baff55]/20 border-t-[#baff55] rounded-full animate-spin" />
+                <p className="text-sm text-[#8e8e93]">Syncing with database...</p>
               </div>
             ) : filteredTickets.length === 0 ? (
               <div className="py-24 text-center">
-                <LayoutDashboard className="w-12 h-12 mx-auto mb-4 text-gray-800" />
-                <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">No active tickets found</p>
+                <LayoutDashboard className="w-12 h-12 mx-auto mb-4 text-[#3a3b3f]" />
+                <p className="text-sm text-[#8e8e93]">No active tickets found</p>
               </div>
             ) : (
               <div className="grid gap-4">
