@@ -12,6 +12,18 @@ import { useSupabaseData } from '../context/SupabaseDataContext';
 import { useToast } from '../context/ToastContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Themes based on Image
+// ─────────────────────────────────────────────────────────────────────────────
+const THEMES = [
+  { bg: '#baff55', text: '#000000', statusLabel: 'Ready', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#ff7a2a', text: '#000000', statusLabel: 'Live', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#ffd600', text: '#000000', statusLabel: 'Degraded', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#00e5ff', text: '#000000', statusLabel: 'Active', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#ff3366', text: '#ffffff', statusLabel: 'Active', statusBg: 'rgba(255,255,255,0.2)', statusText: '#fff' },
+  { bg: '#ffaa00', text: '#000000', statusLabel: 'Processing', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Variable Highlighter
 // ─────────────────────────────────────────────────────────────────────────────
 const VariableHighlighter = ({ text }) => {
@@ -34,7 +46,7 @@ const VariableHighlighter = ({ text }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Single Template Row (inside a category card)
 // ─────────────────────────────────────────────────────────────────────────────
-function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEdit, onDelete }) {
+function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEdit, onDelete, theme }) {
   const [activeVariant, setActiveVariant] = useState(0);
   const responses = item.responses || [];
   const activeResp = responses[activeVariant] || { text: '', type: 'Standard' };
@@ -49,7 +61,10 @@ function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEd
         className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.02] transition-colors text-left group"
       >
         {/* Status Dot */}
-        <div className={`w-2 h-2 rounded-full shrink-0 transition-colors ${isExpanded ? 'bg-[#baff55]' : 'bg-[#4a4b50]'}`} />
+        <div 
+          className="w-2 h-2 rounded-full shrink-0 transition-colors"
+          style={{ backgroundColor: isExpanded ? theme.bg : '#4a4b50' }}
+        />
         
         {/* Title */}
         <span className={`flex-1 text-sm font-medium transition-colors ${isExpanded ? 'text-white' : 'text-[#c0c0c5] group-hover:text-white'}`}>
@@ -57,7 +72,10 @@ function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEd
         </span>
 
         {/* Arrow */}
-        <span className={`shrink-0 transition-colors ${isExpanded ? 'text-[#baff55]' : 'text-[#4a4b50] group-hover:text-[#8e8e93]'}`}>
+        <span 
+          className="shrink-0 transition-colors group-hover:text-[#8e8e93]"
+          style={{ color: isExpanded ? theme.bg : '#4a4b50' }}
+        >
           {isExpanded ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
         </span>
       </button>
@@ -81,11 +99,12 @@ function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEd
                     <button
                       key={i}
                       onClick={(e) => { e.stopPropagation(); setActiveVariant(i); }}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-all ${
-                        activeVariant === i
-                          ? 'bg-[#baff55] text-black border-[#baff55]'
-                          : 'bg-transparent text-[#8e8e93] border-[#3a3b3f] hover:border-[#8e8e93] hover:text-white'
-                      }`}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-all hover:text-white"
+                      style={{
+                        backgroundColor: activeVariant === i ? theme.bg : 'transparent',
+                        borderColor: activeVariant === i ? theme.bg : '#3a3b3f',
+                        color: activeVariant === i ? theme.text : '#8e8e93'
+                      }}
                     >
                       {i + 1}
                     </button>
@@ -119,11 +138,12 @@ function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEd
                 </button>
                 <button
                   onClick={() => onCopy(activeResp.text, copyId)}
-                  className={`ml-auto px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all ${
-                    isCopied
-                      ? 'bg-[#baff55] text-black border-[#baff55]'
-                      : 'bg-transparent text-[#baff55] border-[#baff55] hover:bg-[#baff55]/10'
-                  }`}
+                  className="ml-auto px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all hover:opacity-80"
+                  style={{
+                    backgroundColor: isCopied ? theme.bg : 'transparent',
+                    borderColor: theme.bg,
+                    color: isCopied ? theme.text : theme.bg
+                  }}
                 >
                   {isCopied ? 'Copied!' : 'Copy'}
                 </button>
@@ -158,15 +178,14 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, onEdit, onDele
     return 'SYSTEM';
   })();
 
-  const statusLabel = index % 3 === 0 ? 'Live' : index % 3 === 1 ? 'Ready' : 'System';
-  const statusColor = statusLabel === 'Live' ? 'bg-[#ff7a2a]' : 'bg-[#baff55]/20 text-[#baff55]';
+  const theme = THEMES[index % THEMES.length];
 
   const toggleItem = (title) => {
     setExpandedTitle(prev => prev === title ? null : title);
   };
 
   return (
-    <div className="bg-[#1e1f22] rounded-[24px] overflow-hidden flex flex-col">
+    <div className="bg-[#1e1f22] rounded-[24px] overflow-hidden flex flex-col h-fit">
       {/* Card Top Row */}
       <div className="flex items-start justify-between p-5 pb-3">
         {/* Left: Icon + Menu */}
@@ -180,15 +199,19 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, onEdit, onDele
         </div>
 
         {/* Right: Count Badge */}
-        <div className="bg-[#baff55] rounded-2xl px-4 py-3 flex flex-col items-center min-w-[80px] -mt-1 -mr-1">
-          <span className="text-black text-3xl font-black leading-none tracking-tight">
+        <div 
+          className="rounded-2xl px-4 py-3 flex flex-col items-center min-w-[80px] -mt-1 -mr-1"
+          style={{ backgroundColor: theme.bg, color: theme.text }}
+        >
+          <span className="text-3xl font-black leading-none tracking-tight">
             {String(items.length).padStart(2, '0')}
           </span>
-          <span className="text-black/70 text-[9px] font-bold uppercase tracking-widest mt-1">RESPONSES</span>
-          <div className={`mt-2 px-3 py-0.5 rounded-full text-[9px] font-bold ${
-            statusLabel === 'Live' ? 'bg-[#ff7a2a] text-white' : 'bg-black/20 text-black'
-          }`}>
-            {statusLabel}
+          <span className="text-[9px] font-bold uppercase tracking-widest mt-1 opacity-70">RESPONSES</span>
+          <div 
+            className="mt-2 px-3 py-0.5 rounded-full text-[9px] font-bold"
+            style={{ backgroundColor: theme.statusBg, color: theme.statusText }}
+          >
+            {theme.statusLabel}
           </div>
         </div>
       </div>
@@ -215,6 +238,7 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, onEdit, onDele
             onToggle={() => toggleItem(item.title)}
             onEdit={onEdit}
             onDelete={onDelete}
+            theme={theme}
           />
         ))}
       </div>
@@ -259,17 +283,22 @@ function Templates() {
 
   const filteredData = useMemo(() => {
     if (!data) return [];
-    if (!searchQuery) return data;
-    const q = searchQuery.toLowerCase();
-    return data.map(cat => ({
-      ...cat,
-      templates: cat.templates.filter(t =>
-        t.title.toLowerCase().includes(q) ||
-        (t.triggers || []).some(tr => tr.toLowerCase().includes(q)) ||
-        t.responses.some(r => r.text.toLowerCase().includes(q)) ||
-        cat.category.toLowerCase().includes(q)
-      )
-    })).filter(cat => cat.templates.length > 0);
+    let result = data;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = data.map(cat => ({
+        ...cat,
+        templates: cat.templates.filter(t =>
+          t.title.toLowerCase().includes(q) ||
+          (t.triggers || []).some(tr => tr.toLowerCase().includes(q)) ||
+          t.responses.some(r => r.text.toLowerCase().includes(q)) ||
+          cat.category.toLowerCase().includes(q)
+        )
+      })).filter(cat => cat.templates.length > 0);
+    }
+    
+    // Sort descending by number of templates to group by count row-wise
+    return result.sort((a, b) => b.templates.length - a.templates.length);
   }, [data, searchQuery]);
 
   const availableCategories = useMemo(() => data?.map(d => d.category).sort() || [], [data]);
