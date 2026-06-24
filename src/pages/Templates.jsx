@@ -26,7 +26,7 @@ const THEMES = [
 // ─────────────────────────────────────────────────────────────────────────────
 // Variable Highlighter
 // ─────────────────────────────────────────────────────────────────────────────
-const VariableHighlighter = ({ text }) => {
+const VariableHighlighter = ({ text, theme }) => {
   if (!text) return null;
   const pattern = /(\{[^}]+\}|\[[^\]]+\])/g;
   const parts = text.split(pattern);
@@ -35,7 +35,7 @@ const VariableHighlighter = ({ text }) => {
       {parts.map((part, i) => {
         const isVar = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
         if (isVar) {
-          return <span key={i} className="font-bold text-white">{part}</span>;
+          return <span key={i} className="font-bold" style={{ color: theme ? theme.bg : '#ffffff' }}>{part}</span>;
         }
         return <span key={i}>{part}</span>;
       })}
@@ -114,19 +114,8 @@ function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEd
 
               {/* Text Content */}
               <div className="bg-[#161616] rounded-2xl p-4 text-sm text-[#c0c0c5] leading-relaxed border border-[#3a3b3f]">
-                <VariableHighlighter text={activeResp.text} />
+                <VariableHighlighter text={activeResp.text} theme={theme} />
               </div>
-
-              {/* Tags */}
-              {item.triggers && item.triggers.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {item.triggers.map((t, i) => (
-                    <span key={i} className="text-xs text-[#8e8e93] bg-[#1e1f22] px-2 py-0.5 rounded-full border border-[#3a3b3f]">
-                      #{t}
-                    </span>
-                  ))}
-                </div>
-              )}
 
               {/* Actions */}
               <div className="flex items-center gap-4">
