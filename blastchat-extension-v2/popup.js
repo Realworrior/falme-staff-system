@@ -721,47 +721,23 @@ document.addEventListener('DOMContentLoaded', () => {
       card.style[k] = v;
     }
 
-    const header = document.createElement('div');
-    header.className = 'card-header';
-    card.appendChild(header);
-
-    const meta = document.createElement('div');
-    meta.className = 'card-meta';
-
-    const numDiv = document.createElement('div');
-    numDiv.className = 'card-number';
-    numDiv.style.fontFamily = 'var(--mono)';
-    numDiv.style.fontSize = '10px';
-    numDiv.style.fontWeight = '800';
-    numDiv.style.color = 'var(--orange)';
-    numDiv.style.opacity = '0.6';
-    numDiv.style.letterSpacing = '0.05em';
-    numDiv.textContent = cardNumber;
-    meta.appendChild(numDiv);
-
-    const metaTextDiv = document.createElement('div');
-    metaTextDiv.style.fontFamily = 'var(--mono)';
-    metaTextDiv.style.fontSize = '8px';
-    metaTextDiv.style.fontWeight = '900';
-    metaTextDiv.style.color = 'var(--orange)';
-    metaTextDiv.style.textTransform = 'uppercase';
-    metaTextDiv.style.letterSpacing = '0.1em';
-    metaTextDiv.textContent = cardMetaText;
-    meta.appendChild(metaTextDiv);
-
-    card.appendChild(meta);
+    const headerRow = document.createElement('div');
+    headerRow.className = 'card-header-row';
 
     const titleDiv = document.createElement('div');
     titleDiv.className = 'card-title';
-    titleDiv.style.fontFamily = 'var(--mono)';
+    titleDiv.textContent = cardTitle;
     for (const [k, v] of Object.entries(cardTitleStyle)) {
       titleDiv.style[k] = v;
     }
-    titleDiv.textContent = cardTitle;
-    card.appendChild(titleDiv);
 
-    const body = document.createElement('div');
-    body.className = 'card-body';
+    const metaPill = document.createElement('div');
+    metaPill.className = 'card-meta-pill';
+    metaPill.textContent = cardMetaText || cardNumber;
+
+    headerRow.appendChild(titleDiv);
+    headerRow.appendChild(metaPill);
+    card.appendChild(headerRow);
 
     const respDiv = document.createElement('div');
     respDiv.className = 'response-text';
@@ -769,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
       respDiv.style[k] = v;
     }
     appendHighlightedText(respDiv, responseText);
-    body.appendChild(respDiv);
+    card.appendChild(respDiv);
 
     const btn = document.createElement('button');
     btn.className = buttonClass;
@@ -777,19 +753,28 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.style[k] = v;
     }
 
-    // Create SVG icon safely
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '14');
-    svg.setAttribute('height', '14');
+    svg.setAttribute('width', '16');
+    svg.setAttribute('height', '16');
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('fill', 'none');
     svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '3');
+    svg.setAttribute('stroke-width', '2');
     svg.setAttribute('stroke-linecap', 'round');
     svg.setAttribute('stroke-linejoin', 'round');
 
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', '9');
+    rect.setAttribute('y', '9');
+    rect.setAttribute('width', '13');
+    rect.setAttribute('height', '13');
+    rect.setAttribute('rx', '2');
+    rect.setAttribute('ry', '2');
+    
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M5 12h14m-7-7 7 7-7 7');
+    path.setAttribute('d', 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1');
+    
+    svg.appendChild(rect);
     svg.appendChild(path);
 
     btn.appendChild(svg);

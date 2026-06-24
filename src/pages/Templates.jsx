@@ -367,29 +367,23 @@ function Templates() {
       <header className="sticky top-0 z-50 bg-[#161616] border-b border-[#2a2b2f] px-6 md:px-10 py-5">
         <div className="max-w-[1600px] mx-auto flex flex-col gap-5">
           
-          {/* Row 1: Actions */}
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          {/* Row 1: Filter Pills + Actions */}
+          <div className="flex items-center justify-end flex-wrap gap-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold text-white mr-4">Templates</h2>
-              <a href="/firefox-extension.xpi" download className="pill-dark text-xs flex items-center gap-2">
-                <Download size={14} className="text-[#ff7a2a]" /> Firefox Extension
-              </a>
-              <a href="/chrome-extension.crx" download className="pill-dark text-xs flex items-center gap-2">
-                <Download size={14} className="text-[#00e5ff]" /> Chrome Extension
-              </a>
-              <a href="/plugins.zip" download className="pill-dark text-xs flex items-center gap-2">
-                <Download size={14} className="text-[#baff55]" /> Plugins
-              </a>
-            </div>
-            <div className="flex items-center gap-3">
-              <button onClick={() => setModalOpen(true)} className="pill-lime flex items-center gap-2">
-                <Plus size={15} /> Add New Templates
+              <button onClick={() => setModalOpen(true)} className="pill-white flex items-center gap-2 text-sm font-semibold">
+                <Plus size={15} /> Add New Template
               </button>
+              <a href="/templates/blastchat-extension.xpi" download className="pill-dark flex items-center gap-2 text-sm font-semibold hover:text-white">
+                Firefox (v1.7)
+              </a>
+              <a href="/blastchat-extension.zip" download className="pill-dark flex items-center gap-2 text-sm font-semibold hover:text-white">
+                Chrome Extension
+              </a>
             </div>
           </div>
 
           {/* Row 2: Search */}
-          <div className="relative max-w-2xl w-full">
+          <div className="relative max-w-xl w-full">
             <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-[#8e8e93]" />
             <input
               id="templates-search-input"

@@ -16,15 +16,15 @@
     }
   },
   "name": "BlastChat Matrix",
-  "version": "1.6",
-  "description": "Auto-populates responses directly into BlastChat agent views.",
+  "version": "1.7",
+  "description": "Auto-populates responses directly into chat. Type / in any text area to search templates inline.",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
-    "https://blastchat.chat/*",
-    "https://*.blastchat.chat/*",
+    "<all_urls>",
     "https://kgpcruwlejoougjbeouw.supabase.co/*"
   ],
   "icons": {
@@ -43,14 +43,10 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://blastchat.chat/*",
-        "https://*.blastchat.chat/*"
-      ],
-      "js": [
-        "content.js"
-      ],
-      "all_frames": true
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_end"
     }
   ]
 }
