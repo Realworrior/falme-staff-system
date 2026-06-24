@@ -36,6 +36,7 @@ import {
 } from '../utils/Rota/scheduleGenerator';
 import { isSameDay, subDays } from 'date-fns';
 import { useSupabaseData } from '../context/SupabaseDataContext';
+import { ActivityTimeline } from '../components/Dashboard/ActivityTimeline';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -140,78 +141,8 @@ const Dashboard = () => {
         {/* Main Infrastructure Section */}
         <div className="lg:col-span-8 space-y-8">
           
-          {/* Aviator Pulse Graph */}
-          <div className="bg-[#2a2b2f] rounded-[32px] p-6 md:p-8">
-            <div className="flex items-start justify-between mb-8">
-              <div>
-                <h3 className="text-lg font-semibold text-white flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-2xl bg-[#161616] border border-[#3a3b3f] flex items-center justify-center">
-                    <Activity size={18} className="text-[#ff4d4d]" />
-                  </div>
-                  Aviator Pulse
-                </h3>
-                <p className="text-sm text-[#8e8e93] mt-1 font-medium">Real-time Global Failure Index</p>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs text-[#8e8e93] font-medium mb-1">Frequency</span>
-                <span className="text-2xl font-bold text-white">
-                  {logs.filter(l => l.ts > Date.now() - 3600000).length}
-                  <span className="text-sm text-[#8e8e93] font-normal ml-1">/hr</span>
-                </span>
-              </div>
-            </div>
-            
-            <div className="h-[240px] md:h-[320px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ff4d4d" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#ff4d4d" stopOpacity={0.0}/>
-                    </linearGradient>
-                  </defs>
-                  <Tooltip 
-                    cursor={{ stroke: 'rgba(186,255,85,0.2)', strokeWidth: 1 }}
-                    contentStyle={{ 
-                      backgroundColor: '#2a2b2f',
-                      border: '1px solid #3a3b3f',
-                      borderRadius: '16px',
-                      padding: '12px 16px',
-                    }}
-                    itemStyle={{ fontSize: '12px', fontWeight: '600', color: '#fff' }}
-                    labelStyle={{ fontSize: '11px', color: '#8e8e93', marginBottom: '4px' }}
-                  />
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="transparent"
-                    fontSize={11}
-                    fontWeight={500}
-                    tick={{ fill: '#8e8e93' }}
-                    axisLine={false} 
-                    tickLine={false}
-                    dy={10}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="logs" 
-                    stroke="#ff4d4d" 
-                    fill="url(#colorPulse)" 
-                    strokeWidth={2} 
-                    animationDuration={1000}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="baseline" 
-                    stroke="rgba(255,255,255,0.05)" 
-                    fill="transparent" 
-                    strokeWidth={1} 
-                    strokeDasharray="5 5"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          {/* Activity Timeline (HubSpot CRM Design Clone) */}
+          <ActivityTimeline />
 
           {/* Shortcuts Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
