@@ -48,17 +48,15 @@ export function LoginForm({ onLogin }) {
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-md bg-[#0f0f17] rounded-[32px] border border-white/10 overflow-hidden relative"
+        className="w-full max-w-md bg-panel rounded-[32px] overflow-hidden relative"
       >
-
-        
         <div className="p-8 relative z-10">
           <div className="flex flex-col items-center mb-10">
-            <div className="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-[#ff7a59] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(255,122,89,0.3)]">
               <Shield className="text-white w-8 h-8" />
             </div>
             <h1 className="text-2xl font-black text-white font-heading tracking-tighter uppercase">Support Login</h1>
-            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mt-1">BetWin Technical Portal</p>
+            <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] mt-1">Operations Portal</p>
           </div>
 
           <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 mb-8">
@@ -66,7 +64,7 @@ export function LoginForm({ onLogin }) {
               type="button"
               onClick={() => setRole('staff')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                role === 'staff' ? "bg-red-600 text-white" : "text-gray-500 hover:text-gray-300"
+                role === 'staff' ? "bg-[#ff7a59] text-white shadow-md" : "text-gray-500 hover:text-gray-300"
               }`}
             >
               <Users size={14} />
@@ -76,7 +74,7 @@ export function LoginForm({ onLogin }) {
               type="button"
               onClick={() => setRole('technician')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                role === 'technician' ? "bg-red-600 text-white" : "text-gray-500 hover:text-gray-300"
+                role === 'technician' ? "bg-[#ff7a59] text-white shadow-md" : "text-gray-500 hover:text-gray-300"
               }`}
             >
               <Wrench size={14} />
@@ -86,31 +84,31 @@ export function LoginForm({ onLogin }) {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Phone Number</label>
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Phone Number</label>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input 
                   type="tel" 
                   placeholder="123-456-7890"
                   required
                   value={phone}
                   onChange={(e) => setPhone(formatPhone(e.target.value))}
-                  className="w-full bg-black/40 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white text-sm font-bold focus:outline-none focus:border-red-500/50 transition-all placeholder:text-gray-700"
+                  className="premium-input w-full py-4 pl-12 pr-4 text-sm font-bold placeholder:text-gray-600"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Access PIN</label>
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Access PIN</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input 
                   type="password" 
                   placeholder="••••"
                   required
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  className="w-full bg-black/40 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white text-2xl tracking-[0.5em] font-bold focus:outline-none focus:border-red-500/50 transition-all placeholder:text-gray-700"
+                  className="premium-input w-full py-4 pl-12 pr-4 text-2xl tracking-[0.5em] font-bold placeholder:text-gray-600"
                 />
               </div>
             </div>
@@ -131,7 +129,7 @@ export function LoginForm({ onLogin }) {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full py-5 bg-red-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] transition-all active:scale-95 flex items-center justify-center gap-2 mt-8 disabled:opacity-50"
+              className="premium-button w-full py-4 text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 mt-8 disabled:opacity-50"
             >
               {loading ? 'Validating...' : 'Establish Connection'}
               <ArrowRight size={16} strokeWidth={3} />

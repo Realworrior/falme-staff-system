@@ -97,40 +97,41 @@ const Dashboard = () => {
   }, [logs]);
 
   const shortcuts = [
-    { name: "Cashback", icon: Calculator, path: "/tools", color: "#22c55e" },
+    { name: "Cashback", icon: Calculator, path: "/tools", color: "#10b981" },
     { name: "Odds Converter", icon: Zap, path: "/tools", params: "?tab=odds", color: "#3b82f6" },
-    { name: "Agent Manual", icon: ShieldCheck, path: "/resources", params: "?section=manual", color: "#F97316" },
-    { name: "Market Guide", icon: FileText, path: "/resources", params: "?section=guide", color: "#8B5CF6" },
-    { name: "Templates", icon: MessageSquare, path: "/templates", color: "#60A5FA" },
-    { name: "Aviator Matrix", icon: Activity, path: "/slots", color: "#EF4444" },
+    { name: "Agent Manual", icon: ShieldCheck, path: "/resources", params: "?section=manual", color: "#ff7a59" },
+    { name: "Market Guide", icon: FileText, path: "/resources", params: "?section=guide", color: "#8b5cf6" },
+    { name: "Templates", icon: MessageSquare, path: "/templates", color: "#60a5fa" },
+    { name: "Aviator Matrix", icon: Activity, path: "/slots", color: "#ef4444" },
   ];
 
   return (
-    <div className="p-3 md:p-8 space-y-6 md:space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-background">
+    <div className="p-4 md:p-8 space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-background">
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/[0.03]">
+      {/* Header section with rich aesthetics */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/[0.04] relative">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter">
+          <h1 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
             Operational Overview
           </h1>
-          <div className="flex items-center gap-3 mt-1.5">
-             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-               <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-               <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Systems Online</span>
+          <div className="flex items-center gap-3 mt-2">
+             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+               <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Systems Online</span>
              </div>
-             <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">Betfalme Infrastructure v4.0</p>
+             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-500">Betfalme Infrastructure v4.0</p>
           </div>
         </div>
-        <div className="flex items-center justify-between md:justify-end gap-4">
+        
+        <div className="flex items-center justify-between md:justify-end gap-6">
            <div className="flex flex-col items-end">
-             <span className="text-[9px] font-black uppercase text-gray-500 tracking-[0.2em] leading-none">Shift Status</span>
-             <span className="text-[10px] md:text-xs font-black text-white/80 mt-1 uppercase">{onDutyInfo.current} Phase Active</span>
+             <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest leading-none mb-1">Shift Status</span>
+             <span className="text-xs font-black text-white mt-0.5 uppercase tracking-wide bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg">{onDutyInfo.current} Phase Active</span>
            </div>
-           <div className="w-px h-8 bg-white/10" />
-           <div className="px-4 md:px-5 py-2 md:py-2.5 bg-card border border-border rounded-xl md:rounded-2xl flex items-center gap-2 md:gap-3">
-              <Clock size={14} className="text-orange-500" />
-              <span className="text-[10px] md:text-xs font-black uppercase text-white tracking-widest">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+           <div className="w-[1px] h-8 bg-white/10" />
+           <div className="px-4 py-2.5 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center gap-3 shadow-inner">
+              <Clock size={15} className="text-accent animate-pulse" />
+              <span className="text-xs font-black uppercase text-white tracking-widest">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
            </div>
         </div>
       </div>
@@ -141,43 +142,52 @@ const Dashboard = () => {
         <div className="lg:col-span-8 space-y-8">
           
           {/* Aviator Premium Pulse Graph */}
-          <div className="bg-card border border-border rounded-2xl p-5 md:p-8 relative overflow-hidden group">
-            <div className="flex items-start justify-between mb-6 md:mb-10">
+          <div className="glass-card p-6 md:p-8 relative overflow-hidden group">
+            {/* Ambient background glow */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/5 blur-[80px] rounded-full pointer-events-none -mr-20 -mt-20 transition-all duration-700 group-hover:bg-red-500/10" />
+            
+            <div className="flex items-start justify-between mb-8 relative z-10">
               <div>
-                <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight flex items-center gap-2 md:gap-3">
-                  <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-red-500/10 border border-red-500/20">
-                    <Activity size={16} className="text-red-500" />
+                <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                    <Activity size={18} className="text-red-500" />
                   </div>
                   Aviator Pulse
                 </h3>
-                <p className="text-[8px] md:text-[10px] text-gray-500 mt-1.5 md:mt-2 uppercase font-black tracking-[0.3em]">Real-time Global Failure Index</p>
+                <p className="text-[10px] text-gray-500 mt-2 uppercase font-black tracking-[0.25em]">Real-time Global Failure Index</p>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[8px] md:text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Frequency</span>
-                <span className="text-xl md:text-2xl font-black text-white tracking-tighter">{logs.filter(l => l.ts > Date.now() - 3600000).length} <span className="text-[10px] text-gray-600 font-bold ml-0.5">/hr</span></span>
+                <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Frequency</span>
+                <span className="text-2xl font-black text-white tracking-tight">{logs.filter(l => l.ts > Date.now() - 3600000).length} <span className="text-xs text-gray-500 font-bold ml-1">/hr</span></span>
               </div>
             </div>
             
-            <div className="h-[240px] md:h-[320px] w-full">
+            <div className="h-[240px] md:h-[320px] w-full relative z-10">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0.0}/>
+                    </linearGradient>
+                  </defs>
                   <Tooltip 
-                    cursor={{ stroke: 'rgba(255,255,255,0.05)', strokeWidth: 1 }}
+                    cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }}
                     contentStyle={{ 
-                      backgroundColor: 'rgba(12, 12, 20, 0.95)', 
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.1)', 
-                      borderRadius: '16px',
+                      backgroundColor: 'rgba(10, 12, 22, 0.95)', 
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255,255,255,0.08)', 
+                      borderRadius: '18px',
                       padding: '12px 16px',
-                      boxShadow: 'none'
+                      boxShadow: '0 12px 30px rgba(0,0,0,0.6)'
                     }}
-                    itemStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: '#fff' }}
-                    labelStyle={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginBottom: '8px' }}
+                    itemStyle={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: '#fff' }}
+                    labelStyle={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginBottom: '6px' }}
                   />
-                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(255,255,255,0.02)" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.02)" />
                   <XAxis 
                     dataKey="name" 
-                    stroke="rgba(255,255,255,0.2)" 
+                    stroke="rgba(255,255,255,0.3)" 
                     fontSize={10} 
                     fontWeight={800}
                     axisLine={false} 
@@ -188,15 +198,14 @@ const Dashboard = () => {
                     type="monotone" 
                     dataKey="logs" 
                     stroke="#EF4444" 
-                    fill="#EF4444"
-                    fillOpacity={0.02} 
+                    fill="url(#colorPulse)" 
                     strokeWidth={2} 
                     animationDuration={1000}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="baseline" 
-                    stroke="rgba(255,255,255,0.05)" 
+                    stroke="rgba(255,255,255,0.06)" 
                     fill="transparent" 
                     strokeWidth={1} 
                     strokeDasharray="5 5"
@@ -206,25 +215,25 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Minimal Shortcuts Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+          {/* Premium Shortcuts Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
             {shortcuts.map(res => (
               <button 
                 key={res.name} 
                 onClick={() => navigate(res.path + (res.params || ''))}
-                className="flex items-center gap-3 md:gap-4 p-3 md:p-5 rounded-2xl md:rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/10 transition-all group relative overflow-hidden"
+                className="flex flex-col items-start gap-4 p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-accent/30 transition-all duration-300 group relative overflow-hidden cursor-pointer"
               >
                 <div 
-                  className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
-                  style={{ background: `${res.color}15`, border: `1px solid ${res.color}30` }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-lg"
+                  style={{ background: `${res.color}15`, border: `1px solid ${res.color}25` }}
                 >
                   <res.icon size={18} style={{ color: res.color }} />
                 </div>
                 <div className="text-left">
-                  <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1.5">Open</span>
-                  <span className="block text-xs font-black text-white uppercase tracking-tighter">{res.name}</span>
+                  <span className="block text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1 leading-none">Launch</span>
+                  <span className="block text-xs font-black text-white uppercase tracking-tight">{res.name}</span>
                 </div>
-                <ArrowUpRight size={14} className="absolute top-4 right-4 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ArrowUpRight size={14} className="absolute top-4 right-4 text-gray-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
             ))}
           </div>
@@ -234,68 +243,82 @@ const Dashboard = () => {
         <div className="lg:col-span-4 space-y-8">
           
           {/* Shift Rota Card */}
-          <div className="bg-card border border-border rounded-2xl p-5 md:p-8 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6 md:mb-10">
+          <div className="glass-card p-6 md:p-8 h-full flex flex-col relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-60 h-60 bg-accent/5 blur-[60px] rounded-full pointer-events-none -mr-16 -mt-16" />
+            
+            <div className="flex items-center justify-between mb-8 relative z-10">
               <div>
-                <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Daily Deployment</h3>
-                <p className="text-[8px] md:text-[10px] text-gray-500 mt-1.5 md:mt-2 uppercase font-black tracking-[0.3em]">Staff Rota Status</p>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">Daily Deployment</h3>
+                <p className="text-[10px] text-gray-500 mt-2 uppercase font-black tracking-[0.25em]">Staff Rota Status</p>
               </div>
-              <Calendar size={18} className="text-orange-500/50" />
+              <Calendar size={18} className="text-gray-600 group-hover:text-accent transition-colors" />
             </div>
 
-            <div className="space-y-6 flex-1">
+            <div className="space-y-4 flex-1 relative z-10">
               {[
-                { id: 'AM', label: 'Morning', time: '07:30 - 15:30', names: onDutyInfo.AM, color: '#F97316', range: [7.5, 15.5] },
-                { id: 'PM', label: 'Afternoon', time: '15:30 - 22:30', names: onDutyInfo.PM, color: '#8B5CF6', range: [15.5, 22.5] },
-                { id: 'NT', label: 'Night', time: '22:30 - 07:30', names: onDutyInfo.NT, color: '#FBBF24', range: [22.5, 31.5] },
+                { id: 'AM', label: 'Morning', time: '07:30 - 15:30', names: onDutyInfo.AM, color: '#ff7a59' },
+                { id: 'PM', label: 'Afternoon', time: '15:30 - 22:30', names: onDutyInfo.PM, color: '#8b5cf6' },
+                { id: 'NT', label: 'Night', time: '22:30 - 07:30', names: onDutyInfo.NT, color: '#fbbf24' },
               ].map(shift => {
                 const isCurrent = onDutyInfo.current === shift.id;
                 
                 return (
-                  <div key={shift.id} className={`relative p-6 rounded-2xl border transition-all duration-500 ${isCurrent ? 'bg-card border-border' : 'bg-transparent border-transparent opacity-30'}`}>
+                  <div 
+                    key={shift.id} 
+                    className={`relative p-5 rounded-2xl border transition-all duration-500 overflow-hidden ${
+                      isCurrent 
+                        ? 'bg-accent/5 border-accent/20 shadow-[0_0_20px_rgba(59,130,246,0.08)]' 
+                        : 'bg-white/[0.01] border-transparent opacity-35 hover:opacity-70'
+                    }`}
+                  >
                     {isCurrent && (
-                      <div className="absolute top-4 right-6 flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span className="text-[8px] font-black uppercase text-emerald-500 tracking-widest">Active</span>
-                      </div>
+                      <>
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />
+                        <div className="absolute top-4 right-5 flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                          <span className="text-[8px] font-black uppercase text-emerald-400 tracking-widest">Active</span>
+                        </div>
+                      </>
                     )}
                     
-                    <div className="flex items-center gap-4 mb-5">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
-                        <Clock size={18} style={{ color: shift.color }} />
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shadow-inner">
+                        <Clock size={16} style={{ color: shift.color }} />
                       </div>
                       <div>
                         <span className="block text-xs font-black text-white uppercase tracking-widest">{shift.label}</span>
-                        <span className="text-[9px] font-bold text-gray-500 tracking-widest mt-1 block">{shift.time}</span>
+                        <span className="text-[9px] font-bold text-gray-500 tracking-widest mt-0.5 block">{shift.time}</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2.5">
+                    <div className="flex flex-wrap gap-2">
                       {shift.names.map(name => (
-                        <div key={name} className="flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 rounded-xl bg-white/[0.03] border border-white/5">
-                           <div className="w-5 h-5 rounded-lg shadow-inner" style={{ backgroundColor: STAFF_COLORS[name] || '#333' }} />
-                           <span className="text-[11px] font-black text-white/90 tracking-tight">{name}</span>
+                        <div key={name} className="flex items-center gap-2 pl-1.5 pr-3.5 py-1 rounded-xl bg-white/[0.03] border border-white/5 shadow-sm hover:border-white/10 transition-all duration-300">
+                           <div className="w-4 h-4 rounded-lg shadow-inner" style={{ backgroundColor: STAFF_COLORS[name] || '#333' }} />
+                           <span className="text-[10px] font-black text-white/90 tracking-tight">{name}</span>
                         </div>
                       ))}
-                      {shift.names.length === 0 && <span className="text-[10px] text-gray-600 font-bold uppercase tracking-widest italic">No Deployment</span>}
+                      {shift.names.length === 0 && <span className="text-[9px] text-gray-600 font-bold uppercase tracking-widest italic mt-1">No Deployment</span>}
                     </div>
                   </div>
                 );
               })}
             </div>
             
-            <button 
-              onClick={() => navigate('/rota')}
-              className="w-full mt-10 py-4 rounded-2xl bg-white/[0.02] border border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-white/[0.05] hover:text-white transition-all flex items-center justify-center gap-3"
-            >
-              Access Full Rota <ArrowUpRight size={16} />
-            </button>
-            <button 
-              onClick={() => navigate('/templates')}
-              className="w-full mt-4 py-4 rounded-2xl bg-white/[0.02] border border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-white/[0.05] hover:text-white transition-all flex items-center justify-center gap-3"
-            >
-              Admin Templates <ArrowUpRight size={16} />
-            </button>
+            <div className="mt-8 pt-4 border-t border-white/[0.04] space-y-3 relative z-10">
+              <button 
+                onClick={() => navigate('/rota')}
+                className="w-full py-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 hover:bg-white/[0.05] hover:text-white hover:border-white/10 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer shadow-sm"
+              >
+                Access Full Rota <ArrowUpRight size={14} />
+              </button>
+              <button 
+                onClick={() => navigate('/templates')}
+                className="w-full py-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 hover:bg-white/[0.05] hover:text-white hover:border-white/10 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer shadow-sm"
+              >
+                Admin Templates <ArrowUpRight size={14} />
+              </button>
+            </div>
           </div>
         </div>
 

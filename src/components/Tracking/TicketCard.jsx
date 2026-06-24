@@ -18,17 +18,17 @@ const formatDate = (isoString) => {
 };
 
 const statusColors = {
-  open: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  'in-progress': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  resolved: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  closed: 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+  open: 'badge-glow-blue',
+  'in-progress': 'badge-glow-amber',
+  resolved: 'badge-glow-emerald',
+  closed: 'bg-panel text-gray-400 border-white/10'
 };
 
 const priorityColors = {
-  low: 'bg-gray-500/10 text-gray-400',
-  medium: 'bg-blue-500/10 text-blue-400',
-  high: 'bg-orange-500/10 text-orange-400',
-  urgent: 'bg-red-500/10 text-red-500'
+  low: 'bg-panel text-gray-400 border-white/10',
+  medium: 'badge-glow-blue',
+  high: 'badge-glow-amber',
+  urgent: 'badge-glow-red'
 };
 
 export function TicketCard({ ticket, onStatusChange, onAssign, userRole, userName }) {
@@ -42,11 +42,11 @@ export function TicketCard({ ticket, onStatusChange, onAssign, userRole, userNam
   };
 
   return (
-    <div className="bg-card rounded-2xl p-6 border border-border hover:border-red-500/20 transition-all group relative overflow-hidden">
+    <div className="glass-card p-6 group relative overflow-hidden">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-black text-red-500/60 uppercase tracking-widest font-mono">
+            <span className="text-[10px] font-black text-[var(--brand-orange)] uppercase tracking-widest font-mono">
               #{ (ticket.ticket_id || ticket.id?.substring(0, 6) || '').toUpperCase() }
             </span>
             <span className="w-1 h-1 rounded-full bg-white/10" />
@@ -54,7 +54,7 @@ export function TicketCard({ ticket, onStatusChange, onAssign, userRole, userNam
               {ticket.category || 'General Issue'}
             </span>
           </div>
-          <h3 className="text-lg font-black text-white font-heading uppercase tracking-tight mb-2 group-hover:text-red-500 transition-colors">
+          <h3 className="text-lg font-black text-white font-heading uppercase tracking-tight mb-2 group-hover:text-[var(--brand-orange)] transition-colors">
             {ticket.title}
           </h3>
           <p className="text-sm text-gray-500 font-medium leading-relaxed line-clamp-2 italic">
@@ -135,7 +135,7 @@ export function TicketCard({ ticket, onStatusChange, onAssign, userRole, userNam
             <select
               value={displayStatus}
               onChange={(e) => onStatusChange(ticket.id, e.target.value)}
-              className={`px-3 py-2 bg-black/40 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/10 outline-none cursor-pointer focus:border-red-500/30 transition-all ${statusColors[displayStatus] || statusColors.open}`}
+              className={`px-3 py-2 bg-panel rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/10 outline-none cursor-pointer focus:border-[#ff7a59]/30 transition-all ${statusColors[displayStatus] || statusColors.open}`}
             >
               <option value="open">Open</option>
               <option value="in-progress">In Progress</option>

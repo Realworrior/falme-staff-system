@@ -32,11 +32,9 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
     <div
       id={`day-card-${dayStr}`}
       onClick={onClick}
-      className={`flex flex-col h-full rounded-2xl overflow-hidden cursor-pointer transition-all ${dimmed ? 'opacity-30' : 'opacity-100'} hover:border-white/20`}
+      className={`glass-card flex flex-col h-full overflow-hidden cursor-pointer transition-all ${dimmed ? 'opacity-30' : 'opacity-100'} hover:border-[#ff7a59]/30 hover:shadow-[0_0_15px_rgba(255,122,89,0.15)]`}
       style={{
-        backgroundColor: "var(--card)",
-        border: isToday ? "2px solid var(--accent)" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--border)"),
-        boxShadow: "none",
+        border: isToday ? "2px solid #ff7a59" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : undefined),
       }}
     >
       <div className="flex items-center justify-between px-2 pt-1.5 pb-1 shrink-0">
@@ -99,11 +97,9 @@ function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, di
     <div
       id={`day-card-${dayStr}`}
       onClick={onClick}
-      className={`rounded-2xl overflow-hidden cursor-pointer transition-all ${dimmed ? 'opacity-30' : 'opacity-100'}`}
+      className={`glass-card overflow-hidden cursor-pointer transition-all ${dimmed ? 'opacity-30' : 'opacity-100'}`}
       style={{
-        backgroundColor: "var(--card)",
-        border: isToday ? "2px solid var(--accent)" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--border)"),
-        boxShadow: "none",
+        border: isToday ? "2px solid #ff7a59" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : undefined),
       }}
     >
       <div className="flex">

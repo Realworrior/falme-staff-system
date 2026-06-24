@@ -128,14 +128,14 @@ export default function Tickets() {
               <h1 className="text-2xl md:text-3xl font-black text-white font-heading tracking-tighter uppercase">
                 {userRole === 'staff' ? 'Support Portal' : 'Technical Ops'}
               </h1>
-              <span className="w-fit px-2 py-0.5 rounded bg-red-600/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">
+              <span className="w-fit px-2 py-0.5 rounded badge-glow-blue text-[8px] font-black uppercase tracking-widest">
                 Logged in as {user.name}
               </span>
             </div>
             <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2 flex-wrap">
-              <Zap size={10} className="text-red-500/60" />
+              <Zap size={10} className="text-[#ff7a59]" />
               Real-time Issue Tracking Protocol Active
-              <span className="text-red-500/40 font-mono">• {user.phone}</span>
+              <span className="text-gray-500/60 font-mono">• {user.phone}</span>
             </p>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function Tickets() {
         <div className="flex items-center gap-4">
           <button 
             onClick={handleLogout}
-            className="px-5 py-3 text-gray-500 hover:text-white font-black text-[9px] uppercase tracking-widest transition-colors border border-white/5 rounded-xl bg-white/5"
+            className="glass px-5 py-3 text-gray-500 hover:text-white font-black text-[9px] uppercase tracking-widest transition-colors rounded-xl"
           >
             Log Out
           </button>
@@ -151,7 +151,7 @@ export default function Tickets() {
           {userRole === 'staff' && (
             <button 
               onClick={() => setShowNewTicketModal(true)}
-              className="px-8 py-4 bg-red-600 text-white rounded-xl font-black transition-all duration-300 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em]"
+              className="premium-button px-8 py-4 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em]"
             >
               <Plus size={18} strokeWidth={3} />
               New Ticket
@@ -172,21 +172,21 @@ export default function Tickets() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-700 group-focus-within:text-red-500 transition-colors" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-[#ff7a59] transition-colors" />
             <input
               type="text"
               placeholder="Search by ID, Phone, or Content..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 bg-card border border-border rounded-2xl text-white placeholder-gray-700 focus:outline-none focus:border-red-500/20 transition-all"
+              className="premium-input w-full pl-14 pr-6 py-5 rounded-2xl placeholder:text-gray-600"
             />
           </div>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border overflow-hidden min-h-[400px]">
+        <div className="glass-card overflow-hidden min-h-[400px]">
           <div className="p-8 border-b border-white/5 flex flex-col md:flex-row items-center justify-between bg-black/20 gap-4">
             <div className="flex items-center gap-3">
-              <Filter size={18} className="text-red-500" />
+              <Filter size={18} className="text-[#ff7a59]" />
               <h2 className="text-lg font-black text-white font-heading uppercase tracking-tighter">Operational Feed</h2>
             </div>
             
@@ -197,7 +197,7 @@ export default function Tickets() {
                   onClick={() => setFilterStatus(s)}
                   className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
                     filterStatus === s 
-                      ? 'bg-red-600/10 text-red-500 border border-red-500/20' 
+                      ? 'bg-[#ff7a59]/10 text-[#ff7a59] border border-[#ff7a59]/20 shadow-[0_0_10px_rgba(255,122,89,0.1)]' 
                       : 'text-gray-500 hover:text-white'
                   }`}
                 >
@@ -212,8 +212,8 @@ export default function Tickets() {
           <div className="p-8 space-y-4">
             {loading?.tickets ? (
               <div className="py-24 text-center">
-                <div className="w-12 h-12 mx-auto mb-4 border-4 border-red-500/20 border-t-red-500 rounded-full animate-spin" />
-                <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Syncing with Central database...</p>
+                <div className="w-12 h-12 mx-auto mb-4 border-4 border-[#ff7a59]/20 border-t-[#ff7a59] rounded-full animate-spin" />
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Syncing with Central database...</p>
               </div>
             ) : filteredTickets.length === 0 ? (
               <div className="py-24 text-center">

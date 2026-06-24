@@ -27,21 +27,21 @@ import KeywordHighlighter from '../components/KeywordHighlighter';
 // PREMIUM DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const S = {
-  bg: '#050505',
-  surface: '#0a0a0c',
-  card: '#0d0d0f',
-  cardHover: '#121214',
-  border: 'rgba(255,255,255,0.06)',
-  borderHover: 'rgba(255,255,255,0.12)',
-  primary: '#f97316',
-  orange: '#f97316',
-  orangeDim: 'rgba(249, 115, 22, 0.1)',
-  textPrimary: '#ffffff',
-  textSecondary: '#a1a1aa',
-  textMuted: '#52525b',
-  green: '#10b981',
-  mono: '"JetBrains Mono", "Fira Code", monospace',
-  sans: '"Inter", sans-serif'
+  bg: 'transparent',
+  surface: 'var(--card)',
+  card: 'var(--card)',
+  cardHover: 'rgba(255, 255, 255, 0.05)',
+  border: 'var(--border)',
+  borderHover: 'rgba(255, 255, 255, 0.1)',
+  primary: 'var(--primary)',
+  orange: 'var(--brand-orange)',
+  orangeDim: 'rgba(255, 122, 89, 0.1)',
+  textPrimary: 'var(--foreground)',
+  textSecondary: 'var(--muted-foreground)',
+  textMuted: 'var(--muted-foreground)',
+  green: 'var(--brand-emerald)',
+  mono: 'var(--font-mono)',
+  sans: 'var(--font-sans)'
 };
 
 const VariableHighlighter = ({ text }) => {
@@ -276,10 +276,8 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
   const displayNumber = (index + 1).toString().padStart(2, '0');
 
   return (
-    <div style={{ 
-      background: S.card, border: `1px solid ${S.border}`, borderRadius: 12, 
+    <div className="glass-card" style={{ 
       display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 'auto',
-      boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
       position: 'relative'
     }}>
       {/* Design C: Orange Header Band */}
@@ -288,7 +286,7 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, expandedIds, t
       {/* Card Header */}
       <div style={{ 
         padding: '24px', borderBottom: `1px solid ${S.border}`, 
-        background: 'linear-gradient(to bottom, rgba(249,115,22,0.05), transparent)',
+        background: 'linear-gradient(to bottom, rgba(255, 122, 89, 0.05), transparent)',
         position: 'relative'
       }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
@@ -529,13 +527,12 @@ useEffect(() => {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: S.bg, color: S.textPrimary, fontFamily: 'Inter, sans-serif' }}>
+    <div className="min-h-screen text-foreground w-full flex flex-col" style={{ fontFamily: S.sans }}>
       
       {/* STICKY HEADER */}
-      <header style={{ 
+      <header className="glass" style={{ 
         position: 'sticky', top: 0, zIndex: 100, 
-        background: 'rgba(5, 5, 5, 0.8)', backdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${S.border}`, padding: '16px 40px'
+        padding: '16px 40px', borderBottom: `1px solid ${S.border}`
       }}>
         <div style={{ maxWidth: 1600, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -606,8 +603,8 @@ useEffect(() => {
               style={{
                 position: 'absolute', inset: -1, borderRadius: 16, 
                 background: searchQuery 
-                  ? `linear-gradient(135deg, ${S.orange}, #ec4899, ${S.orange})` 
-                  : `linear-gradient(135deg, rgba(249,115,22,0.3), rgba(236,72,153,0.15), rgba(249,115,22,0.3))`,
+                  ? `linear-gradient(135deg, ${S.orange}, var(--brand-purple), ${S.orange})` 
+                  : `linear-gradient(135deg, rgba(255,122,89,0.3), rgba(139,92,246,0.15), rgba(255,122,89,0.3))`,
                 backgroundSize: '200% 200%',
                 opacity: searchQuery ? 0.8 : 0.4,
                 transition: 'opacity 0.4s ease',
@@ -617,12 +614,10 @@ useEffect(() => {
             />
             
             {/* Inner container */}
-            <div style={{
+            <div className="bg-panel" style={{
               position: 'relative', zIndex: 1,
-              background: 'rgba(10, 10, 14, 0.95)',
               borderRadius: 15,
               display: 'flex', alignItems: 'center', gap: 0,
-              backdropFilter: 'blur(20px)'
             }}>
               {/* AI badge on left */}
               <div style={{
@@ -731,7 +726,7 @@ useEffect(() => {
         </div>
 
                 {filteredData.length === 0 && (
-          <div className="matrix-card ai-card alternative" style={{ background: 'var(--secondary)', border: '1px dashed var(--orange)', padding: '40px', borderRadius: '12px', textAlign: 'center' }}>
+          <div className="glass-card" style={{ padding: '40px', borderRadius: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ display: 'inline-flex', padding: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', marginBottom: 20 }}>
               <Search size={40} color={S.textMuted} />
             </div>

@@ -55,12 +55,12 @@ export function NewTicketModal({ onClose, onSubmit }) {
 
         <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
           <div className="space-y-1.5">
-            <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Issue Summary <span className="text-red-500">*</span></label>
+            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Issue Summary <span className="text-[#ff7a59]">*</span></label>
             <input
               type="text"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full px-6 py-4 bg-black/40 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:border-red-500/30 transition-all placeholder:text-gray-700"
+              className="premium-input w-full px-6 py-4 text-sm font-bold placeholder:text-gray-600"
               placeholder="e.g., Cannot withdraw funds, Bet not settled"
               required
             />
@@ -68,56 +68,56 @@ export function NewTicketModal({ onClose, onSubmit }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">CRITICAL: Phone Number <span className="text-red-500">*</span></label>
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Phone Number <span className="text-[#ff7a59]">*</span></label>
               <input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full px-6 py-4 bg-black/40 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:border-red-500/30 transition-all placeholder:text-gray-700"
+                className="premium-input w-full px-6 py-4 text-sm font-bold placeholder:text-gray-600"
                 placeholder="0712345678"
                 required
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Amount (Ksh)</label>
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Amount (Ksh)</label>
               <input
                 type="number"
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                className="w-full px-6 py-4 bg-black/40 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:border-red-500/30 transition-all placeholder:text-gray-700"
+                className="premium-input w-full px-6 py-4 text-sm font-bold placeholder:text-gray-600"
                 placeholder="1000"
               />
             </div>
           </div>
           
           <div className="space-y-1.5">
-            <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Bet ID (If Applicable)</label>
+            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Bet ID (If Applicable)</label>
             <input
               type="text"
               value={form.betId}
               onChange={(e) => setForm({ ...form, betId: e.target.value.toUpperCase() })}
-              className="w-full px-6 py-4 bg-black/40 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:border-red-500/30 transition-all placeholder:text-gray-700"
+              className="premium-input w-full px-6 py-4 text-sm font-bold placeholder:text-gray-600"
               placeholder="e.g., BW-12345678"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Category</label>
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Category</label>
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full px-6 py-4 bg-black/40 border border-white/5 rounded-2xl text-white text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-red-500/30 transition-all"
+                className="premium-input w-full px-6 py-4 text-[10px] font-black uppercase tracking-widest"
               >
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Priority</label>
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Priority</label>
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="w-full px-6 py-4 bg-black/40 border border-white/5 rounded-2xl text-white text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-red-500/30 transition-all"
+                className="premium-input w-full px-6 py-4 text-[10px] font-black uppercase tracking-widest"
               >
                 {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
@@ -125,11 +125,11 @@ export function NewTicketModal({ onClose, onSubmit }) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-4 italic">Detailed explanation</label>
+            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-4">Detailed explanation</label>
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value, comments: e.target.value })}
-              className="w-full px-6 py-4 bg-black/40 border border-white/5 rounded-2xl text-white text-sm font-medium focus:outline-none focus:border-red-500/30 transition-all resize-none h-32 italic placeholder:text-gray-700"
+              className="premium-input w-full px-6 py-4 text-sm font-medium resize-none h-32 placeholder:text-gray-600"
               placeholder="Provide account number, bet ID, and any relevant context..."
               required
             />
@@ -145,7 +145,7 @@ export function NewTicketModal({ onClose, onSubmit }) {
             </button>
             <button
               type="submit"
-              className="flex-1 px-8 py-4 bg-red-600 text-white rounded-[20px] font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-red-500/20 hover:shadow-red-500/40 transition-all active:scale-95 flex items-center justify-center gap-2"
+              className="premium-button flex-1 px-8 py-4 text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-2"
             >
               Submit Ticket
               <ArrowRight className="w-4 h-4" strokeWidth={3} />

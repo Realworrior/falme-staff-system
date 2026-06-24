@@ -274,7 +274,7 @@ export function TransportDashboard({
   return (
     <div className="space-y-6 md:space-y-8">
       {/* ── Header with Totals ── */}
-      <div className="flex flex-col gap-4 p-4 sm:p-6 rounded-2xl bg-card border border-border">
+      <div className="glass-card flex flex-col gap-4 p-4 sm:p-6">
         <div>
           <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-tighter">Transport Allowances</h2>
           <p className="text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
@@ -467,7 +467,7 @@ export function TransportDashboard({
                     <motion.div 
                       layout
                       key={s.name}
-                      className="p-4 sm:p-6 rounded-2xl bg-card border border-border hover:border-white/10 transition-all group animate-fade-in"
+                      className="glass-card p-4 sm:p-6 transition-all group animate-fade-in hover:shadow-[0_0_20px_rgba(255,122,89,0.1)]"
                     >
                       {/* Mobile: stacked layout */}
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -530,7 +530,7 @@ export function TransportDashboard({
                     <motion.div 
                       layout
                       key={s.name}
-                      className="p-4 sm:p-6 rounded-2xl bg-card border border-border hover:border-white/10 transition-all group animate-fade-in"
+                      className="glass-card p-4 sm:p-6 transition-all group animate-fade-in hover:shadow-[0_0_20px_rgba(255,122,89,0.1)]"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                         {/* Staff Info */}
@@ -601,7 +601,7 @@ export function TransportDashboard({
         <div className="space-y-4 sm:space-y-6">
           {activeSubTab !== 'combined' ? (
             /* Branch Payment Registry */
-            <div className="p-5 sm:p-8 rounded-2xl bg-card border border-border animate-fade-in">
+            <div className="glass-card p-5 sm:p-8 animate-fade-in">
               <div className="flex items-center justify-between mb-4 sm:mb-6 gap-3">
                 <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tighter flex items-center gap-2">
                   <History size={18} className="text-blue-500 shrink-0" />
@@ -640,7 +640,7 @@ export function TransportDashboard({
             </div>
           ) : (
             /* Combined Payout Breakdown Card */
-            <div className="p-5 sm:p-8 rounded-2xl bg-card border border-border animate-fade-in space-y-4 sm:space-y-6">
+            <div className="glass-card p-5 sm:p-8 animate-fade-in space-y-4 sm:space-y-6">
               <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tighter flex items-center gap-2">
                 <TrendingUp size={18} className="text-accent shrink-0" />
                 Branch Breakdown

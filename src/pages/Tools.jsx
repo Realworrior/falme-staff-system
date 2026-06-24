@@ -67,7 +67,7 @@ function OddsCalculator() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Card */}
-        <div className="bg-black/20 border border-white/5 rounded-[32px] p-8 space-y-6">
+        <div className="glass-card p-8 space-y-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-xl bg-accent/10 border border-accent/20 text-accent">
               <Percent size={20} />
@@ -108,7 +108,7 @@ function OddsCalculator() {
         </div>
 
         {/* Results Card */}
-        <div className="bg-black/20 border border-white/5 rounded-[32px] p-8 flex flex-col justify-between">
+        <div className="glass-card p-8 flex flex-col justify-between">
           <div className="space-y-8">
             <div className="text-center lg:text-left">
               <span className="text-[10px] font-black text-accent uppercase tracking-widest block mb-2">Potential Returns</span>
@@ -141,7 +141,7 @@ function OddsCalculator() {
       </div>
 
       {/* Market Quick Reference */}
-      <div className="bg-black/20 border border-white/5 rounded-[32px] p-8">
+      <div className="glass-card p-8">
         <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
           <LayoutGrid size={14} className="text-accent" />
           Market Quick Reference
@@ -371,7 +371,7 @@ function CashbackCalculator() {
         {/* Main Interface: Left Column */}
         <div className="lg:col-span-8 space-y-6">
           
-          <div className="bg-black/20 border border-white/5 rounded-[32px] p-6 space-y-6">
+          <div className="glass-card p-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-2xl bg-accent/10 border border-accent/20 text-accent">
@@ -399,7 +399,7 @@ function CashbackCalculator() {
 Example:
 20608273	withdraw	-KSH 4,555.00	KSH 200.00	—	5/11/2026, 9:39:06 PM
 20607525	Deposit	+KSH 90.00	KSH 189.00	—	5/11/2026, 9:27:14 PM"
-                    className="w-full h-48 bg-white/5 border border-white/10 rounded-[24px] p-6 text-white text-sm font-medium outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 transition-all placeholder:text-gray-700/50 resize-none"
+                    className="w-full h-48 bg-[#0a0a0c] border border-white/10 rounded-[24px] p-6 text-[#10b981] font-mono text-sm outline-none focus:border-[#ff7a59]/50 focus:ring-1 focus:ring-[#ff7a59]/50 transition-all placeholder:text-gray-700/50 resize-none shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
                   />
                   <div className="absolute top-4 right-6 flex items-center gap-2">
                     <span className="text-[8px] font-black text-gray-700 uppercase tracking-widest">Auto-Analyzing</span>
@@ -412,14 +412,14 @@ Example:
                 <div>
                   <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3 block">Total Deposits</label>
                   <div className="relative">
-                    <input type="number" value={deposits} onChange={(e) => setDeposits(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-accent/40" placeholder="0.00" />
+                    <input type="number" value={deposits} onChange={(e) => setDeposits(e.target.value)} className="premium-input w-full px-6 py-4 text-sm font-bold" placeholder="0.00" />
                     <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-600">KES</span>
                   </div>
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3 block">Total Withdrawals</label>
                   <div className="relative">
-                    <input type="number" value={withdrawals} onChange={(e) => setWithdrawals(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-accent/40" placeholder="0.00" />
+                    <input type="number" value={withdrawals} onChange={(e) => setWithdrawals(e.target.value)} className="premium-input w-full px-6 py-4 text-sm font-bold" placeholder="0.00" />
                     <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-600">KES</span>
                   </div>
                 </div>
@@ -429,7 +429,7 @@ Example:
 
           {/* Audit Table (if data exists) */}
           {parsedTx.length > 0 && (
-            <div className="bg-black/20 border border-white/5 rounded-[32px] overflow-hidden">
+            <div className="glass-card overflow-hidden">
               <div className="p-6 border-b border-white/5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <History size={18} className="text-gray-500" />
@@ -480,13 +480,13 @@ Example:
               const cb = netLoss * 0.1;
               
               return (
-                <motion.div 
-                  key={i} 
-                  initial={{ opacity: 0, x: 20 }} 
-                  animate={{ opacity: 1, x: 0 }} 
-                  transition={{ delay: i * 0.1 }}
-                  className={`p-6 rounded-[32px] border ${day.label === 'Current' ? 'bg-accent/5 border-accent/40 shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)]' : 'bg-black/20 border-white/5'}`}
-                >
+                  <motion.div 
+                    key={i} 
+                    initial={{ opacity: 0, x: 20 }} 
+                    animate={{ opacity: 1, x: 0 }} 
+                    transition={{ delay: i * 0.1 }}
+                    className={`p-6 glass-card ${day.label === 'Current' ? 'border-[#ff7a59]/40 shadow-[0_0_20px_rgba(255,122,89,0.15)]' : ''}`}
+                  >
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <div className="flex items-center gap-2">
@@ -561,7 +561,7 @@ Example:
           </div>
 
           {/* Quick Help Card */}
-          <div className="bg-black/20 border border-white/5 rounded-[32px] p-8 space-y-4">
+          <div className="glass-card p-8 space-y-4">
              <div className="flex items-center gap-2">
                <ShieldCheck size={14} className="text-accent" />
                <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
@@ -572,7 +572,7 @@ Example:
       </div>
 
       {/* Staff Guide & Protocol (On-Page) */}
-      <div className="bg-black/20 border border-white/5 rounded-[32px] p-8 space-y-6">
+      <div className="glass-card p-8 space-y-6">
          <div className="flex items-center justify-between">
            <div className="flex items-center gap-3">
              <HelpCircle size={18} className="text-accent" />
@@ -680,7 +680,7 @@ export default function Tools() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08080c] pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-transparent pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -692,9 +692,9 @@ export default function Tools() {
           <p className="text-gray-500 text-sm mt-2 max-w-md">Professional utilities designed to streamline support workflows and increase accuracy.</p>
         </div>
 
-        <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/10">
-          <button onClick={() => setActiveTab('cashback')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'cashback' ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'text-gray-500 hover:text-gray-300'}`}>Calculator</button>
-          <button onClick={() => setActiveTab('odds')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'odds' ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'text-gray-500 hover:text-gray-300'}`}>Odds Converter</button>
+        <div className="flex bg-panel p-1.5 rounded-2xl border border-white/10">
+          <button onClick={() => setActiveTab('cashback')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'cashback' ? 'premium-button shadow-lg shadow-accent/20' : 'text-gray-500 hover:text-gray-300'}`}>Calculator</button>
+          <button onClick={() => setActiveTab('odds')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'odds' ? 'premium-button shadow-lg shadow-accent/20' : 'text-gray-500 hover:text-gray-300'}`}>Odds Converter</button>
         </div>
       </motion.div>
 

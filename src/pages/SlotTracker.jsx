@@ -146,10 +146,10 @@ const SlotTracker = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto">
           <motion.button
             onClick={() => logFailure('Slot 1')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-2xl transition-all"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 glass-card hover:border-[#ef4444]/50 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] rounded-2xl transition-all"
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#ef4444]" />
             </div>
             <div className="text-left sm:text-center">
               <span className="block text-xs sm:text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Slot 1</span>
@@ -159,10 +159,10 @@ const SlotTracker = () => {
 
           <motion.button
             onClick={() => logFailure('Slot 2')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-2xl transition-all"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 glass-card hover:border-[#10b981]/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] rounded-2xl transition-all"
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#10b981]" />
             </div>
             <div className="text-left sm:text-center">
               <span className="block text-xs sm:text-sm font-black text-white tracking-[0.15em] leading-none uppercase">Slot 2</span>
@@ -172,7 +172,7 @@ const SlotTracker = () => {
 
           <motion.button
             onClick={() => logFailure('Both')}
-            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 bg-white/5 border border-white/10 rounded-2xl transition-all"
+            className="group relative flex items-center sm:flex-col justify-center gap-4 sm:gap-3 p-3 sm:p-4 glass-card hover:border-white/50 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] rounded-2xl transition-all"
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black/30 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
               <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -190,7 +190,7 @@ const SlotTracker = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="bg-card rounded-2xl border border-border shadow-lg overflow-hidden"
+        className="glass-card overflow-hidden"
       >
         <div className="p-6 border-b border-white/5 bg-black/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -352,7 +352,7 @@ const SlotTracker = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="bg-card rounded-2xl p-6 border border-border shadow-lg"
+        className="glass-card p-6"
       >
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -393,10 +393,11 @@ const SlotTracker = () => {
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'oklch(0.205 0 0)', 
-                  border: '1px solid oklch(0.269 0 0)',
+                  backgroundColor: 'rgba(10, 12, 22, 0.9)', 
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '12px',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                  backdropFilter: 'blur(8px)'
                 }}
                 itemStyle={{ fontWeight: 900, fontSize: '10px', textTransform: 'uppercase' }}
               />

@@ -388,7 +388,7 @@ export default function RotaPage() {
 
             <div className="flex items-center gap-3">
               {isManagerMode && (
-                <div className="flex bg-white/5 p-1 rounded-2xl border border-border mr-2">
+                <div className="flex bg-panel p-1.5 rounded-2xl border border-white/10 mr-2">
                   <button
                     onClick={() => {
                       setActiveBranch('betfalme');
@@ -396,7 +396,7 @@ export default function RotaPage() {
                     }}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                       activeBranch === 'betfalme' 
-                        ? 'bg-white text-black shadow-lg font-black' 
+                        ? 'premium-button shadow-lg shadow-white/10' 
                         : 'text-gray-500 hover:text-gray-300'
                     }`}
                   >
@@ -409,7 +409,7 @@ export default function RotaPage() {
                     }}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                       activeBranch === 'sofasafi' 
-                        ? 'bg-amber-600 text-white shadow-lg font-black' 
+                        ? 'premium-button shadow-lg shadow-amber-500/20' 
                         : 'text-gray-500 hover:text-gray-300'
                     }`}
                   >
@@ -418,7 +418,7 @@ export default function RotaPage() {
                 </div>
               )}
 
-              <div className="flex bg-white/5 p-1 rounded-2xl border border-border">
+              <div className="flex bg-panel p-1.5 rounded-2xl border border-white/10">
                 <button 
                   onClick={handlePrevMonth}
                   className="p-2.5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-white"
@@ -532,10 +532,10 @@ export default function RotaPage() {
 
         {/* ── Content ── */}
         <div className="flex-1 overflow-y-auto px-1 md:px-0">
-          <div className="flex bg-white/5 p-1 rounded-2xl border border-border m-4 md:mx-8">
+          <div className="flex bg-panel p-1.5 rounded-2xl border border-white/10 m-4 md:mx-8 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab('matrix')}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matrix' ? 'bg-accent text-white' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matrix' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
             >
               Matrix
             </button>
@@ -543,19 +543,19 @@ export default function RotaPage() {
               <>
                 <button
                   onClick={() => setActiveTab('analytics')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'analytics' ? 'bg-accent text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'analytics' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Trends
                 </button>
                 <button
                   onClick={() => setActiveTab('transport')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'transport' ? 'bg-accent text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'transport' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Transport
                 </button>
                 <button
                   onClick={() => setActiveTab('admin')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'admin' ? 'bg-amber-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'admin' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Admin
                 </button>
@@ -601,14 +601,14 @@ export default function RotaPage() {
             {activeTab === 'admin' && isManagerMode && (
                <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-8 rounded-2xl bg-card border border-border">
+                    <div className="glass-card p-8">
                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-4 flex items-center gap-2">
-                         <Upload className="text-accent" />
+                         <Upload className="text-[#ff7a59]" />
                          Data Import
                        </h3>
                        <button 
                          onClick={() => setIsImportModalOpen(true)}
-                         className="w-full py-4 rounded-xl bg-accent hover:bg-blue-600 text-white font-black uppercase tracking-widest transition-all"
+                         className="premium-button w-full py-4 text-white font-black uppercase tracking-widest transition-all"
                        >
                          Launch Excel Sync
                        </button>

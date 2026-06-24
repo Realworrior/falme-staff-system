@@ -2,9 +2,9 @@ import React from 'react';
 
 export function StatsCard({ label, value, color }) {
   return (
-    <div className="glass rounded-[28px] p-6 border border-white/5 relative overflow-hidden group">
+    <div className="glass-card p-6 relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/5 to-transparent rounded-full -mr-8 -mt-8" />
-      <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 italic italic underline decoration-red-500/10">
+      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
         {label}
       </p>
       <div className="flex items-end justify-between relative z-10">
