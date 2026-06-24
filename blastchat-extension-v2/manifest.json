@@ -17,7 +17,7 @@
   },
   "name": "BlastChat Matrix",
   "version": "1.7",
-  "description": "Auto-populates responses directly into chat. Type / in any text area to search templates inline.",
+  "description": "Type / in any chat to search templates. Click the icon for a persistent draggable panel.",
   "permissions": [
     "activeTab",
     "scripting",
@@ -32,8 +32,10 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
-    "default_popup": "popup.html",
     "default_title": "BlastChat Matrix",
     "default_icon": {
       "16": "icon16.png",

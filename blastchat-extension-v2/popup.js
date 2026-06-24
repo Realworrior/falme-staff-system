@@ -881,7 +881,295 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ─── Single card with clickable variant tabs ───────────────────────────────
+  // ─── THEMES matching Templates.jsx ─────────────────────────────────────────
+  const THEMES = [
+    { bg: '#baff55', text: '#000', statusLabel: 'Ready',      statusBg: 'rgba(0,0,0,0.2)',           statusText: '#000' },
+    { bg: '#ff7a2a', text: '#000', statusLabel: 'Live',       statusBg: 'rgba(0,0,0,0.2)',           statusText: '#000' },
+    { bg: '#ffd600', text: '#000', statusLabel: 'Degraded',   statusBg: 'rgba(0,0,0,0.2)',           statusText: '#000' },
+    { bg: '#00e5ff', text: '#000', statusLabel: 'Active',     statusBg: 'rgba(0,0,0,0.2)',           statusText: '#000' },
+    { bg: '#ff3366', text: '#fff', statusLabel: 'Active',     statusBg: 'rgba(255,255,255,0.2)',     statusText: '#fff' },
+    { bg: '#ffaa00', text: '#000', statusLabel: 'Processing', statusBg: 'rgba(0,0,0,0.2)',           statusText: '#000' },
+  ];
+
+  function getTypeLabel(name) {
+    const l = name.toLowerCase();
+    if (l.includes('support') || l.includes('patience') || l.includes('client')) return 'SUPPORT';
+    if (l.includes('casino') || l.includes('gaming') || l.includes('game'))      return 'GAMING';
+    if (l.includes('aviator') || l.includes('slot'))                              return 'AVIATOR';
+    if (l.includes('deposit') || l.includes('withdraw') || l.includes('payment')) return 'FINANCE';
+    if (l.includes('referral') || l.includes('bonus'))                            return 'PROMOTIONS';
+    if (l.includes('security') || l.includes('account'))                          return 'SECURITY';
+    return 'SYSTEM';
+  }
+
+  let categoryIndex = 0;
+
+  // ─── Category Card (cloned from Templates.jsx CategoryCard) ────────────────
+  function buildCategoryCard(categoryName, items) {
+    const theme = THEMES[categoryIndex % THEMES.length];
+    categoryIndex++;
+
+    const emojiMatch = categoryName.match(/(\p{Emoji})/u);
+    const emoji = emojiMatch ? emojiMatch[0] : '📂';
+    const catLabel = categoryName.replace(/(\p{Emoji})/gu, '').trim();
+    const typeLabel = getTypeLabel(catLabel);
+
+    const card = document.createElement('div');
+    card.className = 'matrix-card';
+
+    // TOP ROW
+    const topRow = document.createElement('div');
+    topRow.className = 'card-top-row';
+
+    const iconBox = document.createElement('div');
+    iconBox.className = 'card-icon-box';
+    iconBox.textContent = emoji;
+
+    const countBadge = document.createElement('div');
+    countBadge.className = 'card-count-badge';
+    countBadge.style.backgroundColor = theme.bg;
+    countBadge.style.color = theme.text;
+
+    const countNum = document.createElement('div');
+    countNum.className = 'count-number';
+    countNum.textContent = String(items.length).padStart(2, '0');
+
+    const countLbl = document.createElement('div');
+    countLbl.className = 'count-label';
+    countLbl.textContent = 'RESPONSES';
+
+    const countStatus = document.createElement('div');
+    countStatus.className = 'count-status';
+    countStatus.style.backgroundColor = theme.statusBg;
+    countStatus.style.color = theme.statusText;
+    countStatus.textContent = theme.statusLabel;
+
+    countBadge.appendChild(countNum);
+    countBadge.appendChild(countLbl);
+    countBadge.appendChild(countStatus);
+    topRow.appendChild(iconBox);
+    topRow.appendChild(countBadge);
+    card.appendChild(topRow);
+
+    // LABELS
+    const labels = document.createElement('div');
+    labels.className = 'card-labels';
+
+    const typeEl = document.createElement('div');
+    typeEl.className = 'card-type-label';
+    typeEl.textContent = typeLabel;
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'card-category-name';
+    nameEl.textContent = catLabel;
+
+    labels.appendChild(typeEl);
+    labels.appendChild(nameEl);
+    card.appendChild(labels);
+
+    // DIVIDER
+    const divider = document.createElement('div');
+    divider.className = 'card-divider';
+    card.appendChild(divider);
+
+    // TEMPLATE ROWS
+    items.forEach(t => card.appendChild(buildTemplateRow(t, theme)));
+
+    return card;
+  }
+
+  // ─── Template Row (collapsible, cloned from TemplateRow) ───────────────────
+  function buildTemplateRow(t, theme) {
+    const responses = Array.isArray(t.responses) && t.responses.length > 0
+      ? t.responses
+      : [{ text: 'No response found.', type: 'Standard' }];
+
+    let expanded = false;
+    let activeVariant = 0;
+
+    const wrapper = document.createElement('div');
+
+    // ROW HEADER
+    const rowBtn = document.createElement('button');
+    rowBtn.className = 'template-row-header';
+
+    const dot = document.createElement('div');
+    dot.className = 'row-dot';
+    dot.style.backgroundColor = '#4a4b50';
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'row-title';
+    titleSpan.textContent = t.title;
+
+    const arrow = document.createElement('span');
+    arrow.className = 'row-arrow';
+    arrow.textContent = '▼';
+
+    rowBtn.appendChild(dot);
+    rowBtn.appendChild(titleSpan);
+    rowBtn.appendChild(arrow);
+
+    // EXPANDED PANEL
+    const expandedPanel = document.createElement('div');
+    expandedPanel.className = 'expanded-content';
+
+    // Variant selectors
+    const variantRow = document.createElement('div');
+    variantRow.className = 'variant-row';
+
+    const variantBtns = [];
+    if (responses.length > 1) {
+      const varLabel = document.createElement('span');
+      varLabel.className = 'variant-label';
+      varLabel.textContent = 'Variant';
+      variantRow.appendChild(varLabel);
+
+      responses.forEach((r, i) => {
+        const vBtn = document.createElement('button');
+        vBtn.className = 'variant-btn';
+        vBtn.textContent = i + 1;
+        variantBtns.push(vBtn);
+        variantRow.appendChild(vBtn);
+      });
+      expandedPanel.appendChild(variantRow);
+    }
+
+    // Response block
+    const respBlock = document.createElement('div');
+    respBlock.className = 'response-block';
+
+    // Actions
+    const actionRow = document.createElement('div');
+    actionRow.className = 'action-row';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'action-edit';
+    editBtn.textContent = 'Edit';
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'action-delete';
+    delBtn.textContent = 'Delete';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'action-copy';
+
+    actionRow.appendChild(editBtn);
+    actionRow.appendChild(delBtn);
+    actionRow.appendChild(copyBtn);
+
+    expandedPanel.appendChild(respBlock);
+    expandedPanel.appendChild(actionRow);
+
+    function setVariant(i) {
+      activeVariant = i;
+      const resp = responses[i];
+
+      // render highlighted text
+      respBlock.textContent = '';
+      appendHighlightedText(respBlock, resp.text, theme);
+
+      // copy button style
+      copyBtn.textContent = 'Copy';
+      copyBtn.style.borderColor = theme.bg;
+      copyBtn.style.color = theme.bg;
+      copyBtn.style.backgroundColor = 'transparent';
+
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(resp.text).then(() => {
+          copyBtn.textContent = 'Copied!';
+          copyBtn.style.backgroundColor = theme.bg;
+          copyBtn.style.color = theme.text;
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy';
+            copyBtn.style.backgroundColor = 'transparent';
+            copyBtn.style.color = theme.bg;
+          }, 1500);
+        });
+        injectText(resp.text);
+      };
+
+      // variant button styles
+      variantBtns.forEach((vb, vi) => {
+        if (vi === i) {
+          vb.style.backgroundColor = theme.bg;
+          vb.style.borderColor = theme.bg;
+          vb.style.color = theme.text;
+        } else {
+          vb.style.backgroundColor = 'transparent';
+          vb.style.borderColor = '#3a3b3f';
+          vb.style.color = '#8e8e93';
+        }
+      });
+
+      // dot + arrow color
+      dot.style.backgroundColor = theme.bg;
+      arrow.style.color = theme.bg;
+    }
+
+    variantBtns.forEach((vb, vi) => { vb.onclick = (e) => { e.stopPropagation(); setVariant(vi); }; });
+
+    function toggleExpand() {
+      expanded = !expanded;
+      expandedPanel.classList.toggle('open', expanded);
+      arrow.textContent = expanded ? '▲' : '▼';
+      dot.style.backgroundColor = expanded ? theme.bg : '#4a4b50';
+      arrow.style.color = expanded ? theme.bg : '#4a4b50';
+      if (expanded) setVariant(activeVariant);
+    }
+
+    rowBtn.onclick = toggleExpand;
+    editBtn.onclick = () => alert('Edit: ' + t.title);
+    delBtn.onclick = () => alert('Delete: ' + t.title);
+
+    wrapper.appendChild(rowBtn);
+    wrapper.appendChild(expandedPanel);
+    return wrapper;
+  }
+
+  // Updated appendHighlightedText to accept theme for var coloring
+  function appendHighlightedText(container, text, theme) {
+    if (!text) return;
+    const cats = {
+      danger: ['Referral Violation', 'Deleted Message', 'Lost', 'Rolled back'],
+      success: ['Submitted', 'Cashback', 'Referral Bonus'],
+      info:    ['Deposit', 'Withdrawal', 'bet ID', 'Mpesa'],
+      data:    ['Phone number', 'Account Number', 'registered phone number']
+    };
+    const allKeywords = Object.values(cats).flat();
+    const pattern = new RegExp(
+      `(\\{[^}]+\\}|\\[[^\\]]+\\]|${allKeywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+      'gi'
+    );
+    text.split(pattern).forEach(part => {
+      if (!part) return;
+      const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
+      if (isPlaceholder) {
+        const span = document.createElement('span');
+        span.className = 'var-highlight';
+        span.style.color = theme ? theme.bg : '#baff55';
+        span.textContent = part;
+        container.appendChild(span);
+        return;
+      }
+      const k = part.toLowerCase();
+      let cls = '';
+      if (cats.danger.some(v => v.toLowerCase() === k))  cls = 'danger-highlight';
+      else if (cats.success.some(v => v.toLowerCase() === k)) cls = 'success-highlight';
+      else if (cats.info.some(v => v.toLowerCase() === k))    cls = 'info-highlight';
+      else if (cats.data.some(v => v.toLowerCase() === k))    cls = 'data-highlight';
+
+      if (cls) {
+        const span = document.createElement('span');
+        span.className = cls;
+        span.textContent = part;
+        container.appendChild(span);
+      } else {
+        container.appendChild(document.createTextNode(part));
+      }
+    });
+  }
+
+  // ─── DUMMY buildSwitcherCard kept for AI results only ──────────────────────
   function buildSwitcherCard(t, idx) {
     const responses = Array.isArray(t.responses) && t.responses.length > 0
       ? t.responses
@@ -990,16 +1278,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderTemplates(templates) {
     if (!container) return;
     container.textContent = '';
+    categoryIndex = 0;
 
     if (templates.length === 0) {
       const emptyDiv = document.createElement('div');
       emptyDiv.className = 'empty-state';
-      emptyDiv.textContent = 'No matching intelligence found';
+      emptyDiv.textContent = 'No matching templates found';
       container.appendChild(emptyDiv);
       return;
     }
 
-    // Deduplicate by title+category at render time (belt-and-suspenders)
+    // Deduplicate
     const seen = new Set();
     const unique = templates.filter(t => {
       const key = `${t.category}||${t.title}`;
@@ -1009,41 +1298,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (activeShortcut) {
-      // ── Shortcut view: flat list, one switcher-card per template ──
+      // Shortcut view: flat switcher cards
       unique.forEach((t, idx) => container.appendChild(buildSwitcherCard(t, idx)));
     } else {
-      // ── Default / search / category view: group by category ──
+      // Group by category → one CategoryCard per group
       const groups = new Map();
       unique.forEach(t => {
         if (!groups.has(t.category)) groups.set(t.category, []);
         groups.get(t.category).push(t);
       });
-
-      let globalIdx = 0;
       groups.forEach((items, cat) => {
-        // Category section header
-        const header = document.createElement('div');
-        header.style.cssText = [
-          'display:flex;align-items:center;gap:10px;',
-          'padding:8px 0 6px;margin:14px 0 8px;',
-          'border-bottom:1px solid rgba(255,102,0,0.25);',
-          'font-family:var(--mono);font-size:9px;font-weight:900;',
-          'color:var(--orange);text-transform:uppercase;letter-spacing:0.12em;',
-          'grid-column:1 / -1;' // Force header to span all columns
-        ].join('');
-
-        const dot = document.createElement('span');
-        dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;flex-shrink:0;';
-        header.appendChild(dot);
-        header.appendChild(document.createTextNode(cat));
-
-        const count = document.createElement('span');
-        count.style.cssText = 'margin-left:auto;font-size:8px;opacity:0.5;';
-        count.textContent = `COUNT: ${items.length}`;
-        header.appendChild(count);
-
-        container.appendChild(header);
-        items.forEach(t => container.appendChild(buildSwitcherCard(t, globalIdx++)));
+        container.appendChild(buildCategoryCard(cat, items));
       });
     }
   }
