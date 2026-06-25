@@ -15,12 +15,12 @@ import { useToast } from '../context/ToastContext';
 // Themes based on Image
 // ─────────────────────────────────────────────────────────────────────────────
 const THEMES = [
-  { bg: '#baff55', text: '#000000', statusLabel: 'Ready', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
-  { bg: '#ff7a2a', text: '#000000', statusLabel: 'Live', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
-  { bg: '#ffd600', text: '#000000', statusLabel: 'Degraded', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
-  { bg: '#00e5ff', text: '#000000', statusLabel: 'Active', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
-  { bg: '#ff3366', text: '#ffffff', statusLabel: 'Active', statusBg: 'rgba(255,255,255,0.2)', statusText: '#fff' },
-  { bg: '#ffaa00', text: '#000000', statusLabel: 'Processing', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#BAFA1E', text: '#000000', statusLabel: 'Ready', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#FF6912', text: '#000000', statusLabel: 'Live', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#FFDF1B', text: '#000000', statusLabel: 'Degraded', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#00C1EB', text: '#000000', statusLabel: 'Active', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
+  { bg: '#FF035C', text: '#ffffff', statusLabel: 'Active', statusBg: 'rgba(255,255,255,0.2)', statusText: '#fff' },
+  { bg: '#DFA544', text: '#000000', statusLabel: 'Processing', statusBg: 'rgba(0,0,0,0.2)', statusText: '#000' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,16 +28,52 @@ const THEMES = [
 // ─────────────────────────────────────────────────────────────────────────────
 const VariableHighlighter = ({ text, theme }) => {
   if (!text) return null;
-  const pattern = /(\{[^}]+\}|\[[^\]]+\])/g;
+  const KEYWORD_COLORS = [
+    { hex: '#BAFA1E', words: ['resolved', 'safe', 'accounted for', 'successfully', 'good news', 'eligible', 'confirm', 'confirmed'] },
+    { hex: '#FF6912', words: ['crash', 'aviator', 'jetx', 'virtual', 'casino', 'stake', 'winnings', 'bet', 'betslip', 'odds', 'sport', 'sports'] },
+    { hex: '#FFDF1B', words: ['urgent', 'delay', 'delayed', 'error', 'wrong', 'voided', 'failed', 'issue', 'problem', 'degraded', 'unavailable', 'down', 'maintenance', 'frustrated', 'frustration', 'missing', 'lost'] },
+    { hex: '#00C1EB', words: ['cashback', 'referral', 'bonus', 'offers', 'tax-free', 'free bet', 'rain'] },
+    { hex: '#FF035C', words: ['hello', 'hi', 'welcome', 'greet', 'vip'] },
+    { hex: '#DFA544', words: ['deposit', 'withdraw', 'withdrawal', 'm-pesa', 'balance', 'ksh', 'paybill', 'transaction', 'funds', 'amount', 'wallet'] }
+  ];
+
+  const allWords = KEYWORD_COLORS.flatMap(c => c.words).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|\\b(?:${allWords.join('|')})\\b)`, 'gi');
+  
   const parts = text.split(pattern);
   return (
     <span>
       {parts.map((part, i) => {
+        if (!part) return null;
         const isVar = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
         if (isVar) {
           return <span key={i} className="font-bold" style={{ color: theme ? theme.bg : '#ffffff' }}>{part}</span>;
         }
-        return <span key={i}>{part}</span>;
+
+        const lowerPart = part.toLowerCase();
+        let matchedColor = null;
+        for (const cat of KEYWORD_COLORS) {
+          if (cat.words.includes(lowerPart)) {
+            matchedColor = cat.hex;
+            break;
+          }
+        }
+        if (matchedColor) {
+          return <span key={`k-${i}`} className="font-bold" style={{ color: matchedColor }}>{part}</span>;
+        }
+
+        // Split for ALL CAPS
+        const subParts = part.split(/(\b[A-Z][A-Z0-9_-]+\b)/);
+        return (
+          <span key={`w-${i}`}>
+            {subParts.map((sub, j) => {
+               if (sub.match(/^\b[A-Z][A-Z0-9_-]+\b$/)) {
+                  return <span key={`sub-${j}`} className="font-bold" style={{ color: theme ? theme.bg : '#ffffff' }}>{sub}</span>;
+               }
+               return <span key={`sub-${j}`}>{sub}</span>;
+            })}
+          </span>
+        );
       })}
     </span>
   );

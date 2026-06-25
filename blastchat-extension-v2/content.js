@@ -39,12 +39,12 @@ let slashFiltered = [];
 // THEMES (matching Templates.jsx)
 // ─────────────────────────────────────────────────────────────────────────────
 const THEMES = [
-  { bg: '#baff55', text: '#000', statusLabel: 'Ready',      statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
-  { bg: '#ff7a2a', text: '#000', statusLabel: 'Live',       statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
-  { bg: '#ffd600', text: '#000', statusLabel: 'Degraded',   statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
-  { bg: '#00e5ff', text: '#000', statusLabel: 'Active',     statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
-  { bg: '#ff3366', text: '#fff', statusLabel: 'Active',     statusBg: 'rgba(255,255,255,0.2)', statusText: '#fff' },
-  { bg: '#ffaa00', text: '#000', statusLabel: 'Processing', statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
+  { bg: '#BAFA1E', text: '#000', statusLabel: 'Ready',      statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
+  { bg: '#FF6912', text: '#000', statusLabel: 'Live',       statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
+  { bg: '#FFDF1B', text: '#000', statusLabel: 'Degraded',   statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
+  { bg: '#00C1EB', text: '#000', statusLabel: 'Active',     statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
+  { bg: '#FF035C', text: '#fff', statusLabel: 'Active',     statusBg: 'rgba(255,255,255,0.2)', statusText: '#fff' },
+  { bg: '#DFA544', text: '#000', statusLabel: 'Processing', statusBg: 'rgba(0,0,0,0.2)',       statusText: '#000' },
 ];
 
 function getTypeLabel(name) {
@@ -547,46 +547,61 @@ async function fetchTemplates() {
 // ─────────────────────────────────────────────────────────────────────────────
 // HIGHLIGHT HELPER
 // ─────────────────────────────────────────────────────────────────────────────
-const KW_CATS = {
-  danger:  ['Referral Violation', 'Deleted Message', 'Lost', 'Rolled back'],
-  success: ['Submitted', 'Cashback', 'Referral Bonus'],
-  info:    ['Deposit', 'Withdrawal', 'bet ID', 'Mpesa'],
-  data:    ['Phone number', 'Account Number', 'registered phone number']
-};
-const ALL_KW = Object.values(KW_CATS).flat();
-const KW_PATTERN = new RegExp(
-  `(\\{[^}]+\\}|\\[[^\\]]+\\]|${ALL_KW.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
-  'gi'
-);
+const KEYWORD_COLORS = [
+  { hex: '#BAFA1E', words: ['resolved', 'safe', 'accounted for', 'successfully', 'good news', 'eligible', 'confirm', 'confirmed'] },
+  { hex: '#FF6912', words: ['crash', 'aviator', 'jetx', 'virtual', 'casino', 'stake', 'winnings', 'bet', 'betslip', 'odds', 'sport', 'sports'] },
+  { hex: '#FFDF1B', words: ['urgent', 'delay', 'delayed', 'error', 'wrong', 'voided', 'failed', 'issue', 'problem', 'degraded', 'unavailable', 'down', 'maintenance', 'frustrated', 'frustration', 'missing', 'lost'] },
+  { hex: '#00C1EB', words: ['cashback', 'referral', 'bonus', 'offers', 'tax-free', 'free bet', 'rain'] },
+  { hex: '#FF035C', words: ['hello', 'hi', 'welcome', 'greet', 'vip'] },
+  { hex: '#DFA544', words: ['deposit', 'withdraw', 'withdrawal', 'm-pesa', 'balance', 'ksh', 'paybill', 'transaction', 'funds', 'amount', 'wallet'] }
+];
+const ALL_KW = KEYWORD_COLORS.flatMap(c => c.words).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+const KW_PATTERN = new RegExp(`(\\{[^}]+\\}|\\[[^\\]]+\\]|\\b(?:${ALL_KW.join('|')})\\b)`, 'gi');
 
 function renderHighlighted(container, text, themeColor) {
   if (!text) return;
   text.split(KW_PATTERN).forEach(part => {
     if (!part) return;
-    const isPlaceholder = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
-    if (isPlaceholder) {
+    const isVar = (part.startsWith('{') && part.endsWith('}')) || (part.startsWith('[') && part.endsWith(']'));
+    if (isVar) {
       const s = document.createElement('span');
       s.className = 'var-hl';
-      s.style.color = themeColor || '#baff55';
+      s.style.color = themeColor || '#BAFA1E';
       s.textContent = part;
       container.appendChild(s);
       return;
     }
-    const kl = part.toLowerCase();
-    let cls = '';
-    if (KW_CATS.danger.some(v => v.toLowerCase() === kl))  cls = 'danger-hl';
-    else if (KW_CATS.success.some(v => v.toLowerCase() === kl)) cls = 'success-hl';
-    else if (KW_CATS.info.some(v => v.toLowerCase() === kl))    cls = 'info-hl';
-    else if (KW_CATS.data.some(v => v.toLowerCase() === kl))    cls = 'data-hl';
 
-    if (cls) {
+    const lowerPart = part.toLowerCase();
+    let matchedColor = null;
+    for (const cat of KEYWORD_COLORS) {
+      if (cat.words.includes(lowerPart)) {
+        matchedColor = cat.hex;
+        break;
+      }
+    }
+    if (matchedColor) {
       const s = document.createElement('span');
-      s.className = cls;
+      s.className = 'var-hl';
+      s.style.color = matchedColor;
       s.textContent = part;
       container.appendChild(s);
-    } else {
-      container.appendChild(document.createTextNode(part));
+      return;
     }
+
+    // Now split for ALL CAPS
+    part.split(/(\b[A-Z][A-Z0-9_-]+\b)/).forEach(sub => {
+      if (!sub) return;
+      if (sub.match(/^\b[A-Z][A-Z0-9_-]+\b$/)) {
+        const s = document.createElement('span');
+        s.className = 'var-hl';
+        s.style.color = themeColor || '#BAFA1E';
+        s.textContent = sub;
+        container.appendChild(s);
+      } else {
+        container.appendChild(document.createTextNode(sub));
+      }
+    });
   });
 }
 

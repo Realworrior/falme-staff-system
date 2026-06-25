@@ -16,7 +16,7 @@ const navItems = [
   { path: '/', label: 'Overview', icon: LayoutDashboard },
   { path: '/templates', label: 'Templates', icon: FileText },
   { path: '/slots', label: 'Aviator', icon: Activity },
-  { path: '/tickets', label: 'Tickets', icon: Ticket },
+  // { path: '/tickets', label: 'Tickets', icon: Ticket },
   { path: '/tools', label: 'Cashback', icon: Calculator, isNew: true },
   { path: '/rota', label: 'Rota', icon: CalendarDays },
   { path: '/resources', label: 'Resources', icon: BookOpen },
