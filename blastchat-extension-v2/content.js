@@ -85,6 +85,7 @@ const PANEL_CSS = `
     transition: height 0.25s ease, opacity 0.2s ease;
     min-width: 320px;
     min-height: 52px;
+    resize: both;
   }
 
   /* ── TITLE BAR ── */
@@ -388,6 +389,7 @@ const PANEL_CSS = `
     white-space: pre-wrap;
     word-break: break-word;
     margin-bottom: 10px;
+    font-family: 'Courier New', Courier, monospace;
   }
 
   .var-hl { font-weight: 700; }

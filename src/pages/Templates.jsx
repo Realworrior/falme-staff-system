@@ -113,7 +113,7 @@ function TemplateRow({ item, catId, copiedId, onCopy, isExpanded, onToggle, onEd
               )}
 
               {/* Text Content */}
-              <div className="bg-[#161616] rounded-2xl p-4 text-sm text-[#c0c0c5] leading-relaxed border border-[#3a3b3f]">
+              <div className="bg-[#161616] rounded-2xl p-4 text-sm text-[#c0c0c5] leading-relaxed border border-[#3a3b3f]" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
                 <VariableHighlighter text={activeResp.text} theme={theme} />
               </div>
 
