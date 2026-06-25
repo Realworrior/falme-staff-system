@@ -268,9 +268,15 @@ const PANEL_CSS = `
     overflow-y: auto;
     padding: 12px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
     gap: 10px;
     align-items: start;
+  }
+  @media (min-width: 520px) {
+    .content-scroll { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 800px) {
+    .content-scroll { grid-template-columns: repeat(3, 1fr); }
   }
 
   ::-webkit-scrollbar { width: 4px; }
@@ -1382,6 +1388,9 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('keyup', e => {
+  // Don't show slash menu if the floating panel is already visible
+  if (panelVisible) return;
+
   const target = e.composedPath()[0];
   checkAndSetTarget(target);
   if (!lastFocusedInput) return;
