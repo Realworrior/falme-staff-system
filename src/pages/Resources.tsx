@@ -2805,7 +2805,7 @@ export default function Resources() {
   }, []);
 
   return (
-    <div className="text-white">
+    <div className="text-white font-sans">
       {/* ── Top Nav ── */}
       <div
         className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border"

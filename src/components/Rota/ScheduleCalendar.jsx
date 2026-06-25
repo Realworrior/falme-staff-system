@@ -37,7 +37,7 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
         border: isToday ? "2px solid #ff7a59" : (hasSelectedStaff ? "1px solid rgba(255,255,255,0.2)" : undefined),
       }}
     >
-      <div className="flex items-center justify-between px-2 pt-1.5 pb-1 shrink-0">
+      <div className="flex items-center justify-between px-3 pt-2 pb-1 shrink-0">
         <div className="flex items-baseline gap-1">
           <span style={{ fontSize: 13, color: isToday ? "#4080e8" : "#c8d4e8", fontWeight: isToday ? 700 : 600 }}>
             {dayStr}
@@ -54,7 +54,7 @@ function GridCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, dimm
         <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: ntColor ? ntColor.bg : "rgba(255,255,255,0.1)" }} />
       </div>
 
-      <div className="flex flex-1 gap-px px-1.5 pb-1 min-h-0">
+      <div className="flex flex-1 gap-px px-2 pb-2 min-h-0">
         <div className="flex-1 flex flex-col gap-1 min-w-0 overflow-hidden">
           <span style={{ fontSize: 9, color: "#3d7ee6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>AM</span>
           <div className="flex flex-wrap gap-1">
@@ -124,13 +124,13 @@ function MobileCard({ data, isToday, scheduleDate, onClick, hasSelectedStaff, di
         </div>
 
         <div className="flex-1 flex flex-col gap-0 min-w-0">
-          <div className="flex items-start gap-2 px-3 py-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="flex items-start gap-2 px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
             <span className="shrink-0" style={{ fontSize: 10, color: "#3d7ee6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", paddingTop: 3, width: 32 }}>AM</span>
             <div className="flex flex-wrap gap-1.5 flex-1">
               {data.AM.map((n) => <Pill key={n} name={n} size="md" />)}
             </div>
           </div>
-          <div className="flex items-start gap-2 px-3 py-2">
+          <div className="flex items-start gap-2 px-4 py-3">
             <span className="shrink-0" style={{ fontSize: 10, color: "#28a87c", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", paddingTop: 3, width: 32 }}>PM</span>
             <div className="flex flex-wrap gap-1.5 flex-1">
               {data.PM.map((n) => <Pill key={n} name={n} size="md" />)}

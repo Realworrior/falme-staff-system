@@ -141,7 +141,7 @@ const Dashboard = () => {
         <div className="lg:col-span-8 space-y-8">
           
           {/* Aviator Pulse Graph */}
-          <div className="bg-[#2a2b2f] rounded-[32px] p-6 md:p-8">
+          <div className="cutout-card p-6 md:p-8 relative">
             <div className="flex items-start justify-between mb-8">
               <div>
                 <h3 className="text-lg font-semibold text-white flex items-center gap-3">
@@ -243,7 +243,10 @@ const Dashboard = () => {
         <div className="lg:col-span-4 space-y-8">
           
           {/* Shift Rota Card */}
-          <div className="bg-[#2a2b2f] rounded-[32px] p-6 md:p-8 h-full flex flex-col">
+          <div className="cutout-card p-6 md:p-8 h-full flex flex-col relative group cursor-pointer" onClick={() => navigate('/rota')}>
+            <div className="absolute top-4 right-4 w-10 h-10 bg-[#161616] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+              <ArrowUpRight size={18} className="text-white" />
+            </div>
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="text-lg font-semibold text-white">Daily Deployment</h3>
@@ -302,13 +305,7 @@ const Dashboard = () => {
             
             <div className="mt-8 pt-6 border-t border-[#3a3b3f] space-y-3">
               <button 
-                onClick={() => navigate('/rota')}
-                className="w-full pill-dark flex items-center justify-center gap-2"
-              >
-                Access Full Rota <ArrowUpRight size={14} />
-              </button>
-              <button 
-                onClick={() => navigate('/templates')}
+                onClick={(e) => { e.stopPropagation(); navigate('/templates'); }}
                 className="w-full pill-dark flex items-center justify-center gap-2"
               >
                 Admin Templates <ArrowUpRight size={14} />

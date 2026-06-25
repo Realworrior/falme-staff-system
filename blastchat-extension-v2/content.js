@@ -36,6 +36,37 @@ let slashActiveIndex = 0;
 let slashFiltered = [];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SHORTCUTS
+// ─────────────────────────────────────────────────────────────────────────────
+const SHORTCUT_MAPPING = {
+  'hello':           ['Client Says Hi / Silent After Auto Greeting'],
+  'thank you':       ['Closing Statement'],
+  'deposit':         ['Failed Deposit — M-PESA Code Required', 'General M-PESA Deposit Delay'],
+  'lost amount':     ['Filing a Lost Amount Case — Requesting Details', 'Lost Stake — Error / Something Went Wrong / Rejected Bet', 'Lost Stake — Error During Virtual Game'],
+  'roll back':       ['Roll Back — Funds Successfully Returned'],
+  'phone number':    ["Client Is Vague — 'Help' / 'Problem'"],
+  'case submitted':  ['Case Submitted to Technical Team'],
+  'delete':          ['Account Closure / Self-Exclusion', 'Cooling — Pending Account Closure (Frustrated Client)'],
+  'cashback':        ['Where Is My Cashback', 'Cashback Not Received — Conditions Not Met', 'How to Calculate Cashback', 'Will I Get Cashback Today', 'Daily Cashback Reset Window — 8:30 to 8:40 PM'],
+  'activated':       ['Client Eligible to Withdraw', 'Account Reset Confirmation']
+};
+
+const SHORTCUT_COLORS = {
+  'hello':           { bg: '#FF035C', text: '#ffffff' },
+  'thank you':       { bg: '#BAFA1E', text: '#000000' },
+  'deposit':         { bg: '#DFA544', text: '#000000' },
+  'lost amount':     { bg: '#FFDF1B', text: '#000000' },
+  'roll back':       { bg: '#BAFA1E', text: '#000000' },
+  'phone number':    { bg: '#00C1EB', text: '#000000' },
+  'case submitted':  { bg: '#DFA544', text: '#000000' },
+  'delete':          { bg: '#FF6912', text: '#000000' },
+  'cashback':        { bg: '#00C1EB', text: '#000000' },
+  'activated':       { bg: '#BAFA1E', text: '#000000' }
+};
+const SHORTCUT_KEYWORDS = Object.keys(SHORTCUT_MAPPING);
+
+
+// ─────────────────────────────────────────────────────────────────────────────
 // THEMES (matching Templates.jsx)
 // ─────────────────────────────────────────────────────────────────────────────
 const THEMES = [
@@ -206,6 +237,7 @@ const PANEL_CSS = `
     cursor: pointer;
     font-family: inherit;
   }
+  .cat-select option { background-color: #fff; color: #000; }
   .cat-select:focus { border-color: rgba(186,255,85,0.5); }
 
   .shortcuts-row {
@@ -235,9 +267,10 @@ const PANEL_CSS = `
     flex: 1;
     overflow-y: auto;
     padding: 12px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 10px;
+    align-items: start;
   }
 
   ::-webkit-scrollbar { width: 4px; }
@@ -848,6 +881,58 @@ function filterPanelTemplates() {
 // ─────────────────────────────────────────────────────────────────────────────
 // BUILD FLOATING PANEL DOM
 // ─────────────────────────────────────────────────────────────────────────────
+function renderPanelShortcuts(container) {
+  container.textContent = '';
+  SHORTCUT_KEYWORDS.forEach(label => {
+    const tag = document.createElement('div');
+    const colors = SHORTCUT_COLORS[label];
+    tag.className = 'shortcut-tag';
+    tag.textContent = label;
+    
+    if (panelActiveShortcut === label) {
+      tag.classList.add('active');
+      tag.style.backgroundColor = colors.bg;
+      tag.style.color = colors.text;
+      tag.style.borderColor = 'transparent';
+    } else {
+      tag.style.backgroundColor = 'rgba(255,255,255,0.04)';
+      tag.style.color = '#8e8e93';
+      tag.style.borderColor = 'rgba(255,255,255,0.08)';
+    }
+
+    tag.onmouseenter = () => {
+      if (panelActiveShortcut !== label) {
+        tag.style.backgroundColor = colors.bg + '22';
+        tag.style.color = colors.bg;
+        tag.style.borderColor = colors.bg + '66';
+      }
+    };
+    tag.onmouseleave = () => {
+      if (panelActiveShortcut !== label) {
+        tag.style.backgroundColor = 'rgba(255,255,255,0.04)';
+        tag.style.color = '#8e8e93';
+        tag.style.borderColor = 'rgba(255,255,255,0.08)';
+      }
+    };
+
+    tag.onclick = () => {
+      if (panelActiveShortcut === label) {
+        panelActiveShortcut = null;
+      } else {
+        panelActiveShortcut = label;
+        panelActiveCategory = 'ALL';
+        const catEl = panelShadow.getElementById('panel-cat');
+        if (catEl) catEl.value = 'ALL';
+        const searchInput = panelShadow.getElementById('panel-search');
+        if (searchInput) searchInput.value = '';
+      }
+      renderPanelShortcuts(container);
+      filterPanelTemplates();
+    };
+    container.appendChild(tag);
+  });
+}
+
 function buildPanel() {
   if (panelRoot) return;
   panelRoot = document.createElement('div');
@@ -940,6 +1025,8 @@ function buildPanel() {
 
   controls.append(ctrlRow, shortcutsRow);
   panel.appendChild(controls);
+
+  renderPanelShortcuts(shortcutsRow);
 
   // ── CONTENT ──
   const contentScroll = document.createElement('div');
@@ -1036,8 +1123,19 @@ function buildPanel() {
   closeBtn.onclick = () => hidePanel();
 
   // ── SEARCH / CAT EVENTS ──
-  searchInput.addEventListener('input', filterPanelTemplates);
-  catSelect.addEventListener('change', filterPanelTemplates);
+  searchInput.addEventListener('input', () => {
+    panelActiveShortcut = null;
+    const shortcutsContainer = panelShadow.getElementById('panel-shortcuts');
+    if (shortcutsContainer) renderPanelShortcuts(shortcutsContainer);
+    filterPanelTemplates();
+  });
+  catSelect.addEventListener('change', (e) => {
+    panelActiveCategory = e.target.value;
+    panelActiveShortcut = null;
+    const shortcutsContainer = panelShadow.getElementById('panel-shortcuts');
+    if (shortcutsContainer) renderPanelShortcuts(shortcutsContainer);
+    filterPanelTemplates();
+  });
 }
 
 function showPanel() {
@@ -1080,6 +1178,34 @@ function togglePanel() {
   } else {
     showPanel();
   }
+}
+
+function filterPanelTemplates() {
+  const searchInput = panelShadow.getElementById('panel-search');
+  const catSelect = panelShadow.getElementById('panel-cat');
+  let q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+  let cat = catSelect ? catSelect.value : 'ALL';
+
+  let filtered = panelAllTemplates;
+
+  if (panelActiveShortcut) {
+    const titles = new Set(SHORTCUT_MAPPING[panelActiveShortcut] || []);
+    filtered = filtered.filter(t => titles.has(t.title));
+  } else if (cat !== 'ALL') {
+    filtered = filtered.filter(t => t.category === cat);
+  }
+
+  if (q && !panelActiveShortcut) {
+    let tokens = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 0);
+    // basic matching
+    filtered = filtered.filter(t => {
+      const title = t.title.toLowerCase();
+      const triggers = (t.triggers || []).map(tr => tr.toLowerCase());
+      return tokens.some(tok => title.includes(tok) || triggers.some(tr => tr.includes(tok)));
+    });
+  }
+
+  renderPanelTemplates(filtered);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
