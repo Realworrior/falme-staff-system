@@ -210,7 +210,7 @@ function CategoryCard({ category, items, catId, copiedId, onCopy, onEdit, onDele
   };
 
   return (
-    <div className="bg-[#1e1f22] rounded-[24px] overflow-hidden flex flex-col h-fit">
+    <div className="bg-[#1e1f22] rounded-[24px] overflow-hidden flex flex-col h-full">
       {/* Card Top Row */}
       <div className="flex items-start justify-between p-5 pb-3">
         {/* Left: Icon + Menu */}
@@ -323,7 +323,7 @@ function Templates() {
     }
     
     // Sort descending by number of templates to group by count row-wise
-    return result.sort((a, b) => b.templates.length - a.templates.length);
+    return [...result].sort((a, b) => b.templates.length - a.templates.length);
   }, [data, searchQuery]);
 
   const availableCategories = useMemo(() => data?.map(d => d.category).sort() || [], [data]);

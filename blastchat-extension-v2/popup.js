@@ -32,17 +32,29 @@ let isBlastChat = false;
 
 // Maps each shortcut label to the EXACT template titles it should display
 const SHORTCUT_MAPPING = {
-  'failed deposit':  ['Failed Deposit — M-PESA Code Required'],
-  'airtel/bank':     ['Airtel or Bank Deposit — Not Supported'],
-  'account number':  ['Account Verification Request'],
+  'hello':           ['Client Says Hi / Silent After Auto Greeting'],
+  'thank you':       ['Closing Statement'],
+  'deposit':         ['Failed Deposit — M-PESA Code Required', 'General M-PESA Deposit Delay'],
+  'lost amount':     ['Filing a Lost Amount Case — Requesting Details', 'Lost Stake — Error / Something Went Wrong / Rejected Bet', 'Lost Stake — Error During Virtual Game'],
+  'roll back':       ['Roll Back — Funds Successfully Returned'],
+  'phone number':    ["Client Is Vague — 'Help' / 'Problem'"],
   'case submitted':  ['Case Submitted to Technical Team'],
-  'lost amount':     ['Lost Amount Report — Aviator, Jet X, Crash Games', 'Pending Cashout — Crash / Aviator'],
-  'Not lost':        ['No Lost Amount — All Transactions Correct'],
-  'violation':       ['Referral Violation — Multiple Accounts Detected'],
-  'reset':           ['Suspicious Reset Request — Technical Limitation', 'Account Reset Confirmation'],
-  'Betslip':         ['Unpaid Winning Bet', 'Cash Out Not Processed', 'Bet Not Accepted / Rejected', 'Pending Betslip — Postponed Game'],
-  'Account closure': ['Account Closure / Self-Exclusion'],
-  'cashback':        ['How to Calculate Cashback', 'Will I Get Cashback Today', 'Daily Cashback Reset Window', 'Where Is My Cashback', 'Cashback Not Received — Conditions Not Met']
+  'delete':          ['Account Closure / Self-Exclusion', 'Cooling — Pending Account Closure (Frustrated Client)'],
+  'cashback':        ['Where Is My Cashback', 'Cashback Not Received — Conditions Not Met', 'How to Calculate Cashback', 'Will I Get Cashback Today', 'Daily Cashback Reset Window — 8:30 to 8:40 PM'],
+  'activated':       ['Client Eligible to Withdraw', 'Account Reset Confirmation']
+};
+
+const SHORTCUT_COLORS = {
+  'hello':           { bg: '#FF035C', text: '#ffffff' }, // Hello / greet -> Pink
+  'thank you':       { bg: '#BAFA1E', text: '#000000' }, // Reassurance / Relief -> Lime
+  'deposit':         { bg: '#DFA544', text: '#000000' }, // Deposit / Withdraw -> Gold
+  'lost amount':     { bg: '#FFDF1B', text: '#000000' }, // Urgency / Delay / Lost -> Yellow
+  'roll back':       { bg: '#BAFA1E', text: '#000000' }, // Reassurance / Relief -> Lime
+  'phone number':    { bg: '#00C1EB', text: '#000000' }, // Cyan -> trust / clarity
+  'case submitted':  { bg: '#DFA544', text: '#000000' }, // Gold -> processing
+  'delete':          { bg: '#FF6912', text: '#000000' }, // Orange -> physical energy / risk
+  'cashback':        { bg: '#00C1EB', text: '#000000' }, // Cyan -> cashback / bonus
+  'activated':       { bg: '#BAFA1E', text: '#000000' }  // Lime -> Ready
 };
 
 const SHORTCUT_KEYWORDS = Object.keys(SHORTCUT_MAPPING);
@@ -545,21 +557,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
       SHORTCUT_KEYWORDS.forEach(label => {
         const tag = document.createElement('div');
-        tag.className = `shortcut-tag ${activeShortcut === label ? 'active' : ''}`;
+        const colors = SHORTCUT_COLORS[label] || { bg: 'rgba(255,255,255,0.04)', text: 'var(--text-muted)' };
+        
+        tag.className = 'shortcut-tag';
         tag.textContent = label;
+        
+        // Initial / Active state styles
+        if (activeShortcut === label) {
+          tag.className = 'shortcut-tag active';
+          tag.style.backgroundColor = colors.bg;
+          tag.style.color = colors.text;
+          tag.style.borderColor = 'transparent';
+        } else {
+          tag.style.backgroundColor = 'rgba(255,255,255,0.04)';
+          tag.style.color = 'var(--text-muted)';
+          tag.style.borderColor = 'rgba(255,255,255,0.08)';
+        }
+
+        // Hover dynamics
+        tag.onmouseenter = () => {
+          if (activeShortcut !== label) {
+            tag.style.backgroundColor = colors.bg + '22'; // ~13% opacity
+            tag.style.color = colors.bg;
+            tag.style.borderColor = colors.bg + '66';
+          }
+        };
+        tag.onmouseleave = () => {
+          if (activeShortcut !== label) {
+            tag.style.backgroundColor = 'rgba(255,255,255,0.04)';
+            tag.style.color = 'var(--text-muted)';
+            tag.style.borderColor = 'rgba(255,255,255,0.08)';
+          }
+        };
+
         tag.onclick = () => {
           if (activeShortcut === label) {
             activeShortcut = null;
-            tag.classList.remove('active');
           } else {
-            document.querySelectorAll('.shortcut-tag').forEach(t => t.classList.remove('active'));
             activeShortcut = label;
-            tag.classList.add('active');
-            // Clear active category and search input for shortcut priority
             activeCategory = 'ALL';
             if (categorySelect) categorySelect.value = 'ALL';
             if (searchInput) searchInput.value = '';
           }
+          renderShortcuts(); // Re-render to update classes and styles of all shortcuts
           filterTemplates();
         };
         area.appendChild(tag);
