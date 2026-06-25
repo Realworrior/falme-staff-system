@@ -219,7 +219,7 @@ const Dashboard = () => {
               <button 
                 key={res.name} 
                 onClick={() => navigate(res.path + (res.params || ''))}
-                className="cutout-card flex flex-col items-start gap-4 p-5 hover:bg-[#2d2f34] transition-all duration-300 group relative overflow-hidden cursor-pointer text-left"
+                className="cutout-card hover-bg flex flex-col items-start gap-4 p-5 transition-all duration-300 group relative overflow-hidden cursor-pointer text-left"
               >
                 <div 
                   className="w-10 h-10 rounded-2xl flex items-center justify-center"
@@ -231,7 +231,7 @@ const Dashboard = () => {
                   <span className="block text-xs text-[#8e8e93] font-medium mb-1">Launch</span>
                   <span className="block text-sm font-semibold text-white">{res.name}</span>
                 </div>
-                <div className="absolute top-3 right-3 w-8 h-8 bg-[#161616] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                <div className="absolute top-3 right-3 w-8 h-8 bg-[#161616] rounded-full flex items-center justify-center transition-all">
                   <ArrowUpRight size={14} className="text-white" />
                 </div>
               </button>
@@ -243,8 +243,8 @@ const Dashboard = () => {
         <div className="lg:col-span-4 space-y-8">
           
           {/* Shift Rota Card */}
-          <div className="cutout-card p-6 md:p-8 h-full flex flex-col relative group cursor-pointer" onClick={() => navigate('/rota')}>
-            <div className="absolute top-4 right-4 w-10 h-10 bg-[#161616] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+          <div className="cutout-card hover-bg p-6 md:p-8 h-full flex flex-col relative group cursor-pointer" onClick={() => navigate('/rota')}>
+            <div className="absolute top-4 right-4 w-10 h-10 bg-[#161616] rounded-full flex items-center justify-center transition-all">
               <ArrowUpRight size={18} className="text-white" />
             </div>
             <div className="flex items-center justify-between mb-8">

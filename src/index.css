@@ -101,6 +101,10 @@
   .cutout-card {
     background: radial-gradient(circle at top right, transparent 55px, #2a2b2f 56px);
     border-radius: 32px;
+    transition: background 0.3s ease;
+  }
+  .cutout-card.hover-bg:hover {
+    background: radial-gradient(circle at top right, transparent 55px, #2d2f34 56px);
   }
   
   .pill-white {
