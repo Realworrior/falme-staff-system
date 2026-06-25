@@ -78,25 +78,25 @@ export type PersonColor = { bg: string; text: string; bar: string };
 
 export const STAFF_THEME: Record<string, PersonColor> = {
   // Betfalme
-  Ascar:   { bg: "#BAFA1E", text: "#000000", bar: "#a1df16" }, // Bright Lime Green
-  Chris:   { bg: "#FF6912", text: "#ffffff", bar: "#e05b0f" }, // Vivid Orange
-  Faye:    { bg: "#FFDF1B", text: "#000000", bar: "#e0c415" }, // Vibrant Yellow
-  Joyce:   { bg: "#00C1EB", text: "#ffffff", bar: "#00a9ce" }, // Cyan
-  Linda:   { bg: "#FF035C", text: "#ffffff", bar: "#e00251" }, // Bright Pink
-  Nickson: { bg: "#DFA544", text: "#ffffff", bar: "#c4903a" }, // Dull Gold
-  Pauline: { bg: "#BAFA1E", text: "#000000", bar: "#a1df16" },
-  Sylvia:  { bg: "#FF6912", text: "#ffffff", bar: "#e05b0f" },
-  Terry:   { bg: "#FFDF1B", text: "#000000", bar: "#e0c415" },
+  Ascar:   { bg: "#3d7ee6", text: "#ffffff", bar: "#2f68cc" },
+  Chris:   { bg: "#c88428", text: "#ffffff", bar: "#a86e1e" },
+  Faye:    { bg: "#c84a76", text: "#ffffff", bar: "#aa3860" },
+  Joyce:   { bg: "#28a87c", text: "#ffffff", bar: "#1e8e66" },
+  Linda:   { bg: "#c8a020", text: "#ffffff", bar: "#a88218" },
+  Nickson: { bg: "#7a56d4", text: "#ffffff", bar: "#6244b8" },
+  Pauline: { bg: "#cc4040", text: "#ffffff", bar: "#aa3030" },
+  Sylvia:  { bg: "#1ea8cc", text: "#ffffff", bar: "#168caa" },
+  Terry:   { bg: "#cc6424", text: "#ffffff", bar: "#aa5018" },
   // SofaSafi
-  Mary:     { bg: "#BAFA1E", text: "#000000", bar: "#a1df16" },
-  Joan:     { bg: "#FF6912", text: "#ffffff", bar: "#e05b0f" },
-  "Ian K":  { bg: "#FFDF1B", text: "#000000", bar: "#e0c415" },
-  Jonathan: { bg: "#00C1EB", text: "#ffffff", bar: "#00a9ce" },
-  Fabrice:  { bg: "#FF035C", text: "#ffffff", bar: "#e00251" },
-  "Ian R":  { bg: "#DFA544", text: "#ffffff", bar: "#c4903a" },
-  Kelvin:   { bg: "#BAFA1E", text: "#000000", bar: "#a1df16" },
-  Shellah:  { bg: "#FF6912", text: "#ffffff", bar: "#e05b0f" },
-  Colins:   { bg: "#FFDF1B", text: "#000000", bar: "#e0c415" },
+  Mary:     { bg: "#3d7ee6", text: "#ffffff", bar: "#2f68cc" },
+  Joan:     { bg: "#c88428", text: "#ffffff", bar: "#a86e1e" },
+  "Ian K":  { bg: "#c84a76", text: "#ffffff", bar: "#aa3860" },
+  Jonathan: { bg: "#28a87c", text: "#ffffff", bar: "#1e8e66" },
+  Fabrice:  { bg: "#c8a020", text: "#ffffff", bar: "#a88218" },
+  "Ian R":  { bg: "#7a56d4", text: "#ffffff", bar: "#6244b8" },
+  Kelvin:   { bg: "#cc4040", text: "#ffffff", bar: "#aa3030" },
+  Shellah:  { bg: "#1ea8cc", text: "#ffffff", bar: "#168caa" },
+  Colins:   { bg: "#cc6424", text: "#ffffff", bar: "#aa5018" },
 };
 
 export const STAFF_COLORS: Record<string, string> = {};

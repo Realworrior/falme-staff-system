@@ -28,15 +28,19 @@ const BottomNav = ({ className }) => {
       {/* ── MOBILE BOTTOM DOCK ── */}
       <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden px-4 pb-4">
         <div
-          className="flex items-center justify-around bg-[#2a2b2f] rounded-[28px] px-2 py-3 border border-[#3a3b3f]"
-          style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.5)' }}
+          className="flex items-center justify-between sm:justify-around bg-[#2a2b2f] rounded-[28px] px-3 py-3 border border-[#3a3b3f] overflow-x-auto scrollbar-none flex-nowrap gap-2 [&::-webkit-scrollbar]:hidden"
+          style={{ 
+            boxShadow: '0 -4px 40px rgba(0,0,0,0.5)',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
         >
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === '/'}
-              className="no-underline"
+              className="no-underline shrink-0"
             >
               {({ isActive }) => (
                 <div className={`relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-all ${isActive ? 'bg-[#baff55]' : 'bg-transparent'}`}>
