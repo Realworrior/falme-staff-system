@@ -5,7 +5,7 @@ const SUPABASE_URL = 'https://kgpcruwlejoougjbeouw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtncGNydXdsZWpvb3VnamJlb3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Njg1NTgsImV4cCI6MjA5MjM0NDU1OH0.FUM24PZZdw1Rg5IYePFx0SKWp_GI6adn7etivCUAfgY';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const text = fs.readFileSync('templates_all_responses.txt', 'utf8');
+const text = fs.readFileSync('Betfalme_Support_Templates_v4.md', 'utf8');
 
 const categories = [];
 let currentCat = null;
@@ -16,7 +16,7 @@ for (let i = 0; i < lines.length; i++) {
   const line = lines[i].trim();
   if (!line) continue;
 
-  if (line.startsWith('# 👋 CATEGORY') || line.startsWith('# 💰 CATEGORY') || line.startsWith('# 💸 CATEGORY') || line.startsWith('# 🎰 CATEGORY') || line.startsWith('# 🎮 CATEGORY') || line.startsWith('# ⚽ CATEGORY') || line.startsWith('# 🎁 CATEGORY') || line.startsWith('# 🔄 CATEGORY') || line.startsWith('# ⏳ CATEGORY')) {
+  if (line.startsWith('# ') && line.includes('CATEGORY') && line.includes('—')) {
     const titleMatch = line.match(/CATEGORY \d+ — (.+)/);
     if (titleMatch) {
       currentCat = {
