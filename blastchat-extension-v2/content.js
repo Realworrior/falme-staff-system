@@ -1,5 +1,10 @@
 // === BLASTCHAT MATRIX — Persistent Draggable Floating Panel + '/' Inline Menu ===
 
+if (window.blastchatInjected) {
+  console.log("BlastChat already injected");
+  throw new Error("Already injected");
+}
+window.blastchatInjected = true;
 const SUPABASE_URL = 'https://kgpcruwlejoougjbeouw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtncGNydXdsZWpvb3VnamJlb3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Njg1NTgsImV4cCI6MjA5MjM0NDU1OH0.FUM24PZZdw1Rg5IYePFx0SKWp_GI6adn7etivCUAfgY';
 
@@ -1141,6 +1146,69 @@ function buildPanel() {
     const shortcutsContainer = panelShadow.getElementById('panel-shortcuts');
     if (shortcutsContainer) renderPanelShortcuts(shortcutsContainer);
     filterPanelTemplates();
+  });
+}
+
+function renderPanelShortcuts(container) {
+  if (!container) return;
+  container.textContent = '';
+  
+  const keywords = Object.keys(SHORTCUT_MAPPING);
+  keywords.forEach(label => {
+    const tag = document.createElement('div');
+    const colors = SHORTCUT_COLORS[label] || { bg: 'rgba(255,255,255,0.04)', text: '#8e8e93' };
+    
+    tag.className = 'shortcut-tag';
+    tag.textContent = label;
+    tag.style.cssText = `
+      padding: 3px 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #8e8e93;
+      cursor: pointer;
+      transition: all 0.15s;
+    `;
+    
+    if (panelActiveShortcut === label) {
+      tag.style.background = colors.bg;
+      tag.style.color = colors.text;
+      tag.style.borderColor = 'transparent';
+    }
+    
+    tag.onmouseenter = () => {
+      if (panelActiveShortcut !== label) {
+        tag.style.background = colors.bg + '22';
+        tag.style.color = colors.bg;
+        tag.style.borderColor = colors.bg + '66';
+      }
+    };
+    tag.onmouseleave = () => {
+      if (panelActiveShortcut !== label) {
+        tag.style.background = 'rgba(255,255,255,0.04)';
+        tag.style.color = '#8e8e93';
+        tag.style.borderColor = 'rgba(255,255,255,0.08)';
+      }
+    };
+    
+    tag.onclick = () => {
+      if (panelActiveShortcut === label) {
+        panelActiveShortcut = null;
+      } else {
+        panelActiveShortcut = label;
+        panelActiveCategory = 'ALL';
+        const catSelect = panelShadow.getElementById('panel-cat');
+        const searchInput = panelShadow.getElementById('panel-search');
+        if (catSelect) catSelect.value = 'ALL';
+        if (searchInput) searchInput.value = '';
+      }
+      renderPanelShortcuts(container);
+      filterPanelTemplates();
+    };
+    
+    container.appendChild(tag);
   });
 }
 
