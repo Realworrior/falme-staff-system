@@ -16,7 +16,7 @@
     }
   },
   "name": "BlastChat Matrix",
-  "version": "1.9",
+  "version": "2.0",
   "description": "Type / in any chat to search templates. Click the icon for a persistent draggable panel.",
   "permissions": [
     "activeTab",

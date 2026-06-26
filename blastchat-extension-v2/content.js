@@ -277,12 +277,6 @@ const PANEL_CSS = `
     gap: 10px;
     align-items: start;
   }
-  @media (min-width: 520px) {
-    .content-scroll { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (min-width: 800px) {
-    .content-scroll { grid-template-columns: repeat(3, 1fr); }
-  }
 
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -652,7 +646,7 @@ function renderHighlighted(container, text, themeColor) {
 // ─────────────────────────────────────────────────────────────────────────────
 // CARD BUILDERS
 // ─────────────────────────────────────────────────────────────────────────────
-function buildCategoryCard(categoryName, items, shadow) {
+function buildCategoryCard(categoryName, items) {
   const theme = THEMES[categoryIndexPanel % THEMES.length];
   categoryIndexPanel++;
 
@@ -660,7 +654,7 @@ function buildCategoryCard(categoryName, items, shadow) {
   const emoji = emojiMatch ? emojiMatch[0] : '📂';
   const catLabel = categoryName.replace(/(\p{Emoji})/gu, '').trim();
 
-  const card = shadow.createElement ? shadow.createElement('div') : document.createElement('div');
+  const card = document.createElement('div');
   card.className = 'cat-card';
 
   // Top row
@@ -791,16 +785,13 @@ function buildTemplateRow(t, theme) {
     respBlock.textContent = '';
     renderHighlighted(respBlock, resp.text, theme.bg);
 
-    copyBtn.textContent = 'Copy';
-    copyBtn.style.cssText = `border-color:${theme.bg};color:${theme.bg};background:transparent;`;
+    copyBtn.textContent = '⚡ Copy & Inject';
+    copyBtn.style.cssText = `border-color:${theme.bg};color:${theme.text};background:${theme.bg};font-size:11px;padding:5px 14px;border-radius:20px;border:2px solid;cursor:pointer;font-family:inherit;font-weight:700;transition:all 0.15s;`;
     copyBtn.onclick = () => {
       navigator.clipboard?.writeText(resp.text).then(() => {
-        copyBtn.textContent = 'Copied!';
-        copyBtn.style.cssText = `border-color:${theme.bg};color:${theme.text};background:${theme.bg};`;
-        setTimeout(() => {
-          copyBtn.textContent = 'Copy';
-          copyBtn.style.cssText = `border-color:${theme.bg};color:${theme.bg};background:transparent;`;
-        }, 1500);
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = '✓ Copied!';
+        setTimeout(() => { copyBtn.textContent = '⚡ Copy & Inject'; }, 1500);
       });
       injectIntoLastInput(resp.text);
     };
@@ -868,7 +859,7 @@ function renderPanelTemplates(templates) {
   });
 
   groups.forEach((items, cat) => {
-    container.appendChild(buildCategoryCard(cat, items, {}));
+    container.appendChild(buildCategoryCard(cat, items));
   });
 }
 
@@ -879,13 +870,21 @@ function filterPanelTemplates() {
   const cat = catEl?.value || 'ALL';
 
   let filtered = panelAllTemplates;
-  if (cat !== 'ALL') filtered = filtered.filter(t => t.category === cat);
-  if (q) {
-    filtered = filtered.filter(t =>
-      t.title.toLowerCase().includes(q) ||
-      (t.triggers || []).some(tr => tr.toLowerCase().includes(q))
-    );
+
+  // Shortcut filter takes priority
+  if (panelActiveShortcut) {
+    const titles = SHORTCUT_MAPPING[panelActiveShortcut] || [];
+    filtered = filtered.filter(t => titles.some(title => t.title === title));
+  } else {
+    if (cat !== 'ALL') filtered = filtered.filter(t => t.category === cat);
+    if (q) {
+      filtered = filtered.filter(t =>
+        t.title.toLowerCase().includes(q) ||
+        (t.triggers || []).some(tr => tr.toLowerCase().includes(q))
+      );
+    }
   }
+
   renderPanelTemplates(filtered);
 }
 
@@ -975,7 +974,7 @@ function buildPanel() {
 
   const versionPill = document.createElement('div');
   versionPill.className = 'version-pill';
-  versionPill.textContent = 'v1.7';
+  versionPill.textContent = 'v1.9';
 
   const statusEl = document.createElement('div');
   statusEl.id = 'panel-status';
@@ -1456,10 +1455,15 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('keyup', e => {
-  // Don't show slash menu if the floating panel is already visible
+  // Don't show slash menu if the floating panel is visible
   if (panelVisible) return;
 
-  const target = e.composedPath()[0];
+  // Don't trigger slash menu if the event originated inside our shadow roots
+  const path = e.composedPath();
+  if (panelRoot && path.includes(panelRoot)) return;
+  if (slashRoot && path.includes(slashRoot)) return;
+
+  const target = path[0];
   checkAndSetTarget(target);
   if (!lastFocusedInput) return;
 
