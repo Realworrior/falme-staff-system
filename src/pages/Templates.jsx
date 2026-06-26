@@ -410,7 +410,7 @@ function Templates() {
                 <Plus size={15} /> Add New Template
               </button>
               <a href="/templates/blastchat-extension.xpi" download className="pill-dark flex items-center gap-2 text-sm font-semibold hover:text-white">
-                Firefox (v1.7)
+                Firefox (v1.8)
               </a>
               <a href="/blastchat-extension.zip" download className="pill-dark flex items-center gap-2 text-sm font-semibold hover:text-white">
                 Chrome Extension
