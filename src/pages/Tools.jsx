@@ -206,8 +206,8 @@ function CashbackCalculator() {
     const withBreakdown = formatBreakdown(day.withList, day.withdrawals);
     
     const calculationLine = cb > 0 
-      ? `Cashback calculation : (${day.deposits.toLocaleString()} - ${day.withdrawals.toLocaleString()}) * 10% = ${cb.toLocaleString()} ksh`
-      : `Cashback calculation: You are currently on profit, hence not eligible for cashback.`;
+      ? `Cashback calculation (${day.deposits.toLocaleString()} - ${day.withdrawals.toLocaleString()}) * 10% = ${cb.toLocaleString()} ksh`
+      : `Cashback is calculated on net loss. Since your withdrawals are higher than or equal to your deposits, no cashback was generated.`;
 
     const lines = [
       `Total Deposits (${startStr} – ${endStr}): ${depBreakdown} ksh`,
