@@ -1,8 +1,10 @@
 // === BLASTCHAT MATRIX — Persistent Draggable Floating Panel + '/' Inline Menu ===
 
 if (window.blastchatInjected) {
-  console.log("BlastChat already injected");
-  throw new Error("Already injected");
+  const oldPanel = document.getElementById('blastchat-panel-root');
+  if (oldPanel) oldPanel.remove();
+  const oldSlash = document.getElementById('blastchat-slash-root');
+  if (oldSlash) oldSlash.remove();
 }
 window.blastchatInjected = true;
 const SUPABASE_URL = 'https://kgpcruwlejoougjbeouw.supabase.co';
@@ -686,7 +688,12 @@ function buildCategoryCard(categoryName, items) {
 
   badge.append(num, lbl, statusPill);
   topRow.append(iconBox, badge);
+  topRow.style.cursor = 'pointer';
   card.appendChild(topRow);
+
+  const body = document.createElement('div');
+  body.className = 'cat-body';
+  body.style.display = 'none';
 
   // Labels
   const labelsDiv = document.createElement('div');
@@ -701,13 +708,20 @@ function buildCategoryCard(categoryName, items) {
   nameEl.textContent = catLabel;
 
   labelsDiv.append(typeEl, nameEl);
-  card.appendChild(labelsDiv);
+  body.appendChild(labelsDiv);
 
   const divider = document.createElement('div');
   divider.className = 'card-divider';
-  card.appendChild(divider);
+  body.appendChild(divider);
 
-  items.forEach(t => card.appendChild(buildTemplateRow(t, theme)));
+  items.forEach(t => body.appendChild(buildTemplateRow(t, theme)));
+
+  card.appendChild(body);
+
+  topRow.onclick = () => {
+    const isHidden = body.style.display === 'none';
+    body.style.display = isHidden ? 'block' : 'none';
+  };
 
   return card;
 }
@@ -864,83 +878,30 @@ function renderPanelTemplates(templates) {
 }
 
 function filterPanelTemplates() {
-  const searchEl = panelShadow.getElementById('panel-search');
-  const catEl = panelShadow.getElementById('panel-cat');
-  const q = (searchEl?.value || '').toLowerCase().trim();
-  const cat = catEl?.value || 'ALL';
+  const searchInput = panelShadow.getElementById('panel-search');
+  const catSelect = panelShadow.getElementById('panel-cat');
+  let q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+  let cat = catSelect ? catSelect.value : 'ALL';
 
   let filtered = panelAllTemplates;
 
   // Shortcut filter takes priority
   if (panelActiveShortcut) {
     const titles = SHORTCUT_MAPPING[panelActiveShortcut] || [];
-    filtered = filtered.filter(t => titles.some(title => t.title === title));
+    filtered = filtered.filter(t => titles.some(targetTitle => t.title.includes(targetTitle)));
   } else {
     if (cat !== 'ALL') filtered = filtered.filter(t => t.category === cat);
     if (q) {
-      filtered = filtered.filter(t =>
-        t.title.toLowerCase().includes(q) ||
-        (t.triggers || []).some(tr => tr.toLowerCase().includes(q))
-      );
+      let tokens = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 0);
+      filtered = filtered.filter(t => {
+        const title = t.title.toLowerCase();
+        const triggers = (t.triggers || []).map(tr => tr.toLowerCase());
+        return tokens.some(tok => title.includes(tok) || triggers.some(tr => tr.includes(tok)));
+      });
     }
   }
 
   renderPanelTemplates(filtered);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BUILD FLOATING PANEL DOM
-// ─────────────────────────────────────────────────────────────────────────────
-function renderPanelShortcuts(container) {
-  container.textContent = '';
-  SHORTCUT_KEYWORDS.forEach(label => {
-    const tag = document.createElement('div');
-    const colors = SHORTCUT_COLORS[label];
-    tag.className = 'shortcut-tag';
-    tag.textContent = label;
-    
-    if (panelActiveShortcut === label) {
-      tag.classList.add('active');
-      tag.style.backgroundColor = colors.bg;
-      tag.style.color = colors.text;
-      tag.style.borderColor = 'transparent';
-    } else {
-      tag.style.backgroundColor = 'rgba(255,255,255,0.04)';
-      tag.style.color = '#8e8e93';
-      tag.style.borderColor = 'rgba(255,255,255,0.08)';
-    }
-
-    tag.onmouseenter = () => {
-      if (panelActiveShortcut !== label) {
-        tag.style.backgroundColor = colors.bg + '22';
-        tag.style.color = colors.bg;
-        tag.style.borderColor = colors.bg + '66';
-      }
-    };
-    tag.onmouseleave = () => {
-      if (panelActiveShortcut !== label) {
-        tag.style.backgroundColor = 'rgba(255,255,255,0.04)';
-        tag.style.color = '#8e8e93';
-        tag.style.borderColor = 'rgba(255,255,255,0.08)';
-      }
-    };
-
-    tag.onclick = () => {
-      if (panelActiveShortcut === label) {
-        panelActiveShortcut = null;
-      } else {
-        panelActiveShortcut = label;
-        panelActiveCategory = 'ALL';
-        const catEl = panelShadow.getElementById('panel-cat');
-        if (catEl) catEl.value = 'ALL';
-        const searchInput = panelShadow.getElementById('panel-search');
-        if (searchInput) searchInput.value = '';
-      }
-      renderPanelShortcuts(container);
-      filterPanelTemplates();
-    };
-    container.appendChild(tag);
-  });
 }
 
 function buildPanel() {
@@ -1253,33 +1214,7 @@ function togglePanel() {
   }
 }
 
-function filterPanelTemplates() {
-  const searchInput = panelShadow.getElementById('panel-search');
-  const catSelect = panelShadow.getElementById('panel-cat');
-  let q = (searchInput ? searchInput.value : '').toLowerCase().trim();
-  let cat = catSelect ? catSelect.value : 'ALL';
-
-  let filtered = panelAllTemplates;
-
-  if (panelActiveShortcut) {
-    const titles = new Set(SHORTCUT_MAPPING[panelActiveShortcut] || []);
-    filtered = filtered.filter(t => titles.has(t.title));
-  } else if (cat !== 'ALL') {
-    filtered = filtered.filter(t => t.category === cat);
-  }
-
-  if (q && !panelActiveShortcut) {
-    let tokens = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 0);
-    // basic matching
-    filtered = filtered.filter(t => {
-      const title = t.title.toLowerCase();
-      const triggers = (t.triggers || []).map(tr => tr.toLowerCase());
-      return tokens.some(tok => title.includes(tok) || triggers.some(tr => tr.includes(tok)));
-    });
-  }
-
-  renderPanelTemplates(filtered);
-}
+// Duplicate function removed
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SLASH MENU
