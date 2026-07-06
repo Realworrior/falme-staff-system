@@ -294,9 +294,11 @@ const PANEL_CSS = `
 
   .card-top-row {
     display: flex;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
     justify-content: space-between;
-    padding: 14px 14px 8px;
+    padding: 14px;
   }
 
   .card-icon-box {
@@ -671,6 +673,7 @@ function buildCategoryCard(categoryName, items) {
   badge.className = 'count-badge';
   badge.style.backgroundColor = theme.bg;
   badge.style.color = theme.text;
+  badge.style.flexShrink = '0';
 
   const num = document.createElement('div');
   num.className = 'count-num';
@@ -687,28 +690,39 @@ function buildCategoryCard(categoryName, items) {
   statusPill.textContent = theme.statusLabel;
 
   badge.append(num, lbl, statusPill);
-  topRow.append(iconBox, badge);
+
+  const leftWrap = document.createElement('div');
+  leftWrap.style.display = 'flex';
+  leftWrap.style.alignItems = 'center';
+  leftWrap.style.gap = '12px';
+  leftWrap.style.flex = '1';
+  leftWrap.style.minWidth = '200px'; // ensures it triggers wrap if panel is too small
+
+  const headerText = document.createElement('div');
+  headerText.style.display = 'flex';
+  headerText.style.flexDirection = 'column';
+
+  const typeEl = document.createElement('div');
+  typeEl.className = 'type-label';
+  typeEl.textContent = getTypeLabel(catLabel);
+  typeEl.style.marginBottom = '2px';
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'cat-name';
+  nameEl.textContent = catLabel;
+  nameEl.style.whiteSpace = 'normal';
+  nameEl.style.lineHeight = '1.3';
+
+  headerText.append(typeEl, nameEl);
+  leftWrap.append(iconBox, headerText);
+
+  topRow.append(leftWrap, badge);
   topRow.style.cursor = 'pointer';
   card.appendChild(topRow);
 
   const body = document.createElement('div');
   body.className = 'cat-body';
   body.style.display = 'none';
-
-  // Labels
-  const labelsDiv = document.createElement('div');
-  labelsDiv.className = 'card-labels';
-
-  const typeEl = document.createElement('div');
-  typeEl.className = 'type-label';
-  typeEl.textContent = getTypeLabel(catLabel);
-
-  const nameEl = document.createElement('div');
-  nameEl.className = 'cat-name';
-  nameEl.textContent = catLabel;
-
-  labelsDiv.append(typeEl, nameEl);
-  body.appendChild(labelsDiv);
 
   const divider = document.createElement('div');
   divider.className = 'card-divider';
