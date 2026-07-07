@@ -203,23 +203,54 @@ export default function MpesaCodes() {
   };
 
   return (
-    // pb-40 leaves room for the sticky input bar
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 pb-44 space-y-6 md:space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-8">
 
       {/* ── PAGE HEADER ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="p-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent">
-              <ClipboardList size={16} />
+      <div className="flex flex-col gap-4">
+        {/* Title row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="p-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent">
+                <ClipboardList size={16} />
+              </div>
+              <h3 className="text-sm font-black text-white uppercase tracking-widest">SMS Verification Ledger</h3>
             </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest">SMS verification ledger</h3>
+            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em]">Temp MPESA Code Repository</p>
           </div>
-          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em]">Temp MPESA Code Repository</p>
+          <div className="text-[11px] font-bold text-gray-400 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-2 self-start sm:self-auto">
+            <Clock size={12} className="text-accent" />
+            <span>24h Auto-Expiry Active</span>
+          </div>
         </div>
-        <div className="text-[11px] font-bold text-gray-400 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-2 self-start sm:self-auto">
-          <Clock size={12} className="text-accent" />
-          <span>24h Auto-Expiry Active</span>
+
+        {/* ── INLINE INPUT PANEL ── */}
+        <div className="glass-card border border-white/10 p-4 space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Plus size={12} className="text-accent shrink-0" />
+            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Paste Full SMS or Code</span>
+            <span className="ml-auto text-[9px] text-gray-600">Duplicates auto-filtered · Ctrl+Enter to submit</span>
+          </div>
+          <div className="flex items-end gap-3">
+            <textarea
+              ref={textareaRef}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd(); }}
+              placeholder="UG2D2A2YF9 confirmed. Ksh1,000.00 from 0712345678 paid to METABET on 7/7/26…   or just: UG2D2A2YF9"
+              rows={2}
+              className="flex-1 bg-[#161616] border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/30 font-mono resize-none transition-all placeholder-gray-600 min-w-0"
+            />
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={!inputText.trim()}
+              className="pill-lime shrink-0 flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none py-3 px-5"
+            >
+              <Plus size={14} />
+              Add
+            </button>
+          </div>
         </div>
       </div>
 
@@ -433,35 +464,6 @@ export default function MpesaCodes() {
         )}
       </div>
 
-      {/* ── STICKY INPUT BAR ── */}
-      <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[min(680px,calc(100vw-2rem))]">
-        <div className="glass-card border border-white/10 shadow-2xl shadow-black/60 p-3 md:p-4 space-y-2 rounded-2xl">
-          <div className="flex items-center gap-2 mb-1">
-            <Plus size={12} className="text-accent shrink-0" />
-            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Paste Full SMS or Code</span>
-            <span className="ml-auto text-[9px] text-gray-600">Duplicates auto-filtered</span>
-          </div>
-          <div className="flex items-end gap-2">
-            <textarea
-              ref={textareaRef}
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd(); }}
-              placeholder="UG2D2A2YF9 confirmed. Ksh1,000.00 from 0712345678…   or just: UG2D2A2YF9"
-              rows={2}
-              className="flex-1 bg-[#161616] border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/30 font-mono resize-none transition-all placeholder-gray-600 min-w-0"
-            />
-            <button
-              onClick={handleAdd}
-              disabled={!inputText.trim()}
-              className="pill-lime shrink-0 flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none py-3"
-            >
-              <Plus size={14} />
-              Add
-            </button>
-          </div>
-        </div>
-      </div>
 
     </div>
   );
