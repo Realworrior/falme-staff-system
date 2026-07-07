@@ -281,158 +281,130 @@ export default function MpesaCodes() {
           )}
         </div>
 
-        {/* Responsive Table Wrapper */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-white/5 text-[9px] font-black text-gray-500 uppercase tracking-widest bg-white/[0.005]">
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Transaction Code</th>
-                <th className="px-6 py-4">Amount</th>
-                <th className="px-6 py-4">Phone Number</th>
-                <th className="px-6 py-4">Merchant</th>
-                <th className="px-6 py-4">Timestamp</th>
-                <th className="px-6 py-4 text-center">Settings</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {paginatedEntries.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-16 text-sm text-gray-500 font-bold uppercase tracking-wider">
-                    {entries.length === 0 ? "No transaction records present" : "No matching records found"}
-                  </td>
-                </tr>
-              ) : (
-                paginatedEntries.map((entry) => (
-                  <tr 
-                    key={entry.id}
-                    className={`transition-colors duration-200 ${
-                      entry.wasCopied 
-                        ? "bg-[#baff55]/[0.02] border-l-2 border-[#baff55]" 
-                        : "hover:bg-white/[0.01]"
-                    }`}
-                  >
-                    {/* Status Checkbox */}
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleVerify(entry.id)}
-                        className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
-                          entry.verified 
-                            ? "bg-[#baff55] border-[#baff55] text-black" 
-                            : "border-white/20 hover:border-accent"
-                        }`}
-                      >
-                        {entry.verified && <Check size={12} strokeWidth={3} />}
-                      </button>
-                    </td>
+        {/* Records list — no horizontal scroll */}
+        <div className="w-full">
+          {/* Column headers */}
+          <div className="grid text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 bg-white/[0.005]"
+            style={{ gridTemplateColumns: '36px 1fr 90px 110px 110px 80px auto 36px', padding: '10px 16px', gap: '12px' }}>
+            <span />
+            <span>Transaction Code</span>
+            <span>Amount</span>
+            <span>Phone</span>
+            <span>Merchant</span>
+            <span>Time</span>
+            <span className="text-center">Options</span>
+            <span />
+          </div>
 
-                    {/* Transaction Code */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span 
-                          className={`font-mono text-sm font-bold ${
-                            entry.verified ? "text-gray-400 line-through" : "text-white"
-                          }`}
-                        >
-                          {entry.transactionCode || <span className="text-gray-600 font-normal italic">Unavailable</span>}
-                        </span>
-                        {entry.transactionCode && (
-                          <button
-                            onClick={() => handleCopy(entry.id)}
-                            className={`p-1.5 rounded-lg border border-white/5 bg-white/5 hover:border-accent hover:text-accent transition-all ${
-                              entry.copiedCode ? "text-accent border-accent/40" : "text-gray-500"
-                            }`}
-                          >
-                            {entry.copiedCode ? <Check size={12} /> : <Copy size={12} />}
-                          </button>
-                        )}
-                        {entry.isCodeOnly && (
-                          <span className="text-[8px] font-black text-gray-400 bg-white/10 px-1.5 py-0.5 rounded uppercase tracking-wider">
-                            Code Only
-                          </span>
-                        )}
-                      </div>
-                    </td>
+          {/* Rows */}
+          {paginatedEntries.length === 0 ? (
+            <div className="text-center py-16 text-sm text-gray-500 font-bold uppercase tracking-wider">
+              {entries.length === 0 ? "No transaction records present" : "No matching records found"}
+            </div>
+          ) : (
+            paginatedEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className={`grid items-center border-b border-white/5 last:border-0 transition-colors duration-200 ${
+                  entry.wasCopied
+                    ? "bg-[#baff55]/[0.02] border-l-2 border-l-[#baff55]"
+                    : "hover:bg-white/[0.01]"
+                }`}
+                style={{ gridTemplateColumns: '36px 1fr 90px 110px 110px 80px auto 36px', padding: '12px 16px', gap: '12px' }}
+              >
+                {/* Status checkbox */}
+                <button
+                  onClick={() => handleVerify(entry.id)}
+                  className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    entry.verified ? "bg-[#baff55] border-[#baff55] text-black" : "border-white/20 hover:border-accent"
+                  }`}
+                >
+                  {entry.verified && <Check size={11} strokeWidth={3} />}
+                </button>
 
-                    {/* Amount */}
-                    <td className="px-6 py-4">
-                      <span className="font-mono text-xs font-bold text-white">
-                        {entry.amount || <span className="text-gray-600 font-normal">—</span>}
-                      </span>
-                    </td>
+                {/* Transaction Code + copy */}
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`font-mono text-sm font-bold truncate ${entry.verified ? "text-gray-400 line-through" : "text-white"}`}>
+                    {entry.transactionCode || <span className="text-gray-600 font-normal italic text-xs">—</span>}
+                  </span>
+                  {entry.transactionCode && (
+                    <button
+                      onClick={() => handleCopy(entry.id)}
+                      className={`p-1.5 rounded-lg border flex-shrink-0 transition-all ${
+                        entry.copiedCode ? "text-accent border-accent/40 bg-accent/5" : "text-gray-500 border-white/5 bg-white/5 hover:border-accent hover:text-accent"
+                      }`}
+                    >
+                      {entry.copiedCode ? <Check size={11} /> : <Copy size={11} />}
+                    </button>
+                  )}
+                  {entry.isCodeOnly && (
+                    <span className="text-[8px] font-black text-gray-500 bg-white/10 px-1 py-0.5 rounded uppercase flex-shrink-0">SMS</span>
+                  )}
+                </div>
 
-                    {/* Phone */}
-                    <td className="px-6 py-4">
-                      <span className="font-mono text-xs text-gray-300">
-                        {entry.phone || <span className="text-gray-600">—</span>}
-                      </span>
-                    </td>
+                {/* Amount */}
+                <span className="font-mono text-xs font-bold text-white truncate">
+                  {entry.amount || <span className="text-gray-600 font-normal">—</span>}
+                </span>
 
-                    {/* Merchant */}
-                    <td className="px-6 py-4">
-                      {entry.merchant ? (
-                        <span className="text-[10px] font-black bg-accent/10 text-accent border border-accent/20 px-2 py-0.5 rounded-lg uppercase tracking-wider">
-                          {entry.merchant}
-                        </span>
-                      ) : (
-                        <span className="text-gray-600">—</span>
-                      )}
-                    </td>
+                {/* Phone */}
+                <span className="font-mono text-xs text-gray-300 truncate">
+                  {entry.phone || <span className="text-gray-600">—</span>}
+                </span>
 
-                    {/* Timestamp */}
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-gray-400">
-                          {new Date(entry.timestamp).toLocaleDateString()}
-                        </span>
-                        <span className="text-[10px] text-gray-600">
-                          {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                    </td>
+                {/* Merchant */}
+                <div className="min-w-0">
+                  {entry.merchant ? (
+                    <span className="text-[9px] font-black bg-accent/10 text-accent border border-accent/20 px-2 py-0.5 rounded-lg uppercase tracking-wider truncate block max-w-full">
+                      {entry.merchant}
+                    </span>
+                  ) : (
+                    <span className="text-gray-600 text-xs">—</span>
+                  )}
+                </div>
 
-                    {/* Settings toggles */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-4">
-                        {/* Auto delete after 1 hr */}
-                        <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={entry.autoDeleteAfterCopy}
-                            onChange={() => handleToggleAutoDelete(entry.id)}
-                            className="w-3.5 h-3.5 rounded border-white/20 bg-transparent accent-accent"
-                          />
-                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Kills 1h post-copy</span>
-                        </label>
+                {/* Timestamp */}
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                    {new Date(entry.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                  </span>
+                  <span className="text-[9px] text-gray-600 whitespace-nowrap">
+                    {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
 
-                        {/* Keep Toggle */}
-                        <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={entry.keep}
-                            onChange={() => handleToggleKeep(entry.id)}
-                            className="w-3.5 h-3.5 rounded border-white/20 bg-transparent accent-accent"
-                          />
-                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider text-accent">Keep</span>
-                        </label>
-                      </div>
-                    </td>
+                {/* Options */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <label className="flex items-center gap-1 cursor-pointer select-none" title="Auto-delete 1h after code is copied">
+                    <input
+                      type="checkbox"
+                      checked={entry.autoDeleteAfterCopy}
+                      onChange={() => handleToggleAutoDelete(entry.id)}
+                      className="w-3 h-3 accent-accent"
+                    />
+                    <span className="text-[8.5px] font-bold text-gray-600 uppercase whitespace-nowrap">1h Kill</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer select-none" title="Keep record beyond 24h">
+                    <input
+                      type="checkbox"
+                      checked={entry.keep}
+                      onChange={() => handleToggleKeep(entry.id)}
+                      className="w-3 h-3 accent-accent"
+                    />
+                    <span className="text-[8.5px] font-bold text-accent uppercase whitespace-nowrap">Keep</span>
+                  </label>
+                </div>
 
-                    {/* Delete Action */}
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="p-2 rounded-xl text-gray-600 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                {/* Delete */}
+                <button
+                  onClick={() => handleDelete(entry.id)}
+                  className="p-1.5 rounded-xl text-gray-600 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all flex-shrink-0"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Pagination Footer */}
