@@ -8,7 +8,8 @@ import {
   CalendarDays,
   BookOpen,
   Calculator,
-  ArrowLeft
+  ArrowLeft,
+  ClipboardList
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -16,8 +17,8 @@ const navItems = [
   { path: '/', label: 'Overview', icon: LayoutDashboard },
   { path: '/templates', label: 'Templates', icon: FileText },
   { path: '/slots', label: 'Aviator', icon: Activity },
-  // { path: '/tickets', label: 'Tickets', icon: Ticket },
-  { path: '/tools', label: 'Cashback', icon: Calculator, isNew: true },
+  { path: '/mpesa', label: 'Verifier', icon: ClipboardList, isNew: true },
+  { path: '/tools', label: 'Cashback', icon: Calculator },
   { path: '/rota', label: 'Rota', icon: CalendarDays },
   { path: '/resources', label: 'Resources', icon: BookOpen },
 ];

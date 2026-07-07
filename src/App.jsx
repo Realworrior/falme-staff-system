@@ -9,6 +9,7 @@ import SlotTracker from './pages/SlotTracker';
 import Rota from './pages/Rota';
 import Resources from './pages/Resources';
 import Tools from './pages/Tools';
+import MpesaCodes from './pages/MpesaCodes';
 import TourGuide from './components/TourGuide';
 
 // Maintain the MUI theme for underlying MUI components (like Dialogs) 
@@ -82,6 +83,7 @@ function App() {
           <Route path="/rota" element={<Rota />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/tools" element={<Tools />} />
+          <Route path="/mpesa" element={<MpesaCodes />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
