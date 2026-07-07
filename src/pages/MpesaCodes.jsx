@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Copy, Check, Trash2, Search, Plus, X, ClipboardList, Clock, ShieldAlert } from "lucide-react";
 import { useToast } from '../context/ToastContext';
+import { supabase } from '../supabaseClient';
 
 function parseSMS(text) {
   const raw = text.trim();
@@ -54,44 +55,102 @@ export default function MpesaCodes() {
   const textareaRef = useRef(null);
   const { addToast } = useToast();
 
-  // Save entries to localStorage
+  // Save entries to localStorage on local updates
   useEffect(() => {
     localStorage.setItem("betfalme_mpesa_entries", JSON.stringify(entries));
   }, [entries]);
 
+  // Fetch initial data from Supabase and subscribe to realtime updates
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('mpesa_codes')
+          .select('*')
+          .order('timestamp', { ascending: false });
+
+        if (error) {
+          console.warn("Supabase fetch failed (falling back to local storage):", error.message);
+          return;
+        }
+
+        if (data) {
+          setEntries(data);
+        }
+      } catch (err) {
+        console.warn("Supabase connection error:", err);
+      }
+    };
+
+    fetchEntries();
+
+    // Subscribe to realtime database changes
+    const channel = supabase
+      .channel('mpesa-codes-realtime')
+      .on('postgres_changes', { event: '*', table: 'mpesa_codes', schema: 'public' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setEntries((prev) => {
+            if (prev.some((e) => e.id === payload.new.id)) return prev;
+            return [payload.new, ...prev];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setEntries((prev) =>
+            prev.map((e) => (e.id === payload.new.id ? payload.new : e))
+          );
+        } else if (payload.eventType === 'DELETE') {
+          setEntries((prev) => prev.filter((e) => e.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   // Periodic cleaner: Expiration logic
   useEffect(() => {
-    const cleanExpired = () => {
+    const cleanExpired = async () => {
       const now = Date.now();
-      setEntries((prev) => {
-        const filtered = prev.filter((e) => {
-          // 1. Check autoDeleteAfterCopy rule: must be copied, autoDeleteAfterCopy enabled, and 1 hour passed
-          if (e.autoDeleteAfterCopy && e.copiedAt) {
-            const copiedTime = new Date(e.copiedAt).getTime();
-            if (now - copiedTime > 60 * 60 * 1000) {
-              return false; // delete
-            }
+      const expiredIds = [];
+      
+      const nextEntries = entries.filter((e) => {
+        // 1. Check autoDeleteAfterCopy rule: must be copied, autoDeleteAfterCopy enabled, and 1 hour passed
+        if (e.autoDeleteAfterCopy && e.copiedAt) {
+          const copiedTime = new Date(e.copiedAt).getTime();
+          if (now - copiedTime > 60 * 60 * 1000) {
+            expiredIds.push(e.id);
+            return false; // delete
           }
-          // 2. Check 24-hour expiration unless keep toggle is enabled
-          if (!e.keep) {
-            const entryTime = new Date(e.timestamp).getTime();
-            if (now - entryTime > 24 * 60 * 60 * 1000) {
-              return false; // delete
-            }
+        }
+        // 2. Check 24-hour expiration unless keep toggle is enabled
+        if (!e.keep) {
+          const entryTime = new Date(e.timestamp).getTime();
+          if (now - entryTime > 24 * 60 * 60 * 1000) {
+            expiredIds.push(e.id);
+            return false; // delete
           }
-          return true;
-        });
-
-        return filtered;
+        }
+        return true;
       });
+
+      if (expiredIds.length > 0) {
+        setEntries(nextEntries);
+        // Clean up on Supabase
+        try {
+          await supabase.from('mpesa_codes').delete().in('id', expiredIds);
+        } catch (err) {
+          console.error("Failed to delete expired entries on remote server:", err);
+        }
+      }
     };
 
     cleanExpired();
     const interval = setInterval(cleanExpired, 15000); // Check every 15 seconds
     return () => clearInterval(interval);
-  }, [addToast]);
+  }, [entries]);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const text = inputText.trim();
     if (!text) return;
     const parsed = parseSMS(text);
@@ -118,9 +177,20 @@ export default function MpesaCodes() {
       copiedAt: null,
     };
 
+    // Optimistic UI Update
     setEntries((prev) => [newEntry, ...prev]);
     setInputText("");
     addToast("Record added successfully", "success");
+
+    // Sync to Supabase
+    try {
+      const { error } = await supabase.from('mpesa_codes').insert([newEntry]);
+      if (error) {
+        console.error("Failed to sync record to database:", error.message);
+      }
+    } catch (err) {
+      console.warn("DB connection offline, saved locally.");
+    }
   };
 
   const handleCopy = async (id) => {
@@ -128,6 +198,9 @@ export default function MpesaCodes() {
     if (!entry?.transactionCode) return;
     try {
       await navigator.clipboard.writeText(entry.transactionCode);
+      
+      const copiedTime = entry.copiedAt || new Date().toISOString();
+      // Optimistic UI Update
       setEntries((prev) =>
         prev.map((e) => {
           if (e.id === id) {
@@ -135,7 +208,7 @@ export default function MpesaCodes() {
               ...e, 
               copiedCode: true, 
               wasCopied: true,
-              copiedAt: e.copiedAt || new Date().toISOString() // Set copy timestamp if not set
+              copiedAt: copiedTime
             };
           }
           return e;
@@ -145,32 +218,83 @@ export default function MpesaCodes() {
       setTimeout(() => {
         setEntries((prev) => prev.map((e) => e.id === id ? { ...e, copiedCode: false } : e));
       }, 3000);
-    } catch {
+
+      // Sync to Supabase
+      await supabase
+        .from('mpesa_codes')
+        .update({ wasCopied: true, copiedAt: copiedTime })
+        .eq('id', id);
+
+    } catch (err) {
       addToast("Failed to copy", "error");
     }
   };
 
-  const handleToggleKeep = (id) => {
+  const handleToggleKeep = async (id) => {
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) return;
+    const nextVal = !entry.keep;
+
+    // Optimistic Update
     setEntries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, keep: !e.keep } : e))
+      prev.map((e) => (e.id === id ? { ...e, keep: nextVal } : e))
     );
+
+    // Sync to Supabase
+    try {
+      await supabase.from('mpesa_codes').update({ keep: nextVal }).eq('id', id);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleToggleAutoDelete = (id) => {
+  const handleToggleAutoDelete = async (id) => {
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) return;
+    const nextVal = !entry.autoDeleteAfterCopy;
+
+    // Optimistic Update
     setEntries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, autoDeleteAfterCopy: !e.autoDeleteAfterCopy } : e))
+      prev.map((e) => (e.id === id ? { ...e, autoDeleteAfterCopy: nextVal } : e))
     );
+
+    // Sync to Supabase
+    try {
+      await supabase.from('mpesa_codes').update({ autoDeleteAfterCopy: nextVal }).eq('id', id);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleVerify = (id) => {
+  const handleVerify = async (id) => {
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) return;
+    const nextVal = !entry.verified;
+
+    // Optimistic Update
     setEntries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, verified: !e.verified } : e))
+      prev.map((e) => (e.id === id ? { ...e, verified: nextVal } : e))
     );
+
+    // Sync to Supabase
+    try {
+      await supabase.from('mpesa_codes').update({ verified: nextVal }).eq('id', id);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
+    // Optimistic Update
     setEntries((prev) => prev.filter((e) => e.id !== id));
     addToast("Record deleted", "info");
+
+    // Sync to Supabase
+    try {
+      await supabase.from('mpesa_codes').delete().eq('id', id);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Filter logic
