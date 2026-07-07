@@ -3,7 +3,7 @@
     "blastchat-matrix@blastchat.chat": {
       "updates": [
         {
-          "version": "1.8",
+          "version": "2.1",
           "update_link": "https://betmfalme.vercel.app/templates/blastchat-extension.xpi"
         }
       ]
