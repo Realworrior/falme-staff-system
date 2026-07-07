@@ -3,7 +3,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "blastchat-matrix@blastchat.chat",
-      "strict_min_version": "140.0",
+      "strict_min_version": "109.0",
       "update_url": "https://betmfalme.vercel.app/templates/updates.json",
       "data_collection_permissions": {
         "required": [
@@ -12,7 +12,7 @@
       }
     },
     "gecko_android": {
-      "strict_min_version": "142.0"
+      "strict_min_version": "109.0"
     }
   },
   "name": "BlastChat Matrix",
