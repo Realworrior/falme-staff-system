@@ -189,6 +189,21 @@ export default function MpesaCodes() {
     currentPage * RECORDS_PER_PAGE
   );
 
+  // Session break helper — returns a label when gap >= 30 minutes
+  const SESSION_BREAK_MS = 30 * 60 * 1000; // 30 minutes
+  const getBreakLabel = (prev, curr) => {
+    if (!prev) return null;
+    const gap = new Date(prev.timestamp).getTime() - new Date(curr.timestamp).getTime();
+    if (gap < SESSION_BREAK_MS) return null;
+    const hrs = Math.floor(gap / 3_600_000);
+    const mins = Math.round((gap % 3_600_000) / 60_000);
+    if (hrs >= 24) {
+      const days = Math.floor(hrs / 24);
+      return `${days}d gap`;
+    }
+    return hrs > 0 ? `${hrs}h ${mins > 0 ? mins + 'm ' : ''}gap` : `${mins}m gap`;
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-8">
       {/* Header */}
@@ -296,14 +311,27 @@ export default function MpesaCodes() {
             <span />
           </div>
 
-          {/* Rows */}
+          {/* Rows with session-break separators */}
           {paginatedEntries.length === 0 ? (
             <div className="text-center py-16 text-sm text-gray-500 font-bold uppercase tracking-wider">
               {entries.length === 0 ? "No transaction records present" : "No matching records found"}
             </div>
           ) : (
-            paginatedEntries.map((entry) => (
-              <div
+            paginatedEntries.map((entry, idx) => {
+              const breakLabel = getBreakLabel(paginatedEntries[idx - 1], entry);
+              return (
+                <React.Fragment key={entry.id}>
+                  {breakLabel && (
+                    <div className="flex items-center gap-3 px-4 py-2">
+                      <div className="flex-1 h-px bg-white/5" />
+                      <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest flex items-center gap-1.5 bg-white/[0.03] border border-white/5 rounded-full px-3 py-1">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        {breakLabel} break
+                      </span>
+                      <div className="flex-1 h-px bg-white/5" />
+                    </div>
+                  )}
+                  <div
                 key={entry.id}
                 className={`grid items-center border-b border-white/5 last:border-0 transition-colors duration-200 ${
                   entry.wasCopied
@@ -402,8 +430,10 @@ export default function MpesaCodes() {
                 >
                   <Trash2 size={12} />
                 </button>
-              </div>
-            ))
+                  </div>
+                </React.Fragment>
+              );
+            })
           )}
         </div>
 
