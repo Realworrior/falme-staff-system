@@ -102,9 +102,13 @@ export default function MpesaCodes() {
       return;
     }
 
+    const randomId = typeof crypto.randomUUID === 'function' 
+      ? crypto.randomUUID() 
+      : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
     const newEntry = {
       ...parsed,
-      id: crypto.randomUUID(),
+      id: randomId,
       copiedCode: false,
       wasCopied: false,
       verified: false,
