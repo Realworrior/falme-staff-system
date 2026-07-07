@@ -269,213 +269,257 @@ const PANEL_CSS = `
   .shortcut-tag:hover { color: #fff; background: rgba(255,255,255,0.08); }
   .shortcut-tag.active { color: #baff55; border-color: rgba(186,255,85,0.3); background: rgba(186,255,85,0.08); }
 
-  /* ── CONTENT ── */
-  .content-scroll {
+  /* ── BODY SPLIT (sidebar + template area) ── */
+  .body-split {
     flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    align-items: start;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
   }
 
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 6px; }
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 190px;
+    flex-shrink: 0;
+    border-right: 1px solid #1a2535;
+    background: #0d131c;
+    overflow-y: auto;
+    padding: 8px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
 
-  /* ── CATEGORY CARD ── cloned from Templates.jsx ── */
-  .cat-card {
-    background: #1e1f22;
-    border-radius: 18px;
-    overflow: hidden;
+  .sidebar-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 8px 6px;
     flex-shrink: 0;
   }
 
-  .card-top-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px;
-  }
-
-  .card-icon-box {
-    width: 34px;
-    height: 34px;
-    background: #2a2b2f;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-  }
-
-  .count-badge {
-    border-radius: 12px;
-    padding: 8px 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 60px;
-    margin-top: -2px;
-    margin-right: -2px;
-  }
-
-  .count-num {
-    font-size: 22px;
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: -0.03em;
-  }
-
-  .count-lbl {
-    font-size: 7px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-top: 2px;
-    opacity: 0.7;
-  }
-
-  .count-status {
-    margin-top: 4px;
-    padding: 1px 7px;
-    border-radius: 20px;
-    font-size: 7px;
-    font-weight: 700;
-  }
-
-  .card-labels { padding: 0 14px 12px; }
-
-  .type-label {
-    font-size: 9px;
-    font-weight: 700;
-    color: #8e8e93;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 2px;
-  }
-
-  .cat-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: #fff;
-  }
-
-  .card-divider { height: 1px; background: #2a2b2f; margin: 0 14px; }
-
-  /* ── TEMPLATE ROW ── */
-  .row-btn {
+  .sidebar-item {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: none;
-    border: none;
-    border-bottom: 1px solid rgba(42,43,47,0.5);
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 9px;
+    background: transparent;
+    border: 1px solid transparent;
     cursor: pointer;
     text-align: left;
-    color: #c0c0c5;
-    font-size: 12px;
-    font-weight: 500;
-    transition: background 0.15s;
+    transition: background 0.12s, border-color 0.12s;
     font-family: inherit;
+    position: relative;
   }
-  .row-btn:hover { background: rgba(255,255,255,0.02); }
+  .sidebar-item:hover { background: rgba(255,255,255,0.04); }
+  .sidebar-item.active-cat { border-color: var(--cat-color, #baff55) !important; background: color-mix(in srgb, var(--cat-color, #baff55) 10%, transparent) !important; }
+  .sidebar-item.active-cat .si-name { color: #e2e8f0; font-weight: 500; }
+  .sidebar-item.active-cat .si-active-bar { opacity: 1; }
 
-  .row-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: #4a4b50; }
-  .row-title { flex: 1; }
-  .row-arrow { font-size: 10px; color: #4a4b50; flex-shrink: 0; }
+  .si-active-bar {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    border-radius: 0 3px 3px 0;
+    background: var(--cat-color, #baff55);
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
 
-  .expanded-panel { display: none; padding: 0 14px 14px; }
-  .expanded-panel.open { display: block; }
+  .si-emoji { font-size: 14px; flex-shrink: 0; width: 18px; text-align: center; line-height: 1; }
+  .si-name {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 400;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.12s;
+    line-height: 1.3;
+  }
+  .si-shortcut {
+    flex-shrink: 0;
+    font-size: 9px;
+    font-family: monospace;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #2d3748;
+    border: 1px solid #4a5568;
+    color: #6b7280;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+  .sidebar-item:hover .si-shortcut { opacity: 1; }
 
-  .variant-row {
+  /* ── TEMPLATE AREA ── */
+  .template-area {
+    flex: 1;
+    overflow-y: auto;
+    background: #0a0f1a;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ta-header {
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid #1a202c;
+    flex-shrink: 0;
+  }
+
+  .ta-cat-row {
     display: flex;
     align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+
+  .ta-cat-emoji { font-size: 16px; }
+  .ta-cat-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+  .ta-cat-count {
+    margin-left: auto;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: #2d3748;
+    color: #6b7280;
+  }
+  .ta-triggers { font-size: 10px; color: #374151; }
+
+  .ta-list {
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
     gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
+    overflow-y: auto;
   }
 
-  .variant-label { font-size: 9px; color: #8e8e93; font-weight: 600; }
+  /* ── SUBCATEGORY ACCORDION BLOCK ── */
+  .subcat-block {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #2d3748;
+    flex-shrink: 0;
+  }
 
-  .variant-btn {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 2px solid #3a3b3f;
-    background: transparent;
-    color: #8e8e93;
-    font-size: 10px;
-    font-weight: 700;
-    cursor: pointer;
+  .subcat-header {
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-
-  .resp-block {
-    background: #161616;
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 11px;
-    color: #c0c0c5;
-    line-height: 1.6;
-    border: 1px solid #3a3b3f;
-    white-space: pre-wrap;
-    word-break: break-word;
-    margin-bottom: 10px;
-    font-family: 'Courier New', Courier, monospace;
-  }
-
-  .var-hl { font-weight: 700; }
-  .danger-hl { color: #ff4d4d; font-weight: 700; }
-  .success-hl { color: #00e676; font-weight: 700; }
-  .info-hl { color: #4080ff; font-weight: 700; }
-  .data-hl { color: #ffea00; font-weight: 700; }
-
-  .action-row { display: flex; align-items: center; gap: 10px; }
-
-  .act-edit, .act-del {
-    font-size: 11px;
-    font-weight: 600;
-    background: none;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #111827;
     border: none;
     cursor: pointer;
-    transition: color 0.15s;
+    text-align: left;
     font-family: inherit;
+    transition: background 0.12s;
   }
-  .act-edit { color: #8e8e93; }
-  .act-edit:hover { color: #fff; }
-  .act-del { color: #ff4d4d; }
-  .act-del:hover { color: #ff6b6b; }
+  .subcat-header:hover { background: #1a2332; }
 
-  .act-copy {
-    margin-left: auto;
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: 2px solid;
-    background: transparent;
-    font-size: 11px;
+  .subcat-emoji { font-size: 14px; flex-shrink: 0; }
+
+  .subcat-info { flex: 1; min-width: 0; }
+  .subcat-name { font-size: 11px; font-weight: 500; color: #cbd5e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .subcat-triggers { font-size: 9px; color: #374151; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .subcat-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .subcat-count {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: #2d3748;
+    color: #6b7280;
+  }
+  .subcat-chevron { font-size: 10px; color: #4a5568; transition: transform 0.15s; }
+  .subcat-chevron.open { transform: rotate(90deg); }
+
+  .subcat-body {
+    display: none;
+    padding: 8px;
+    background: #131a24;
+    border-top: 1px solid #2d3748;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .subcat-body.open { display: flex; }
+
+  /* ── TEMPLATE CARD ── */
+  .tpl-card {
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #1a202c;
+    border: 1px solid #2d3748;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .tpl-card:hover { background: #1e2a3a; border-color: #4a5568; }
+
+  .tpl-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .tpl-label {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+  .tpl-copy-btn {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid #4a5568;
+    background: #2d3748;
+    color: #6b7280;
+    font-size: 9px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.15s;
     font-family: inherit;
+    transition: all 0.12s;
+    opacity: 0;
   }
+  .tpl-card:hover .tpl-copy-btn { opacity: 1; }
+  .tpl-copy-btn.copied { border-color: #10b981; background: #065f4622; color: #10b981; opacity: 1; }
+
+  .tpl-text {
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ── SEARCH RESULTS ── */
+  .search-result-group { font-size: 9px; color: #374151; padding: 6px 2px 3px; text-transform: uppercase; letter-spacing: 0.08em; }
 
   /* ── EMPTY / STATUS ── */
   .empty-state {
     padding: 40px 20px;
     text-align: center;
-    color: #8e8e93;
+    color: #374151;
     font-size: 12px;
     font-weight: 500;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .status-badge {
@@ -485,6 +529,13 @@ const PANEL_CSS = `
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
+
+  /* ── SCROLLBARS ── */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
+
+  .var-hl { font-weight: 700; }
 
   /* ── RESIZE HANDLE ── */
   .resize-handle {
@@ -648,247 +699,333 @@ function renderHighlighted(container, text, themeColor) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CARD BUILDERS
+// CATEGORY COLORS (matching web app palette via THEMES cycle)
 // ─────────────────────────────────────────────────────────────────────────────
-function buildCategoryCard(categoryName, items) {
-  const theme = THEMES[categoryIndexPanel % THEMES.length];
-  categoryIndexPanel++;
+const CAT_COLORS = ['#4f9cf9','#34d399','#f59e0b','#f87171','#a78bfa','#10b981','#fb923c','#06b6d4','#e879f9','#facc15','#f97316','#84cc16'];
+let catColorIndex = 0;
+const catColorMap = {}; // category name → color
 
-  const emojiMatch = categoryName.match(/(\p{Emoji})/u);
-  const emoji = emojiMatch ? emojiMatch[0] : '📂';
-  const catLabel = categoryName.replace(/(\p{Emoji})/gu, '').trim();
+function getCatColor(catName) {
+  if (!catColorMap[catName]) {
+    catColorMap[catName] = CAT_COLORS[catColorIndex % CAT_COLORS.length];
+    catColorIndex++;
+  }
+  return catColorMap[catName];
+}
 
-  const card = document.createElement('div');
-  card.className = 'cat-card';
+function getCatEmoji(catName) {
+  const m = catName.match(/(\p{Emoji})/u);
+  return m ? m[0] : '📂';
+}
 
-  // Top row
-  const topRow = document.createElement('div');
-  topRow.className = 'card-top-row';
+// ─────────────────────────────────────────────────────────────────────────────
+// SIDEBAR BUILDER
+// ─────────────────────────────────────────────────────────────────────────────
+let panelSelectedCategory = null;
 
-  const iconBox = document.createElement('div');
-  iconBox.className = 'card-icon-box';
-  iconBox.textContent = emoji;
+function buildSidebarItem(catName, catGroups) {
+  const color = getCatColor(catName);
+  const emoji = getCatEmoji(catName);
+  const label = catName.replace(/(\p{Emoji})/gu, '').trim();
+  const idx = Object.keys(catGroups).indexOf(catName);
+  const shortcutKey = idx < 9 ? String(idx + 1) : '';
 
-  const badge = document.createElement('div');
-  badge.className = 'count-badge';
-  badge.style.backgroundColor = theme.bg;
-  badge.style.color = theme.text;
-  badge.style.flexShrink = '0';
+  const btn = document.createElement('button');
+  btn.className = 'sidebar-item';
+  btn.style.setProperty('--cat-color', color);
+  btn.dataset.cat = catName;
 
-  const num = document.createElement('div');
-  num.className = 'count-num';
-  num.textContent = String(items.length).padStart(2, '0');
+  const bar = document.createElement('span');
+  bar.className = 'si-active-bar';
 
-  const lbl = document.createElement('div');
-  lbl.className = 'count-lbl';
-  lbl.textContent = 'RESPONSES';
+  const emojiEl = document.createElement('span');
+  emojiEl.className = 'si-emoji';
+  emojiEl.textContent = emoji;
 
-  const statusPill = document.createElement('div');
-  statusPill.className = 'count-status';
-  statusPill.style.backgroundColor = theme.statusBg;
-  statusPill.style.color = theme.statusText;
-  statusPill.textContent = theme.statusLabel;
+  const nameEl = document.createElement('span');
+  nameEl.className = 'si-name';
+  nameEl.textContent = label;
 
-  badge.append(num, lbl, statusPill);
+  btn.append(bar, emojiEl, nameEl);
 
-  const leftWrap = document.createElement('div');
-  leftWrap.style.display = 'flex';
-  leftWrap.style.alignItems = 'center';
-  leftWrap.style.gap = '12px';
-  leftWrap.style.flex = '1';
-  leftWrap.style.minWidth = '200px'; // ensures it triggers wrap if panel is too small
+  if (shortcutKey) {
+    const sc = document.createElement('span');
+    sc.className = 'si-shortcut';
+    sc.textContent = shortcutKey;
+    btn.appendChild(sc);
+  }
 
-  const headerText = document.createElement('div');
-  headerText.style.display = 'flex';
-  headerText.style.flexDirection = 'column';
-
-  const typeEl = document.createElement('div');
-  typeEl.className = 'type-label';
-  typeEl.textContent = getTypeLabel(catLabel);
-  typeEl.style.marginBottom = '2px';
-
-  const nameEl = document.createElement('div');
-  nameEl.className = 'cat-name';
-  nameEl.textContent = catLabel;
-  nameEl.style.whiteSpace = 'normal';
-  nameEl.style.lineHeight = '1.3';
-
-  headerText.append(typeEl, nameEl);
-  leftWrap.append(iconBox, headerText);
-
-  topRow.append(leftWrap, badge);
-  topRow.style.cursor = 'pointer';
-  card.appendChild(topRow);
-
-  const body = document.createElement('div');
-  body.className = 'cat-body';
-  body.style.display = 'none';
-
-  const divider = document.createElement('div');
-  divider.className = 'card-divider';
-  body.appendChild(divider);
-
-  items.forEach(t => body.appendChild(buildTemplateRow(t, theme)));
-
-  card.appendChild(body);
-
-  topRow.onclick = () => {
-    const isHidden = body.style.display === 'none';
-    body.style.display = isHidden ? 'block' : 'none';
+  btn.onclick = () => {
+    panelSelectedCategory = catName;
+    panelActiveShortcut = null;
+    const searchInput = panelShadow.getElementById('panel-search');
+    if (searchInput) searchInput.value = '';
+    updateSidebarActive();
+    renderTemplateArea(catGroups[catName], catName);
+    filterPanelTemplates();
   };
+
+  return btn;
+}
+
+function updateSidebarActive() {
+  const sidebar = panelShadow.getElementById('panel-sidebar');
+  if (!sidebar) return;
+  sidebar.querySelectorAll('.sidebar-item').forEach(btn => {
+    const isActive = btn.dataset.cat === panelSelectedCategory;
+    btn.classList.toggle('active-cat', isActive);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPLATE AREA BUILDERS
+// ─────────────────────────────────────────────────────────────────────────────
+function buildTemplateCard(resp, catColor, tplTitle) {
+  const card = document.createElement('div');
+  card.className = 'tpl-card';
+
+  const top = document.createElement('div');
+  top.className = 'tpl-card-top';
+
+  const labelBadge = document.createElement('span');
+  labelBadge.className = 'tpl-label';
+  labelBadge.textContent = resp.type || 'Standard';
+  labelBadge.style.background = catColor + '22';
+  labelBadge.style.color = catColor;
+  labelBadge.style.border = `1px solid ${catColor}44`;
+
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'tpl-copy-btn';
+  copyBtn.textContent = 'Copy & Inject';
+
+  top.append(labelBadge, copyBtn);
+
+  const textEl = document.createElement('div');
+  textEl.className = 'tpl-text';
+  renderHighlighted(textEl, resp.text, catColor);
+
+  card.append(top, textEl);
+
+  const doInject = () => {
+    navigator.clipboard?.writeText(resp.text);
+    injectIntoLastInput(resp.text);
+    copyBtn.textContent = '✓ Copied!';
+    copyBtn.classList.add('copied');
+    setTimeout(() => { copyBtn.textContent = 'Copy & Inject'; copyBtn.classList.remove('copied'); }, 1800);
+  };
+
+  card.onclick = doInject;
+  copyBtn.onclick = e => { e.stopPropagation(); doInject(); };
 
   return card;
 }
 
-function buildTemplateRow(t, theme) {
+function buildSubcatBlock(t, catColor, defaultOpen) {
   const responses = t.responses?.length ? t.responses : [{ text: 'No response found.', type: 'Standard' }];
-  let expanded = false;
-  let activeVariant = 0;
+  const emojiMatch = t.title.match(/(\p{Emoji})/u);
+  const emoji = emojiMatch ? emojiMatch[0] : '📄';
+  const titleLabel = t.title.replace(/(\p{Emoji})/gu, '').trim();
+  const triggersText = Array.isArray(t.triggers) ? t.triggers.join(', ') : (t.triggers || '');
 
-  const wrapper = document.createElement('div');
+  const block = document.createElement('div');
+  block.className = 'subcat-block';
 
-  // Row button
-  const rowBtn = document.createElement('button');
-  rowBtn.className = 'row-btn';
+  const header = document.createElement('button');
+  header.className = 'subcat-header';
 
-  const dot = document.createElement('div');
-  dot.className = 'row-dot';
+  const emojiEl = document.createElement('span');
+  emojiEl.className = 'subcat-emoji';
+  emojiEl.textContent = emoji;
 
-  const titleSpan = document.createElement('span');
-  titleSpan.className = 'row-title';
-  titleSpan.textContent = t.title;
+  const info = document.createElement('div');
+  info.className = 'subcat-info';
 
-  const arrow = document.createElement('span');
-  arrow.className = 'row-arrow';
-  arrow.textContent = '▼';
+  const nameEl = document.createElement('div');
+  nameEl.className = 'subcat-name';
+  nameEl.textContent = titleLabel;
 
-  rowBtn.append(dot, titleSpan, arrow);
+  const triggersEl = document.createElement('div');
+  triggersEl.className = 'subcat-triggers';
+  triggersEl.textContent = triggersText ? `Triggers: ${triggersText}` : '';
 
-  // Expanded panel
-  const panel = document.createElement('div');
-  panel.className = 'expanded-panel';
+  info.append(nameEl, triggersEl);
 
-  // Variants
-  const variantBtns = [];
-  if (responses.length > 1) {
-    const varRow = document.createElement('div');
-    varRow.className = 'variant-row';
-    const varLbl = document.createElement('span');
-    varLbl.className = 'variant-label';
-    varLbl.textContent = 'Variant';
-    varRow.appendChild(varLbl);
-    responses.forEach((_, i) => {
-      const vb = document.createElement('button');
-      vb.className = 'variant-btn';
-      vb.textContent = i + 1;
-      variantBtns.push(vb);
-      varRow.appendChild(vb);
-    });
-    panel.appendChild(varRow);
+  const meta = document.createElement('div');
+  meta.className = 'subcat-meta';
+
+  const countEl = document.createElement('span');
+  countEl.className = 'subcat-count';
+  countEl.textContent = `${responses.length} ${responses.length === 1 ? 'reply' : 'replies'}`;
+
+  const chevron = document.createElement('span');
+  chevron.className = 'subcat-chevron';
+  chevron.textContent = '▶';
+
+  meta.append(countEl, chevron);
+  header.append(emojiEl, info, meta);
+
+  const body = document.createElement('div');
+  body.className = 'subcat-body';
+
+  responses.forEach(resp => body.appendChild(buildTemplateCard(resp, catColor, t.title)));
+
+  block.append(header, body);
+
+  let isOpen = defaultOpen || false;
+  const applyOpen = () => {
+    body.classList.toggle('open', isOpen);
+    chevron.classList.toggle('open', isOpen);
+  };
+  applyOpen();
+
+  header.onclick = () => { isOpen = !isOpen; applyOpen(); };
+
+  return block;
+}
+
+function renderTemplateArea(templates, catName) {
+  const area = panelShadow.getElementById('panel-template-area');
+  if (!area) return;
+  area.innerHTML = '';
+
+  if (!templates || templates.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'No templates in this category.';
+    area.appendChild(empty);
+    return;
   }
 
-  const respBlock = document.createElement('div');
-  respBlock.className = 'resp-block';
+  const color = getCatColor(catName);
+  const emoji = getCatEmoji(catName);
+  const label = catName.replace(/(\p{Emoji})/gu, '').trim();
 
-  const actionRow = document.createElement('div');
-  actionRow.className = 'action-row';
+  // Header
+  const header = document.createElement('div');
+  header.className = 'ta-header';
 
-  const editBtn = document.createElement('button');
-  editBtn.className = 'act-edit';
-  editBtn.textContent = 'Edit';
+  const catRow = document.createElement('div');
+  catRow.className = 'ta-cat-row';
 
-  const delBtn = document.createElement('button');
-  delBtn.className = 'act-del';
-  delBtn.textContent = 'Delete';
+  const catEmoji = document.createElement('span');
+  catEmoji.className = 'ta-cat-emoji';
+  catEmoji.textContent = emoji;
 
-  const copyBtn = document.createElement('button');
-  copyBtn.className = 'act-copy';
+  const catNameEl = document.createElement('span');
+  catNameEl.className = 'ta-cat-name';
+  catNameEl.textContent = label;
 
-  actionRow.append(editBtn, delBtn, copyBtn);
-  panel.append(respBlock, actionRow);
+  const catCount = document.createElement('span');
+  catCount.className = 'ta-cat-count';
+  catCount.textContent = `${templates.length} templates`;
 
-  function setVariant(i) {
-    activeVariant = i;
-    const resp = responses[i];
-    respBlock.textContent = '';
-    renderHighlighted(respBlock, resp.text, theme.bg);
+  catRow.append(catEmoji, catNameEl, catCount);
 
-    copyBtn.textContent = '⚡ Copy & Inject';
-    copyBtn.style.cssText = `border-color:${theme.bg};color:${theme.text};background:${theme.bg};font-size:11px;padding:5px 14px;border-radius:20px;border:2px solid;cursor:pointer;font-family:inherit;font-weight:700;transition:all 0.15s;`;
-    copyBtn.onclick = () => {
-      navigator.clipboard?.writeText(resp.text).then(() => {
-        const orig = copyBtn.textContent;
-        copyBtn.textContent = '✓ Copied!';
-        setTimeout(() => { copyBtn.textContent = '⚡ Copy & Inject'; }, 1500);
-      });
-      injectIntoLastInput(resp.text);
-    };
+  const triggersLine = document.createElement('div');
+  triggersLine.className = 'ta-triggers';
+  const allTriggers = templates.flatMap(t => Array.isArray(t.triggers) ? t.triggers : [t.triggers]).filter(Boolean);
+  triggersLine.textContent = allTriggers.length ? `Triggers: ${[...new Set(allTriggers)].slice(0, 8).join(', ')}` : '';
 
-    variantBtns.forEach((vb, vi) => {
-      if (vi === i) {
-        vb.style.cssText = `background:${theme.bg};border-color:${theme.bg};color:${theme.text};`;
-      } else {
-        vb.style.cssText = 'background:transparent;border-color:#3a3b3f;color:#8e8e93;';
-      }
-    });
-    dot.style.backgroundColor = theme.bg;
-    arrow.style.color = theme.bg;
+  header.append(catRow, triggersLine);
+  area.appendChild(header);
+
+  // Template list
+  const list = document.createElement('div');
+  list.className = 'ta-list';
+  templates.forEach((t, i) => list.appendChild(buildSubcatBlock(t, color, i === 0)));
+  area.appendChild(list);
+}
+
+function renderSearchResults(templates, query) {
+  const area = panelShadow.getElementById('panel-template-area');
+  if (!area) return;
+  area.innerHTML = '';
+
+  if (!templates || templates.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = `No results for "${query}"`;
+    area.appendChild(empty);
+    return;
   }
 
-  variantBtns.forEach((vb, vi) => {
-    vb.onclick = e => { e.stopPropagation(); setVariant(vi); };
+  const list = document.createElement('div');
+  list.className = 'ta-list';
+
+  // Group by category
+  const groups = new Map();
+  templates.forEach(t => {
+    if (!groups.has(t.category)) groups.set(t.category, []);
+    groups.get(t.category).push(t);
   });
 
-  rowBtn.onclick = () => {
-    expanded = !expanded;
-    panel.classList.toggle('open', expanded);
-    arrow.textContent = expanded ? '▲' : '▼';
-    dot.style.backgroundColor = expanded ? theme.bg : '#4a4b50';
-    arrow.style.color = expanded ? theme.bg : '#4a4b50';
-    if (expanded) setVariant(activeVariant);
-  };
+  const countLabel = document.createElement('div');
+  countLabel.className = 'search-result-group';
+  countLabel.textContent = `${templates.length} result${templates.length !== 1 ? 's' : ''} for "${query}"`;
+  list.appendChild(countLabel);
 
-  editBtn.onclick = () => {};
-  delBtn.onclick = () => {};
+  groups.forEach((items, cat) => {
+    const color = getCatColor(cat);
+    const groupLabel = document.createElement('div');
+    groupLabel.className = 'search-result-group';
+    groupLabel.textContent = cat;
+    list.appendChild(groupLabel);
+    items.forEach((t, i) => list.appendChild(buildSubcatBlock(t, color, i === 0)));
+  });
 
-  wrapper.append(rowBtn, panel);
-  return wrapper;
+  area.appendChild(list);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PANEL RENDERING
 // ─────────────────────────────────────────────────────────────────────────────
-function renderPanelTemplates(templates) {
-  const container = panelShadow.getElementById('panel-content');
-  if (!container) return;
-  container.innerHTML = '';
-  categoryIndexPanel = 0;
-
-  if (!templates || templates.length === 0) {
-    const empty = document.createElement('div');
-    empty.className = 'empty-state';
-    empty.textContent = 'No templates found. Syncing…';
-    container.appendChild(empty);
-    return;
-  }
-
+function renderPanelTemplates(allTemplates) {
+  // Build category groups
   const seen = new Set();
-  const unique = templates.filter(t => {
+  const unique = (allTemplates || []).filter(t => {
     const k = `${t.category}||${t.title}`;
     if (seen.has(k)) return false;
     seen.add(k);
     return true;
   });
 
-  const groups = new Map();
+  const groups = {};
   unique.forEach(t => {
-    if (!groups.has(t.category)) groups.set(t.category, []);
-    groups.get(t.category).push(t);
+    if (!groups[t.category]) groups[t.category] = [];
+    groups[t.category].push(t);
   });
 
-  groups.forEach((items, cat) => {
-    container.appendChild(buildCategoryCard(cat, items));
-  });
+  // Populate sidebar
+  const sidebar = panelShadow.getElementById('panel-sidebar');
+  if (sidebar) {
+    // Keep the label, remove old items
+    const existingLabel = sidebar.querySelector('.sidebar-label');
+    sidebar.innerHTML = '';
+    if (existingLabel) sidebar.appendChild(existingLabel);
+    else {
+      const lbl = document.createElement('div');
+      lbl.className = 'sidebar-label';
+      lbl.textContent = 'Categories';
+      sidebar.appendChild(lbl);
+    }
+    Object.keys(groups).forEach(catName => {
+      sidebar.appendChild(buildSidebarItem(catName, groups));
+    });
+  }
+
+  // Auto-select first category
+  const firstCat = Object.keys(groups)[0];
+  if (firstCat && !panelSelectedCategory) {
+    panelSelectedCategory = firstCat;
+  }
+  updateSidebarActive();
+
+  // Show first category templates
+  if (panelSelectedCategory && groups[panelSelectedCategory]) {
+    renderTemplateArea(groups[panelSelectedCategory], panelSelectedCategory);
+  } else if (firstCat) {
+    renderTemplateArea(groups[firstCat], firstCat);
+  }
 }
 
 function filterPanelTemplates() {
@@ -899,23 +1036,48 @@ function filterPanelTemplates() {
 
   let filtered = panelAllTemplates;
 
-  // Shortcut filter takes priority
+  // Shortcut filter takes priority — show matching templates across all cats
   if (panelActiveShortcut) {
     const titles = SHORTCUT_MAPPING[panelActiveShortcut] || [];
     filtered = filtered.filter(t => titles.some(targetTitle => t.title.includes(targetTitle)));
-  } else {
-    if (cat !== 'ALL') filtered = filtered.filter(t => t.category === cat);
-    if (q) {
-      let tokens = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 0);
-      filtered = filtered.filter(t => {
-        const title = t.title.toLowerCase();
-        const triggers = (t.triggers || []).map(tr => tr.toLowerCase());
-        return tokens.some(tok => title.includes(tok) || triggers.some(tr => tr.includes(tok)));
-      });
-    }
+    panelSelectedCategory = null;
+    updateSidebarActive();
+    renderSearchResults(filtered, panelActiveShortcut);
+    return;
   }
 
-  renderPanelTemplates(filtered);
+  // Search query — global search across all templates
+  if (q) {
+    let tokens = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 0);
+    filtered = filtered.filter(t => {
+      const title = t.title.toLowerCase();
+      const triggers = (t.triggers || []).map(tr => tr.toLowerCase());
+      return tokens.some(tok => title.includes(tok) || triggers.some(tr => tr.includes(tok)));
+    });
+    panelSelectedCategory = null;
+    updateSidebarActive();
+    renderSearchResults(filtered, q);
+    return;
+  }
+
+  // Category filter via dropdown
+  if (cat !== 'ALL') {
+    filtered = filtered.filter(t => t.category === cat);
+    panelSelectedCategory = cat;
+    updateSidebarActive();
+    renderTemplateArea(filtered, cat);
+    return;
+  }
+
+  // Default: show currently selected sidebar category
+  const groups = {};
+  filtered.forEach(t => {
+    if (!groups[t.category]) groups[t.category] = [];
+    groups[t.category].push(t);
+  });
+  if (panelSelectedCategory && groups[panelSelectedCategory]) {
+    renderTemplateArea(groups[panelSelectedCategory], panelSelectedCategory);
+  }
 }
 
 function buildPanel() {
@@ -1013,15 +1175,29 @@ function buildPanel() {
 
   renderPanelShortcuts(shortcutsRow);
 
-  // ── CONTENT ──
-  const contentScroll = document.createElement('div');
-  contentScroll.className = 'content-scroll';
-  contentScroll.id = 'panel-content';
-  const loading = document.createElement('div');
-  loading.className = 'empty-state';
-  loading.textContent = 'Syncing templates…';
-  contentScroll.appendChild(loading);
-  panel.appendChild(contentScroll);
+  // ── BODY SPLIT (sidebar + template area) ──
+  const bodySplit = document.createElement('div');
+  bodySplit.className = 'body-split';
+  bodySplit.id = 'panel-content';
+
+  const sidebar = document.createElement('div');
+  sidebar.className = 'sidebar';
+  sidebar.id = 'panel-sidebar';
+  const sidebarLabel = document.createElement('div');
+  sidebarLabel.className = 'sidebar-label';
+  sidebarLabel.textContent = 'Categories';
+  sidebar.appendChild(sidebarLabel);
+
+  const templateArea = document.createElement('div');
+  templateArea.className = 'template-area';
+  templateArea.id = 'panel-template-area';
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'empty-state';
+  loadingEl.textContent = 'Syncing templates…';
+  templateArea.appendChild(loadingEl);
+
+  bodySplit.append(sidebar, templateArea);
+  panel.appendChild(bodySplit);
 
   // ── RESIZE HANDLE ──
   const resizeHandle = document.createElement('div');
@@ -1080,14 +1256,14 @@ function buildPanel() {
     if (panelMinimized) {
       p.style.height = '52px';
       p.style.overflow = 'hidden';
-      ctrl.style.display = 'none';
-      content.style.display = 'none';
+      if (ctrl) ctrl.style.display = 'none';
+      if (content) content.style.display = 'none';
       minBtn.title = 'Restore';
     } else {
       p.style.height = panelHeight + 'px';
       p.style.overflow = 'hidden';
-      ctrl.style.display = '';
-      content.style.display = '';
+      if (ctrl) ctrl.style.display = '';
+      if (content) content.style.display = '';
       minBtn.title = 'Minimize';
     }
   };
@@ -1098,10 +1274,12 @@ function buildPanel() {
     panelX = 10; panelY = 10;
     panelWidth = window.innerWidth - 20;
     panelHeight = window.innerHeight - 20;
-    p.style.cssText = `left:10px;top:10px;width:${panelWidth}px;height:${panelHeight}px;`;
+    p.style.cssText = `left:10px;top:10px;width:${panelWidth}px;height:${panelHeight}px;position:fixed;`;
     panelMinimized = false;
-    panelShadow.getElementById('panel-controls').style.display = '';
-    panelShadow.getElementById('panel-content').style.display = '';
+    const ctrl = panelShadow.getElementById('panel-controls');
+    const content = panelShadow.getElementById('panel-content');
+    if (ctrl) ctrl.style.display = '';
+    if (content) content.style.display = '';
   };
 
   // ── CLOSE ──
