@@ -108,47 +108,54 @@ export default function MpesaCodes() {
     };
   }, []);
 
-  // Periodic cleaner: Expiration logic
+  // Periodic cleaner: Expiration logic (stable interval)
   useEffect(() => {
-    const cleanExpired = async () => {
+    const cleanExpired = () => {
       const now = Date.now();
       const expiredIds = [];
-      
-      const nextEntries = entries.filter((e) => {
-        // 1. Check autoDeleteAfterCopy rule: must be copied, autoDeleteAfterCopy enabled, and 1 hour passed
-        if (e.autoDeleteAfterCopy && e.copiedAt) {
-          const copiedTime = new Date(e.copiedAt).getTime();
-          if (now - copiedTime > 60 * 60 * 1000) {
-            expiredIds.push(e.id);
-            return false; // delete
-          }
-        }
-        // 2. Check 24-hour expiration unless keep toggle is enabled
-        if (!e.keep) {
-          const entryTime = new Date(e.timestamp).getTime();
-          if (now - entryTime > 24 * 60 * 60 * 1000) {
-            expiredIds.push(e.id);
-            return false; // delete
-          }
-        }
-        return true;
-      });
 
-      if (expiredIds.length > 0) {
-        setEntries(nextEntries);
-        // Clean up on Supabase
-        try {
-          await supabase.from('mpesa_codes').delete().in('id', expiredIds);
-        } catch (err) {
-          console.error("Failed to delete expired entries on remote server:", err);
+      setEntries((prev) => {
+        const nextEntries = prev.filter((e) => {
+          // 1. Check autoDeleteAfterCopy rule: must be copied, autoDeleteAfterCopy enabled, and 1 hour passed
+          if (e.autoDeleteAfterCopy && e.copiedAt) {
+            const copiedTime = new Date(e.copiedAt).getTime();
+            if (now - copiedTime > 60 * 60 * 1000) {
+              expiredIds.push(e.id);
+              return false; // delete
+            }
+          }
+          // 2. Check 24-hour expiration unless keep toggle is enabled
+          if (!e.keep) {
+            const entryTime = new Date(e.timestamp).getTime();
+            if (now - entryTime > 24 * 60 * 60 * 1000) {
+              expiredIds.push(e.id);
+              return false; // delete
+            }
+          }
+          return true;
+        });
+
+        // If there are expired items, trigger the delete on Supabase asynchronously
+        if (expiredIds.length > 0) {
+          supabase
+            .from('mpesa_codes')
+            .delete()
+            .in('id', expiredIds)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Failed to delete expired entries on remote server:", error.message);
+              }
+            });
         }
-      }
+
+        return nextEntries;
+      });
     };
 
     cleanExpired();
-    const interval = setInterval(cleanExpired, 15000); // Check every 15 seconds
+    const interval = setInterval(cleanExpired, 10000); // Check every 10 seconds
     return () => clearInterval(interval);
-  }, [entries]);
+  }, []);
 
   const handleAdd = async () => {
     const text = inputText.trim();
