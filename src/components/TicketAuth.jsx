@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Mail, Lock, ArrowRight, Zap, Briefcase, AlertCircle } from 'lucide-react';
+import { Shield, Mail, Lock, ArrowRight, Zap, AlertCircle } from 'lucide-react';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 
 const TicketAuth = () => {

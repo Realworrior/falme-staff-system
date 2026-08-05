@@ -4,7 +4,6 @@ import {
   LayoutDashboard, 
   FileText, 
   Activity, 
-  Ticket,
   CalendarDays,
   BookOpen,
   Calculator,
@@ -27,13 +26,11 @@ const BottomNav = ({ className }) => {
   return (
     <>
       {/* ── MOBILE BOTTOM DOCK ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden px-4 pb-4">
+      <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden px-2 pb-2">
         <div
-          className="flex items-center justify-between sm:justify-around bg-[#2a2b2f] rounded-[28px] px-3 py-3 border border-[#3a3b3f] overflow-x-auto scrollbar-none flex-nowrap gap-2 [&::-webkit-scrollbar]:hidden"
+          className="flex items-center justify-around bg-[#2a2b2f]/95 backdrop-blur-md rounded-[24px] px-1 py-1.5 border border-[#3a3b3f] shadow-2xl w-full"
           style={{ 
             boxShadow: '0 -4px 40px rgba(0,0,0,0.5)',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
           }}
         >
           {navItems.map((item) => (
@@ -41,19 +38,19 @@ const BottomNav = ({ className }) => {
               key={item.path}
               to={item.path}
               end={item.path === '/'}
-              className="no-underline shrink-0"
+              className="no-underline flex-1 min-w-0 flex justify-center"
             >
               {({ isActive }) => (
-                <div className={`relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-all ${isActive ? 'bg-[#baff55]' : 'bg-transparent'}`}>
+                <div className={`relative flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-xl transition-all w-full max-w-[56px] ${isActive ? 'bg-[#baff55]' : 'bg-transparent'}`}>
                   <item.icon 
-                    size={20} 
+                    size={18} 
                     className={isActive ? 'text-black' : 'text-[#8e8e93]'} 
                   />
-                  <span className={`text-[9px] font-semibold ${isActive ? 'text-black' : 'text-[#8e8e93]'}`}>
+                  <span className={`text-[8px] font-semibold truncate w-full text-center leading-tight ${isActive ? 'text-black font-bold' : 'text-[#8e8e93]'}`}>
                     {item.label}
                   </span>
                   {item.isNew && (
-                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#baff55] rounded-full border-2 border-[#2a2b2f]" />
+                    <div className="absolute top-0.5 right-1 w-1.5 h-1.5 bg-[#baff55] rounded-full border border-[#2a2b2f]" />
                   )}
                 </div>
               )}

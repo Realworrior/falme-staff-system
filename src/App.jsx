@@ -10,7 +10,6 @@ import Rota from './pages/Rota';
 import Resources from './pages/Resources';
 import Tools from './pages/Tools';
 import MpesaCodes from './pages/MpesaCodes';
-import TourGuide from './components/TourGuide';
 
 // Maintain the MUI theme for underlying MUI components (like Dialogs) 
 // but ensure it aligns with the new design's core palette.
