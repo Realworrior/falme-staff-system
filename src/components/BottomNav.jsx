@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -23,6 +23,8 @@ const navItems = [
 ];
 
 const BottomNav = ({ className }) => {
+  const location = useLocation();
+
   return (
     <>
       {/* ── MOBILE BOTTOM DOCK ── */}
@@ -35,27 +37,28 @@ const BottomNav = ({ className }) => {
         >
           {navItems.map((item) => {
             const Icon = item.icon;
+            const isActive = item.path === '/' 
+              ? location.pathname === '/' 
+              : location.pathname.startsWith(item.path);
+
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/'}
                 className="no-underline flex-1 min-w-0 flex justify-center"
               >
-                {({ isActive }) => (
-                  <div className={`relative flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-xl transition-all w-full max-w-[56px] ${isActive ? 'bg-[#baff55]' : 'bg-transparent'}`}>
-                    <Icon 
-                      size={18} 
-                      className={isActive ? 'text-black' : 'text-[#8e8e93]'} 
-                    />
-                    <span className={`text-[8px] font-semibold truncate w-full text-center leading-tight ${isActive ? 'text-black font-bold' : 'text-[#8e8e93]'}`}>
-                      {item.label}
-                    </span>
-                    {item.isNew && (
-                      <div className="absolute top-0.5 right-1 w-1.5 h-1.5 bg-[#baff55] rounded-full border border-[#2a2b2f]" />
-                    )}
-                  </div>
-                )}
+                <div className={`relative flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-xl transition-all w-full max-w-[56px] ${isActive ? 'bg-[#baff55]' : 'bg-transparent'}`}>
+                  <Icon 
+                    size={18} 
+                    className={isActive ? 'text-black' : 'text-[#8e8e93]'} 
+                  />
+                  <span className={`text-[8px] font-semibold truncate w-full text-center leading-tight ${isActive ? 'text-black font-bold' : 'text-[#8e8e93]'}`}>
+                    {item.label}
+                  </span>
+                  {item.isNew && (
+                    <div className="absolute top-0.5 right-1 w-1.5 h-1.5 bg-[#baff55] rounded-full border border-[#2a2b2f]" />
+                  )}
+                </div>
               </NavLink>
             );
           })}
@@ -80,34 +83,35 @@ const BottomNav = ({ className }) => {
         <div className="flex flex-col gap-1 flex-1 w-full px-3">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const isActive = item.path === '/' 
+              ? location.pathname === '/' 
+              : location.pathname.startsWith(item.path);
+
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/'}
                 className="no-underline"
               >
-                {({ isActive }) => (
-                  <div className="relative group">
-                    <div className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-all cursor-pointer
-                      ${isActive
-                        ? 'bg-[#baff55]'
-                        : 'bg-transparent hover:bg-[#2a2b2f]'
-                      }`}
-                    >
-                      <Icon
-                        size={20}
-                        className={isActive ? 'text-black' : 'text-[#8e8e93] group-hover:text-white transition-colors'}
-                      />
-                      <span className={`text-[9px] font-semibold leading-none ${isActive ? 'text-black' : 'text-[#8e8e93] group-hover:text-white transition-colors'}`}>
-                        {item.label}
-                      </span>
-                    </div>
-                    {item.isNew && (
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#baff55] rounded-full border-2 border-[#1e1f22]" />
-                    )}
+                <div className="relative group">
+                  <div className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-all cursor-pointer
+                    ${isActive
+                      ? 'bg-[#baff55]'
+                      : 'bg-transparent hover:bg-[#2a2b2f]'
+                    }`}
+                  >
+                    <Icon
+                      size={20}
+                      className={isActive ? 'text-black' : 'text-[#8e8e93] group-hover:text-white transition-colors'}
+                    />
+                    <span className={`text-[9px] font-semibold leading-none ${isActive ? 'text-black' : 'text-[#8e8e93] group-hover:text-white transition-colors'}`}>
+                      {item.label}
+                    </span>
                   </div>
-                )}
+                  {item.isNew && (
+                    <div className="absolute top-2 right-2 w-2 h-2 bg-[#baff55] rounded-full border-2 border-[#1e1f22]" />
+                  )}
+                </div>
               </NavLink>
             );
           })}
