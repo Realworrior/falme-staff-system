@@ -438,18 +438,30 @@ export default function MpesaCodes() {
   };
 
   const getFormattedCounterText = (customRange, customDep, customWth) => {
-    const range = customRange || counterState.timeRange || generateHourRange(0);
-    // Map icon key to text symbol for clipboard output
     const iconToText = (key) => (key === 'x' ? '\u274c' : '\u2705');
     const dIcon = iconToText(counterState.depositIcon);
     const dLabel = counterState.depositLabel || 'Deposit Completed';
-    const dCount = customDep ?? counterState.depositCount ?? 0;
-
     const wIcon = iconToText(counterState.withdrawalIcon);
     const wLabel = counterState.withdrawalLabel || 'Completed withdrawal';
-    const wCount = customWth ?? counterState.withdrawalCount ?? 0;
 
-    return `\u23f0 ${range}\n${dIcon} ${dLabel}: ${dCount}\n${wIcon}${wLabel}: ${wCount}`;
+    // If explicit custom parameters provided (re-copying a single specific history record from log table)
+    if (customRange) {
+      const dep = customDep ?? 0;
+      const wth = customWth ?? 0;
+      return `⏰ ${customRange}\n${dIcon} ${dLabel}: ${dep}\n${wIcon} ${wLabel}: ${wth}`;
+    }
+
+    // Default: Last Two Hours Combined Stats (Previous Shift + Current Shift)
+    const currentRange = counterState.timeRange || generateHourRange(0);
+    const currentDep = counterState.depositCount ?? 0;
+    const currentWth = counterState.withdrawalCount ?? 0;
+
+    const prevEntry = analyticsHistory.length > 0 ? analyticsHistory[0] : null;
+    const prevRange = prevEntry ? prevEntry.timeRange : generateHourRange(-1);
+    const prevDep = prevEntry ? (prevEntry.depositCount ?? 0) : 0;
+    const prevWth = prevEntry ? (prevEntry.withdrawalCount ?? 0) : 0;
+
+    return `⏰ ${prevRange}\n${dIcon} ${dLabel}: ${prevDep}\n${wIcon} ${wLabel}: ${prevWth}\n\n⏰ ${currentRange}\n${dIcon} ${dLabel}: ${currentDep}\n${wIcon} ${wLabel}: ${currentWth}`;
   };
 
   const handleCopyCounterText = async (customRange, customDep, customWth) => {
@@ -873,252 +885,362 @@ export default function MpesaCodes() {
       )}
 
       {/* ── TAB 1: MPESA HOURLY COUNTER & ANALYTICS ── */}
-      {activeTab === "counter" && (
-        <div className="space-y-6">
+      {activeTab === "counter" && (() => {
+        const currentRange = counterState.timeRange || generateHourRange(0);
+        const currentDep = counterState.depositCount ?? 0;
+        const currentWth = counterState.withdrawalCount ?? 0;
 
-          {/* End of Hour Reminder Notification Banner */}
-          {isNearHourEnd && (
-            <div className="bg-[#baff55]/10 border-2 border-[#baff55]/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-pulse">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#baff55] text-black rounded-xl font-black">
-                  <Clock size={20} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                    <Clock size={16} className="text-black" /> Shift Window Ending Soon ({minutesRemaining} min remaining)
-                  </h3>
-                  <p className="text-xs text-gray-300">
-                    Click <strong className="text-[#baff55]">Copy Report</strong> to log this shift before counters auto-reset!
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => handleCopyCounterText()}
-                className="w-full sm:w-auto bg-[#baff55] text-black font-black text-xs py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shrink-0"
-              >
-                <Copy size={14} />
-                Copy Report Now
-              </button>
-            </div>
-          )}
+        const prevEntry = analyticsHistory.length > 0 ? analyticsHistory[0] : null;
+        const prevRange = prevEntry ? prevEntry.timeRange : generateHourRange(-1);
+        const prevDep = prevEntry ? (prevEntry.depositCount ?? 0) : 0;
+        const prevWth = prevEntry ? (prevEntry.withdrawalCount ?? 0) : 0;
 
-          {/* Hourly Failure & Completion Counter Card */}
-          <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl relative overflow-hidden space-y-6">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#baff55]/5 rounded-full blur-3xl pointer-events-none" />
+        return (
+          <div className="space-y-6">
 
-            {/* Counter Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Clock size={18} className="text-[#baff55]" />
-                  <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
-                    MPesa Shift Counter
-                  </h2>
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  1am-7am condensed into 1 shift bracket. 7am-1am operates on hourly brackets.
-                </p>
-              </div>
-
-              {/* Time Window Selector */}
-              <div className="flex items-center gap-2 bg-[#1a1c27] p-1.5 rounded-xl border border-white/10 shrink-0">
-                <button
-                  onClick={() => handleStepShift(-1)}
-                  className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                  title="Previous Shift"
-                >
-                  &lt; Prev Shift
-                </button>
-                <button
-                  onClick={() => {
-                    setShiftStepOffset(0);
-                    updateCounterState({ timeRange: generateHourRange(0) });
-                  }}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
-                    shiftStepOffset === 0 
-                      ? "bg-[#baff55] text-black font-black" 
-                      : "text-gray-300 hover:text-white bg-white/5"
-                  }`}
-                >
-                  Current Shift
-                </button>
-                <button
-                  onClick={() => handleStepShift(1)}
-                  className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                  title="Next Shift"
-                >
-                  Next Shift &gt;
-                </button>
-              </div>
-            </div>
-
-            {/* Time Window Field */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#181a24] p-3 rounded-xl border border-white/5">
-              <span className="text-xs font-bold text-gray-400 shrink-0 flex items-center gap-1.5">
-                <Clock size={14} className="text-[#baff55]" /> Active Shift Window:
-              </span>
-              <div className="flex-1 w-full flex items-center gap-2">
-                <Clock size={16} className="text-[#baff55] shrink-0" />
-                <input
-                  type="text"
-                  value={counterState.timeRange || generateHourRange(0)}
-                  onChange={(e) => updateCounterState({ timeRange: e.target.value })}
-                  className="flex-1 bg-[#0d0e14] border border-white/10 rounded-lg px-3 py-1.5 text-sm font-mono text-white outline-none focus:border-[#baff55]/50 transition-all"
-                  placeholder="e.g. 1:00 PM - 2:00 PM or 1:00 AM - 7:00 AM"
-                />
-                <button
-                  onClick={() => {
-                    setShiftStepOffset(0);
-                    updateCounterState({ timeRange: generateHourRange(0) });
-                  }}
-                  className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
-                  title="Reset to current shift"
-                >
-                  <RefreshCw size={12} />
-                  Reset Time
-                </button>
-              </div>
-            </div>
-
-            {/* Counter Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              {/* Deposit Completed / Failed Card */}
-              <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => updateCounterState({ depositIcon: counterState.depositIcon === 'check' ? 'x' : 'check' })}
-                      className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
-                      title="Toggle status icon"
-                    >
-                      {(counterState.depositIcon === 'x') ? <XCircle size={16} className="text-red-400" /> : <CheckCircle2 size={16} className="text-[#baff55]" />}
-                    </button>
-                    <input
-                      type="text"
-                      value={counterState.depositLabel || 'Deposit Completed'}
-                      onChange={(e) => updateCounterState({ depositLabel: e.target.value })}
-                      className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
-                    />
+            {/* End of Hour Reminder Notification Banner */}
+            {isNearHourEnd && (
+              <div className="bg-[#baff55]/10 border-2 border-[#baff55]/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#baff55] text-black rounded-xl font-black">
+                    <Clock size={20} />
                   </div>
-                  <span className="text-[10px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">Deposit</span>
-                </div>
-
-                <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
-                  <span className="text-4xl font-black font-mono text-[#baff55]">
-                    {counterState.depositCount ?? 0}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => handleAdjustCount('deposit', -1)}
-                      className="p-2.5 bg-white/5 hover:bg-white/15 text-white rounded-lg transition-all active:scale-95"
-                      title="Decrease count"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleAdjustCount('deposit', 1)}
-                      className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95"
-                      title="Increase count"
-                    >
-                      <Plus size={16} />
-                    </button>
-                    <button
-                      onClick={() => updateCounterState({ depositCount: 0 })}
-                      className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                      title="Set to 0"
-                    >
-                      Clear
-                    </button>
+                  <div>
+                    <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                      <Clock size={16} className="text-black" /> Shift Window Ending Soon ({minutesRemaining} min remaining)
+                    </h3>
+                    <p className="text-xs text-gray-300">
+                      Click <strong className="text-[#baff55]">Copy Report</strong> to log this shift before counters auto-reset!
+                    </p>
                   </div>
                 </div>
-              </div>
-
-              {/* Completed / Failed Withdrawal Card */}
-              <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => updateCounterState({ withdrawalIcon: counterState.withdrawalIcon === 'check' ? 'x' : 'check' })}
-                      className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
-                      title="Toggle status icon"
-                    >
-                      {(counterState.withdrawalIcon === 'x') ? <XCircle size={16} className="text-red-400" /> : <CheckCircle2 size={16} className="text-[#baff55]" />}
-                    </button>
-                    <input
-                      type="text"
-                      value={counterState.withdrawalLabel || 'Completed withdrawal'}
-                      onChange={(e) => updateCounterState({ withdrawalLabel: e.target.value })}
-                      className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
-                    />
-                  </div>
-                  <span className="text-[10px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">Withdrawal</span>
-                </div>
-
-                <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
-                  <span className="text-4xl font-black font-mono text-[#baff55]">
-                    {counterState.withdrawalCount ?? 0}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => handleAdjustCount('withdrawal', -1)}
-                      className="p-2.5 bg-white/5 hover:bg-white/15 text-white rounded-lg transition-all active:scale-95"
-                      title="Decrease count"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleAdjustCount('withdrawal', 1)}
-                      className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95"
-                      title="Increase count"
-                    >
-                      <Plus size={16} />
-                    </button>
-                    <button
-                      onClick={() => updateCounterState({ withdrawalCount: 0 })}
-                      className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                      title="Set to 0"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Copyable Summary Format Preview & Actions */}
-            <div className="bg-[#0b0c12] border border-white/10 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
-                  <Sparkles size={14} className="text-[#baff55]" /> Copyable Format Preview:
-                </span>
-                <button
-                  onClick={handleResetCounts}
-                  className="text-[11px] font-bold text-gray-400 hover:text-red-400 transition-colors flex items-center gap-1"
-                >
-                  <RefreshCw size={11} /> Reset Counts
-                </button>
-              </div>
-
-              <pre className="bg-[#141620] border border-white/5 rounded-lg p-3 text-sm font-mono text-[#baff55] whitespace-pre-wrap select-all">
-                {getFormattedCounterText()}
-              </pre>
-
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
                 <button
                   onClick={() => handleCopyCounterText()}
-                  className="w-full sm:w-auto flex-1 bg-[#baff55] text-black hover:bg-[#a8f044] font-black text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
+                  className="w-full sm:w-auto bg-[#baff55] text-black font-black text-xs py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shrink-0"
                 >
-                  {copiedCounter ? <Check size={18} /> : <Copy size={18} />}
-                  {copiedCounter ? "Copied & Saved to Analytics!" : "Copy Hourly Report & Save Analytics"}
+                  <Copy size={14} />
+                  Copy Last 2 Hours Report
                 </button>
               </div>
-            </div>
-          </div>
+            )}
 
-        </div>
-      )}
+            {/* Responsive Grid Layout: Counter Card + Side Panel */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+              {/* Main Counter Card & Copy Controls (Left 2 cols) */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl relative overflow-hidden space-y-6">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#baff55]/5 rounded-full blur-3xl pointer-events-none" />
+
+                  {/* Counter Header */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Clock size={18} className="text-[#baff55]" />
+                        <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
+                          MPesa Shift Counter
+                        </h2>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Time auto-resets on hour boundary. Showing active shift counter.
+                      </p>
+                    </div>
+
+                    {/* Time Window Selector */}
+                    <div className="flex items-center gap-2 bg-[#1a1c27] p-1.5 rounded-xl border border-white/10 shrink-0">
+                      <button
+                        onClick={() => handleStepShift(-1)}
+                        className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                        title="Previous Shift"
+                      >
+                        &lt; Prev Shift
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShiftStepOffset(0);
+                          updateCounterState({ timeRange: generateHourRange(0) });
+                        }}
+                        className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                          shiftStepOffset === 0 
+                            ? "bg-[#baff55] text-black font-black" 
+                            : "text-gray-300 hover:text-white bg-white/5"
+                        }`}
+                      >
+                        Current Shift
+                      </button>
+                      <button
+                        onClick={() => handleStepShift(1)}
+                        className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                        title="Next Shift"
+                      >
+                        Next Shift &gt;
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Time Window Field */}
+                  <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#181a24] p-3 rounded-xl border border-white/5">
+                    <span className="text-xs font-bold text-gray-400 shrink-0 flex items-center gap-1.5">
+                      <Clock size={14} className="text-[#baff55]" /> Active Shift Window:
+                    </span>
+                    <div className="flex-1 w-full flex items-center gap-2">
+                      <Clock size={16} className="text-[#baff55] shrink-0" />
+                      <input
+                        type="text"
+                        value={counterState.timeRange || generateHourRange(0)}
+                        onChange={(e) => updateCounterState({ timeRange: e.target.value })}
+                        className="flex-1 bg-[#0d0e14] border border-white/10 rounded-lg px-3 py-1.5 text-sm font-mono text-white outline-none focus:border-[#baff55]/50 transition-all"
+                        placeholder="e.g. 1:00 PM - 2:00 PM or 1:00 AM - 7:00 AM"
+                      />
+                      <button
+                        onClick={() => {
+                          setShiftStepOffset(0);
+                          updateCounterState({ timeRange: generateHourRange(0) });
+                        }}
+                        className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                        title="Reset to current shift"
+                      >
+                        <RefreshCw size={12} />
+                        Reset Time
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Counter Cards Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    {/* Deposit Completed / Failed Card */}
+                    <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-white/20 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => updateCounterState({ depositIcon: counterState.depositIcon === 'check' ? 'x' : 'check' })}
+                            className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                            title="Toggle status icon"
+                          >
+                            {(counterState.depositIcon === 'x') ? <XCircle size={16} className="text-red-400" /> : <CheckCircle2 size={16} className="text-[#baff55]" />}
+                          </button>
+                          <input
+                            type="text"
+                            value={counterState.depositLabel || 'Deposit Completed'}
+                            onChange={(e) => updateCounterState({ depositLabel: e.target.value })}
+                            className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
+                          />
+                        </div>
+                        <span className="text-[10px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">Deposit</span>
+                      </div>
+
+                      <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
+                        <span className="text-4xl font-black font-mono text-[#baff55]">
+                          {counterState.depositCount ?? 0}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleAdjustCount('deposit', -1)}
+                            className="p-2.5 bg-white/5 hover:bg-white/15 text-white rounded-lg transition-all active:scale-95"
+                            title="Decrease count"
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleAdjustCount('deposit', 1)}
+                            className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95"
+                            title="Increase count"
+                          >
+                            <Plus size={16} />
+                          </button>
+                          <button
+                            onClick={() => updateCounterState({ depositCount: 0 })}
+                            className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                            title="Set to 0"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Completed / Failed Withdrawal Card */}
+                    <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-white/20 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => updateCounterState({ withdrawalIcon: counterState.withdrawalIcon === 'check' ? 'x' : 'check' })}
+                            className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                            title="Toggle status icon"
+                          >
+                            {(counterState.withdrawalIcon === 'x') ? <XCircle size={16} className="text-red-400" /> : <CheckCircle2 size={16} className="text-[#baff55]" />}
+                          </button>
+                          <input
+                            type="text"
+                            value={counterState.withdrawalLabel || 'Completed withdrawal'}
+                            onChange={(e) => updateCounterState({ withdrawalLabel: e.target.value })}
+                            className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
+                          />
+                        </div>
+                        <span className="text-[10px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">Withdrawal</span>
+                      </div>
+
+                      <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
+                        <span className="text-4xl font-black font-mono text-[#baff55]">
+                          {counterState.withdrawalCount ?? 0}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleAdjustCount('withdrawal', -1)}
+                            className="p-2.5 bg-white/5 hover:bg-white/15 text-white rounded-lg transition-all active:scale-95"
+                            title="Decrease count"
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleAdjustCount('withdrawal', 1)}
+                            className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95"
+                            title="Increase count"
+                          >
+                            <Plus size={16} />
+                          </button>
+                          <button
+                            onClick={() => updateCounterState({ withdrawalCount: 0 })}
+                            className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                            title="Set to 0"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Copyable Summary Format Preview & Actions */}
+                  <div className="bg-[#0b0c12] border border-white/10 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
+                        <Sparkles size={14} className="text-[#baff55]" /> Last 2 Hours Copyable Format Preview:
+                      </span>
+                      <button
+                        onClick={handleResetCounts}
+                        className="text-[11px] font-bold text-gray-400 hover:text-red-400 transition-colors flex items-center gap-1"
+                      >
+                        <RefreshCw size={11} /> Reset Current Counts
+                      </button>
+                    </div>
+
+                    <pre className="bg-[#141620] border border-white/5 rounded-lg p-3 text-xs sm:text-sm font-mono text-[#baff55] whitespace-pre-wrap select-all">
+                      {getFormattedCounterText()}
+                    </pre>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                      <button
+                        onClick={() => handleCopyCounterText()}
+                        className="w-full bg-[#baff55] text-black hover:bg-[#a8f044] font-black text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
+                      >
+                        {copiedCounter ? <Check size={18} /> : <Copy size={18} />}
+                        {copiedCounter ? "Copied 2-Hour Report & Saved to Analytics!" : "Copy Last 2 Hours Report & Save Analytics"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── LAST 2 HOURS STATS SIDE PANEL (Right 1 col) ── */}
+              <div className="lg:col-span-1 space-y-4">
+                <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Activity size={18} className="text-[#baff55]" />
+                      <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                        Last 2 Hours Stats
+                      </h3>
+                    </div>
+                    <span className="text-[9px] font-black uppercase bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#baff55] animate-ping" /> 2h Window
+                    </span>
+                  </div>
+
+                  {/* Previous Shift Card */}
+                  <div className="bg-[#181a26] border border-white/5 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                        <Clock size={11} className="text-gray-500" /> Previous Shift:
+                      </span>
+                      <span className="text-[9px] font-black uppercase text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md">
+                        {prevEntry ? "Archived" : "Previous"}
+                      </span>
+                    </div>
+                    <div className="text-xs font-mono font-bold text-white bg-[#0e1017] px-2.5 py-1.5 rounded-lg border border-white/5 truncate">
+                      ⏰ {prevRange}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                      <div className="bg-[#0e1017] p-2 rounded-lg border border-white/5">
+                        <span className="text-[10px] text-gray-400 block font-sans">Deposits</span>
+                        <span className="text-base font-black font-mono text-[#baff55]">{prevDep}</span>
+                      </div>
+                      <div className="bg-[#0e1017] p-2 rounded-lg border border-white/5">
+                        <span className="text-[10px] text-gray-400 block font-sans">Withdrawals</span>
+                        <span className="text-base font-black font-mono text-white">{prevWth}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Current Active Shift Card */}
+                  <div className="bg-[#181a26] border border-[#baff55]/30 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-[#baff55] uppercase tracking-widest flex items-center gap-1">
+                        <Clock size={11} className="text-[#baff55]" /> Current Active Shift:
+                      </span>
+                      <span className="text-[9px] font-black uppercase text-black bg-[#baff55] px-2 py-0.5 rounded-md">
+                        Active Now
+                      </span>
+                    </div>
+                    <div className="text-xs font-mono font-bold text-[#baff55] bg-[#0e1017] px-2.5 py-1.5 rounded-lg border border-[#baff55]/20 truncate">
+                      ⏰ {currentRange}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                      <div className="bg-[#0e1017] p-2 rounded-lg border border-white/5">
+                        <span className="text-[10px] text-gray-400 block font-sans">Deposits</span>
+                        <span className="text-base font-black font-mono text-[#baff55]">{currentDep}</span>
+                      </div>
+                      <div className="bg-[#0e1017] p-2 rounded-lg border border-white/5">
+                        <span className="text-[10px] text-gray-400 block font-sans">Withdrawals</span>
+                        <span className="text-base font-black font-mono text-white">{currentWth}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2-Hour Combined Totals Banner */}
+                  <div className="bg-[#0e1017] border border-white/10 rounded-xl p-3.5 space-y-2">
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center justify-between">
+                      <span>Combined 2-Hour Totals</span>
+                      <TrendingUp size={12} className="text-[#baff55]" />
+                    </div>
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-white/5">
+                      <span className="text-gray-300">Total Deposits:</span>
+                      <span className="font-mono font-black text-[#baff55] text-sm">{currentDep + prevDep}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-300">Total Withdrawals:</span>
+                      <span className="font-mono font-black text-white text-sm">{currentWth + prevWth}</span>
+                    </div>
+                  </div>
+
+                  {/* Side Panel Copy Button */}
+                  <button
+                    onClick={() => handleCopyCounterText()}
+                    className="w-full bg-[#baff55] text-black font-black text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shadow-md active:scale-95"
+                  >
+                    <Copy size={14} />
+                    Copy 2-Hour Report
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        );
+      })()}
 
       {/* ── TAB 2: SMS VERIFICATION LEDGER (NOTES) ── */}
       {activeTab === "ledger" && (
