@@ -13,7 +13,11 @@ import {
   Sparkles,
   Zap,
   Activity,
-  AlertTriangle
+  AlertTriangle,
+  TrendingUp,
+  BarChart3,
+  Calendar,
+  CheckCircle2
 } from "lucide-react";
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
@@ -80,13 +84,13 @@ const DEFAULT_HOURLY_COUNTER = {
   id: 'hourly_counter_global',
   transactionCode: '__HOURLY_COUNTER__',
   timeRange: generateHourRange(0),
-  depositCount: 1,
+  depositCount: 0,
   withdrawalCount: 0,
   depositIcon: '✅',
   depositLabel: 'Deposit Completed',
   withdrawalIcon: '✅',
   withdrawalLabel: 'Completed withdrawal',
-  customItems: []
+  lastActiveHour: new Date().getHours()
 };
 
 export default function MpesaCodes() {
@@ -104,15 +108,23 @@ export default function MpesaCodes() {
     return saved ? JSON.parse(saved) : DEFAULT_HOURLY_COUNTER;
   });
 
+  // Analytics History State
+  const [analyticsHistory, setAnalyticsHistory] = useState(() => {
+    const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [copiedCounter, setCopiedCounter] = useState(false);
   const [hourOffset, setHourOffset] = useState(0);
+  const [isNearHourEnd, setIsNearHourEnd] = useState(false);
+  const [minutesRemaining, setMinutesRemaining] = useState(60);
 
   const textareaRef = useRef(null);
   const { addToast } = useToast();
 
   // Save entries to localStorage on local updates
   useEffect(() => {
-    const smsOnly = entries.filter(e => e.transactionCode !== '__HOURLY_COUNTER__');
+    const smsOnly = entries.filter(e => e.transactionCode !== '__HOURLY_COUNTER__' && e.transactionCode !== '__HOURLY_ANALYTICS__');
     localStorage.setItem("betfalme_mpesa_entries", JSON.stringify(smsOnly));
   }, [entries]);
 
@@ -120,6 +132,41 @@ export default function MpesaCodes() {
   useEffect(() => {
     localStorage.setItem("betfalme_mpesa_hourly_counter", JSON.stringify(counterState));
   }, [counterState]);
+
+  // Save analytics history to localStorage
+  useEffect(() => {
+    localStorage.setItem("betfalme_mpesa_analytics_history", JSON.stringify(analyticsHistory));
+  }, [analyticsHistory]);
+
+  // Sync Analytics to Supabase
+  const syncAnalyticsToSupabase = async (updatedHistory) => {
+    try {
+      const record = {
+        id: 'hourly_analytics_history',
+        transactionCode: '__HOURLY_ANALYTICS__',
+        raw: JSON.stringify(updatedHistory),
+        timestamp: new Date().toISOString()
+      };
+      await supabase.from('mpesa_codes').upsert([record]);
+    } catch (err) {
+      console.warn("Failed to sync analytics to Supabase:", err);
+    }
+  };
+
+  // Sync Counter State to Supabase
+  const syncCounterToSupabase = async (updatedState) => {
+    try {
+      const record = {
+        id: 'hourly_counter_global',
+        transactionCode: '__HOURLY_COUNTER__',
+        raw: JSON.stringify(updatedState),
+        timestamp: new Date().toISOString()
+      };
+      await supabase.from('mpesa_codes').upsert([record]);
+    } catch (err) {
+      console.warn("Failed to sync counter to Supabase:", err);
+    }
+  };
 
   // Fetch initial data from Supabase and subscribe to realtime updates
   useEffect(() => {
@@ -136,6 +183,7 @@ export default function MpesaCodes() {
         }
 
         if (data) {
+          // Counter Record
           const counterRecord = data.find(item => item.id === 'hourly_counter_global' || item.transactionCode === '__HOURLY_COUNTER__');
           if (counterRecord && counterRecord.raw) {
             try {
@@ -151,8 +199,26 @@ export default function MpesaCodes() {
             }
           }
 
-          // Filter out internal counter record from regular SMS entries list
-          const smsEntries = data.filter(item => item.id !== 'hourly_counter_global' && item.transactionCode !== '__HOURLY_COUNTER__');
+          // Analytics Record
+          const analyticsRecord = data.find(item => item.id === 'hourly_analytics_history' || item.transactionCode === '__HOURLY_ANALYTICS__');
+          if (analyticsRecord && analyticsRecord.raw) {
+            try {
+              const parsedAnalytics = JSON.parse(analyticsRecord.raw);
+              if (Array.isArray(parsedAnalytics)) {
+                setAnalyticsHistory(parsedAnalytics);
+              }
+            } catch (e) {
+              console.error("Error parsing analytics history raw data", e);
+            }
+          }
+
+          // Filter out internal control records from regular SMS entries list
+          const smsEntries = data.filter(item => 
+            item.id !== 'hourly_counter_global' && 
+            item.transactionCode !== '__HOURLY_COUNTER__' &&
+            item.id !== 'hourly_analytics_history' &&
+            item.transactionCode !== '__HOURLY_ANALYTICS__'
+          );
           setEntries(smsEntries);
         }
       } catch (err) {
@@ -172,17 +238,26 @@ export default function MpesaCodes() {
         // Check if change is for the hourly counter record
         if ((newRecord && (newRecord.id === 'hourly_counter_global' || newRecord.transactionCode === '__HOURLY_COUNTER__')) ||
             (oldRecord && (oldRecord.id === 'hourly_counter_global' || oldRecord.transactionCode === '__HOURLY_COUNTER__'))) {
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            if (newRecord.raw) {
-              try {
-                const parsed = JSON.parse(newRecord.raw);
-                setCounterState((prev) => ({
-                  ...prev,
-                  ...parsed
-                }));
-              } catch (e) {
-                console.error("Realtime counter parse error", e);
-              }
+          if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && newRecord?.raw) {
+            try {
+              const parsed = JSON.parse(newRecord.raw);
+              setCounterState((prev) => ({ ...prev, ...parsed }));
+            } catch (e) {
+              console.error("Realtime counter parse error", e);
+            }
+          }
+          return;
+        }
+
+        // Check if change is for analytics history
+        if ((newRecord && (newRecord.id === 'hourly_analytics_history' || newRecord.transactionCode === '__HOURLY_ANALYTICS__')) ||
+            (oldRecord && (oldRecord.id === 'hourly_analytics_history' || oldRecord.transactionCode === '__HOURLY_ANALYTICS__'))) {
+          if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && newRecord?.raw) {
+            try {
+              const parsed = JSON.parse(newRecord.raw);
+              if (Array.isArray(parsed)) setAnalyticsHistory(parsed);
+            } catch (e) {
+              console.error("Realtime analytics parse error", e);
             }
           }
           return;
@@ -209,72 +284,75 @@ export default function MpesaCodes() {
     };
   }, []);
 
-  // Periodic cleaner: Expiration logic for SMS notes (ignores counter record)
+  // Auto-Hour Detection, End-of-Hour Notification & Auto-Reset Logic
   useEffect(() => {
-    const cleanExpired = () => {
-      const now = Date.now();
-      const expiredIds = [];
+    const checkHourRollover = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
 
-      setEntries((prev) => {
-        const nextEntries = prev.filter((e) => {
-          if (e.id === 'hourly_counter_global' || e.transactionCode === '__HOURLY_COUNTER__') return true;
+      setMinutesRemaining(60 - currentMinute);
+      setIsNearHourEnd(currentMinute >= 50);
 
-          // 1. Check autoDeleteAfterCopy rule
-          if (e.autoDeleteAfterCopy && e.copiedAt) {
-            const copiedTime = new Date(e.copiedAt).getTime();
-            if (now - copiedTime > 60 * 60 * 1000) {
-              expiredIds.push(e.id);
-              return false;
-            }
-          }
-          // 2. Check 24-hour expiration unless keep toggle is enabled
-          if (!e.keep) {
-            const entryTime = new Date(e.timestamp).getTime();
-            if (now - entryTime > 24 * 60 * 60 * 1000) {
-              expiredIds.push(e.id);
-              return false;
-            }
-          }
-          return true;
-        });
+      setCounterState((prev) => {
+        // If hour has changed
+        if (prev.lastActiveHour !== undefined && prev.lastActiveHour !== currentHour) {
+          const finishedRange = prev.timeRange || generateHourRange(0);
+          const depCount = prev.depositCount || 0;
+          const wthCount = prev.withdrawalCount || 0;
 
-        if (expiredIds.length > 0) {
-          supabase
-            .from('mpesa_codes')
-            .delete()
-            .in('id', expiredIds)
-            .then(({ error }) => {
-              if (error) {
-                console.error("Failed to delete expired entries on remote server:", error.message);
+          // Auto-archive previous hour to Analytics if there was any count
+          if (depCount > 0 || wthCount > 0) {
+            const archiveEntry = {
+              id: `analytics_${Date.now()}`,
+              timeRange: finishedRange,
+              depositCount: depCount,
+              withdrawalCount: wthCount,
+              copiedAt: new Date().toISOString(),
+              autoArchived: true,
+              date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
+            };
+
+            setAnalyticsHistory((prevHistory) => {
+              // Avoid exact duplicate
+              if (prevHistory.some(h => h.timeRange === finishedRange && h.date === archiveEntry.date)) {
+                return prevHistory;
               }
+              const nextHistory = [archiveEntry, ...prevHistory];
+              syncAnalyticsToSupabase(nextHistory);
+              return nextHistory;
             });
+          }
+
+          // Auto-advance to new hour and reset counts
+          const newRange = generateHourRange(0);
+          const newState = {
+            ...prev,
+            timeRange: newRange,
+            depositCount: 0,
+            withdrawalCount: 0,
+            lastActiveHour: currentHour
+          };
+
+          syncCounterToSupabase(newState);
+          addToast(`New shift hour (${newRange}). Counters auto-reset!`, "info");
+          return newState;
         }
 
-        return nextEntries;
+        // Just ensure lastActiveHour is set
+        if (prev.lastActiveHour === undefined) {
+          return { ...prev, lastActiveHour: currentHour };
+        }
+        return prev;
       });
     };
 
-    cleanExpired();
-    const interval = setInterval(cleanExpired, 10000);
+    checkHourRollover();
+    const interval = setInterval(checkHourRollover, 5000); // check every 5 seconds
     return () => clearInterval(interval);
   }, []);
 
-  // Sync Counter State to Supabase
-  const syncCounterToSupabase = async (updatedState) => {
-    try {
-      const record = {
-        id: 'hourly_counter_global',
-        transactionCode: '__HOURLY_COUNTER__',
-        raw: JSON.stringify(updatedState),
-        timestamp: new Date().toISOString()
-      };
-      await supabase.from('mpesa_codes').upsert([record]);
-    } catch (err) {
-      console.warn("Failed to sync counter to Supabase:", err);
-    }
-  };
-
-  // Counter Actions
+  // Counter State Updater
   const updateCounterState = (updater) => {
     setCounterState((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
@@ -314,33 +392,77 @@ export default function MpesaCodes() {
     }));
   };
 
-  // Generate copyable text format exactly matching user prompt:
+  // Generate copyable text format:
   // ⏰ 1:00 PM - 2:00 PM
   // ✅ Deposit Completed: 1
   // ✅Completed withdrawal: 0
-  const getFormattedCounterText = () => {
-    const range = counterState.timeRange || generateHourRange(0);
+  const getFormattedCounterText = (customRange, customDep, customWth) => {
+    const range = customRange || counterState.timeRange || generateHourRange(0);
     const dIcon = counterState.depositIcon || '✅';
     const dLabel = counterState.depositLabel || 'Deposit Completed';
-    const dCount = counterState.depositCount ?? 1;
+    const dCount = customDep ?? counterState.depositCount ?? 0;
 
     const wIcon = counterState.withdrawalIcon || '✅';
     const wLabel = counterState.withdrawalLabel || 'Completed withdrawal';
-    const wCount = counterState.withdrawalCount ?? 0;
+    const wCount = customWth ?? counterState.withdrawalCount ?? 0;
 
     return `⏰ ${range}\n${dIcon} ${dLabel}: ${dCount}\n${wIcon}${wLabel}: ${wCount}`;
   };
 
-  const handleCopyCounterText = async () => {
-    const textToCopy = getFormattedCounterText();
+  // Copy and save to Analytics History
+  const handleCopyCounterText = async (customRange, customDep, customWth) => {
+    const textToCopy = getFormattedCounterText(customRange, customDep, customWth);
+    const targetRange = customRange || counterState.timeRange || generateHourRange(0);
+    const depVal = customDep ?? counterState.depositCount ?? 0;
+    const wthVal = customWth ?? counterState.withdrawalCount ?? 0;
+
     try {
       await navigator.clipboard.writeText(textToCopy);
       setCopiedCounter(true);
-      addToast("Copied MPesa hourly report to clipboard!", "success");
+
+      // Save to Analytics History
+      const newAnalyticsEntry = {
+        id: `analytics_${Date.now()}`,
+        timeRange: targetRange,
+        depositCount: depVal,
+        withdrawalCount: wthVal,
+        copiedAt: new Date().toISOString(),
+        date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
+      };
+
+      setAnalyticsHistory((prevHistory) => {
+        // Prevent exact duplicate entry within last 1 minute
+        if (prevHistory.length > 0 && prevHistory[0].timeRange === targetRange && 
+            Math.abs(new Date(prevHistory[0].copiedAt).getTime() - Date.now()) < 60000) {
+          return prevHistory;
+        }
+        const updated = [newAnalyticsEntry, ...prevHistory];
+        syncAnalyticsToSupabase(updated);
+        return updated;
+      });
+
+      addToast("Copied MPesa report & saved to Analytics!", "success");
       setTimeout(() => setCopiedCounter(false), 3000);
     } catch (err) {
       addToast("Failed to copy report", "error");
     }
+  };
+
+  const handleClearAnalytics = async () => {
+    if (window.confirm("Are you sure you want to clear all analytics history?")) {
+      setAnalyticsHistory([]);
+      syncAnalyticsToSupabase([]);
+      addToast("Analytics history cleared", "info");
+    }
+  };
+
+  const handleDeleteAnalyticsItem = async (id) => {
+    setAnalyticsHistory((prev) => {
+      const next = prev.filter(item => item.id !== id);
+      syncAnalyticsToSupabase(next);
+      return next;
+    });
+    addToast("Analytics entry removed", "info");
   };
 
   // SMS Ledger Handlers
@@ -349,7 +471,6 @@ export default function MpesaCodes() {
     if (!text) return;
     const parsed = parseSMS(text);
     
-    // Check for duplicates
     if (parsed.transactionCode && entries.some(e => e.transactionCode === parsed.transactionCode)) {
       addToast("Duplicate MPESA code detected", "error");
       return;
@@ -479,9 +600,14 @@ export default function MpesaCodes() {
     }
   };
 
-  // Filter SMS entries (excluding internal counter record)
+  // Filter SMS entries (excluding internal control records)
   const filtered = entries
-    .filter(e => e.id !== 'hourly_counter_global' && e.transactionCode !== '__HOURLY_COUNTER__')
+    .filter(e => 
+      e.id !== 'hourly_counter_global' && 
+      e.transactionCode !== '__HOURLY_COUNTER__' &&
+      e.id !== 'hourly_analytics_history' &&
+      e.transactionCode !== '__HOURLY_ANALYTICS__'
+    )
     .filter((e) => {
       const q = search.toLowerCase();
       return (
@@ -512,6 +638,11 @@ export default function MpesaCodes() {
     return hrs > 0 ? `${hrs}h ${mins > 0 ? mins + 'm ' : ''}gap` : `${mins}m gap`;
   };
 
+  // Analytics Metrics Calculation
+  const totalDepositsLogged = analyticsHistory.reduce((sum, item) => sum + (item.depositCount || 0), 0);
+  const totalWithdrawalsLogged = analyticsHistory.reduce((sum, item) => sum + (item.withdrawalCount || 0), 0);
+  const totalShiftsLogged = analyticsHistory.length;
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-8">
 
@@ -525,7 +656,7 @@ export default function MpesaCodes() {
             <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">MPesa Operations Hub</h1>
           </div>
           <p className="text-xs text-gray-400 font-medium">
-            Hourly failure & completion counters + SMS code verification notes
+            Hourly failure & completion counters + automatic shift analytics & SMS ledger
           </p>
         </div>
         <div className="text-xs font-bold text-gray-400 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl flex items-center gap-2 self-start sm:self-auto">
@@ -533,6 +664,32 @@ export default function MpesaCodes() {
           <span>Cross-Browser Sync Active</span>
         </div>
       </div>
+
+      {/* ── END OF HOUR REMINDER NOTIFICATION BANNER ── */}
+      {isNearHourEnd && (
+        <div className="bg-[#baff55]/10 border-2 border-[#baff55]/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#baff55] text-black rounded-xl font-black">
+              <Clock size={20} />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                ⏰ Shift Hour Ending Soon ({minutesRemaining} min remaining)
+              </h3>
+              <p className="text-xs text-gray-300">
+                Click <strong className="text-[#baff55]">Copy Report</strong> to log this hour's report before counters auto-reset!
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => handleCopyCounterText()}
+            className="w-full sm:w-auto bg-[#baff55] text-black font-black text-xs py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shrink-0"
+          >
+            <Copy size={14} />
+            Copy Report Now
+          </button>
+        </div>
+      )}
 
       {/* ── SECTION 1: MPESA HOURLY FAILURE & COMPLETION COUNTER ── */}
       <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl relative overflow-hidden space-y-6">
@@ -544,11 +701,11 @@ export default function MpesaCodes() {
             <div className="flex items-center gap-2">
               <Clock size={18} className="text-[#baff55]" />
               <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
-                MPesa Hourly Failure Counter
+                MPesa Hourly Counter
               </h2>
             </div>
             <p className="text-xs text-gray-400 mt-0.5">
-              Tracks completed or failed MPesa transactions per 1-hour shift window
+              Auto-advances time & auto-resets counts each hour. Copies save directly to Analytics.
             </p>
           </div>
 
@@ -581,10 +738,10 @@ export default function MpesaCodes() {
           </div>
         </div>
 
-        {/* Time Window Editable Field */}
+        {/* Time Window Field */}
         <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#181a24] p-3 rounded-xl border border-white/5">
           <span className="text-xs font-bold text-gray-400 shrink-0 flex items-center gap-1.5">
-            <Clock size={14} className="text-[#baff55]" /> Time Window:
+            <Clock size={14} className="text-[#baff55]" /> Active Time Window:
           </span>
           <div className="flex-1 w-full flex items-center gap-2">
             <span className="text-base shrink-0">⏰</span>
@@ -632,7 +789,7 @@ export default function MpesaCodes() {
 
             <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
               <span className="text-4xl font-black font-mono text-[#baff55]">
-                {counterState.depositCount ?? 1}
+                {counterState.depositCount ?? 0}
               </span>
               <div className="flex items-center gap-1.5">
                 <button
@@ -733,17 +890,142 @@ export default function MpesaCodes() {
 
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
             <button
-              onClick={handleCopyCounterText}
+              onClick={() => handleCopyCounterText()}
               className="w-full sm:w-auto flex-1 bg-[#baff55] text-black hover:bg-[#a8f044] font-black text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
             >
               {copiedCounter ? <Check size={18} /> : <Copy size={18} />}
-              {copiedCounter ? "Copied to Clipboard!" : "Copy Hourly Report"}
+              {copiedCounter ? "Copied & Saved to Analytics!" : "Copy Hourly Report & Save Analytics"}
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── SECTION 2: SMS CODE LEDGER & NOTES (PRESERVED) ── */}
+      {/* ── SECTION 2: MPESA HOURLY ANALYTICS ── */}
+      <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <BarChart3 size={18} className="text-[#baff55]" />
+              <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
+                MPesa Shift Analytics History
+              </h2>
+            </div>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Historical record of copied and auto-archived hourly shift reports
+            </p>
+          </div>
+
+          {analyticsHistory.length > 0 && (
+            <button
+              onClick={handleClearAnalytics}
+              className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto"
+            >
+              Clear Analytics History
+            </button>
+          )}
+        </div>
+
+        {/* Analytics Summary Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1">
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
+              <TrendingUp size={14} className="text-[#baff55]" /> Total Deposits
+            </div>
+            <div className="text-2xl md:text-3xl font-black font-mono text-white">
+              {totalDepositsLogged}
+            </div>
+          </div>
+
+          <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1">
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
+              <TrendingUp size={14} className="text-[#baff55]" /> Total Withdrawals
+            </div>
+            <div className="text-2xl md:text-3xl font-black font-mono text-white">
+              {totalWithdrawalsLogged}
+            </div>
+          </div>
+
+          <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1 col-span-2 md:col-span-1">
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
+              <Calendar size={14} className="text-[#baff55]" /> Shifts Tracked
+            </div>
+            <div className="text-2xl md:text-3xl font-black font-mono text-white">
+              {totalShiftsLogged}
+            </div>
+          </div>
+        </div>
+
+        {/* Analytics Table */}
+        <div className="bg-[#0b0c12] border border-white/5 rounded-xl overflow-hidden">
+          {analyticsHistory.length === 0 ? (
+            <div className="text-center py-12 text-xs text-gray-500 font-bold uppercase tracking-wider">
+              No shift reports saved yet — click "Copy Hourly Report" above to log analytics
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-white/[0.02] border-b border-white/5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                  <tr>
+                    <th className="p-3">Shift Date</th>
+                    <th className="p-3">Time Window</th>
+                    <th className="p-3">Deposits</th>
+                    <th className="p-3">Withdrawals</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 font-mono">
+                  {analyticsHistory.map((item) => (
+                    <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
+                      <td className="p-3 text-gray-400 whitespace-nowrap">
+                        {item.date || new Date(item.copiedAt).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                      </td>
+                      <td className="p-3 text-white font-bold whitespace-nowrap">
+                        ⏰ {item.timeRange}
+                      </td>
+                      <td className="p-3 text-[#baff55] font-bold">
+                        ✅ {item.depositCount ?? 0}
+                      </td>
+                      <td className="p-3 text-[#baff55] font-bold">
+                        ✅ {item.withdrawalCount ?? 0}
+                      </td>
+                      <td className="p-3">
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                          item.autoArchived 
+                            ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
+                            : "bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20"
+                        }`}>
+                          {item.autoArchived ? 'Auto-Archived' : 'Copied & Logged'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleCopyCounterText(item.timeRange, item.depositCount, item.withdrawalCount)}
+                            className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                            title="Re-copy report"
+                          >
+                            <Copy size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAnalyticsItem(item.id)}
+                            className="p-1.5 text-gray-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
+                            title="Delete record"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── SECTION 3: SMS CODE LEDGER & NOTES (PRESERVED) ── */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-2">
           <div>
@@ -949,7 +1231,7 @@ export default function MpesaCodes() {
                     </div>
 
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                      <span className="text-[10px] text-[#8e8e93] whitespace-nowrap">
                         {new Date(entry.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
                       </span>
                       <span className="text-[9px] text-gray-600 whitespace-nowrap">
