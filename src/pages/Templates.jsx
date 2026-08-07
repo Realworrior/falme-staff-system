@@ -397,22 +397,22 @@ function Templates() {
   );
 
   return (
-    <div className="min-h-screen bg-[#161616] text-white flex flex-col">
+    <div className="min-h-screen bg-[#0e1017] text-white flex flex-col">
       
       {/* TOP HEADER */}
-      <header className="sticky top-0 z-50 bg-[#161616] border-b border-[#2a2b2f] px-6 md:px-10 py-5">
+      <header className="sticky top-0 z-50 bg-[#0e1017] px-6 md:px-10 py-5">
         <div className="max-w-[1600px] mx-auto flex flex-col gap-5">
           
           {/* Row 1: Filter Pills + Actions */}
           <div className="flex items-center justify-end flex-wrap gap-4">
             <div className="flex items-center gap-3">
-              <button onClick={() => setModalOpen(true)} className="pill-white flex items-center gap-2 text-sm font-semibold">
+              <button onClick={() => setModalOpen(true)} className="bg-[#baff55] text-black hover:bg-[#a8f044] px-5 py-2.5 rounded-full flex items-center gap-2 text-sm font-semibold transition-all shadow-md">
                 <Plus size={15} /> Add New Template
               </button>
-              <a href="/templates/blastchat-extension.xpi" download className="pill-dark flex items-center gap-2 text-sm font-semibold hover:text-white">
+              <a href="/templates/blastchat-extension.xpi" download className="bg-[#131520] hover:bg-[#191c2b] px-5 py-2.5 rounded-full flex items-center gap-2 text-sm font-semibold text-white transition-all">
                 Firefox (v2.0)
               </a>
-              <a href="/blastchat-extension.zip" download className="pill-dark flex items-center gap-2 text-sm font-semibold hover:text-white">
+              <a href="/blastchat-extension.zip" download className="bg-[#131520] hover:bg-[#191c2b] px-5 py-2.5 rounded-full flex items-center gap-2 text-sm font-semibold text-white transition-all">
                 Chrome Extension
               </a>
             </div>
@@ -427,14 +427,14 @@ function Templates() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search templates, paste client message..."
-              className="w-full bg-[#2a2b2f] border border-[#3a3b3f] rounded-full pl-12 pr-12 py-3.5 text-sm text-white focus:outline-none focus:border-[#baff55] transition-colors placeholder:text-[#4a4b50]"
+              className="w-full bg-[#131520] rounded-full pl-12 pr-12 py-3.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#baff55] transition-all placeholder:text-[#4a4b50] shadow-lg"
             />
             {searchQuery ? (
               <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8e8e93] hover:text-white">
                 <X size={16} />
               </button>
             ) : (
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-[#4a4b50] bg-[#161616] px-1.5 py-0.5 rounded border border-[#3a3b3f]">
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-[#4a4b50] bg-[#0e1017] px-2 py-0.5 rounded-full">
                 Ctrl+K
               </span>
             )}

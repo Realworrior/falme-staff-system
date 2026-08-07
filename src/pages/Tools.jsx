@@ -680,21 +680,21 @@ export default function Tools() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+    <div className="min-h-screen bg-[#0e1017] pt-8 pb-32 px-4 md:px-8 max-w-7xl mx-auto space-y-8">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="px-3 py-1 bg-accent/10 border border-accent/20 rounded-full">
-              <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Operational Suite</span>
+            <div className="px-3 py-1 bg-[#baff55]/10 rounded-full">
+              <span className="text-[10px] font-black text-[#baff55] uppercase tracking-[0.2em]">Operational Suite</span>
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Cashback Command Center</h1>
           <p className="text-gray-500 text-sm mt-2 max-w-md">Professional utilities designed to streamline support workflows and increase accuracy.</p>
         </div>
 
-        <div className="flex bg-panel p-1.5 rounded-2xl border border-white/10">
-          <button onClick={() => setActiveTab('cashback')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'cashback' ? 'premium-button shadow-lg shadow-accent/20' : 'text-gray-500 hover:text-gray-300'}`}>Calculator</button>
-          <button onClick={() => setActiveTab('odds')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'odds' ? 'premium-button shadow-lg shadow-accent/20' : 'text-gray-500 hover:text-gray-300'}`}>Odds Converter</button>
+        <div className="flex bg-[#131520] p-1.5 rounded-2xl shadow-lg">
+          <button onClick={() => setActiveTab('cashback')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'cashback' ? 'bg-[#baff55] text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}>Calculator</button>
+          <button onClick={() => setActiveTab('odds')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'odds' ? 'bg-[#baff55] text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}>Odds Converter</button>
         </div>
       </motion.div>
 

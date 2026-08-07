@@ -106,16 +106,16 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8 space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-[#161616]">
+    <div className="p-4 md:p-8 space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-[#0e1017]">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#2a2b2f]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
             Operational Overview
           </h1>
           <div className="flex items-center gap-3 mt-2">
-             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2a2b2f] border border-[#3a3b3f]">
+             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#181a26]">
                <div className="w-2 h-2 rounded-full bg-[#baff55]" />
                <span className="text-xs font-semibold text-[#baff55]">Systems Online</span>
              </div>
@@ -126,9 +126,9 @@ const Dashboard = () => {
         <div className="flex items-center gap-4">
            <div className="flex flex-col items-end">
              <span className="text-xs font-medium text-[#8e8e93] mb-1">Shift Status</span>
-             <span className="text-sm font-semibold text-white bg-[#2a2b2f] border border-[#3a3b3f] px-4 py-2 rounded-full">{onDutyInfo.current} Phase Active</span>
+             <span className="text-sm font-semibold text-white bg-[#181a26] px-4 py-2 rounded-full">{onDutyInfo.current} Phase Active</span>
            </div>
-           <div className="bg-[#2a2b2f] border border-[#3a3b3f] rounded-full flex items-center gap-3 px-5 py-2.5">
+           <div className="bg-[#181a26] rounded-full flex items-center gap-3 px-5 py-2.5">
               <Clock size={15} className="text-[#baff55]" />
               <span className="text-sm font-semibold text-white">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
            </div>
@@ -141,11 +141,11 @@ const Dashboard = () => {
         <div className="lg:col-span-8 space-y-8">
           
           {/* Aviator Pulse Graph */}
-          <div className="cutout-card p-6 md:p-8 relative">
+          <div className="bg-[#131520] rounded-[28px] p-6 md:p-8 relative shadow-2xl">
             <div className="flex items-start justify-between mb-8">
               <div>
                 <h3 className="text-lg font-semibold text-white flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-2xl bg-[#161616] border border-[#3a3b3f] flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-2xl bg-[#1b1e2b] flex items-center justify-center">
                     <Activity size={18} className="text-[#ff4d4d]" />
                   </div>
                   Aviator Pulse
@@ -173,10 +173,11 @@ const Dashboard = () => {
                   <Tooltip 
                     cursor={{ stroke: 'rgba(186,255,85,0.2)', strokeWidth: 1 }}
                     contentStyle={{ 
-                      backgroundColor: '#2a2b2f',
-                      border: '1px solid #3a3b3f',
+                      backgroundColor: '#1b1e2b',
+                      border: 'none',
                       borderRadius: '16px',
                       padding: '12px 16px',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
                     }}
                     itemStyle={{ fontSize: '12px', fontWeight: '600', color: '#fff' }}
                     labelStyle={{ fontSize: '11px', color: '#8e8e93', marginBottom: '4px' }}
@@ -221,7 +222,7 @@ const Dashboard = () => {
                 <button 
                   key={res.name} 
                   onClick={() => navigate(res.path + (res.params || ''))}
-                  className="cutout-card hover-bg flex flex-col items-start gap-4 p-5 transition-all duration-300 group relative overflow-hidden cursor-pointer text-left"
+                  className="bg-[#131520] hover:bg-[#191c2b] rounded-2xl flex flex-col items-start gap-4 p-5 transition-all duration-300 group relative overflow-hidden cursor-pointer text-left shadow-lg"
                 >
                   <div 
                     className="w-10 h-10 rounded-2xl flex items-center justify-center"
@@ -233,7 +234,7 @@ const Dashboard = () => {
                     <span className="block text-xs text-[#8e8e93] font-medium mb-1">Launch</span>
                     <span className="block text-sm font-semibold text-white">{res.name}</span>
                   </div>
-                  <div className="absolute top-3 right-3 w-8 h-8 bg-[#161616] rounded-full flex items-center justify-center transition-all">
+                  <div className="absolute top-3 right-3 w-8 h-8 bg-[#1b1e2b] rounded-full flex items-center justify-center transition-all">
                     <ArrowUpRight size={14} className="text-white" />
                   </div>
                 </button>
@@ -246,8 +247,8 @@ const Dashboard = () => {
         <div className="lg:col-span-4 space-y-8">
           
           {/* Shift Rota Card */}
-          <div className="cutout-card hover-bg p-6 md:p-8 h-full flex flex-col relative group cursor-pointer" onClick={() => navigate('/rota')}>
-            <div className="absolute top-4 right-4 w-10 h-10 bg-[#161616] rounded-full flex items-center justify-center transition-all">
+          <div className="bg-[#131520] rounded-[28px] p-6 md:p-8 h-full flex flex-col relative group cursor-pointer shadow-2xl" onClick={() => navigate('/rota')}>
+            <div className="absolute top-4 right-4 w-10 h-10 bg-[#1b1e2b] rounded-full flex items-center justify-center transition-all">
               <ArrowUpRight size={18} className="text-white" />
             </div>
             <div className="flex items-center justify-between mb-8">
@@ -269,10 +270,10 @@ const Dashboard = () => {
                 return (
                   <div 
                     key={shift.id} 
-                    className={`relative p-5 rounded-2xl border transition-all ${
+                    className={`relative p-5 rounded-2xl transition-all ${
                       isCurrent 
-                        ? 'bg-[#161616] border-[#baff55]/30' 
-                        : 'bg-transparent border-[#3a3b3f]/50 opacity-40'
+                        ? 'bg-[#1b221a]' 
+                        : 'bg-[#181a24] opacity-50'
                     }`}
                   >
                     {isCurrent && (
@@ -283,7 +284,7 @@ const Dashboard = () => {
                     )}
                     
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#2a2b2f]">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#0d0e15]">
                         <Clock size={16} style={{ color: shift.color }} />
                       </div>
                       <div>
@@ -294,7 +295,7 @@ const Dashboard = () => {
 
                     <div className="flex flex-wrap gap-2">
                       {shift.names.map(name => (
-                        <div key={name} className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-[#2a2b2f] border border-[#3a3b3f]">
+                        <div key={name} className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-[#0d0e15]">
                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: STAFF_COLORS[name] || '#3a3b3f' }} />
                            <span className="text-xs font-medium text-white">{name}</span>
                         </div>
@@ -306,10 +307,10 @@ const Dashboard = () => {
               })}
             </div>
             
-            <div className="mt-8 pt-6 border-t border-[#3a3b3f] space-y-3">
+            <div className="mt-8 pt-6 space-y-3">
               <button 
                 onClick={(e) => { e.stopPropagation(); navigate('/templates'); }}
-                className="w-full pill-dark flex items-center justify-center gap-2"
+                className="w-full bg-[#1b1e2b] hover:bg-[#242838] text-white font-medium py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all"
               >
                 Admin Templates <ArrowUpRight size={14} />
               </button>

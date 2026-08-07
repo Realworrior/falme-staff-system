@@ -131,7 +131,7 @@ const SlotTracker = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 md:px-12 space-y-8 w-full mx-auto bg-[#161616] min-h-screen">
+    <div className="p-4 md:p-8 md:px-12 space-y-8 w-full mx-auto bg-[#0e1017] min-h-screen">
       {/* Header & Log Buttons */}
       <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-6">
         <div>
@@ -142,7 +142,7 @@ const SlotTracker = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
           <button
             onClick={() => logFailure('Slot 1')}
-            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-[#ff4d4d]/30"
+            className="bg-[#131520] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#191c2b] transition-all group shadow-lg"
           >
             <div className="w-10 h-10 rounded-2xl bg-[#ff4d4d]/10 flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-[#ff4d4d]" />
@@ -155,7 +155,7 @@ const SlotTracker = () => {
 
           <button
             onClick={() => logFailure('Slot 2')}
-            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-[#baff55]/30"
+            className="bg-[#131520] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#191c2b] transition-all group shadow-lg"
           >
             <div className="w-10 h-10 rounded-2xl bg-[#baff55]/10 flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-[#baff55]" />
@@ -168,7 +168,7 @@ const SlotTracker = () => {
 
           <button
             onClick={() => logFailure('Both')}
-            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-white/20"
+            className="bg-[#131520] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#191c2b] transition-all group shadow-lg"
           >
             <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center">
               <Activity className="w-5 h-5 text-white" />
@@ -183,12 +183,12 @@ const SlotTracker = () => {
 
       {/* Failure Log Table */}
       <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
-        className="bg-[#2a2b2f] rounded-[32px] overflow-hidden"
+        className="bg-[#131520] rounded-[32px] overflow-hidden shadow-2xl"
       >
-        <div className="p-6 border-b border-[#3a3b3f] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-white">Failure Log History</h2>
-            <div className="px-3 py-1 text-xs bg-[#ff4d4d]/10 text-[#ff4d4d] rounded-full border border-[#ff4d4d]/20 font-semibold">
+            <div className="px-3 py-1 text-xs bg-[#ff4d4d]/10 text-[#ff4d4d] rounded-full font-semibold">
               {logs.length} records
             </div>
           </div>
@@ -197,7 +197,7 @@ const SlotTracker = () => {
             <button 
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="w-9 h-9 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center text-[#8e8e93] hover:text-white disabled:opacity-30 transition-colors"
+              className="w-9 h-9 rounded-full bg-[#1b1e2b] flex items-center justify-center text-[#8e8e93] hover:text-white disabled:opacity-30 transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
@@ -207,7 +207,7 @@ const SlotTracker = () => {
             <button 
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="w-9 h-9 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center text-[#8e8e93] hover:text-white disabled:opacity-30 transition-colors"
+              className="w-9 h-9 rounded-full bg-[#1b1e2b] flex items-center justify-center text-[#8e8e93] hover:text-white disabled:opacity-30 transition-colors"
             >
               <ChevronRight size={16} />
             </button>
@@ -218,7 +218,7 @@ const SlotTracker = () => {
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#3a3b3f]">
+              <tr className="bg-white/[0.02]">
                 <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">#</th>
                 <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">Slot</th>
                 <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">Date</th>
@@ -226,7 +226,7 @@ const SlotTracker = () => {
                 <th className="text-right py-4 px-6 text-[#8e8e93] text-xs font-medium">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/5">
               <AnimatePresence>
                 {paginatedLogs.map((log, index) => (
                   <motion.tr 
@@ -235,18 +235,18 @@ const SlotTracker = () => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     layout
-                    className="border-b border-[#3a3b3f]/50 hover:bg-white/[0.02] transition-colors group"
+                    className="hover:bg-white/[0.02] transition-colors group"
                   >
                     <td className="py-4 px-6 text-[#8e8e93] text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td className="py-4 px-6">
                       <div className="flex gap-2">
                         {(log.type === 'Slot 1' || log.type === 'Both') && (
-                          <span className="px-3 py-1 rounded-full bg-[#ff4d4d]/10 text-[#ff4d4d] border border-[#ff4d4d]/20 text-xs font-semibold">
+                          <span className="px-3 py-1 rounded-full bg-[#ff4d4d]/10 text-[#ff4d4d] text-xs font-semibold">
                             Slot 1
                           </span>
                         )}
                         {(log.type === 'Slot 2' || log.type === 'Both') && (
-                          <span className="px-3 py-1 rounded-full bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 text-xs font-semibold">
+                          <span className="px-3 py-1 rounded-full bg-[#baff55]/10 text-[#baff55] text-xs font-semibold">
                             Slot 2
                           </span>
                         )}

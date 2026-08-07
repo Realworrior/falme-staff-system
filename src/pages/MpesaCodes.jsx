@@ -925,7 +925,7 @@ export default function MpesaCodes() {
                   <div className="absolute top-0 right-0 w-64 h-64 bg-[#baff55]/5 rounded-full blur-3xl pointer-events-none" />
 
                   {/* Counter Header */}
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1">
                     <div>
                       <div className="flex items-center gap-2.5">
                         <Clock size={18} className="text-[#baff55]" />
@@ -940,37 +940,6 @@ export default function MpesaCodes() {
                         Counters auto-reset on hour boundary. Showing live active shift.
                       </p>
                     </div>
-
-                    {/* Time Window Selector */}
-                    <div className="flex items-center gap-1.5 bg-[#1a1c2a] p-1.5 rounded-2xl shrink-0">
-                      <button
-                        onClick={() => handleStepShift(-1)}
-                        className="px-3 py-1.5 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
-                        title="Previous Shift"
-                      >
-                        &lt; Prev Shift
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShiftStepOffset(0);
-                          updateCounterState({ timeRange: generateHourRange(0) });
-                        }}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
-                          shiftStepOffset === 0 
-                            ? "bg-[#baff55] text-black font-black" 
-                            : "text-gray-300 hover:text-white bg-white/5"
-                        }`}
-                      >
-                        Current Shift
-                      </button>
-                      <button
-                        onClick={() => handleStepShift(1)}
-                        className="px-3 py-1.5 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
-                        title="Next Shift"
-                      >
-                        Next Shift &gt;
-                      </button>
-                    </div>
                   </div>
 
                   {/* Time Window Field */}
@@ -979,25 +948,39 @@ export default function MpesaCodes() {
                       <Clock size={14} className="text-[#baff55]" /> Active Shift Window:
                     </span>
                     <div className="flex-1 w-full flex items-center gap-2">
-                      <Clock size={16} className="text-[#baff55] shrink-0" />
+                      <button
+                        onClick={() => handleStepShift(-1)}
+                        className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl transition-all"
+                        title="Previous Shift Window"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
                       <input
                         type="text"
                         value={counterState.timeRange || generateHourRange(0)}
                         onChange={(e) => updateCounterState({ timeRange: e.target.value })}
-                        className="flex-1 bg-[#0d0e15] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#baff55] outline-none transition-all"
+                        className="flex-1 bg-[#0d0e15] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#baff55] outline-none text-center transition-all"
                         placeholder="e.g. 1:00 PM - 2:00 PM or 1:00 AM - 7:00 AM"
                       />
                       <button
-                        onClick={() => {
-                          setShiftStepOffset(0);
-                          updateCounterState({ timeRange: generateHourRange(0) });
-                        }}
-                        className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all"
-                        title="Reset to current shift"
+                        onClick={() => handleStepShift(1)}
+                        className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl transition-all"
+                        title="Next Shift Window"
                       >
-                        <RefreshCw size={12} />
-                        Reset Time
+                        <ChevronRight size={16} />
                       </button>
+                      {shiftStepOffset !== 0 && (
+                        <button
+                          onClick={() => {
+                            setShiftStepOffset(0);
+                            updateCounterState({ timeRange: generateHourRange(0) });
+                          }}
+                          className="px-3 py-2 bg-[#baff55]/10 text-[#baff55] hover:bg-[#baff55]/20 rounded-xl text-xs font-bold transition-all"
+                          title="Reset to current hour"
+                        >
+                          Reset
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -1046,13 +1029,6 @@ export default function MpesaCodes() {
                           >
                             <Plus size={18} />
                           </button>
-                          <button
-                            onClick={() => updateCounterState({ depositCount: 0 })}
-                            className="px-2.5 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
-                            title="Set to 0"
-                          >
-                            Clear
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -1099,13 +1075,6 @@ export default function MpesaCodes() {
                           >
                             <Plus size={18} />
                           </button>
-                          <button
-                            onClick={() => updateCounterState({ withdrawalCount: 0 })}
-                            className="px-2.5 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
-                            title="Set to 0"
-                          >
-                            Clear
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -1118,12 +1087,6 @@ export default function MpesaCodes() {
                       <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
                         <Sparkles size={14} className="text-[#baff55]" /> Active Hour Report Preview:
                       </span>
-                      <button
-                        onClick={handleResetCounts}
-                        className="text-[11px] font-bold text-gray-400 hover:text-red-400 transition-colors flex items-center gap-1"
-                      >
-                        <RefreshCw size={11} /> Reset Active Counts
-                      </button>
                     </div>
 
                     <pre className="bg-[#121420] rounded-xl p-4 text-xs sm:text-sm font-mono text-[#baff55] whitespace-pre-wrap select-all">

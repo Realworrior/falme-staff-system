@@ -112,7 +112,7 @@ export default function Tickets() {
   const userRole = user.role || 'staff';
 
   return (
-    <div className="p-4 md:p-8 md:px-12 space-y-8 w-full mx-auto pb-24 md:pb-8 min-h-screen bg-[#161616]">
+    <div className="p-4 md:p-8 md:px-12 space-y-8 w-full mx-auto pb-24 md:pb-8 min-h-screen bg-[#0e1017]">
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -120,7 +120,7 @@ export default function Tickets() {
         className="flex flex-col md:flex-row md:items-center justify-between gap-6"
       >
         <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl bg-[#2a2b2f] border border-[#3a3b3f] flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#131520] shadow-lg flex items-center justify-center">
             {userRole === 'staff' ? <User className="text-[#baff55]" /> : <Shield className="text-[#baff55]" />}
           </div>
           <div>
@@ -128,7 +128,7 @@ export default function Tickets() {
               <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
                 {userRole === 'staff' ? 'Support Portal' : 'Technical Ops'}
               </h1>
-              <span className="w-fit px-3 py-1 rounded-full bg-[#2a2b2f] border border-[#3a3b3f] text-xs font-semibold text-white">
+              <span className="w-fit px-3 py-1 rounded-full bg-[#131520] text-xs font-semibold text-white">
                 {user.name}
               </span>
             </div>
