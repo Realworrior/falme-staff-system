@@ -1140,103 +1140,63 @@ export default function MpesaCodes() {
                 </div>
               </div>
 
-              {/* ── LAST 2 HOURS STATS SIDE PANEL (Right 1 col) ── */}
+              {/* ── LAST HOUR STATS SIDE PANEL (Right 1 col - BLUE THEME) ── */}
               <div className="lg:col-span-1 space-y-4">
-                <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4">
+                <div className="bg-[#12141c] border border-blue-500/30 rounded-2xl p-5 shadow-2xl space-y-4 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+
+                  {/* Header */}
                   <div className="flex items-center justify-between border-b border-white/10 pb-3">
                     <div className="flex items-center gap-2">
-                      <Activity size={18} className="text-[#baff55]" />
+                      <Clock size={18} className="text-blue-400" />
                       <h3 className="text-sm font-black text-white uppercase tracking-wider">
-                        Last 2 Hours Stats
+                        Last Hour Stats
                       </h3>
                     </div>
-                    <span className="text-[9px] font-black uppercase bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#baff55] animate-ping" /> 2h Side View
+                    <span className="text-[9px] font-black uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      {prevEntry ? "Archived Shift" : "Last Shift"}
                     </span>
                   </div>
 
-                  {/* Previous Hour Card */}
-                  <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 space-y-3">
+                  {/* Last Hour Card (Blue Theme) */}
+                  <div className="bg-[#131b2e] border-2 border-blue-500/30 rounded-xl p-4 space-y-3 shadow-lg">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                        <Clock size={11} className="text-gray-500" /> Previous Shift
+                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1">
+                        <Clock size={11} className="text-blue-400" /> Shift Window:
                       </span>
-                      <span className="text-[9px] font-black uppercase text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md">
-                        {prevEntry ? "Archived" : "Previous"}
+                      <span className="text-[9px] font-black uppercase text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                        Previous Hour
                       </span>
                     </div>
-                    <div className="text-xs font-mono font-bold text-white bg-[#0e1017] px-2.5 py-1.5 rounded-lg border border-white/5 truncate">
+
+                    <div className="text-xs font-mono font-bold text-blue-400 bg-[#0a101d] px-3 py-2 rounded-lg border border-blue-500/20 truncate">
                       ⏰ {prevRange}
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-[#0e1017] p-2 rounded-lg border border-white/5">
-                        <span className="text-[10px] text-gray-400 block font-sans">Deposits</span>
-                        <span className="text-base font-black font-mono text-[#baff55]">{prevDep}</span>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                      <div className="bg-[#0a101d] p-3 rounded-lg border border-white/5">
+                        <span className="text-[10px] text-gray-400 block font-sans mb-0.5">Deposits</span>
+                        <span className="text-xl font-black font-mono text-[#baff55]">{prevDep}</span>
                       </div>
-                      <div className="bg-[#0e1017] p-2 rounded-lg border border-white/5">
-                        <span className="text-[10px] text-gray-400 block font-sans">Withdrawals</span>
-                        <span className="text-base font-black font-mono text-sky-400">{prevWth}</span>
+                      <div className="bg-[#0a101d] p-3 rounded-lg border border-white/5">
+                        <span className="text-[10px] text-gray-400 block font-sans mb-0.5">Withdrawals</span>
+                        <span className="text-xl font-black font-mono text-sky-400">{prevWth}</span>
                       </div>
                     </div>
 
                     <button
                       onClick={() => handleCopyCounterText(prevRange, prevDep, prevWth)}
-                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                      className="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
                     >
-                      <Copy size={12} />
-                      Copy Previous Hour Report
+                      <Copy size={14} />
+                      Copy Last Hour Report
                     </button>
                   </div>
 
-                  {/* Current Active Hour Card (DISTINCT DISTINCT STYLING) */}
-                  <div className="bg-[#18221c] border-2 border-[#baff55]/60 rounded-xl p-4 space-y-3 shadow-[0_0_15px_rgba(186,255,85,0.1)]">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-[#baff55] uppercase tracking-widest flex items-center gap-1">
-                        <Clock size={11} className="text-[#baff55]" /> Current Active Hour
-                      </span>
-                      <span className="text-[9px] font-black uppercase text-black bg-[#baff55] px-2 py-0.5 rounded-md flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-black animate-ping" /> Live Now
-                      </span>
-                    </div>
-                    <div className="text-xs font-mono font-bold text-[#baff55] bg-[#0c120e] px-2.5 py-1.5 rounded-lg border border-[#baff55]/30 truncate">
-                      ⏰ {currentRange}
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-[#0c120e] p-2 rounded-lg border border-[#baff55]/20">
-                        <span className="text-[10px] text-gray-400 block font-sans">Deposits</span>
-                        <span className="text-base font-black font-mono text-[#baff55]">{currentDep}</span>
-                      </div>
-                      <div className="bg-[#0c120e] p-2 rounded-lg border border-sky-400/20">
-                        <span className="text-[10px] text-gray-400 block font-sans">Withdrawals</span>
-                        <span className="text-base font-black font-mono text-sky-400">{currentWth}</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleCopyCounterText(currentRange, currentDep, currentWth)}
-                      className="w-full bg-[#baff55] text-black font-black text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 hover:bg-[#a8f044] transition-all shadow-md"
-                    >
-                      <Copy size={12} />
-                      Copy Current Hour Report
-                    </button>
-                  </div>
-
-                  {/* Combined Totals Summary */}
-                  <div className="bg-[#0e1017] border border-white/10 rounded-xl p-3.5 space-y-2">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center justify-between">
-                      <span>2-Hour Combined Overview</span>
-                      <TrendingUp size={12} className="text-[#baff55]" />
-                    </div>
-                    <div className="flex items-center justify-between text-xs pt-1 border-t border-white/5">
-                      <span className="text-gray-300">Total Deposits:</span>
-                      <span className="font-mono font-black text-[#baff55] text-sm">{currentDep + prevDep}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-300">Total Withdrawals:</span>
-                      <span className="font-mono font-black text-sky-400 text-sm">{currentWth + prevWth}</span>
-                    </div>
-                  </div>
-
+                  {/* Quick Hint */}
+                  <p className="text-[11px] text-gray-400 text-center leading-relaxed">
+                    Shows stats from the previous shift. Click <strong className="text-blue-400">Copy Last Hour Report</strong> to copy this shift instance.
+                  </p>
                 </div>
               </div>
 
