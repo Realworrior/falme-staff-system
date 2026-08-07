@@ -152,7 +152,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
           <div className="flex items-center gap-2 mt-4 px-2">
             <Sparkles size={10} className="text-red-500" />
             <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">
-              AI Insight Engine Online ({(result.detectedLanguage || 'EN').toUpperCase()})
+              Insight Engine Online ({(result.detectedLanguage || 'EN').toUpperCase()})
             </p>
           </div>
         </div>
@@ -204,7 +204,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   <Sparkles size={20} className="text-red-500" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-widest font-heading">Falme AI Assistant</h3>
+                  <h3 className="text-sm font-black text-white uppercase tracking-widest font-heading">Falme Assistant</h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                     <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Active Knowledge Base</span>

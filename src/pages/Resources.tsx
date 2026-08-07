@@ -2632,11 +2632,11 @@ function ToolkitView({ accent }: { accent: string }) {
               <span className="px-2.5 py-0.5 bg-accent text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg">v1.0 STABLE</span>
             </div>
             <p className="text-white/60 text-base max-w-xl leading-relaxed">
-              Equip your browser with real-time AI intelligence. This extension syncs with our live templates to provide instant suggestions as you chat with clients.
+              Equip your browser with real-time smart intelligence. This extension syncs with our live templates to provide instant suggestions as you chat with clients.
             </p>
             <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-4">
                <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
-                  <span>✨</span> AI Matcher
+                  <span>✨</span> Smart Matcher
                </div>
                <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
                   <span>🔄</span> Live Sync

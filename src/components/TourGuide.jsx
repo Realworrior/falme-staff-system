@@ -33,7 +33,7 @@ const TourGuide = () => {
     },
     {
       target: '.tour-template-ai',
-      content: 'Our Advanced AI Matcher! Paste any client message here, and the system will automatically detect the sentiment and suggest the best response template.',
+      content: 'Our Advanced Smart Matcher! Paste any client message here, and the system will automatically detect the sentiment and suggest the best response template.',
       placement: 'bottom',
     },
     {

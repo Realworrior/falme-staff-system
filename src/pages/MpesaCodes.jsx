@@ -523,9 +523,6 @@ export default function MpesaCodes() {
               <ClipboardList size={20} />
             </div>
             <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">MPesa Operations Hub</h1>
-            <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#baff55]/10 border border-[#baff55]/30 text-[#baff55] tracking-widest">
-              Live Supabase
-            </span>
           </div>
           <p className="text-xs text-gray-400 font-medium">
             Hourly failure & completion counters + SMS code verification notes

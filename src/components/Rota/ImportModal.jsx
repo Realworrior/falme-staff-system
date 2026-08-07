@@ -300,7 +300,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
               Advanced Matrix Sync
             </DialogTitle>
             <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2 flex items-center justify-between">
-              <span>Operational Data & AI Prediction Support</span>
+              <span>Operational Data & Smart Prediction Support</span>
               <span className="text-red-500/80 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
                 Target: {format(new Date(year, month, 1), 'MMMM yyyy')}
               </span>
@@ -324,7 +324,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
               onClick={() => { setActiveTab('ai'); setError(null); setPreviewRows([]); }}
               className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'ai' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              AI Prediction
+              Smart Prediction
             </button>
           </div>
         </div>
@@ -416,7 +416,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                 </div>
                 <h4 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Smart Prediction System</h4>
                 <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed">Generates an optimized matrix based on operational flow.</p>
-                <button onClick={handlePredict} className="mt-8 px-12 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">Generate AI Prediction</button>
+                <button onClick={handlePredict} className="mt-8 px-12 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">Generate Smart Prediction</button>
               </div>
               {validationErrors.length > 0 && (
                 <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2">
