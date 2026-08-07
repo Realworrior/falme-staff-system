@@ -166,7 +166,7 @@ export default function MpesaCodes() {
   const [copiedCounter, setCopiedCounter] = useState(false);
   const [shiftStepOffset, setShiftStepOffset] = useState(0);
   const [isNearHourEnd, setIsNearHourEnd] = useState(false);
-  const [minutesRemaining, setMinutesRemaining] = useState(60);
+  const [secondsRemaining, setSecondsRemaining] = useState(0);
 
   const textareaRef = useRef(null);
   const toast = useToast();
