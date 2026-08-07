@@ -206,8 +206,8 @@ function CashbackCalculator() {
     const withBreakdown = formatBreakdown(day.withList, day.withdrawals);
 
     const verdictLine = cb > 0
-      ? `Cashback Verdict: (${day.deposits.toLocaleString()} deposits - ${day.withdrawals.toLocaleString()} withdrawals) × 10% = KSh ${cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} cashback due`
-      : `Cashback Verdict: No cashback — withdrawals (${day.withdrawals.toLocaleString()} ksh) are equal to or exceed deposits (${day.deposits.toLocaleString()} ksh). Net loss = 0.`;
+      ? `Cashback Verdict: Eligible for cashback! (${day.deposits.toLocaleString()} deposits - ${day.withdrawals.toLocaleString()} withdrawals) × 10% = KSh ${cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} cashback due.`
+      : `Cashback Verdict: Not eligible for cashback. Cashback is calculated as 10% of net losses (Deposits minus Withdrawals). Since total withdrawals (KSh ${day.withdrawals.toLocaleString()}) equal or exceed total deposits (KSh ${day.deposits.toLocaleString()}), the net loss is KSh 0, so no cashback is generated.`;
 
     const lines = [
       `Sum of Deposits (${startStr} – ${endStr}): ${depBreakdown}`,
@@ -569,15 +569,15 @@ Example:
 
                     {/* Line 3 — Cashback Verdict */}
                     <div className="flex items-center justify-between bg-[#1b1e2b] rounded-xl px-3 py-2.5">
-                      <div>
+                      <div className="flex-1 pr-2 min-w-0">
                         <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Cashback Verdict</span>
-                        <span className={`text-xs font-bold ${cb > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {cb > 0 ? `KSh ${cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} due` : 'No cashback'}
+                        <span className={`text-xs font-bold block truncate ${cb > 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                          {cb > 0 ? `KSh ${cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} due` : `Not Eligible — Withdrawals (KSh ${day.withdrawals.toLocaleString()}) ≥ Deposits (KSh ${day.deposits.toLocaleString()})`}
                         </span>
                       </div>
                       <button
                         onClick={() => handleCopySummary(day, 3)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg text-[#baff55] text-[9px] font-black uppercase tracking-widest transition-all"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg text-[#baff55] text-[9px] font-black uppercase tracking-widest transition-all shrink-0"
                       >
                         <Copy size={10} />
                         Copy
