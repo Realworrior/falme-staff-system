@@ -215,27 +215,30 @@ const Dashboard = () => {
 
           {/* Shortcuts Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
-            {shortcuts.map(res => (
-              <button 
-                key={res.name} 
-                onClick={() => navigate(res.path + (res.params || ''))}
-                className="cutout-card hover-bg flex flex-col items-start gap-4 p-5 transition-all duration-300 group relative overflow-hidden cursor-pointer text-left"
-              >
-                <div 
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center"
-                  style={{ background: `${res.color}20` }}
+            {shortcuts.map(res => {
+              const Icon = res.icon;
+              return (
+                <button 
+                  key={res.name} 
+                  onClick={() => navigate(res.path + (res.params || ''))}
+                  className="cutout-card hover-bg flex flex-col items-start gap-4 p-5 transition-all duration-300 group relative overflow-hidden cursor-pointer text-left"
                 >
-                  <res.icon size={18} style={{ color: res.color }} />
-                </div>
-                <div>
-                  <span className="block text-xs text-[#8e8e93] font-medium mb-1">Launch</span>
-                  <span className="block text-sm font-semibold text-white">{res.name}</span>
-                </div>
-                <div className="absolute top-3 right-3 w-8 h-8 bg-[#161616] rounded-full flex items-center justify-center transition-all">
-                  <ArrowUpRight size={14} className="text-white" />
-                </div>
-              </button>
-            ))}
+                  <div 
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                    style={{ background: `${res.color}20` }}
+                  >
+                    <Icon size={18} style={{ color: res.color }} />
+                  </div>
+                  <div>
+                    <span className="block text-xs text-[#8e8e93] font-medium mb-1">Launch</span>
+                    <span className="block text-sm font-semibold text-white">{res.name}</span>
+                  </div>
+                  <div className="absolute top-3 right-3 w-8 h-8 bg-[#161616] rounded-full flex items-center justify-center transition-all">
+                    <ArrowUpRight size={14} className="text-white" />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 

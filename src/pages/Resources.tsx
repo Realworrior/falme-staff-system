@@ -2635,7 +2635,7 @@ function ComplianceView({ accent }: { accent: string }) {
           ].map((p, i) => (
             <div key={i} className="p-5 rounded-xl bg-black/20 border border-white/5 text-center">
               <div className="flex justify-center mb-3">
-                <p.icon size={28} className="text-emerald-400" />
+                <RenderIcon icon={p.icon} size={28} className="text-emerald-400" />
               </div>
               <div className="text-emerald-400 font-bold mb-2">{p.title}</div>
               <p className="text-white/50 text-xs leading-relaxed">{p.desc}</p>
@@ -2921,7 +2921,7 @@ export default function Resources() {
                       : "1px solid transparent",
                 }}
               >
-                <s.icon size={15} />
+                <RenderIcon icon={s.icon} size={15} />
                 <span>{s.label}</span>
               </button>
             ))}
