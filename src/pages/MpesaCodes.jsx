@@ -17,27 +17,70 @@ import {
   TrendingUp,
   BarChart3,
   Calendar,
-  FileText
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  Layers
 } from "lucide-react";
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
 
-// Helper to generate formatted 1-hour window string based on offset from current time
-function generateHourRange(offsetHours = 0) {
-  const now = new Date();
-  const targetDate = new Date(now.getTime() + offsetHours * 3600 * 1000);
-  
-  const start = new Date(targetDate);
-  start.setMinutes(0, 0, 0);
-  
-  const end = new Date(start);
-  end.setHours(end.getHours() + 1);
+// Helper to calculate shift window (1 AM to 7 AM condensed, rest 1-hour brackets)
+function getShiftWindow(dateInput) {
+  const date = new Date(dateInput);
+  const hour = date.getHours();
 
-  const formatTime = (d) => {
-    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-  };
+  // 1:00 AM to 7:00 AM condensed bracket (hours 1, 2, 3, 4, 5, 6)
+  if (hour >= 1 && hour < 7) {
+    const start = new Date(date);
+    start.setHours(1, 0, 0, 0);
+    const end = new Date(date);
+    end.setHours(7, 0, 0, 0);
+    const formatTime = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+    return {
+      startTime: start,
+      endTime: end,
+      timeRange: `${formatTime(start)} - ${formatTime(end)}`,
+      isNightShift: true
+    };
+  } else {
+    // Regular 1-hour window
+    const start = new Date(date);
+    start.setMinutes(0, 0, 0);
+    const end = new Date(start);
+    end.setHours(end.getHours() + 1);
+    const formatTime = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+    return {
+      startTime: start,
+      endTime: end,
+      timeRange: `${formatTime(start)} - ${formatTime(end)}`,
+      isNightShift: false
+    };
+  }
+}
 
-  return `${formatTime(start)} - ${formatTime(end)}`;
+// Generate hour range with shift stepping support
+function generateHourRange(shiftStep = 0) {
+  let date = new Date();
+  
+  if (shiftStep !== 0) {
+    let steps = Math.abs(shiftStep);
+    let direction = shiftStep > 0 ? 1 : -1;
+    
+    while (steps > 0) {
+      const window = getShiftWindow(date);
+      if (direction > 0) {
+        // Step forward past current shift end
+        date = new Date(window.endTime.getTime() + 1000);
+      } else {
+        // Step backward before current shift start
+        date = new Date(window.startTime.getTime() - 1000);
+      }
+      steps--;
+    }
+  }
+
+  return getShiftWindow(date).timeRange;
 }
 
 function parseSMS(text) {
@@ -95,6 +138,7 @@ const DEFAULT_HOURLY_COUNTER = {
 
 export default function MpesaCodes() {
   const [activeTab, setActiveTab] = useState("counter"); // 'counter' or 'ledger'
+  const [showAnalyticsDetails, setShowAnalyticsDetails] = useState(false);
   const [inputText, setInputText] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -116,7 +160,7 @@ export default function MpesaCodes() {
   });
 
   const [copiedCounter, setCopiedCounter] = useState(false);
-  const [hourOffset, setHourOffset] = useState(0);
+  const [shiftStepOffset, setShiftStepOffset] = useState(0);
   const [isNearHourEnd, setIsNearHourEnd] = useState(false);
   const [minutesRemaining, setMinutesRemaining] = useState(60);
 
@@ -213,7 +257,6 @@ export default function MpesaCodes() {
             }
           }
 
-          // Filter out internal control records from regular SMS entries list
           const smsEntries = data.filter(item => 
             item.id !== 'hourly_counter_global' && 
             item.transactionCode !== '__HOURLY_COUNTER__' &&
@@ -236,7 +279,7 @@ export default function MpesaCodes() {
         const newRecord = payload.new;
         const oldRecord = payload.old;
 
-        // Check if change is for the hourly counter record
+        // Counter Record Realtime
         if ((newRecord && (newRecord.id === 'hourly_counter_global' || newRecord.transactionCode === '__HOURLY_COUNTER__')) ||
             (oldRecord && (oldRecord.id === 'hourly_counter_global' || oldRecord.transactionCode === '__HOURLY_COUNTER__'))) {
           if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && newRecord?.raw) {
@@ -250,7 +293,7 @@ export default function MpesaCodes() {
           return;
         }
 
-        // Check if change is for analytics history
+        // Analytics Record Realtime
         if ((newRecord && (newRecord.id === 'hourly_analytics_history' || newRecord.transactionCode === '__HOURLY_ANALYTICS__')) ||
             (oldRecord && (oldRecord.id === 'hourly_analytics_history' || oldRecord.transactionCode === '__HOURLY_ANALYTICS__'))) {
           if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && newRecord?.raw) {
@@ -264,7 +307,7 @@ export default function MpesaCodes() {
           return;
         }
 
-        // Handle regular SMS code entries
+        // Regular SMS code entries
         if (payload.eventType === 'INSERT') {
           setEntries((prev) => {
             if (prev.some((e) => e.id === payload.new.id)) return prev;
@@ -285,24 +328,27 @@ export default function MpesaCodes() {
     };
   }, []);
 
-  // Auto-Hour Detection, End-of-Hour Notification & Auto-Reset Logic
+  // Auto-Hour Detection & Shift Window Rollover Logic
   useEffect(() => {
     const checkHourRollover = () => {
       const now = new Date();
-      const currentHour = now.getHours();
+      const currentWindow = getShiftWindow(now);
       const currentMinute = now.getMinutes();
 
-      setMinutesRemaining(60 - currentMinute);
-      setIsNearHourEnd(currentMinute >= 50);
+      // Time remaining in current shift window
+      const msLeft = currentWindow.endTime.getTime() - now.getTime();
+      const minsLeft = Math.max(0, Math.ceil(msLeft / 60000));
+      setMinutesRemaining(minsLeft);
+      setIsNearHourEnd(minsLeft <= 10);
 
       setCounterState((prev) => {
-        // If hour has changed
-        if (prev.lastActiveHour !== undefined && prev.lastActiveHour !== currentHour) {
-          const finishedRange = prev.timeRange || generateHourRange(0);
+        // If current window is different from recorded active window
+        if (prev.timeRange && prev.timeRange !== currentWindow.timeRange) {
+          const finishedRange = prev.timeRange;
           const depCount = prev.depositCount || 0;
           const wthCount = prev.withdrawalCount || 0;
 
-          // Auto-archive previous hour to Analytics if there was any count
+          // Auto-archive previous shift to Analytics
           if (depCount > 0 || wthCount > 0) {
             const archiveEntry = {
               id: `analytics_${Date.now()}`,
@@ -324,24 +370,21 @@ export default function MpesaCodes() {
             });
           }
 
-          // Auto-advance to new hour and reset counts
-          const newRange = generateHourRange(0);
+          // Auto-advance to new shift window and reset counts
+          const newRange = currentWindow.timeRange;
           const newState = {
             ...prev,
             timeRange: newRange,
             depositCount: 0,
             withdrawalCount: 0,
-            lastActiveHour: currentHour
+            lastActiveHour: now.getHours()
           };
 
           syncCounterToSupabase(newState);
-          addToast(`New shift hour (${newRange}). Counters auto-reset!`, "info");
+          addToast(`New shift window (${newRange}). Counters auto-reset!`, "info");
           return newState;
         }
 
-        if (prev.lastActiveHour === undefined) {
-          return { ...prev, lastActiveHour: currentHour };
-        }
         return prev;
       });
     };
@@ -382,9 +425,10 @@ export default function MpesaCodes() {
     addToast("Counters reset to 0", "info");
   };
 
-  const handleSetHourOffset = (offset) => {
-    setHourOffset(offset);
-    const newRange = generateHourRange(offset);
+  const handleStepShift = (step) => {
+    const nextOffset = shiftStepOffset + step;
+    setShiftStepOffset(nextOffset);
+    const newRange = generateHourRange(nextOffset);
     updateCounterState((prev) => ({
       ...prev,
       timeRange: newRange
@@ -636,7 +680,7 @@ export default function MpesaCodes() {
   const totalShiftsLogged = analyticsHistory.length;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-5">
 
       {/* ── PAGE HEADER ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
@@ -648,7 +692,7 @@ export default function MpesaCodes() {
             <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">MPesa Operations Hub</h1>
           </div>
           <p className="text-xs text-gray-400 font-medium">
-            Hourly failure & completion counters + automatic shift analytics & SMS ledger
+            Hourly counters & night-shift brackets (1am-7am) + real-time analytics & SMS ledger
           </p>
         </div>
 
@@ -685,6 +729,145 @@ export default function MpesaCodes() {
         </div>
       </div>
 
+      {/* ── MINIMIZED TOP HEADER ANALYTICS BAR (INSPIRED BY MINIMAL HORIZONTAL BAR) ── */}
+      <div className="bg-[#141620] border border-white/10 rounded-2xl px-4 py-3 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Metric Pills Row */}
+        <div className="flex flex-wrap items-center gap-6 w-full md:w-auto">
+          {/* Label */}
+          <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <BarChart3 size={15} className="text-[#baff55]" />
+            <span>Analytics Summary</span>
+          </div>
+
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+
+          {/* Metric 1: Deposits */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">Deposits</span>
+            <span className="text-base font-black font-mono text-white">{totalDepositsLogged}</span>
+            <span className="text-[10px] font-bold text-black bg-[#baff55] px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <span>✅</span> Logged
+            </span>
+          </div>
+
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+
+          {/* Metric 2: Withdrawals */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">Withdrawals</span>
+            <span className="text-base font-black font-mono text-white">{totalWithdrawalsLogged}</span>
+            <span className="text-[10px] font-bold text-black bg-[#baff55] px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <span>✅</span> Logged
+            </span>
+          </div>
+
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+
+          {/* Metric 3: Shifts Tracked */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">Shifts</span>
+            <span className="text-base font-black font-mono text-white">{totalShiftsLogged}</span>
+          </div>
+        </div>
+
+        {/* Collapsible History Log Toggle Button */}
+        <button
+          onClick={() => setShowAnalyticsDetails(!showAnalyticsDetails)}
+          className="w-full md:w-auto flex items-center justify-center gap-2 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/10 transition-all shrink-0"
+        >
+          <span>{showAnalyticsDetails ? "Hide History Log" : "View Detailed Log"}</span>
+          {showAnalyticsDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </button>
+      </div>
+
+      {/* ── EXPANDABLE DETAILED ANALYTICS LOG TABLE ── */}
+      {showAnalyticsDetails && (
+        <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <Calendar size={15} className="text-[#baff55]" />
+              Detailed Shift History Log
+            </h3>
+            {analyticsHistory.length > 0 && (
+              <button
+                onClick={handleClearAnalytics}
+                className="text-[11px] font-bold text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-lg transition-all"
+              >
+                Clear History
+              </button>
+            )}
+          </div>
+
+          <div className="bg-[#0b0c12] border border-white/5 rounded-xl overflow-hidden">
+            {analyticsHistory.length === 0 ? (
+              <div className="text-center py-10 text-xs text-gray-500 font-bold uppercase tracking-wider">
+                No shift reports saved yet — click "Copy Hourly Report" to log analytics
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-white/[0.02] border-b border-white/5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                    <tr>
+                      <th className="p-3">Shift Date</th>
+                      <th className="p-3">Time Window</th>
+                      <th className="p-3">Deposits</th>
+                      <th className="p-3">Withdrawals</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 font-mono">
+                    {analyticsHistory.map((item) => (
+                      <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
+                        <td className="p-3 text-gray-400 whitespace-nowrap">
+                          {item.date || new Date(item.copiedAt).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                        </td>
+                        <td className="p-3 text-white font-bold whitespace-nowrap">
+                          ⏰ {item.timeRange}
+                        </td>
+                        <td className="p-3 text-[#baff55] font-bold">
+                          ✅ {item.depositCount ?? 0}
+                        </td>
+                        <td className="p-3 text-[#baff55] font-bold">
+                          ✅ {item.withdrawalCount ?? 0}
+                        </td>
+                        <td className="p-3">
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                            item.autoArchived 
+                              ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
+                              : "bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20"
+                          }`}>
+                            {item.autoArchived ? 'Auto-Archived' : 'Copied & Logged'}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleCopyCounterText(item.timeRange, item.depositCount, item.withdrawalCount)}
+                              className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                              title="Re-copy report"
+                            >
+                              <Copy size={12} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAnalyticsItem(item.id)}
+                              className="p-1.5 text-gray-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
+                              title="Delete record"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── TAB 1: MPESA HOURLY COUNTER & ANALYTICS ── */}
       {activeTab === "counter" && (
         <div className="space-y-6">
@@ -698,10 +881,10 @@ export default function MpesaCodes() {
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-white uppercase tracking-wider">
-                    ⏰ Shift Hour Ending Soon ({minutesRemaining} min remaining)
+                    ⏰ Shift Window Ending Soon ({minutesRemaining} min remaining)
                   </h3>
                   <p className="text-xs text-gray-300">
-                    Click <strong className="text-[#baff55]">Copy Report</strong> to log this hour's report before counters auto-reset!
+                    Click <strong className="text-[#baff55]">Copy Report</strong> to log this shift before counters auto-reset!
                   </p>
                 </div>
               </div>
@@ -725,39 +908,42 @@ export default function MpesaCodes() {
                 <div className="flex items-center gap-2">
                   <Clock size={18} className="text-[#baff55]" />
                   <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
-                    MPesa Hourly Counter
+                    MPesa Shift Counter
                   </h2>
                 </div>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Auto-advances time & auto-resets counts each hour. Copies save directly to Analytics.
+                  1am-7am condensed into 1 shift bracket. 7am-1am operates on hourly brackets.
                 </p>
               </div>
 
               {/* Time Window Selector */}
               <div className="flex items-center gap-2 bg-[#1a1c27] p-1.5 rounded-xl border border-white/10 shrink-0">
                 <button
-                  onClick={() => handleSetHourOffset(hourOffset - 1)}
+                  onClick={() => handleStepShift(-1)}
                   className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                  title="Previous Hour"
+                  title="Previous Shift"
                 >
-                  &lt; Prev
+                  &lt; Prev Shift
                 </button>
                 <button
-                  onClick={() => handleSetHourOffset(0)}
+                  onClick={() => {
+                    setShiftStepOffset(0);
+                    updateCounterState({ timeRange: generateHourRange(0) });
+                  }}
                   className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
-                    hourOffset === 0 
+                    shiftStepOffset === 0 
                       ? "bg-[#baff55] text-black font-black" 
                       : "text-gray-300 hover:text-white bg-white/5"
                   }`}
                 >
-                  Current Hour
+                  Current Shift
                 </button>
                 <button
-                  onClick={() => handleSetHourOffset(offset => offset + 1)}
+                  onClick={() => handleStepShift(1)}
                   className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                  title="Next Hour"
+                  title="Next Shift"
                 >
-                  Next &gt;
+                  Next Shift &gt;
                 </button>
               </div>
             </div>
@@ -765,7 +951,7 @@ export default function MpesaCodes() {
             {/* Time Window Field */}
             <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#181a24] p-3 rounded-xl border border-white/5">
               <span className="text-xs font-bold text-gray-400 shrink-0 flex items-center gap-1.5">
-                <Clock size={14} className="text-[#baff55]" /> Active Time Window:
+                <Clock size={14} className="text-[#baff55]" /> Active Shift Window:
               </span>
               <div className="flex-1 w-full flex items-center gap-2">
                 <span className="text-base shrink-0">⏰</span>
@@ -774,12 +960,15 @@ export default function MpesaCodes() {
                   value={counterState.timeRange || generateHourRange(0)}
                   onChange={(e) => updateCounterState({ timeRange: e.target.value })}
                   className="flex-1 bg-[#0d0e14] border border-white/10 rounded-lg px-3 py-1.5 text-sm font-mono text-white outline-none focus:border-[#baff55]/50 transition-all"
-                  placeholder="e.g. 1:00 PM - 2:00 PM"
+                  placeholder="e.g. 1:00 PM - 2:00 PM or 1:00 AM - 7:00 AM"
                 />
                 <button
-                  onClick={() => updateCounterState({ timeRange: generateHourRange(hourOffset) })}
+                  onClick={() => {
+                    setShiftStepOffset(0);
+                    updateCounterState({ timeRange: generateHourRange(0) });
+                  }}
                   className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
-                  title="Reset Time Window"
+                  title="Reset to current shift"
                 >
                   <RefreshCw size={12} />
                   Reset Time
@@ -921,131 +1110,6 @@ export default function MpesaCodes() {
                   {copiedCounter ? "Copied & Saved to Analytics!" : "Copy Hourly Report & Save Analytics"}
                 </button>
               </div>
-            </div>
-          </div>
-
-          {/* MPesa Hourly Analytics Card */}
-          <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <BarChart3 size={18} className="text-[#baff55]" />
-                  <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
-                    MPesa Shift Analytics History
-                  </h2>
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Historical record of copied and auto-archived hourly shift reports
-                </p>
-              </div>
-
-              {analyticsHistory.length > 0 && (
-                <button
-                  onClick={handleClearAnalytics}
-                  className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto"
-                >
-                  Clear Analytics History
-                </button>
-              )}
-            </div>
-
-            {/* Analytics Summary Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1">
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
-                  <TrendingUp size={14} className="text-[#baff55]" /> Total Deposits
-                </div>
-                <div className="text-2xl md:text-3xl font-black font-mono text-white">
-                  {totalDepositsLogged}
-                </div>
-              </div>
-
-              <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1">
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
-                  <TrendingUp size={14} className="text-[#baff55]" /> Total Withdrawals
-                </div>
-                <div className="text-2xl md:text-3xl font-black font-mono text-white">
-                  {totalWithdrawalsLogged}
-                </div>
-              </div>
-
-              <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1 col-span-2 md:col-span-1">
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
-                  <Calendar size={14} className="text-[#baff55]" /> Shifts Tracked
-                </div>
-                <div className="text-2xl md:text-3xl font-black font-mono text-white">
-                  {totalShiftsLogged}
-                </div>
-              </div>
-            </div>
-
-            {/* Analytics Table */}
-            <div className="bg-[#0b0c12] border border-white/5 rounded-xl overflow-hidden">
-              {analyticsHistory.length === 0 ? (
-                <div className="text-center py-12 text-xs text-gray-500 font-bold uppercase tracking-wider">
-                  No shift reports saved yet — click "Copy Hourly Report" above to log analytics
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-white/[0.02] border-b border-white/5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                      <tr>
-                        <th className="p-3">Shift Date</th>
-                        <th className="p-3">Time Window</th>
-                        <th className="p-3">Deposits</th>
-                        <th className="p-3">Withdrawals</th>
-                        <th className="p-3">Status</th>
-                        <th className="p-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 font-mono">
-                      {analyticsHistory.map((item) => (
-                        <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
-                          <td className="p-3 text-gray-400 whitespace-nowrap">
-                            {item.date || new Date(item.copiedAt).toLocaleDateString([], { day: '2-digit', month: 'short' })}
-                          </td>
-                          <td className="p-3 text-white font-bold whitespace-nowrap">
-                            ⏰ {item.timeRange}
-                          </td>
-                          <td className="p-3 text-[#baff55] font-bold">
-                            ✅ {item.depositCount ?? 0}
-                          </td>
-                          <td className="p-3 text-[#baff55] font-bold">
-                            ✅ {item.withdrawalCount ?? 0}
-                          </td>
-                          <td className="p-3">
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                              item.autoArchived 
-                                ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
-                                : "bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20"
-                            }`}>
-                              {item.autoArchived ? 'Auto-Archived' : 'Copied & Logged'}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => handleCopyCounterText(item.timeRange, item.depositCount, item.withdrawalCount)}
-                                className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                                title="Re-copy report"
-                              >
-                                <Copy size={12} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteAnalyticsItem(item.id)}
-                                className="p-1.5 text-gray-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
-                                title="Delete record"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
           </div>
 
