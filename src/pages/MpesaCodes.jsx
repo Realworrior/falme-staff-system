@@ -167,7 +167,8 @@ export default function MpesaCodes() {
   const [minutesRemaining, setMinutesRemaining] = useState(60);
 
   const textareaRef = useRef(null);
-  const { addToast } = useToast();
+  const toast = useToast();
+  const addToast = toast?.addToast || toast?.showToast || (() => {});
 
   // Save entries to localStorage on local updates
   useEffect(() => {

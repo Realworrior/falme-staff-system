@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Snackbar, Alert, Box } from '@mui/material';
+import { Snackbar, Alert } from '@mui/material';
 
 const ToastContext = createContext();
 
@@ -18,7 +18,7 @@ export const ToastProvider = ({ children }) => {
     };
 
     return (
-        <ToastContext.Provider value={{ showToast }}>
+        <ToastContext.Provider value={{ showToast, addToast: showToast }}>
             {children}
             <Snackbar
                 open={open}
@@ -53,4 +53,14 @@ export const ToastProvider = ({ children }) => {
     );
 };
 
-export const useToast = () => useContext(ToastContext);
+export const useToast = () => {
+    const context = useContext(ToastContext);
+    if (!context) {
+        return { showToast: () => {}, addToast: () => {} };
+    }
+    const notifyFn = context.showToast || context.addToast || (() => {});
+    return {
+        showToast: notifyFn,
+        addToast: notifyFn
+    };
+};
