@@ -461,7 +461,7 @@ export default function RotaPage() {
                 onClick={() => setSelectedStaff(null)}
                 className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                   !selectedStaff 
-                    ? "bg-accent border-accent text-white" 
+                    ? "bg-accent border-accent text-black" 
                     : "bg-white/5 border-white/10 text-gray-500 hover:text-gray-300"
                 }`}
               >
@@ -708,7 +708,7 @@ export default function RotaPage() {
                   </button>
                   <button 
                     onClick={handleExportCSV}
-                    className="flex-1 py-4 rounded-2xl bg-accent text-white font-black uppercase tracking-widest hover:bg-blue-600 transition-all"
+                    className="flex-1 py-4 rounded-2xl bg-accent text-black font-black uppercase tracking-widest hover:bg-blue-600 transition-all"
                   >
                     Export CSV
                   </button>

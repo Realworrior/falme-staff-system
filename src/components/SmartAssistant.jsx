@@ -170,7 +170,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="fixed bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-accent text-white shadow-lg z-[999] flex items-center justify-center"
+          className="fixed bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-accent text-black shadow-lg z-[999] flex items-center justify-center"
         >
           <AnimatePresence mode="wait">
             {isOpen ? (

@@ -2688,7 +2688,7 @@ function ToolkitView({ accent }: { accent: string }) {
           <div className="flex-1 text-center lg:text-left">
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
               <h3 className="text-white text-2xl font-black tracking-tight">BlastChat Accelerator</h3>
-              <span className="px-2.5 py-0.5 bg-accent text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg">v1.0 STABLE</span>
+              <span className="px-2.5 py-0.5 bg-accent text-black text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg">v1.0 STABLE</span>
             </div>
             <p className="text-white/60 text-base max-w-xl leading-relaxed">
               Equip your browser with real-time smart intelligence. This extension syncs with our live templates to provide instant suggestions as you chat with clients.
@@ -2710,7 +2710,7 @@ function ToolkitView({ accent }: { accent: string }) {
              <a 
                href="/blastchat-extension.zip"
                download="blastchat-extension.zip"
-               className="w-full px-6 py-4 bg-accent text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
+               className="w-full px-6 py-4 bg-accent text-black rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
              >
                <Download size={16} /> Download Extension (Chrome)
              </a>

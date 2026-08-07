@@ -384,8 +384,8 @@ function CashbackCalculator() {
               </div>
 
               <div className="flex bg-[#1b1e2b] p-1 rounded-2xl self-start">
-                <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isSmartPasteMode ? 'bg-accent text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Smart Paste</button>
-                <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isSmartPasteMode ? 'bg-accent text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Manual</button>
+                <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isSmartPasteMode ? 'bg-accent text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Smart Paste</button>
+                <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isSmartPasteMode ? 'bg-accent text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Manual</button>
               </div>
             </div>
 
