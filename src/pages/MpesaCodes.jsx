@@ -20,7 +20,9 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
-  Layers
+  Layers,
+  CheckCircle2,
+  XCircle
 } from "lucide-react";
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
@@ -129,9 +131,9 @@ const DEFAULT_HOURLY_COUNTER = {
   timeRange: generateHourRange(0),
   depositCount: 0,
   withdrawalCount: 0,
-  depositIcon: '✅',
+  depositIcon: 'check',
   depositLabel: 'Deposit Completed',
-  withdrawalIcon: '✅',
+  withdrawalIcon: 'check',
   withdrawalLabel: 'Completed withdrawal',
   lastActiveHour: new Date().getHours()
 };
@@ -437,15 +439,17 @@ export default function MpesaCodes() {
 
   const getFormattedCounterText = (customRange, customDep, customWth) => {
     const range = customRange || counterState.timeRange || generateHourRange(0);
-    const dIcon = counterState.depositIcon || '✅';
+    // Map icon key to text symbol for clipboard output
+    const iconToText = (key) => (key === 'x' ? '\u274c' : '\u2705');
+    const dIcon = iconToText(counterState.depositIcon);
     const dLabel = counterState.depositLabel || 'Deposit Completed';
     const dCount = customDep ?? counterState.depositCount ?? 0;
 
-    const wIcon = counterState.withdrawalIcon || '✅';
+    const wIcon = iconToText(counterState.withdrawalIcon);
     const wLabel = counterState.withdrawalLabel || 'Completed withdrawal';
     const wCount = customWth ?? counterState.withdrawalCount ?? 0;
 
-    return `⏰ ${range}\n${dIcon} ${dLabel}: ${dCount}\n${wIcon}${wLabel}: ${wCount}`;
+    return `\u23f0 ${range}\n${dIcon} ${dLabel}: ${dCount}\n${wIcon}${wLabel}: ${wCount}`;
   };
 
   const handleCopyCounterText = async (customRange, customDep, customWth) => {
@@ -746,7 +750,7 @@ export default function MpesaCodes() {
             <span className="text-xs text-gray-400">Deposits</span>
             <span className="text-base font-black font-mono text-white">{totalDepositsLogged}</span>
             <span className="text-[10px] font-bold text-black bg-[#baff55] px-2 py-0.5 rounded-full flex items-center gap-0.5">
-              <span>✅</span> Logged
+              <CheckCircle2 size={10} /> Logged
             </span>
           </div>
 
@@ -757,7 +761,7 @@ export default function MpesaCodes() {
             <span className="text-xs text-gray-400">Withdrawals</span>
             <span className="text-base font-black font-mono text-white">{totalWithdrawalsLogged}</span>
             <span className="text-[10px] font-bold text-black bg-[#baff55] px-2 py-0.5 rounded-full flex items-center gap-0.5">
-              <span>✅</span> Logged
+              <CheckCircle2 size={10} /> Logged
             </span>
           </div>
 
@@ -823,13 +827,13 @@ export default function MpesaCodes() {
                           {item.date || new Date(item.copiedAt).toLocaleDateString([], { day: '2-digit', month: 'short' })}
                         </td>
                         <td className="p-3 text-white font-bold whitespace-nowrap">
-                          ⏰ {item.timeRange}
+                          <span className="flex items-center gap-1.5"><Clock size={12} className="text-gray-400" /> {item.timeRange}</span>
                         </td>
                         <td className="p-3 text-[#baff55] font-bold">
-                          ✅ {item.depositCount ?? 0}
+                          <span className="flex items-center gap-1"><CheckCircle2 size={12} /> {item.depositCount ?? 0}</span>
                         </td>
                         <td className="p-3 text-[#baff55] font-bold">
-                          ✅ {item.withdrawalCount ?? 0}
+                          <span className="flex items-center gap-1"><CheckCircle2 size={12} /> {item.withdrawalCount ?? 0}</span>
                         </td>
                         <td className="p-3">
                           <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
@@ -880,8 +884,8 @@ export default function MpesaCodes() {
                   <Clock size={20} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-wider">
-                    ⏰ Shift Window Ending Soon ({minutesRemaining} min remaining)
+                  <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                    <Clock size={16} className="text-black" /> Shift Window Ending Soon ({minutesRemaining} min remaining)
                   </h3>
                   <p className="text-xs text-gray-300">
                     Click <strong className="text-[#baff55]">Copy Report</strong> to log this shift before counters auto-reset!
@@ -954,7 +958,7 @@ export default function MpesaCodes() {
                 <Clock size={14} className="text-[#baff55]" /> Active Shift Window:
               </span>
               <div className="flex-1 w-full flex items-center gap-2">
-                <span className="text-base shrink-0">⏰</span>
+                <Clock size={16} className="text-[#baff55] shrink-0" />
                 <input
                   type="text"
                   value={counterState.timeRange || generateHourRange(0)}
@@ -984,11 +988,11 @@ export default function MpesaCodes() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => updateCounterState({ depositIcon: counterState.depositIcon === '✅' ? '❌' : '✅' })}
-                      className="text-lg p-1 hover:bg-white/10 rounded-lg transition-all"
-                      title="Toggle status emoji"
+                      onClick={() => updateCounterState({ depositIcon: counterState.depositIcon === 'check' ? 'x' : 'check' })}
+                      className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                      title="Toggle status icon"
                     >
-                      {counterState.depositIcon || '✅'}
+                      {(counterState.depositIcon === 'x') ? <XCircle size={16} className="text-red-400" /> : <CheckCircle2 size={16} className="text-[#baff55]" />}
                     </button>
                     <input
                       type="text"
@@ -1035,11 +1039,11 @@ export default function MpesaCodes() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => updateCounterState({ withdrawalIcon: counterState.withdrawalIcon === '✅' ? '❌' : '✅' })}
-                      className="text-lg p-1 hover:bg-white/10 rounded-lg transition-all"
-                      title="Toggle status emoji"
+                      onClick={() => updateCounterState({ withdrawalIcon: counterState.withdrawalIcon === 'check' ? 'x' : 'check' })}
+                      className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                      title="Toggle status icon"
                     >
-                      {counterState.withdrawalIcon || '✅'}
+                      {(counterState.withdrawalIcon === 'x') ? <XCircle size={16} className="text-red-400" /> : <CheckCircle2 size={16} className="text-[#baff55]" />}
                     </button>
                     <input
                       type="text"

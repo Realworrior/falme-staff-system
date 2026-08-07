@@ -1,4 +1,52 @@
 import { useState, useEffect } from "react";
+import type { LucideIcon } from 'lucide-react';
+import {
+  Trophy,
+  Target,
+  Scale,
+  Clock,
+  Star,
+  Layers,
+  Hash,
+  CheckCircle2,
+  Shuffle,
+  Ban,
+  BarChart3,
+  Rocket,
+  Globe,
+  Dices,
+  Gem,
+  Wrench,
+  ShieldCheck,
+  Toolbox,
+  Shield,
+  Plane,
+  Flame,
+  Crown,
+  Cpu,
+  Palette,
+  Swords,
+  Ghost,
+  Building2,
+  Helicopter,
+  Gamepad2,
+  Zap,
+  BookOpen,
+  ClipboardList,
+  Gift,
+  TrendingDown,
+  Lock,
+  Package,
+  RefreshCw,
+  MousePointer,
+  AlertTriangle,
+  Folder,
+  Download,
+  WifiOff,
+  SlidersHorizontal,
+  BrainCircuit,
+  FileCheck,
+} from 'lucide-react';
 import { 
   isAfter, 
   isBefore, 
@@ -50,13 +98,14 @@ interface Category {
   id: string;
   label: string;
   tagline: string;
-  icon: string;
+  icon: LucideIcon;
   colorKey: string;
   markets: Market[];
+  isNew?: boolean;
 }
 interface SportData {
   label: string;
-  icon: string;
+  icon: LucideIcon;
   accent: string;
   accentLight: string;
   accentBorder: string;
@@ -67,7 +116,7 @@ interface SportData {
 interface CrashGame {
   name: string;
   theme: string;
-  themeIcon: string;
+  themeIcon: LucideIcon;
   mechanic: string;
   historyHow: string;
 }
@@ -187,7 +236,7 @@ const colorMap: Record<
 const sportsData: Record<Sport, SportData> = {
   soccer: {
     label: "Soccer",
-    icon: "⚽",
+    icon: Shield,
     accent: "#22c55e",
     accentLight: "rgba(34,197,94,0.15)",
     accentBorder: "rgba(34,197,94,0.4)",
@@ -197,7 +246,7 @@ const sportsData: Record<Sport, SportData> = {
         label: "Who Takes the Points?",
         tagline:
           "Match result markets  -  the purest form of prediction.",
-        icon: "🏆",
+        icon: Trophy,
         colorKey: "green",
         markets: [
           {
@@ -285,7 +334,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "goals",
         label: "How Many & Who Scores?",
         tagline: "Total goals, exact scores, and goal bands.",
-        icon: "🎯",
+        icon: Target,
         colorKey: "emerald",
         markets: [
           {
@@ -413,7 +462,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "handicap",
         label: "Evening the Odds",
         tagline: "Virtual advantages that reshape the contest.",
-        icon: "⚖️",
+        icon: Scale,
         colorKey: "cyan",
         markets: [
           {
@@ -460,7 +509,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "halftime",
         label: "By the Clock",
         tagline: "First 45 minutes  -  a match within the match.",
-        icon: "⏱️",
+        icon: Clock,
         colorKey: "blue",
         markets: [
           {
@@ -521,7 +570,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "player",
         label: "Individual Brilliance",
         tagline: "Back a specific player to deliver.",
-        icon: "⭐",
+        icon: Star,
         colorKey: "yellow",
         markets: [
           {
@@ -576,7 +625,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "specials",
         label: "Beyond the Score",
         tagline: "Cards, corners, and shots on goal.",
-        icon: "🃏",
+        icon: Layers,
         colorKey: "red",
         markets: [
           {
@@ -626,7 +675,7 @@ const sportsData: Record<Sport, SportData> = {
 
   basketball: {
     label: "Basketball",
-    icon: "🏀",
+    icon: Dices,
     accent: "#f97316",
     accentLight: "rgba(249,115,22,0.15)",
     accentBorder: "rgba(249,115,22,0.4)",
@@ -635,7 +684,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "outcome",
         label: "Who Takes the W?",
         tagline: "Pick a winner  -  with or without overtime.",
-        icon: "🏆",
+        icon: Trophy,
         colorKey: "orange",
         markets: [
           {
@@ -673,7 +722,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "spread",
         label: "Level the Court",
         tagline: "Point spreads that close the talent gap.",
-        icon: "⚖️",
+        icon: Scale,
         colorKey: "amber",
         markets: [
           {
@@ -691,7 +740,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "totals",
         label: "The Scoreboard",
         tagline: "Will it be a shootout or a grind?",
-        icon: "🔢",
+        icon: Hash,
         colorKey: "yellow",
         markets: [
           {
@@ -724,7 +773,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "segments",
         label: "Quarter by Quarter",
         tagline: "Every segment is its own battleground.",
-        icon: "⏱️",
+        icon: Clock,
         colorKey: "blue",
         markets: [
           {
@@ -760,7 +809,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "player",
         label: "Star Power",
         tagline: "Individual stat lines and milestone bets.",
-        icon: "⭐",
+        icon: Star,
         colorKey: "purple",
         markets: [
           {
@@ -805,7 +854,7 @@ const sportsData: Record<Sport, SportData> = {
         label: "The Rulebook",
         tagline:
           "What every agent must know before settling bets.",
-        icon: "📋",
+        icon: ClipboardList,
         colorKey: "slate",
         markets: [
           {
@@ -838,7 +887,7 @@ const sportsData: Record<Sport, SportData> = {
 
   tennis: {
     label: "Tennis",
-    icon: "🎾",
+    icon: Target,
     accent: "#eab308",
     accentLight: "rgba(234,179,8,0.15)",
     accentBorder: "rgba(234,179,8,0.4)",
@@ -847,7 +896,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "match",
         label: "Who Walks Off Victorious?",
         tagline: "Match-level markets  -  no draws, ever.",
-        icon: "🏆",
+        icon: Trophy,
         colorKey: "yellow",
         markets: [
           {
@@ -908,7 +957,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "games",
         label: "Zooming into Games",
         tagline: "Total game counts across the full match.",
-        icon: "🔢",
+        icon: Hash,
         colorKey: "lime",
         markets: [
           {
@@ -935,7 +984,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "set-specific",
         label: "Inside a Single Set",
         tagline: "Drill into the opening set and beyond.",
-        icon: "🎯",
+        icon: Target,
         colorKey: "teal",
         markets: [
           {
@@ -973,7 +1022,7 @@ const sportsData: Record<Sport, SportData> = {
         label: "Tennis Rulebook",
         tagline:
           "Rain delays, retirements, and tie-breaks explained.",
-        icon: "📋",
+        icon: ClipboardList,
         colorKey: "slate",
         markets: [
           {
@@ -1001,7 +1050,7 @@ const sportsData: Record<Sport, SportData> = {
 
   combos: {
     label: "Logic & Combos",
-    icon: "� - ",
+    icon: BrainCircuit,
     accent: "#a855f7",
     accentLight: "rgba(168,85,247,0.15)",
     accentBorder: "rgba(168,85,247,0.4)",
@@ -1011,7 +1060,7 @@ const sportsData: Record<Sport, SportData> = {
         label: "AND  -  Every Condition Must Be Met",
         tagline:
           "All conditions must hold simultaneously. One failure = full loss.",
-        icon: "✅",
+        icon: CheckCircle2,
         colorKey: "purple",
         markets: [
           {
@@ -1078,7 +1127,7 @@ const sportsData: Record<Sport, SportData> = {
         label: "OR  -  One Condition Is Enough",
         tagline:
           "Bet wins if at least one specified outcome occurs.",
-        icon: "🔀",
+        icon: Shuffle,
         colorKey: "blue",
         markets: [
           {
@@ -1129,7 +1178,7 @@ const sportsData: Record<Sport, SportData> = {
         id: "no-nor",
         label: "NO / NOR  -  Betting on Absence",
         tagline: "Win when specific events do NOT happen.",
-        icon: "🚫",
+        icon: Ban,
         colorKey: "red",
         markets: [
           {
@@ -1209,7 +1258,7 @@ const sportsData: Record<Sport, SportData> = {
         label: "Operator Cheat Sheet",
         tagline:
           "The logical reference every agent needs on hand.",
-        icon: "📊",
+        icon: BarChart3,
         colorKey: "indigo",
         markets: [
           {
@@ -1247,7 +1296,7 @@ const sportsData: Record<Sport, SportData> = {
   },
   crash: {
     label: "Crash",
-    icon: "🚀",
+    icon: Rocket,
     accent: "#ef4444",
     accentLight: "rgba(239,68,68,0.15)",
     accentBorder: "rgba(239,68,68,0.4)",
@@ -1255,7 +1304,7 @@ const sportsData: Record<Sport, SportData> = {
   },
   virtual: {
     label: "Virtuals",
-    icon: "🌐",
+    icon: Globe,
     accent: "#06b6d4",
     accentLight: "rgba(6,182,212,0.15)",
     accentBorder: "rgba(6,182,212,0.4)",
@@ -1263,7 +1312,7 @@ const sportsData: Record<Sport, SportData> = {
   },
   casino: {
     label: "Casino",
-    icon: "🎰",
+    icon: Gem,
     accent: "#f59e0b",
     accentLight: "rgba(245,158,11,0.15)",
     accentBorder: "rgba(245,158,11,0.4)",
@@ -1279,7 +1328,7 @@ const crashGames: CrashGame[] = [
   {
     name: "Aviator",
     theme: "Aviation",
-    themeIcon: "✈️",
+    themeIcon: Plane,
     mechanic:
       "Bet on the plane; cash out before it flies away.",
     historyHow: 'Click the "History" icon (top right).',
@@ -1287,91 +1336,91 @@ const crashGames: CrashGame[] = [
   {
     name: "JetX",
     theme: "Space",
-    themeIcon: "🚀",
+    themeIcon: Rocket,
     mechanic: "Bet on the jet; cash out before it explodes.",
     historyHow: 'Use the "Stats" tab on the left.',
   },
   {
     name: "Crash 1917",
     theme: "Vintage",
-    themeIcon: "🛩️",
+    themeIcon: Plane,
     mechanic: "Classic flight; cash out before the crash.",
     historyHow: "History bar at the top.",
   },
   {
     name: "Crash Royale",
     theme: "Luxury",
-    themeIcon: "👑",
+    themeIcon: Crown,
     mechanic: "Royal theme; cash out before the end.",
     historyHow: '"Recent Rounds" at the bottom.',
   },
   {
     name: "Avionix",
     theme: "Futurist",
-    themeIcon: "🛸",
+    themeIcon: Cpu,
     mechanic: "Futuristic jet; cash out before explosion.",
     historyHow: '"Clock" icon in the menu.',
   },
   {
     name: "Aviatrix",
     theme: "NFT",
-    themeIcon: "🎨",
+    themeIcon: Palette,
     mechanic: "Upgrade planes; cash out before crash.",
     historyHow: '"My Bets" tab in-game.',
   },
   {
     name: "FootballX",
     theme: "Sports",
-    themeIcon: "⚽",
+    themeIcon: Shield,
     mechanic: "Juggling ball; cash out before it drops.",
     historyHow: "Ball icons at the top.",
   },
   {
     name: "Bazooka",
     theme: "Military",
-    themeIcon: "💥",
+    themeIcon: Swords,
     mechanic: "Missile launch; cash out before detonation.",
     historyHow: '"Log" section in settings.',
   },
   {
     name: "Crash Witch",
     theme: "Fantasy",
-    themeIcon: "🧙",
+    themeIcon: Ghost,
     mechanic: "Witch on broom; cash out before she falls.",
     historyHow: "Scrollable list on the side.",
   },
   {
     name: "Balloon",
     theme: "Carnival",
-    themeIcon: "🎈",
+    themeIcon: Globe,
     mechanic: "Inflate balloon; cash out before it pops.",
     historyHow: '"Stats" menu in-game.',
   },
   {
     name: "Dragon Flare",
     theme: "Mythical",
-    themeIcon: "🐉",
+    themeIcon: Flame,
     mechanic: "Dragon flight; cash out before it vanishes.",
     historyHow: '"Dragon Log" in-game.',
   },
   {
     name: "Crash 3DX",
     theme: "3D",
-    themeIcon: "🎮",
+    themeIcon: Gamepad2,
     mechanic: "3D visuals; cash out before the crash.",
     historyHow: "3D overlay sidebar.",
   },
   {
     name: "Hotcrash",
     theme: "Fire",
-    themeIcon: "🔥",
+    themeIcon: Flame,
     mechanic: "Heat-themed; cash out before the crash.",
     historyHow: '"Recent" tab in-game.',
   },
   {
     name: "Limbo",
     theme: "Minimal",
-    themeIcon: "📉",
+    themeIcon: TrendingDown,
     mechanic:
       "Predict if next number > your target multiplier.",
     historyHow: "List of previous numbers shown.",
@@ -1379,21 +1428,21 @@ const crashGames: CrashGame[] = [
   {
     name: "Crash Ghostly",
     theme: "Spooky",
-    themeIcon: "👻",
+    themeIcon: Ghost,
     mechanic: "Ghostly ascent; cash out before it vanishes.",
     historyHow: '"Spirit Log" section.',
   },
   {
     name: "Tower",
     theme: "Building",
-    themeIcon: "� - ️",
+    themeIcon: Building2,
     mechanic: "Climb tower; cash out before collapse.",
     historyHow: '"Floor History" tab.',
   },
   {
     name: "HelicopterX",
     theme: "Aviation",
-    themeIcon: "🚁",
+    themeIcon: Helicopter,
     mechanic: "Chopper flight; cash out before crash.",
     historyHow: "History bar at the top.",
   },
@@ -1473,7 +1522,7 @@ const virtualRacing: VirtualGame[] = [
 
 interface ManualSectionMeta {
   label: string;
-  icon: string;
+  icon: LucideIcon;
   tagline: string;
   accent: string;
   accentLight: string;
@@ -1484,7 +1533,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> = {
 
   promotions: {
     label: "Rewards & Perks",
-    icon: "💎",
+    icon: Gift,
     tagline: "Bonuses, cashback, VIP tiers, and referral program",
     accent: "#a855f7",
     accentLight: "rgba(168,85,247,0.15)",
@@ -1492,7 +1541,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> = {
   },
   support: {
     label: "Agent Toolkit",
-    icon: "🛠️",
+    icon: Wrench,
     tagline: "Troubleshooting, escalation matrix & key procedures",
     accent: "#3b82f6",
     accentLight: "rgba(59,130,246,0.15)",
@@ -1500,7 +1549,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> = {
   },
   compliance: {
     label: "Compliance",
-    icon: "⚖️",
+    icon: ShieldCheck,
     tagline: "Responsible gaming, age verification & licensing",
     accent: "#10b981",
     accentLight: "rgba(16,185,129,0.15)",
@@ -1508,7 +1557,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> = {
   },
   toolkit: {
     label: "Staff Toolkit",
-    icon: "🧰",
+    icon: SlidersHorizontal,
     tagline: "Talking points, odds guide & common FAQs",
     accent: "#f472b6",
     accentLight: "rgba(244,114,182,0.15)",
@@ -1626,7 +1675,7 @@ function MarketCard({
                     key={i}
                     className="flex gap-2 items-start text-sm text-yellow-300/60"
                   >
-                    <span className="shrink-0 mt-0.5 text-[10px]">⚠</span>
+                    <AlertTriangle size={12} className="text-yellow-400/60 shrink-0 mt-0.5" />
                     <span className="text-[12px] leading-relaxed">{rule.text}</span>
                   </div>
                 ))}
@@ -1665,12 +1714,15 @@ function CategorySection({
   accent: string;
 }) {
   const colors = colorMap[category.colorKey] ?? colorMap.slate;
+  const IconComp = category.icon;
   return (
     <section className="mb-14">
       <div
         className={`flex items-center gap-4 mb-6 rounded-2xl px-5 py-4 border border-border bg-card`}
       >
-        <span className="text-3xl">{category.icon}</span>
+        <div className={`p-2.5 rounded-xl ${colors.bg} ${colors.border} border`}>
+          <IconComp size={22} className={colors.text} />
+        </div>
         <div>
           <h2
             className={`${colors.text}`}
@@ -1709,6 +1761,7 @@ function SportTab({
   active: boolean;
   onClick: () => void;
 }) {
+  const IconComp = data.icon;
   return (
     <button
       onClick={onClick}
@@ -1721,7 +1774,7 @@ function SportTab({
         color: active ? "#fff" : "rgba(255,255,255,0.55)",
       }}
     >
-      <span className="text-xl">{data.icon}</span>
+      <IconComp size={18} style={{ opacity: active ? 1 : 0.7 }} />
       <span>{data.label}</span>
       <span
         className="text-xs px-2 py-0.5 rounded-full"
@@ -1755,6 +1808,7 @@ function ManualTab({
   active: boolean;
   onClick: () => void;
 }) {
+  const IconComp = meta.icon;
   return (
     <button
       onClick={onClick}
@@ -1767,7 +1821,7 @@ function ManualTab({
         color: active ? meta.accent : "rgba(255,255,255,0.55)",
       }}
     >
-      <span>{meta.icon}</span>
+      <IconComp size={16} />
       <span>{meta.label}</span>
       {meta.isNew && (
         <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none ml-1">New</span>
@@ -1790,7 +1844,7 @@ function CrashGamesView({ accent }: { accent: string }) {
         style={{ background: "rgba(239,68,68,0.07)" }}
       >
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-2xl">⚡</span>
+          <Zap size={24} className="text-red-400" />
           <h3
             className="text-white"
             style={{ fontSize: "1rem" }}
@@ -1800,11 +1854,11 @@ function CrashGamesView({ accent }: { accent: string }) {
         </div>
         <p className="text-white/60 text-sm leading-relaxed">
           A multiplier starts at{" "}
-          <span className="text-red-400">1.00� - </span> and climbs
+          <span className="text-red-400">1.00x</span> and climbs
           continuously. Players must click{" "}
           <span className="text-white/80">"Cash Out"</span>{" "}
           before the game crashes. Cash out in time → win your
-          stake � -  multiplier. Wait too long → lose your stake.
+          stake × multiplier. Wait too long → lose your stake.
           Each round is independently determined.
         </p>
         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
@@ -1812,7 +1866,7 @@ function CrashGamesView({ accent }: { accent: string }) {
             ["Place Bet", "Set stake before round starts", "1"],
             [
               "Watch Multiplier Climb",
-              "1.00� -  → 2.00� -  → 10.00� -  ...",
+              "1.00x → 2.00x → 10.00x ...",
               "2",
             ],
             [
@@ -1847,7 +1901,7 @@ function CrashGamesView({ accent }: { accent: string }) {
           className="text-white mb-4 flex items-center gap-2"
           style={{ fontSize: "1rem" }}
         >
-          <span>📋</span> History Checking Procedures  - 
+          <ClipboardList size={18} className="text-white/50" /> History Checking Procedures  - 
           Universal Steps
         </h3>
         {[
@@ -1924,7 +1978,9 @@ function CrashGamesView({ accent }: { accent: string }) {
                   : "none",
             }}
           >
-            <div className="text-2xl mb-2">{g.themeIcon}</div>
+            <div className="text-2xl mb-2">
+            {(() => { const I = g.themeIcon; return <I size={24} className="text-white/70" />; })()}
+          </div>
             <div className="text-white text-sm">{g.name}</div>
             <div className="text-white/40 text-xs mt-0.5">
               {g.theme}
@@ -1943,9 +1999,9 @@ function CrashGamesView({ accent }: { accent: string }) {
           }}
         >
           <div className="flex items-center gap-3 mb-3">
-            <span className="text-3xl">
-              {selected.themeIcon}
-            </span>
+            <div className="p-2 rounded-xl bg-white/10">
+              {(() => { const I = selected.themeIcon; return <I size={24} className="text-white" />; })()}
+            </div>
             <div>
               <div className="text-white">{selected.name}</div>
               <div className="text-white/40 text-sm">
@@ -1988,10 +2044,10 @@ function VirtualGamesView({ accent }: { accent: string }) {
   const [tab, setTab] = useState<"sports" | "racing">("sports");
   const games =
     tab === "sports" ? virtualSports : virtualRacing;
-  const categoryIcons: Record<string, string> = {
-    Soccer: "⚽",
-    Sports: "🏅",
-    Racing: "🏁",
+  const categoryIcons: Record<string, LucideIcon> = {
+    Soccer: Shield,
+    Sports: Trophy,
+    Racing: Rocket,
   };
 
   return (
@@ -2002,7 +2058,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
         style={{ background: "rgba(6,182,212,0.07)" }}
       >
         <div className="flex items-start gap-3">
-          <span className="text-2xl mt-0.5">🔐</span>
+          <Lock size={24} className="text-cyan-400 mt-0.5 shrink-0" />
           <div>
             <h3
               className="text-cyan-400 mb-1"
@@ -2046,8 +2102,8 @@ function VirtualGamesView({ accent }: { accent: string }) {
             }}
           >
             {t === "sports"
-              ? "🏅 Virtual Sports"
-              : "🏁 Virtual Racing"}
+              ? <span className="flex items-center gap-2"><Trophy size={14} /> Virtual Sports</span>
+              : <span className="flex items-center gap-2"><Rocket size={14} /> Virtual Racing</span>}
           </button>
         ))}
       </div>
@@ -2060,9 +2116,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
             style={{ background: "rgba(255,255,255,0.03)" }}
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl">
-                {categoryIcons[g.category] ?? "🎮"}
-              </span>
+              {(() => { const I = categoryIcons[g.category] ?? Gamepad2; return <I size={24} className="text-white/60" />; })()}
               <div>
                 <div className="text-white text-sm">
                   {g.name}
@@ -2088,7 +2142,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
           className="text-white mb-4 flex items-center gap-2"
           style={{ fontSize: "1rem" }}
         >
-          <span>📋</span> Checking Virtual Bet History
+          <ClipboardList size={18} className="text-white/50" /> Checking Virtual Bet History
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div
@@ -2144,7 +2198,7 @@ function CasinoView({ accent }: { accent: string }) {
           className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 border border-yellow-500/20"
           style={{ background: "rgba(245,158,11,0.07)" }}
         >
-          <span className="text-3xl">🎰</span>
+          <Gem size={28} className="text-yellow-400" />
           <div>
             <h3
               className="text-yellow-400"
@@ -2219,7 +2273,7 @@ function CasinoView({ accent }: { accent: string }) {
           className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 border border-yellow-500/20"
           style={{ background: "rgba(245,158,11,0.07)" }}
         >
-          <span className="text-3xl">🎬</span>
+          <Gamepad2 size={28} className="text-yellow-400" />
           <div>
             <h3
               className="text-yellow-400"
@@ -2241,14 +2295,11 @@ function CasinoView({ accent }: { accent: string }) {
               style={{ background: "rgba(255,255,255,0.03)" }}
             >
               <div className="text-2xl mb-2">
-                {
-                  {
-                    Roulette: "🎡",
-                    Blackjack: "🃏",
-                    Baccarat: "🂡",
-                    Poker: "♠️",
-                  }[g]
-                }
+                {(() => {
+                  const iconMap: Record<string, LucideIcon> = { Roulette: Dices, Blackjack: Layers, Baccarat: Gem, Poker: Trophy };
+                  const I = iconMap[g] ?? Gamepad2;
+                  return <I size={24} className="text-yellow-400" />;
+                })()}
               </div>
               <div className="text-white text-sm">{g}</div>
               <div className="text-white/35 text-xs mt-1">
@@ -2270,7 +2321,7 @@ function CasinoView({ accent }: { accent: string }) {
           style={{ background: "rgba(255,255,255,0.03)" }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">🎲</span>
+            <Dices size={20} className="text-white/60" />
             <span
               className="text-white"
               style={{ fontSize: "0.95rem" }}
@@ -2290,7 +2341,7 @@ function CasinoView({ accent }: { accent: string }) {
           style={{ background: "rgba(245,158,11,0.07)" }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">📂</span>
+            <Folder size={20} className="text-yellow-400" />
             <span
               className="text-yellow-400"
               style={{ fontSize: "0.95rem" }}
@@ -2364,8 +2415,9 @@ function MarketGuideView() {
 
       {/* Sport hero strip */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
-
-        <div className="text-3xl">{sport.icon}</div>
+        <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+          {(() => { const I = sport.icon; return <I size={22} style={{ color: sport.accent }} />; })()}
+        </div>
         <div>
           <div
             className="text-white"
@@ -2424,8 +2476,8 @@ function PromotionsView({ accent }: { accent: string }) {
         className="rounded-2xl p-6 border border-purple-500/20"
         style={{ background: "rgba(168,85,247,0.07)" }}
       >
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <span>🎁</span> Active Promotions & Bonuses
+      <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <Gift size={20} className="text-purple-400" /> Active Promotions & Bonuses
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
@@ -2460,7 +2512,9 @@ function PromotionsView({ accent }: { accent: string }) {
       </div>
 
       <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
-        <h3 className="text-white text-lg mb-4">💎 VIP & Loyalty Tiers</h3>
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <Gem size={20} className="text-purple-400" /> VIP & Loyalty Tiers
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -2502,7 +2556,7 @@ function SupportView({ accent }: { accent: string }) {
         style={{ background: "rgba(59,130,246,0.07)" }}
       >
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <span>🛠️</span> Escalation Matrix
+          <Wrench size={20} className="text-blue-400" /> Escalation Matrix
         </h3>
         <div className="space-y-4">
           {[
@@ -2550,7 +2604,7 @@ function SupportView({ accent }: { accent: string }) {
               "Self-Harm Threat: Follow the 'Duty of Care' script and escalate to L3."
             ].map((s, i) => (
               <li key={i} className="flex gap-3 text-sm text-red-400/70">
-                <span className="text-red-500 mt-0.5">❗</span>
+                <AlertTriangle size={14} className="text-red-500 mt-0.5 shrink-0" />
                 {s}
               </li>
             ))}
@@ -2570,16 +2624,18 @@ function ComplianceView({ accent }: { accent: string }) {
         style={{ background: "rgba(16,185,129,0.07)" }}
       >
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <span>⚖️</span> Responsible Gaming Pillars
+          <ShieldCheck size={20} className="text-emerald-400" /> Responsible Gaming Pillars
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { title: "Self-Exclusion", icon: "🔒", desc: "Permanent or temporary account locking at user request." },
-            { title: "Deposit Limits", icon: "📉", desc: "Daily, weekly, or monthly caps on how much a user can fund." },
-            { title: "Reality Checks", icon: "⏱️", desc: "Automated alerts showing time spent and net position." }
+            { title: "Self-Exclusion", icon: Lock, desc: "Permanent or temporary account locking at user request." },
+            { title: "Deposit Limits", icon: TrendingDown, desc: "Daily, weekly, or monthly caps on how much a user can fund." },
+            { title: "Reality Checks", icon: Clock, desc: "Automated alerts showing time spent and net position." }
           ].map((p, i) => (
             <div key={i} className="p-5 rounded-xl bg-black/20 border border-white/5 text-center">
-              <div className="text-3xl mb-3">{p.icon}</div>
+              <div className="flex justify-center mb-3">
+                <p.icon size={28} className="text-emerald-400" />
+              </div>
               <div className="text-emerald-400 font-bold mb-2">{p.title}</div>
               <p className="text-white/50 text-xs leading-relaxed">{p.desc}</p>
             </div>
@@ -2588,7 +2644,9 @@ function ComplianceView({ accent }: { accent: string }) {
       </div>
 
       <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
-        <h3 className="text-white text-lg mb-4">🛡️ KYC & Licensing Requirements</h3>
+        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+          <FileCheck size={20} className="text-white/60" /> KYC & Licensing Requirements
+        </h3>
         <div className="space-y-6">
           <div className="p-4 rounded-xl border border-white/5 bg-black/20">
             <div className="text-white text-sm font-bold mb-2">Proof of Identity (ID)</div>
@@ -2636,13 +2694,13 @@ function ToolkitView({ accent }: { accent: string }) {
             </p>
             <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-4">
                <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
-                  <span>✨</span> Smart Matcher
+                  <BrainCircuit size={12} /> Smart Matcher
                </div>
                <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
-                  <span>🔄</span> Live Sync
+                  <RefreshCw size={12} /> Live Sync
                </div>
                <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
-                  <span>🖱️</span> Highlight-to-Match
+                  <MousePointer size={12} /> Highlight-to-Match
                </div>
             </div>
           </div>
@@ -2653,14 +2711,14 @@ function ToolkitView({ accent }: { accent: string }) {
                download="blastchat-extension.zip"
                className="w-full px-6 py-4 bg-accent text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
              >
-               <span>📦</span> Download Extension (Chrome)
+               <Download size={16} /> Download Extension (Chrome)
              </a>
 
              <a 
                href="/templates/blastchat-extension.xpi"
                className="w-full px-6 py-4 bg-orange-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(234,88,12,0.3)] hover:shadow-[0_15px_30px_rgba(234,88,12,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
              >
-               <span>🦊</span> Install Add-on (Firefox)
+               <WifiOff size={16} /> Install Add-on (Firefox)
              </a>
              
              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-[10px] text-white/40 leading-relaxed space-y-2">
@@ -2688,7 +2746,7 @@ function ToolkitView({ accent }: { accent: string }) {
         style={{ background: "rgba(244,114,182,0.07)" }}
       >
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <span>🧰</span> Staff Talking Points
+          <SlidersHorizontal size={20} className="text-pink-400" /> Staff Talking Points
         </h3>
         <div className="space-y-4">
           {[
@@ -2764,7 +2822,9 @@ function AgentManualView() {
 
       {/* Section Hero */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
-        <div className="text-3xl">{meta.icon}</div>
+        <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+          {(() => { const I = meta.icon; return <I size={22} style={{ color: meta.accent }} />; })()}
+        </div>
         <div>
           <div 
             className="text-white font-bold" 
@@ -2828,17 +2888,17 @@ export default function Resources() {
                 {
                   id: "guide",
                   label: "Market Guide",
-                  icon: "📖",
+                  icon: BookOpen,
                 },
                 {
                   id: "manual",
                   label: "Agent Manual",
-                  icon: "🛡️",
+                  icon: Shield,
                 },
               ] as {
                 id: AppSection;
                 label: string;
-                icon: string;
+                icon: LucideIcon;
               }[]
             ).map((s) => (
               <button
@@ -2860,7 +2920,7 @@ export default function Resources() {
                       : "1px solid transparent",
                 }}
               >
-                <span>{s.icon}</span>
+                <s.icon size={15} />
                 <span>{s.label}</span>
               </button>
             ))}
