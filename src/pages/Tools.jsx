@@ -187,37 +187,37 @@ function CashbackCalculator() {
     return (h === 20 && m >= 30 && m < 40);
   };
 
-  const handleCopySummary = (day, lineIndex = null) => {
+  const handleCopySummary = (day, lineIndex) => {
     const netLoss = Math.max(0, day.deposits - day.withdrawals);
     const cb = netLoss * 0.1;
-    
+
     const startStr = format(day.start, 'MMM d, h:mm a');
     const endStr = format(day.end, 'MMM d, h:mm a');
-    
-    // Helper to format the breakdown string (e.g., "100 + 200 = 300")
+
+    // Helper: show all individual amounts summed, e.g. "500 + 1,000 + 2,000 = 3,500"
     const formatBreakdown = (list, total) => {
       if (!list || list.length === 0) return "0";
-      if (list.length === 1) return list[0].toLocaleString();
-      // Reverse to show chronological order (since parsedTx is desc)
-      return `${[...list].reverse().map(n => n.toLocaleString()).join(' + ')} = ${total.toLocaleString()}`;
+      if (list.length === 1) return `${list[0].toLocaleString()} ksh`;
+      const sorted = [...list].reverse();
+      return `${sorted.map(n => n.toLocaleString()).join(' + ')} = ${total.toLocaleString()} ksh`;
     };
 
     const depBreakdown = formatBreakdown(day.depList, day.deposits);
     const withBreakdown = formatBreakdown(day.withList, day.withdrawals);
-    
-    const calculationLine = cb > 0 
-      ? `Cashback calculation (${day.deposits.toLocaleString()} - ${day.withdrawals.toLocaleString()}) * 10% = ${cb.toLocaleString()} ksh`
-      : `Cashback is calculated on net loss. Since your withdrawals are higher than or equal to your deposits, no cashback was generated.`;
+
+    const verdictLine = cb > 0
+      ? `Cashback Verdict: (${day.deposits.toLocaleString()} deposits - ${day.withdrawals.toLocaleString()} withdrawals) × 10% = KSh ${cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} cashback due`
+      : `Cashback Verdict: No cashback — withdrawals (${day.withdrawals.toLocaleString()} ksh) are equal to or exceed deposits (${day.deposits.toLocaleString()} ksh). Net loss = 0.`;
 
     const lines = [
-      `Total Deposits (${startStr} – ${endStr}): ${depBreakdown} ksh`,
-      `Total Withdrawals (${startStr} – ${endStr}): ${withBreakdown} KSh`,
-      calculationLine
+      `Sum of Deposits (${startStr} – ${endStr}): ${depBreakdown}`,
+      `Sum of Withdrawals (${startStr} – ${endStr}): ${withBreakdown}`,
+      verdictLine
     ];
 
-    const text = lineIndex !== null ? lines[lineIndex - 1] : lines.join('\n');
+    const text = lines[lineIndex - 1];
     navigator.clipboard.writeText(text);
-    showToast(lineIndex !== null ? `Line ${lineIndex} Copied!` : 'Full Report Copied!', 'success');
+    showToast(`Copied!`, 'success');
   };
 
   const depNum = parseFloat(deposits) || 0;
@@ -366,26 +366,42 @@ function CashbackCalculator() {
   const dailyBreakdown = getDailyBreakdown();
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+      {/* ── PAGE HEADER — MpesaCodes style ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-2 rounded-xl bg-[#baff55]/10 text-[#baff55]">
+              <Calculator size={20} />
+            </div>
+            <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">Cashback Calculator</h1>
+          </div>
+          <p className="text-xs text-gray-400 font-medium">
+            Paste portal transactions to auto-calculate cashback per 24-hr cycle (8:30 PM – 8:30 PM)
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Main Interface: Left Column */}
-        <div className="lg:col-span-8 space-y-6">
-          
-          <div className="glass-card p-6 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-accent/10 border border-accent/20 text-accent">
-                  <Zap size={24} />
+        <div className="lg:col-span-8 space-y-5">
+
+          <div className="bg-[#131520] rounded-2xl p-5 shadow-xl space-y-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-[#baff55]/10 text-[#baff55]">
+                  <Zap size={18} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-white uppercase tracking-tighter">Smart Analysis</h3>
-                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-[0.2em] mt-1">Supreme Accuracy Engine</p>
+                  <h3 className="text-sm font-black text-white uppercase tracking-tight">Smart Paste Analysis</h3>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-0.5">Auto-parse portal transactions</p>
                 </div>
               </div>
 
-              <div className="flex bg-[#1b1e2b] p-1 rounded-2xl self-start">
-                <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isSmartPasteMode ? 'bg-accent text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Smart Paste</button>
-                <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isSmartPasteMode ? 'bg-accent text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Manual</button>
+              <div className="flex items-center bg-[#1b1e2b] p-1 rounded-2xl self-start">
+                <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isSmartPasteMode ? 'bg-[#baff55] text-black shadow-lg shadow-[#baff55]/20' : 'text-gray-400 hover:text-white bg-transparent'}`}>Smart Paste</button>
+                <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isSmartPasteMode ? 'bg-[#baff55] text-black shadow-lg shadow-[#baff55]/20' : 'text-gray-400 hover:text-white bg-transparent'}`}>Manual</button>
               </div>
             </div>
 
@@ -429,33 +445,35 @@ Example:
 
           {/* Audit Table (if data exists) */}
           {parsedTx.length > 0 && (
-            <div className="glass-card overflow-hidden">
-              <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <History size={18} className="text-gray-500" />
-                  <h4 className="text-[10px] font-black text-white uppercase tracking-widest">Detailed Record Log</h4>
+            <div className="bg-[#131520] rounded-2xl shadow-xl overflow-hidden">
+              <div className="px-5 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-[#baff55]/10 text-[#baff55]">
+                    <History size={15} />
+                  </div>
+                  <h4 className="text-xs font-black text-white uppercase tracking-widest">Parsed Transaction Log</h4>
                 </div>
-                <span className="text-[10px] font-black text-accent uppercase tracking-widest">{parsedTx.length} Total Records</span>
+                <span className="text-[10px] font-black text-[#baff55] bg-[#baff55]/10 px-3 py-1 rounded-full uppercase tracking-widest">{parsedTx.length} Records</span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-white/5">
-                      <th className="px-8 py-4 text-[9px] font-black text-gray-500 uppercase tracking-widest">Action</th>
-                      <th className="px-8 py-4 text-[9px] font-black text-gray-500 uppercase tracking-widest">Amount</th>
-                      <th className="px-8 py-4 text-[9px] font-black text-gray-500 uppercase tracking-widest text-right">Timestamp</th>
+                <table className="w-full text-left">
+                  <thead className="bg-white/[0.02] text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                    <tr>
+                      <th className="px-5 py-3">Type</th>
+                      <th className="px-5 py-3">Amount</th>
+                      <th className="px-5 py-3 text-right">Timestamp</th>
                     </tr>
                   </thead>
                   <tbody>
                     {parsedTx.map((tx, idx) => (
-                      <tr key={idx} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
-                        <td className="px-8 py-4">
-                          <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${tx.type === 'deposit' ? 'bg-emerald-500/10 text-emerald-500' : tx.type === 'withdrawal' ? 'bg-red-500/10 text-red-500' : 'bg-gray-500/10 text-gray-500'}`}>
+                      <tr key={idx} className="border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                        <td className="px-5 py-3">
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${tx.type === 'deposit' ? 'bg-emerald-500/10 text-emerald-500' : tx.type === 'withdrawal' ? 'bg-red-500/10 text-red-500' : 'bg-gray-500/10 text-gray-500'}`}>
                             {tx.rawType}
                           </span>
                         </td>
-                        <td className="px-8 py-4 font-bold text-white text-xs">KSh {tx.amount.toLocaleString()}</td>
-                        <td className="px-8 py-4 text-right text-[10px] font-medium text-gray-500">
+                        <td className="px-5 py-3 font-bold text-white text-xs">KSh {tx.amount.toLocaleString()}</td>
+                        <td className="px-5 py-3 text-right text-[10px] font-medium text-gray-500">
                           {tx.date ? format(tx.date, 'eee, MMM d • HH:mm') : tx.dateStr}
                         </td>
                       </tr>
@@ -468,105 +486,121 @@ Example:
         </div>
 
         {/* Sidebar: Right Column */}
-        <div className="lg:col-span-4 space-y-8">
-          <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-            <LayoutGrid size={14} className="text-accent" />
-            Automated Daily Summary
-          </h4>
-          
-          <div className="space-y-4">
+        <div className="lg:col-span-4 space-y-4">
+          <div className="bg-[#131520] rounded-2xl p-4 shadow-xl flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-[#baff55]/10 text-[#baff55]">
+              <LayoutGrid size={15} />
+            </div>
+            <div>
+              <h3 className="text-xs font-black text-white uppercase tracking-wider">Daily Cycle Breakdown</h3>
+              <p className="text-[10px] text-gray-500">Click any copy button to send the full message</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
             {dailyBreakdown.length > 0 ? dailyBreakdown.map((day, i) => {
               const netLoss = Math.max(0, day.deposits - day.withdrawals);
               const cb = netLoss * 0.1;
-              
+
               return (
-                  <motion.div 
-                    key={i} 
-                    initial={{ opacity: 0, x: 20 }} 
-                    animate={{ opacity: 1, x: 0 }} 
-                    transition={{ delay: i * 0.1 }}
-                    className={`p-6 glass-card ${day.label === 'Current' ? 'border-[#ff7a59]/40 shadow-[0_0_20px_rgba(255,122,89,0.15)]' : ''}`}
-                  >
-                  <div className="flex items-center justify-between mb-6">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  className="bg-[#131520] rounded-2xl p-4 shadow-xl space-y-3"
+                >
+                  {/* Card Header */}
+                  <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-accent uppercase tracking-widest">{day.label} Cycle</span>
+                        <span className="text-[9px] font-black text-[#baff55] uppercase tracking-widest">{day.label} Cycle</span>
                         {day.label === 'Current' && (
-                          <motion.span 
-                            animate={{ opacity: [1, 0.5, 1] }} 
+                          <motion.span
+                            animate={{ opacity: [1, 0.4, 1] }}
                             transition={{ repeat: Infinity, duration: 1.5 }}
-                            className="w-2 h-2 rounded-full bg-accent"
+                            className="w-1.5 h-1.5 rounded-full bg-[#baff55]"
                           />
                         )}
                       </div>
-                      <p className="text-[11px] font-black text-white mt-2 uppercase tracking-tighter">
+                      <p className="text-xs font-black text-white mt-0.5 uppercase tracking-tight">
                         {format(day.end, 'eeee, MMM d')}
                       </p>
                     </div>
-                    <div className="text-right flex flex-col items-end">
-                      <span className="text-[8px] font-black text-accent uppercase block tracking-widest">Cashback Due</span>
-                      <span className="text-xl font-black text-emerald-500">KSh {cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                    <div className="text-right">
+                      <span className="text-[8px] font-black text-gray-500 uppercase block tracking-widest">Cashback</span>
+                      <span className={`text-base font-black ${cb > 0 ? 'text-emerald-400' : 'text-gray-500'}`}>
+                        KSh {cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="space-y-3 pt-6 border-t border-white/5">
-                    {/* Line 1 */}
-                    <div className="flex items-center justify-between group/row">
-                      <div className="flex flex-col">
-                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 1: Deposits</span>
-                        <span className="text-[10px] font-bold text-gray-300">KSh {day.deposits.toLocaleString()}</span>
+                  {/* Copy Lines */}
+                  <div className="space-y-2 pt-3 border-t border-white/[0.06]">
+                    {/* Line 1 — Deposits */}
+                    <div className="flex items-center justify-between bg-[#1b1e2b] rounded-xl px-3 py-2.5">
+                      <div>
+                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Sum of Deposits</span>
+                        <span className="text-xs font-bold text-white">KSh {day.deposits.toLocaleString()}</span>
                       </div>
-                      <button onClick={() => handleCopySummary(day, 1)} className="p-2 bg-[#1b1e2b] hover:bg-[#222538] rounded-lg text-gray-500 hover:text-accent transition-all">
+                      <button
+                        onClick={() => handleCopySummary(day, 1)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg text-[#baff55] text-[9px] font-black uppercase tracking-widest transition-all"
+                      >
                         <Copy size={10} />
+                        Copy
                       </button>
                     </div>
 
-                    {/* Line 2 */}
-                    <div className="flex items-center justify-between group/row">
-                      <div className="flex flex-col">
-                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 2: Withdrawals</span>
-                        <span className="text-[10px] font-bold text-gray-300">KSh {day.withdrawals.toLocaleString()}</span>
+                    {/* Line 2 — Withdrawals */}
+                    <div className="flex items-center justify-between bg-[#1b1e2b] rounded-xl px-3 py-2.5">
+                      <div>
+                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Sum of Withdrawals</span>
+                        <span className="text-xs font-bold text-white">KSh {day.withdrawals.toLocaleString()}</span>
                       </div>
-                      <button onClick={() => handleCopySummary(day, 2)} className="p-2 bg-[#1b1e2b] hover:bg-[#222538] rounded-lg text-gray-500 hover:text-accent transition-all">
+                      <button
+                        onClick={() => handleCopySummary(day, 2)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg text-[#baff55] text-[9px] font-black uppercase tracking-widest transition-all"
+                      >
                         <Copy size={10} />
+                        Copy
                       </button>
                     </div>
 
-                    {/* Line 3 */}
-                    <div className="flex items-center justify-between group/row">
-                      <div className="flex flex-col">
-                        <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 3: Calculation</span>
-                        <span className="text-[10px] font-bold text-gray-300">Net Loss * 10%</span>
+                    {/* Line 3 — Cashback Verdict */}
+                    <div className="flex items-center justify-between bg-[#1b1e2b] rounded-xl px-3 py-2.5">
+                      <div>
+                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Cashback Verdict</span>
+                        <span className={`text-xs font-bold ${cb > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {cb > 0 ? `KSh ${cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} due` : 'No cashback'}
+                        </span>
                       </div>
-                      <button onClick={() => handleCopySummary(day, 3)} className="p-2 bg-[#1b1e2b] hover:bg-[#222538] rounded-lg text-gray-500 hover:text-accent transition-all">
+                      <button
+                        onClick={() => handleCopySummary(day, 3)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg text-[#baff55] text-[9px] font-black uppercase tracking-widest transition-all"
+                      >
                         <Copy size={10} />
+                        Copy
                       </button>
                     </div>
-
-                    <button 
-                      onClick={() => handleCopySummary(day)}
-                      className="w-full mt-2 py-2.5 bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-xl text-[8px] font-black text-accent uppercase tracking-widest transition-all"
-                    >
-                      Copy Full Report
-                    </button>
                   </div>
                 </motion.div>
               );
             }) : (
-              <div className="bg-white/5 border border-dashed border-white/10 rounded-[32px] p-12 text-center">
-                <Calculator size={40} className="mx-auto text-gray-700 mb-4" />
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Paste data to generate breakdown</p>
+              <div className="bg-[#131520] rounded-2xl p-10 text-center shadow-xl">
+                <Calculator size={36} className="mx-auto text-gray-700 mb-3" />
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Paste portal data to see breakdown</p>
               </div>
             )}
           </div>
 
-          {/* Quick Help Card */}
-          <div className="glass-card p-8 space-y-4">
-             <div className="flex items-center gap-2">
-               <ShieldCheck size={14} className="text-accent" />
-               <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
-             </div>
-             <p className="text-[10px] text-gray-500 leading-relaxed font-medium italic">"Calculated daily from 8:30 PM to 8:30 PM. Note: 8:30 PM–8:40 PM is a technical reset window; deposits within this gap are not counted in the 24hr cycle."</p>
+          {/* Protocol card */}
+          <div className="bg-[#131520] rounded-2xl p-4 shadow-xl space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={14} className="text-[#baff55]" />
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
+            </div>
+            <p className="text-[10px] text-gray-500 leading-relaxed italic">Calculated daily 8:30 PM – 8:30 PM. The 8:30–8:40 PM window is a reset gap; deposits in this window are excluded from the cycle.</p>
           </div>
         </div>
       </div>
