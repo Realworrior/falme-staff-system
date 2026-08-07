@@ -352,7 +352,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
               </div>
             ) : (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                <div className="flex items-center justify-between p-4 bg-[#1b1e2b] rounded-2xl">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-emerald-500/20 text-emerald-500 rounded-lg"><CheckCircle2 size={16} /></div>
                     <div>
@@ -362,7 +362,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                   </div>
                   <button onClick={() => { setFile(null); setParsedData(null); setPreviewRows([]); }} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-500"><X size={16} /></button>
                 </div>
-                <div className="p-4 bg-white/2 border border-white/10 rounded-2xl">
+                <div className="p-4 bg-[#1b1e2b] rounded-2xl">
                    <label className="flex items-center gap-3 cursor-pointer group">
                       <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldReplace ? 'bg-red-500 border-red-500 shadow-lg' : 'border-white/20 bg-black/40'}`}>
                          <input type="checkbox" className="hidden" checked={shouldReplace} onChange={(e) => setShouldReplace(e.target.checked)} />
@@ -385,7 +385,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                   value={pasteText}
                   onChange={(e) => handlePaste(e.target.value)}
                   placeholder="Paste cells from Excel here... (Include header row)"
-                  className="w-full h-48 bg-black/40 border border-white/10 rounded-3xl p-6 text-sm font-mono text-gray-300 focus:outline-none focus:border-emerald-500/50 transition-all resize-none"
+                  className="w-full h-48 bg-[#1b1e2b] rounded-3xl p-6 text-sm font-mono text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all resize-none"
                 />
                 <div className="absolute bottom-4 right-6 flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -393,7 +393,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
                 </div>
               </div>
               
-              <div className="p-4 bg-white/2 border border-white/10 rounded-2xl">
+              <div className="p-4 bg-[#1b1e2b] rounded-2xl">
                  <label className="flex items-center gap-3 cursor-pointer group">
                     <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldReplace ? 'bg-emerald-500 border-emerald-500 shadow-lg' : 'border-white/20 bg-black/40'}`}>
                        <input type="checkbox" className="hidden" checked={shouldReplace} onChange={(e) => setShouldReplace(e.target.checked)} />
@@ -410,7 +410,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
 
           {activeTab === 'ai' && (
             <div className="space-y-6">
-              <div className="p-8 border border-white/5 bg-white/[0.02] rounded-[32px] text-center">
+              <div className="p-8 bg-[#131520] rounded-[32px] text-center">
                 <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
                   <ShieldAlert className="text-red-500" size={32} />
                 </div>
@@ -430,7 +430,7 @@ export function ImportModal({ isOpen, onClose, onImport, year, month, allOverrid
           {previewRows.length > 0 && (
             <div className="space-y-2">
                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Live Grid Preview</p>
-                <div className="relative group/scroll bg-black/40 border border-white/5 rounded-2xl overflow-hidden">
+                <div className="relative group/scroll bg-[#1b1e2b] rounded-2xl overflow-hidden">
                   <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
                     <table className="w-full text-left whitespace-nowrap table-auto min-w-max">
                       <thead>

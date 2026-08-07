@@ -114,15 +114,15 @@ export function AnalyticsDashboard({ analytics }) {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <div className="px-2 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center gap-1.5">
+              <div className="px-2 py-1 rounded-lg bg-[#1b1e2b] flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
                 <span className="text-[9px] font-bold text-gray-400">{stat.amShifts} AM</span>
               </div>
-              <div className="px-2 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center gap-1.5">
+              <div className="px-2 py-1 rounded-lg bg-[#1b1e2b] flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                 <span className="text-[9px] font-bold text-gray-400">{stat.pmShifts} PM</span>
               </div>
-              <div className="px-2 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center gap-1.5">
+              <div className="px-2 py-1 rounded-lg bg-[#1b1e2b] flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
                 <span className="text-[9px] font-bold text-gray-400">{stat.ntShifts} NT</span>
               </div>

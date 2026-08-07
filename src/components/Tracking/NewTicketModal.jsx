@@ -36,7 +36,7 @@ export function NewTicketModal({ onClose, onSubmit }) {
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="glass rounded-[32px] w-full max-w-lg my-8 overflow-hidden border border-white/10 shadow-2xl relative"
+        className="glass rounded-[32px] w-full max-w-lg my-8 overflow-hidden shadow-2xl relative"
       >
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-white/5 bg-black/20">
           <div className="flex items-center gap-3">

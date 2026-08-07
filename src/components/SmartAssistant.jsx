@@ -126,7 +126,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
             const resp = m.item?.responses?.find(r => r.type === (tone === 'highEmpathy' ? 'High Empathy' : 'Standard')) || m.item?.responses?.[0] || { text: '' };
             
             return (
-              <div key={i} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 hover:bg-white/[0.05] transition-all group relative">
+              <div key={i} className="bg-[#131520] rounded-2xl p-4 hover:bg-white/[0.05] transition-all group relative">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[8px] font-black text-red-500/80 uppercase tracking-[0.2em]">
                     {m.item?.title || 'Template'} ({m.confidence || 'Medium'})
@@ -139,7 +139,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   </button>
                 </div>
                 
-                <div className="bg-black/20 rounded-xl p-3 border border-white/5 mb-2">
+                <div className="bg-[#1b1e2b] rounded-xl p-3 mb-2">
                   <p className="text-[11px] leading-relaxed text-gray-300 font-medium whitespace-pre-wrap">{resp.text}</p>
                 </div>
                 <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-1 opacity-60">
@@ -170,7 +170,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="fixed bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-accent text-white shadow-lg z-[999] flex items-center justify-center border border-white/20"
+          className="fixed bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-accent text-white shadow-lg z-[999] flex items-center justify-center"
         >
           <AnimatePresence mode="wait">
             {isOpen ? (
@@ -234,7 +234,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                       <span className="text-[8px] font-black text-purple-400 uppercase tracking-widest">Active Route: {poolStatus.activeKeyLabel}</span>
                     </div>
                     {poolStatus.pool.map((k, i) => (
-                      <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg p-2 border border-white/5">
+                      <div key={i} className="flex items-center justify-between bg-[#1b1e2b] rounded-lg p-2">
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${k.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
                           <div>
@@ -274,7 +274,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                         setIsTyping(true);
                         setTimeout(() => executeSearch(cat), 1500);
                       }}
-                      className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all whitespace-nowrap"
+                      className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all whitespace-nowrap"
                     >
                       {cat}
                     </button>
@@ -300,7 +300,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   <div className={`max-w-[80%] p-4 rounded-2xl text-[11px] leading-relaxed font-medium ${
                     msg.role === 'user' 
                       ? 'bg-red-600/10 text-white border border-red-500/20 rounded-tr-none' 
-                      : 'bg-white/5 text-gray-300 border border-white/5 rounded-tl-none font-bold overflow-hidden'
+                      : 'bg-[#1b1e2b] text-gray-300 rounded-tl-none font-bold overflow-hidden'
                   }`}>
                     {typeof msg.content === 'string' 
                       ? msg.content.split('\n').map((line, i) => <p key={i} className={i > 0 ? 'mt-2 border-l-2 border-red-500/30 pl-3 italic' : ''}>{line}</p>)
@@ -314,7 +314,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
                     <Bot size={14} className="text-red-500" />
                   </div>
-                  <div className="bg-white/5 p-4 rounded-2xl rounded-tl-none border border-white/5">
+                  <div className="bg-[#1b1e2b] p-4 rounded-2xl rounded-tl-none">
                     <div className="flex gap-1">
                       <div className="w-1 h-1 bg-red-500 rounded-full animate-bounce" />
                       <div className="w-1 h-1 bg-red-500 rounded-full animate-bounce [animation-delay:0.2s]" />
@@ -333,7 +333,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Query knowledge base..."
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl pl-5 pr-14 py-4 text-white text-[11px] focus:outline-none focus:border-red-500/50 transition-all placeholder-gray-700"
+                  className="w-full bg-[#1b1e2b] rounded-2xl pl-5 pr-14 py-4 text-white text-[11px] focus:outline-none focus:ring-1 focus:ring-red-500/30 transition-all placeholder-gray-700"
                 />
                 <button
                   type="submit"
@@ -348,7 +348,7 @@ export const SmartAssistant = ({ templates = [], resources = [] }) => {
                   <button
                     key={tag}
                     onClick={() => setQuery(tag)}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white hover:border-red-500/30 transition-all"
+                    className="px-3 py-1.5 rounded-lg bg-[#1b1e2b] text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all"
                   >
                     {tag}
                   </button>

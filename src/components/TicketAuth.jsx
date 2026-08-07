@@ -34,7 +34,7 @@ const TicketAuth = () => {
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-md bg-[#0f0f17] rounded-[32px] border border-white/5 shadow-2xl overflow-hidden relative"
+        className="w-full max-w-md bg-[#131520] rounded-[32px] shadow-2xl overflow-hidden relative"
       >
         {/* Decorative Background */}
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-red-600/10 to-transparent pointer-events-none" />

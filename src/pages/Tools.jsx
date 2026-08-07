@@ -85,7 +85,7 @@ function OddsCalculator() {
                 type="number"
                 value={stake}
                 onChange={(e) => setStake(Math.max(0, parseFloat(e.target.value) || 0))}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 transition-all"
+                className="w-full bg-[#1b1e2b] rounded-2xl px-6 py-4 text-white font-bold outline-none focus:ring-2 focus:ring-accent/40 transition-all"
               />
             </div>
             <div>
@@ -95,7 +95,7 @@ function OddsCalculator() {
                 step="0.01"
                 value={odds}
                 onChange={(e) => setOdds(Math.max(1, parseFloat(e.target.value) || 0))}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 transition-all"
+                className="w-full bg-[#1b1e2b] rounded-2xl px-6 py-4 text-white font-bold outline-none focus:ring-2 focus:ring-accent/40 transition-all"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ function OddsCalculator() {
             { code: "GG/NG", name: "BTTS", desc: "Both teams score (GG) or not (NG)" },
             { code: "DC", name: "Double Chance", desc: "Covers two possible outcomes" }
           ].map((m) => (
-            <div key={m.code} className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] transition-all">
+            <div key={m.code} className="p-4 rounded-2xl bg-[#1b1e2b] hover:bg-[#222538] transition-all">
               <span className="text-[10px] font-black text-accent uppercase tracking-widest block mb-1">{m.code}</span>
               <span className="text-xs font-bold text-white block mb-1">{m.name}</span>
               <p className="text-[10px] text-gray-500 leading-tight">{m.desc}</p>
@@ -383,7 +383,7 @@ function CashbackCalculator() {
                 </div>
               </div>
 
-              <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 self-start">
+              <div className="flex bg-[#1b1e2b] p-1 rounded-2xl self-start">
                 <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isSmartPasteMode ? 'bg-accent text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Smart Paste</button>
                 <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isSmartPasteMode ? 'bg-accent text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Manual</button>
               </div>
@@ -399,7 +399,7 @@ function CashbackCalculator() {
 Example:
 20608273	withdraw	-KSH 4,555.00	KSH 200.00	—	5/11/2026, 9:39:06 PM
 20607525	Deposit	+KSH 90.00	KSH 189.00	—	5/11/2026, 9:27:14 PM"
-                    className="w-full h-48 bg-[#0a0a0c] border border-white/10 rounded-[24px] p-6 text-[#10b981] font-mono text-sm outline-none focus:border-[#ff7a59]/50 focus:ring-1 focus:ring-[#ff7a59]/50 transition-all placeholder:text-gray-700/50 resize-none shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
+                    className="w-full h-48 bg-[#0d0f18] rounded-[24px] p-6 text-[#10b981] font-mono text-sm outline-none focus:border-[#ff7a59]/50 focus:ring-1 focus:ring-[#ff7a59]/50 transition-all placeholder:text-gray-700/50 resize-none shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
                   />
                   <div className="absolute top-4 right-6 flex items-center gap-2">
                     <span className="text-[8px] font-black text-gray-700 uppercase tracking-widest">Auto-Analyzing</span>
@@ -516,7 +516,7 @@ Example:
                         <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 1: Deposits</span>
                         <span className="text-[10px] font-bold text-gray-300">KSh {day.deposits.toLocaleString()}</span>
                       </div>
-                      <button onClick={() => handleCopySummary(day, 1)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-500 hover:text-accent transition-all">
+                      <button onClick={() => handleCopySummary(day, 1)} className="p-2 bg-[#1b1e2b] hover:bg-[#222538] rounded-lg text-gray-500 hover:text-accent transition-all">
                         <Copy size={10} />
                       </button>
                     </div>
@@ -527,7 +527,7 @@ Example:
                         <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 2: Withdrawals</span>
                         <span className="text-[10px] font-bold text-gray-300">KSh {day.withdrawals.toLocaleString()}</span>
                       </div>
-                      <button onClick={() => handleCopySummary(day, 2)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-500 hover:text-accent transition-all">
+                      <button onClick={() => handleCopySummary(day, 2)} className="p-2 bg-[#1b1e2b] hover:bg-[#222538] rounded-lg text-gray-500 hover:text-accent transition-all">
                         <Copy size={10} />
                       </button>
                     </div>
@@ -538,7 +538,7 @@ Example:
                         <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Line 3: Calculation</span>
                         <span className="text-[10px] font-bold text-gray-300">Net Loss * 10%</span>
                       </div>
-                      <button onClick={() => handleCopySummary(day, 3)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-500 hover:text-accent transition-all">
+                      <button onClick={() => handleCopySummary(day, 3)} className="p-2 bg-[#1b1e2b] hover:bg-[#222538] rounded-lg text-gray-500 hover:text-accent transition-all">
                         <Copy size={10} />
                       </button>
                     </div>
@@ -609,7 +609,7 @@ Example:
 
            <div 
              onClick={() => setIsVideoExpanded(true)}
-             className="relative group rounded-2xl overflow-hidden border border-white/10 aspect-video bg-black/40 cursor-pointer hover:border-accent/40 transition-all shadow-2xl flex items-center justify-center"
+             className="relative group rounded-2xl overflow-hidden aspect-video bg-black/40 cursor-pointer hover:border-accent/40 transition-all shadow-2xl flex items-center justify-center"
            >
              <img 
                src={demoVideo}
@@ -626,7 +626,7 @@ Example:
              <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                <LayoutGrid size={24} className="text-white drop-shadow-lg" />
              </div>
-             <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[7px] font-black text-white uppercase tracking-widest border border-white/10 z-20">
+             <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[7px] font-black text-white uppercase tracking-widest z-20">
                Click to Expand
              </div>
            </div>
@@ -642,14 +642,14 @@ Example:
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(var(--accent-rgb),0.2)] bg-black flex items-center justify-center"
+            className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(var(--accent-rgb),0.2)] bg-black flex items-center justify-center"
           >
              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
                <Calculator size={32} className="text-gray-800 mb-2 animate-bounce" />
                <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest">Optimizing Visual...</span>
              </div>
             <img src={demoVideo} className="w-full h-full object-contain relative z-10" alt="Expanded Tutorial" />
-            <button className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md border border-white/10 z-20">
+            <button className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md z-20">
               <LayoutGrid size={20} className="rotate-45" />
             </button>
           </motion.div>

@@ -61,7 +61,7 @@ export function ShiftMates({
   };
 
   return (
-    <div className="bg-[#1a1a24]/90 backdrop-blur-2xl border border-white/10 rounded-[40px] shadow-2xl overflow-hidden glass-card">
+    <div className="bg-[#131520] rounded-[40px] shadow-2xl overflow-hidden glass-card">
       {/* Premium Header */}
       <div className="px-8 pt-8 pb-6 flex items-start justify-between gap-4">
         <div>
@@ -122,7 +122,7 @@ export function ShiftMates({
                     <div key={staffName} className="group relative">
                       <div
                         className={`
-                          px-6 py-2.5 rounded-full border border-white/10
+                          px-6 py-2.5 rounded-full
                           text-white text-base font-bold transition-all shadow-xl
                         `}
                         style={{ backgroundColor: STAFF_COLORS[staffName] }}
@@ -136,7 +136,7 @@ export function ShiftMates({
                       </div>
                       
                       {isManagerMode && (
-                        <div className="absolute -top-12 left-0 z-10 flex gap-1 p-1 bg-[#1a1a24] rounded-2xl border border-white/10 shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute -top-12 left-0 z-10 flex gap-1 p-1 bg-[#1b1e2b] rounded-2xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity">
                           {['AM', 'PM', 'NT', 'OFF'].map(type => (
                             <button
                               key={type}

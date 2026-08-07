@@ -1612,7 +1612,7 @@ function MarketCard({
     (market.variations?.length ?? 0) > 0;
   return (
     <div
-      className="rounded-xl border border-white/[0.07] bg-card overflow-hidden flex flex-col"
+      className="rounded-xl bg-[#131520] overflow-hidden flex flex-col"
     >
       <div
         className="h-[2px] w-full"
@@ -1696,7 +1696,7 @@ function MarketCard({
                     {market.variations.map((v, i) => (
                       <span
                         key={i}
-                        className="text-[10px] px-2 py-0.5 rounded-md border border-white/10 text-white/40 bg-white/5"
+                        className="text-[10px] px-2 py-0.5 rounded-md text-white/40 bg-white/5"
                       >
                         {v}
                       </span>
@@ -1882,7 +1882,7 @@ function CrashGamesView({ accent }: { accent: string }) {
           ].map(([title, sub, n]) => (
             <div
               key={n}
-              className="rounded-xl p-3 border border-white/[0.06]"
+              className="rounded-xl p-3 "
               style={{ background: "rgba(255,255,255,0.03)" }}
             >
               <div className="text-red-400 text-xs mb-1">
@@ -1899,7 +1899,7 @@ function CrashGamesView({ accent }: { accent: string }) {
 
       {/* History Lookup */}
       <div
-        className="rounded-2xl p-5 mb-8 border border-white/[0.06]"
+        className="rounded-2xl p-5 mb-8 "
         style={{ background: "rgba(255,255,255,0.02)" }}
       >
         <h3
@@ -2016,7 +2016,7 @@ function CrashGamesView({ accent }: { accent: string }) {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div
-              className="rounded-xl p-4 border border-white/[0.06]"
+              className="rounded-xl p-4 "
               style={{ background: "rgba(0,0,0,0.2)" }}
             >
               <div className="text-xs text-white/40 uppercase tracking-wider mb-2">
@@ -2027,7 +2027,7 @@ function CrashGamesView({ accent }: { accent: string }) {
               </div>
             </div>
             <div
-              className="rounded-xl p-4 border border-white/[0.06]"
+              className="rounded-xl p-4 "
               style={{ background: "rgba(0,0,0,0.2)" }}
             >
               <div className="text-xs text-white/40 uppercase tracking-wider mb-2">
@@ -2117,7 +2117,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
         {games.map((g) => (
           <div
             key={g.name}
-            className="rounded-xl p-4 border border-white/[0.07] flex flex-col gap-3"
+            className="rounded-xl p-4  flex flex-col gap-3"
             style={{ background: "rgba(255,255,255,0.03)" }}
           >
             <div className="flex items-center gap-3">
@@ -2140,7 +2140,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
 
       {/* History procedures */}
       <div
-        className="mt-8 rounded-2xl p-5 border border-white/[0.06]"
+        className="mt-8 rounded-2xl p-5 "
         style={{ background: "rgba(255,255,255,0.02)" }}
       >
         <h3
@@ -2218,7 +2218,7 @@ function CasinoView({ accent }: { accent: string }) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div
-            className="rounded-xl p-4 border border-white/[0.07]"
+            className="rounded-xl p-4 "
             style={{ background: "rgba(255,255,255,0.03)" }}
           >
             <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
@@ -2232,7 +2232,7 @@ function CasinoView({ accent }: { accent: string }) {
             </p>
           </div>
           <div
-            className="rounded-xl p-4 border border-white/[0.07]"
+            className="rounded-xl p-4 "
             style={{ background: "rgba(255,255,255,0.03)" }}
           >
             <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
@@ -2254,7 +2254,7 @@ function CasinoView({ accent }: { accent: string }) {
             </div>
           </div>
           <div
-            className="rounded-xl p-4 border border-white/[0.07]"
+            className="rounded-xl p-4 "
             style={{ background: "rgba(255,255,255,0.03)" }}
           >
             <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
@@ -2296,7 +2296,7 @@ function CasinoView({ accent }: { accent: string }) {
           {liveGames.map((g) => (
             <div
               key={g}
-              className="rounded-xl p-4 border border-white/[0.07] text-center"
+              className="rounded-xl p-4  text-center"
               style={{ background: "rgba(255,255,255,0.03)" }}
             >
               <div className="text-2xl mb-2">
@@ -2318,7 +2318,7 @@ function CasinoView({ accent }: { accent: string }) {
       {/* Table Games + Logs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
-          className="rounded-xl p-5 border border-white/[0.07]"
+          className="rounded-xl p-5 "
           style={{ background: "rgba(255,255,255,0.03)" }}
         >
           <div className="flex items-center gap-2 mb-3">
@@ -2383,7 +2383,7 @@ function MarketGuideView() {
     <div>
       {/* Sport Nav */}
       <div
-        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/80 border-b border-border"
+        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/90"
       >
         <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
           {(
@@ -2397,7 +2397,7 @@ function MarketGuideView() {
               onClick={() => setActiveSport(key)}
             />
           ))}
-          <div className="ml-auto flex items-center gap-4 pl-4 border-l border-white/[0.06] shrink-0">
+          <div className="ml-auto flex items-center gap-4 pl-4 shrink-0">
             <div className="flex items-center gap-1.5 text-xs text-green-400">
               <span className="w-2 h-2 rounded-full bg-green-400" />{" "}
               Beginner
@@ -2416,7 +2416,7 @@ function MarketGuideView() {
 
       {/* Sport hero strip */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+        <div className="p-2.5 rounded-xl bg-[#1b1e2b]">
           <RenderIcon icon={sport.icon} size={22} style={{ color: sport.accent }} />
         </div>
         <div>
@@ -2503,7 +2503,7 @@ function PromotionsView({ accent }: { accent: string }) {
               rule: "Referral must deposit at least KES 1,000."
             }
           ].map((p, i) => (
-            <div key={i} className="p-4 rounded-xl bg-black/20 border border-white/5">
+            <div key={i} className="p-4 rounded-xl bg-[#1b1e2b]">
               <div className="text-purple-400 font-bold mb-1">{p.title}</div>
               <p className="text-white/70 text-sm mb-2">{p.desc}</p>
               <div className="text-[10px] text-white/30 uppercase tracking-wider font-bold">Key Rule: {p.rule}</div>
@@ -2512,7 +2512,7 @@ function PromotionsView({ accent }: { accent: string }) {
         </div>
       </div>
 
-      <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+      <div className="rounded-2xl p-6 bg-[#131520]">
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
           <Gem size={20} className="text-purple-400" /> VIP & Loyalty Tiers
         </h3>
@@ -2565,7 +2565,7 @@ function SupportView({ accent }: { accent: string }) {
             { level: "Level 2", role: "Team Leader", handle: "Large withdrawal approvals, account closures, complex bet disputes." },
             { level: "Level 3", role: "Operations Manager", handle: "Fraud investigations, major system outages, legal threats." }
           ].map((e, i) => (
-            <div key={i} className="flex gap-4 p-4 rounded-xl bg-black/20 border border-white/5">
+            <div key={i} className="flex gap-4 p-4 rounded-xl bg-[#1b1e2b]">
               <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
                 <span className="text-blue-400 font-black">{i+1}</span>
               </div>
@@ -2579,7 +2579,7 @@ function SupportView({ accent }: { accent: string }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+        <div className="rounded-2xl p-6 bg-[#131520]">
           <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Standard Procedures</h4>
           <ul className="space-y-3">
             {[
@@ -2633,7 +2633,7 @@ function ComplianceView({ accent }: { accent: string }) {
             { title: "Deposit Limits", icon: TrendingDown, desc: "Daily, weekly, or monthly caps on how much a user can fund." },
             { title: "Reality Checks", icon: Clock, desc: "Automated alerts showing time spent and net position." }
           ].map((p, i) => (
-            <div key={i} className="p-5 rounded-xl bg-black/20 border border-white/5 text-center">
+            <div key={i} className="p-5 rounded-xl bg-[#1b1e2b] text-center">
               <div className="flex justify-center mb-3">
                 <RenderIcon icon={p.icon} size={28} className="text-emerald-400" />
               </div>
@@ -2644,20 +2644,20 @@ function ComplianceView({ accent }: { accent: string }) {
         </div>
       </div>
 
-      <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+      <div className="rounded-2xl p-6 bg-[#131520]">
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
           <FileCheck size={20} className="text-white/60" /> KYC & Licensing Requirements
         </h3>
         <div className="space-y-6">
-          <div className="p-4 rounded-xl border border-white/5 bg-black/20">
+          <div className="p-4 rounded-xl bg-[#1b1e2b]">
             <div className="text-white text-sm font-bold mb-2">Proof of Identity (ID)</div>
             <p className="text-white/40 text-xs">National ID, Passport, or Alien Card. Must be valid and clear. Scan both sides.</p>
           </div>
-          <div className="p-4 rounded-xl border border-white/5 bg-black/20">
+          <div className="p-4 rounded-xl bg-[#1b1e2b]">
             <div className="text-white text-sm font-bold mb-2">Proof of Address (POA)</div>
             <p className="text-white/40 text-xs">Utility bill or bank statement (not older than 3 months). Must match account name.</p>
           </div>
-          <div className="p-4 rounded-xl border border-white/5 bg-black/20">
+          <div className="p-4 rounded-xl bg-[#1b1e2b]">
             <div className="text-white text-sm font-bold mb-2">Age Verification</div>
             <p className="text-white/40 text-xs text-red-400/60 font-bold">STRICT 18+ POLICY. No exceptions. Any account suspected of underage play must be locked instantly.</p>
           </div>
@@ -2694,13 +2694,13 @@ function ToolkitView({ accent }: { accent: string }) {
               Equip your browser with real-time smart intelligence. This extension syncs with our live templates to provide instant suggestions as you chat with clients.
             </p>
             <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-4">
-               <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+               <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
                   <BrainCircuit size={12} /> Smart Matcher
                </div>
-               <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+               <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
                   <RefreshCw size={12} /> Live Sync
                </div>
-               <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-lg border border-white/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+               <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
                   <MousePointer size={12} /> Highlight-to-Match
                </div>
             </div>
@@ -2722,7 +2722,7 @@ function ToolkitView({ accent }: { accent: string }) {
                <WifiOff size={16} /> Install Add-on (Firefox)
              </a>
              
-             <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-[10px] text-white/40 leading-relaxed space-y-2">
+             <div className="p-4 rounded-2xl bg-[#1b1e2b] text-[10px] text-white/40 leading-relaxed space-y-2">
                 <div>
                   <span className="text-accent font-black">CHROME INSTALLATION:</span><br/>
                   1. Unzip .zip download<br/>
@@ -2755,7 +2755,7 @@ function ToolkitView({ accent }: { accent: string }) {
             { q: "My withdrawal is taking too long.", a: "Check if KYC is pending. Remind user of the 24-48h processing window." },
             { q: "I didn't get my bonus.", a: "Verify if minimum deposit was met. Check for duplicate accounts (Bonus Abuse)." }
           ].map((t, i) => (
-            <div key={i} className="p-4 rounded-xl bg-black/20 border border-white/5">
+            <div key={i} className="p-4 rounded-xl bg-[#1b1e2b]">
               <div className="text-pink-400 text-xs font-black uppercase mb-1">Scenario: {t.q}</div>
               <p className="text-white/70 text-sm">Response: <span className="italic text-white/90">"{t.a}"</span></p>
             </div>
@@ -2764,7 +2764,7 @@ function ToolkitView({ accent }: { accent: string }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+        <div className="rounded-2xl p-6 bg-[#131520]">
           <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Odds Guide Reference</h4>
           <div className="space-y-4 text-sm">
             <div className="flex justify-between border-b border-white/5 pb-2">
@@ -2782,11 +2782,11 @@ function ToolkitView({ accent }: { accent: string }) {
             <p className="text-[10px] text-white/30 italic pt-2">Formula: (1 / Odds) * 100 = Implied Probability</p>
           </div>
         </div>
-        <div className="rounded-2xl p-6 border border-white/5 bg-white/[0.02]">
+        <div className="rounded-2xl p-6 bg-[#131520]">
           <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Internal Tools Links</h4>
           <div className="grid grid-cols-2 gap-3">
             {["Admin Portal", "Slack Ops", "Zendesk", "Supabase", "Jira", "Vercel"].map(l => (
-              <div key={l} className="px-3 py-2 rounded-lg bg-black/40 border border-white/5 text-xs text-white/60 hover:text-pink-400 hover:border-pink-500/30 transition-all cursor-pointer">
+              <div key={l} className="px-3 py-2 rounded-lg bg-[#1b1e2b] text-xs text-white/60 hover:text-pink-400 hover:border-pink-500/30 transition-all cursor-pointer">
                 ↗ {l}
               </div>
             ))}
@@ -2806,7 +2806,7 @@ function AgentManualView() {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Manual Section Nav */}
       <div 
-        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/80 border-b border-border"
+        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/90"
       >
         <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
           {(Object.entries(manualSections) as [ManualSection, ManualSectionMeta][]).map(([id, data]) => (
@@ -2823,7 +2823,7 @@ function AgentManualView() {
 
       {/* Section Hero */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+        <div className="p-2.5 rounded-xl bg-[#1b1e2b]">
           <RenderIcon icon={meta.icon} size={22} style={{ color: meta.accent }} />
         </div>
         <div>
@@ -2869,7 +2869,7 @@ export default function Resources() {
     <div className="text-white font-sans">
       {/* ── Top Nav ── */}
       <div
-        className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border"
+        className="sticky top-0 z-50 backdrop-blur-xl bg-background/90"
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center justify-center gap-2 md:gap-6">
 
@@ -2881,7 +2881,6 @@ export default function Resources() {
             className="flex gap-1 rounded-xl p-1"
             style={{
               background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
             {(
@@ -2915,10 +2914,7 @@ export default function Resources() {
                     section === s.id
                       ? "#fff"
                       : "rgba(255,255,255,0.45)",
-                  border:
-                    section === s.id
-                      ? "1px solid rgba(255,255,255,0.15)"
-                      : "1px solid transparent",
+                  
                 }}
               >
                 <RenderIcon icon={s.icon} size={15} />

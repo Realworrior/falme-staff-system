@@ -3,22 +3,23 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #161616;
+  /* Deep-dark borderless design system — matches MpesaCodes */
+  --background: #0e1017;
   --foreground: #ffffff;
   
-  --card: #2a2b2f;
+  --card: #131520;
   --card-foreground: #ffffff;
   
-  --popover: #2a2b2f;
+  --popover: #131520;
   --popover-foreground: #ffffff;
   
   --primary: #baff55;
   --primary-foreground: #000000;
   
-  --secondary: #2a2b2f;
+  --secondary: #191c2b;
   --secondary-foreground: #ffffff;
   
-  --muted: #3a3b3f;
+  --muted: #1b1e2b;
   --muted-foreground: #8e8e93;
   
   --accent: #baff55;
@@ -27,8 +28,8 @@
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   
-  --border: #3a3b3f;
-  --input: #3a3b3f;
+  --border: rgba(255,255,255,0.06);
+  --input: #131520;
   --ring: #baff55;
   --radius: 1.5rem;
 }
@@ -82,29 +83,31 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #3a3b3f;
+    background: #1b1e2b;
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #4a4b4f;
+    background: #242838;
   }
 }
 
 @layer utilities {
   .matte-card {
-    background-color: #2a2b2f;
-    border-radius: 32px;
+    background-color: #131520;
+    border-radius: 28px;
     border: none;
-    box-shadow: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
   }
 
   .cutout-card {
-    background: radial-gradient(circle at top right, transparent 55px, #2a2b2f 56px);
-    border-radius: 32px;
+    background-color: #131520;
+    border-radius: 28px;
+    border: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     transition: background 0.3s ease;
   }
   .cutout-card.hover-bg:hover {
-    background: radial-gradient(circle at top right, transparent 55px, #2d2f34 56px);
+    background-color: #191c2b;
   }
   
   .pill-white {
@@ -121,17 +124,17 @@
   .pill-white:hover { background: #e5e5e5; }
 
   .pill-dark {
-    background: #2a2b2f;
+    background: #131520;
     color: #ffffff;
     font-weight: 500;
     border-radius: 9999px;
     padding: 10px 24px;
     transition: all 0.2s;
     font-size: 14px;
-    border: 1px solid #3a3b3f;
+    border: none;
     cursor: pointer;
   }
-  .pill-dark:hover { background: #3a3b3f; }
+  .pill-dark:hover { background: #191c2b; }
 
   .pill-lime {
     background: #baff55;
@@ -147,7 +150,7 @@
   .pill-lime:hover { background: #a5f041; }
 
   .icon-btn-dark {
-    background: #2a2b2f;
+    background: #131520;
     color: #ffffff;
     border-radius: 9999px;
     width: 48px;
@@ -156,10 +159,10 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    border: 1px solid #3a3b3f;
+    border: none;
     cursor: pointer;
   }
-  .icon-btn-dark:hover { background: #3a3b3f; }
+  .icon-btn-dark:hover { background: #191c2b; }
 
   .icon-btn-lime {
     background: #baff55;
@@ -176,17 +179,17 @@
   .icon-btn-lime:hover { background: #a5f041; }
   
   .matte-input {
-    background: #2a2b2f;
-    border: 1px solid #3a3b3f;
+    background: #131520;
+    border: none;
     border-radius: 9999px;
     color: #ffffff;
     padding: 12px 24px;
     transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
   .matte-input:focus {
-    border-color: #baff55;
+    box-shadow: 0 0 0 2px #baff55;
     outline: none;
-    box-shadow: 0 0 0 1px #baff55;
   }
   
   /* Status Dots */
@@ -196,20 +199,20 @@
   .status-dot-green { width: 12px; height: 12px; border-radius: 50%; background: #baff55; display: inline-block; }
   .status-dot-gray { width: 12px; height: 12px; border-radius: 50%; background: #3a3b3f; display: inline-block; }
   
-  /* Legacy class overrides */
+  /* Design System Card Utilities — unified deep-dark borderless system */
   .glass-card {
-    background-color: #2a2b2f;
-    border-radius: 32px;
+    background-color: #131520;
+    border-radius: 28px;
     border: none;
-    box-shadow: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
   }
   .bg-panel {
-    background-color: #2a2b2f;
-    border-radius: 32px;
+    background-color: #131520;
+    border-radius: 16px;
   }
   .glass {
-    background-color: #2a2b2f;
-    border-radius: 32px;
+    background-color: #131520;
+    border-radius: 28px;
   }
   .premium-button {
     background: #baff55;
@@ -224,12 +227,13 @@
   }
   .premium-button:hover { background: #a5f041; }
   .premium-input {
-    background: #2a2b2f;
-    border: 1px solid #3a3b3f;
+    background: #131520;
+    border: none;
     border-radius: 9999px;
     color: #ffffff;
     padding: 12px 24px;
     transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
 
   .no-scrollbar::-webkit-scrollbar { display: none; }

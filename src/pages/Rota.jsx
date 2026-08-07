@@ -369,11 +369,11 @@ export default function RotaPage() {
       <div className="max-w-[1600px] mx-auto flex flex-col min-h-screen relative">
         
         {/* ── Top Command Bar ── */}
-        <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-6 md:px-8">
+        <div className="sticky top-0 z-30 bg-background/90 backdrop-blur-xl px-4 py-6 md:px-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <div className="w-8 h-8 rounded-xl bg-accent flex items-center justify-center border border-white/10">
+                <div className="w-8 h-8 rounded-xl bg-accent flex items-center justify-center">
                   <CalendarIcon size={18} className="text-white" />
                 </div>
                 <h1 className="text-2xl md:text-3xl font-black tracking-tighter uppercase font-heading">
@@ -388,7 +388,7 @@ export default function RotaPage() {
 
             <div className="flex items-center gap-3">
               {isManagerMode && (
-                <div className="flex bg-panel p-1.5 rounded-2xl border border-white/10 mr-2">
+                <div className="flex bg-panel p-1.5 rounded-2xl mr-2">
                   <button
                     onClick={() => {
                       setActiveBranch('betfalme');
@@ -418,7 +418,7 @@ export default function RotaPage() {
                 </div>
               )}
 
-              <div className="flex bg-panel p-1.5 rounded-2xl border border-white/10">
+              <div className="flex bg-panel p-1.5 rounded-2xl">
                 <button 
                   onClick={handlePrevMonth}
                   className="p-2.5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-white"
@@ -444,7 +444,7 @@ export default function RotaPage() {
               {!isManagerMode && (
                 <button 
                   onClick={() => setIsManagerLoginOpen(true)}
-                  className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/50 hover:bg-blue-500/10 transition-all text-gray-400 hover:text-blue-400 group"
+                  className="p-3 rounded-2xl bg-[#1b1e2b] hover:bg-blue-500/10 transition-all text-gray-400 hover:text-blue-400 group"
                 >
                   <ShieldAlert size={20} className="group-hover:scale-110 transition-transform" />
                 </button>
@@ -454,7 +454,7 @@ export default function RotaPage() {
         </div>
 
         {/* ── Personnel Selection ── */}
-        <div className="px-4 py-4 md:px-8 overflow-x-auto no-scrollbar bg-background sticky top-[100px] md:top-[88px] z-20 border-b border-border">
+        <div className="px-4 py-4 md:px-8 overflow-x-auto no-scrollbar bg-background sticky top-[100px] md:top-[88px] z-20">
           <div className="flex items-center min-w-max pb-2">
             <div className="flex items-center gap-2 mr-6">
               <button 
@@ -532,7 +532,7 @@ export default function RotaPage() {
 
         {/* ── Content ── */}
         <div className="flex-1 overflow-y-auto px-1 md:px-0">
-          <div className="flex bg-panel p-1.5 rounded-2xl border border-white/10 m-4 md:mx-8 overflow-x-auto no-scrollbar">
+          <div className="flex bg-panel p-1.5 rounded-2xl m-4 md:mx-8 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab('matrix')}
               className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matrix' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
@@ -680,7 +680,7 @@ export default function RotaPage() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="fixed z-[70] left-1/2 top-1/2 md:top-[25vh] -translate-x-1/2 -translate-y-1/2 md:translate-y-0 w-[90%] max-w-[420px] bg-[#0a0a0f] border border-white/10 p-6 md:p-8 rounded-[40px]"
+                className="fixed z-[70] left-1/2 top-1/2 md:top-[25vh] -translate-x-1/2 -translate-y-1/2 md:translate-y-0 w-[90%] max-w-[420px] bg-[#131520] shadow-2xl p-6 md:p-8 rounded-[40px]"
               >
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
@@ -693,7 +693,7 @@ export default function RotaPage() {
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                  <div className="p-4 rounded-2xl bg-[#1b1e2b]">
                     <label className="text-[10px] font-black uppercase text-gray-500 mb-2 block">Personnel Filter</label>
                     <div className="text-lg font-black text-white">{selectedStaff || 'All Personnel'}</div>
                   </div>
@@ -733,7 +733,7 @@ export default function RotaPage() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="fixed z-[90] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[400px] bg-[#0a0a0f] border border-white/10 p-8 rounded-[40px]"
+                className="fixed z-[90] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[400px] bg-[#131520] shadow-2xl p-8 rounded-[40px]"
               >
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
@@ -750,7 +750,7 @@ export default function RotaPage() {
                   value={managerPassword}
                   onChange={(e) => setManagerPassword(e.target.value)}
                   placeholder="••••"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-center text-3xl tracking-[0.5em] focus:outline-none focus:border-amber-500 transition-all mb-6"
+                  className="w-full bg-[#1b1e2b] rounded-2xl p-4 text-white text-center text-3xl tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all mb-6"
                 />
 
                 <button 

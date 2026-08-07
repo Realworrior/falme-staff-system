@@ -700,7 +700,7 @@ export default function MpesaCodes() {
         </div>
 
         {/* ── HEADER NAV TOGGLE SWITCH ── */}
-        <div className="flex items-center bg-[#161822] p-1.5 rounded-2xl border border-white/10 self-start md:self-auto shadow-inner">
+        <div className="flex items-center bg-[#1b1e2b] p-1.5 rounded-2xl self-start md:self-auto">
           <button
             onClick={() => setActiveTab("counter")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
@@ -1197,14 +1197,14 @@ export default function MpesaCodes() {
               </div>
               <p className="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em]">Temp MPESA Code Notes & SMS Repository</p>
             </div>
-            <div className="text-[11px] font-bold text-gray-400 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-2 self-start sm:self-auto">
+            <div className="text-[11px] font-bold text-gray-400 bg-[#1b1e2b] px-3 py-1.5 rounded-xl flex items-center gap-2 self-start sm:self-auto">
               <Clock size={12} className="text-accent" />
               <span>24h Auto-Expiry Active</span>
             </div>
           </div>
 
           {/* Inline SMS Input Panel */}
-          <div className="glass-card border border-white/10 p-4 space-y-2">
+          <div className="glass-card p-4 space-y-2">
             <div className="flex items-center gap-2 mb-1">
               <Plus size={12} className="text-accent shrink-0" />
               <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Paste Full SMS or Code</span>
@@ -1218,7 +1218,7 @@ export default function MpesaCodes() {
                 onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd(); }}
                 placeholder="UG2D2A2YF9 confirmed. Ksh1,000.00 from 0712345678 paid to METABET on 7/7/26…   or just: UG2D2A2YF9"
                 rows={2}
-                className="flex-1 bg-[#161616] border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/30 font-mono resize-none transition-all placeholder-gray-600 min-w-0"
+                className="flex-1 bg-[#1b1e2b] rounded-xl p-3 text-white text-sm outline-none focus:ring-2 focus:ring-accent/30 font-mono resize-none transition-all placeholder-gray-600 min-w-0"
               />
               <button
                 type="button"
@@ -1277,7 +1277,7 @@ export default function MpesaCodes() {
                     {breakLabel && (
                       <div className="flex items-center gap-3 px-4 py-2">
                         <div className="flex-1 h-px bg-white/5" />
-                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest flex items-center gap-1.5 bg-white/[0.03] border border-white/5 rounded-full px-3 py-1">
+                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest flex items-center gap-1.5 bg-[#1b1e2b] rounded-full px-3 py-1">
                           <Clock size={10} />
                           {breakLabel} break
                         </span>

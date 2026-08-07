@@ -283,7 +283,7 @@ export function TransportDashboard({
         </div>
         
         {isLoggedIn ? (
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-white/5 p-3 sm:p-4 rounded-xl border border-white/5">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-[#1b1e2b] p-3 sm:p-4 rounded-xl">
             <div className="px-2 sm:px-4 py-1 border-r border-white/10">
               <p className="text-gray-500 text-[7px] sm:text-[8px] font-black uppercase tracking-widest">Combined</p>
               <div className="flex items-baseline gap-1 mt-0.5">
@@ -307,7 +307,7 @@ export function TransportDashboard({
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-4 bg-white/5 px-4 sm:px-6 py-3 rounded-xl border border-white/5">
+          <div className="flex items-center justify-between gap-4 bg-[#1b1e2b] px-4 sm:px-6 py-3 rounded-xl">
             <div>
               <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest">Estimated Payout</p>
               <div className="flex items-baseline gap-1 mt-0.5">
@@ -345,7 +345,7 @@ export function TransportDashboard({
 
           {/* Active range badge */}
           {rangeLabel && (
-            <span className="text-[8px] sm:text-[9px] font-bold text-gray-500 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 whitespace-nowrap">
+            <span className="text-[8px] sm:text-[9px] font-bold text-gray-500 bg-[#1b1e2b] px-3 py-1.5 rounded-lg whitespace-nowrap">
               <CalendarIcon size={10} className="inline mr-1.5 -mt-0.5 text-accent" />
               {rangeLabel}
             </span>
@@ -365,7 +365,7 @@ export function TransportDashboard({
                     setCustomRange(prev => ({ ...prev, start: new Date(e.target.value + 'T00:00:00') }));
                   }
                 }}
-                className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-accent [color-scheme:dark]"
+                className="flex-1 min-w-0 bg-[#1b1e2b] rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-accent [color-scheme:dark]"
               />
             </div>
             <div className="flex items-center gap-2 px-2 border-t sm:border-t-0 sm:border-l border-white/10 pt-2 sm:pt-0">
@@ -378,7 +378,7 @@ export function TransportDashboard({
                     setCustomRange(prev => ({ ...prev, end: new Date(e.target.value + 'T23:59:59') }));
                   }
                 }}
-                className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-accent [color-scheme:dark]"
+                className="flex-1 min-w-0 bg-[#1b1e2b] rounded-lg px-3 py-1.5 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-accent [color-scheme:dark]"
               />
             </div>
           </div>
@@ -429,7 +429,7 @@ export function TransportDashboard({
               className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest transition-all whitespace-nowrap ${
                 editingRates 
                   ? "bg-emerald-600 text-white shadow-emerald-600/20" 
-                  : "bg-white/5 text-gray-400 border border-white/10 hover:border-white/20 hover:text-white"
+                  : "bg-[#1b1e2b] text-gray-400 hover:text-white"
               }`}
             >
               {editingRates ? <CheckCircle2 size={14} /> : <TrendingUp size={14} />}
@@ -552,7 +552,7 @@ export function TransportDashboard({
                         {/* Stats / Rate Editor */}
                         <div className="flex items-center gap-4 sm:gap-8 md:gap-12 pl-13 sm:pl-0">
                           {editingRates ? (
-                            <div className="flex items-center bg-black/40 rounded-xl border border-white/10 px-3 py-2">
+                            <div className="flex items-center bg-[#1b1e2b] rounded-xl px-3 py-2">
                               <DollarSign size={12} className="text-gray-500 mr-2 shrink-0" />
                               <input 
                                 type="number"
@@ -624,7 +624,7 @@ export function TransportDashboard({
                   </div>
                 )}
                 {currentHistory.map(h => (
-                  <div key={h.id} className="p-3 sm:p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer">
+                  <div key={h.id} className="p-3 sm:p-4 rounded-2xl bg-[#1b1e2b] hover:bg-[#222538] transition-all cursor-pointer">
                     <div className="flex items-center justify-between mb-2 gap-2">
                       <span className="text-[9px] sm:text-[10px] font-black text-blue-400 uppercase tracking-widest">{h.type} Sync</span>
                       <span className="text-[8px] sm:text-[9px] text-gray-500 font-bold shrink-0">{format(parseISO(h.date), 'MMM d, HH:mm')}</span>
