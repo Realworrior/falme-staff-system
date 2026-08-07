@@ -338,13 +338,14 @@ export default function MpesaCodes() {
     const checkHourRollover = () => {
       const now = new Date();
       const currentWindow = getShiftWindow(now);
-      const currentMinute = now.getMinutes();
 
-      // Time remaining in current shift window
-      const msLeft = currentWindow.endTime.getTime() - now.getTime();
-      const minsLeft = Math.max(0, Math.ceil(msLeft / 60000));
-      setMinutesRemaining(minsLeft);
-      setIsNearHourEnd(minsLeft <= 10);
+      // Exact ms remaining in current shift window
+      const msLeft = Math.max(0, currentWindow.endTime.getTime() - now.getTime());
+      const secsLeft = Math.floor(msLeft / 1000);
+      setSecondsRemaining(secsLeft);
+      
+      // Trigger alert strictly during the LAST 5 MINUTES (300 seconds)
+      setIsNearHourEnd(secsLeft > 0 && secsLeft <= 300);
 
       setCounterState((prev) => {
         // If current window is different from recorded active window
@@ -353,29 +354,25 @@ export default function MpesaCodes() {
           const depCount = prev.depositCount || 0;
           const wthCount = prev.withdrawalCount || 0;
 
-          // Auto-archive previous shift to Analytics
-          if (depCount > 0 || wthCount > 0) {
-            const archiveEntry = {
-              id: `analytics_${Date.now()}`,
-              timeRange: finishedRange,
-              depositCount: depCount,
-              withdrawalCount: wthCount,
-              copiedAt: new Date().toISOString(),
-              autoArchived: true,
-              date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
-            };
+          // ALWAYS auto-archive completed shift to Analytics so Last Hour Stats has 8-9 stats immediately at 9:01
+          const archiveEntry = {
+            id: `analytics_${Date.now()}`,
+            timeRange: finishedRange,
+            depositCount: depCount,
+            withdrawalCount: wthCount,
+            copiedAt: new Date().toISOString(),
+            autoArchived: true,
+            date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
+          };
 
-            setAnalyticsHistory((prevHistory) => {
-              if (prevHistory.some(h => h.timeRange === finishedRange && h.date === archiveEntry.date)) {
-                return prevHistory;
-              }
-              const nextHistory = [archiveEntry, ...prevHistory];
-              syncAnalyticsToSupabase(nextHistory);
-              return nextHistory;
-            });
-          }
+          setAnalyticsHistory((prevHistory) => {
+            const filtered = prevHistory.filter(h => h.timeRange !== finishedRange);
+            const nextHistory = [archiveEntry, ...filtered];
+            syncAnalyticsToSupabase(nextHistory);
+            return nextHistory;
+          });
 
-          // Auto-advance to new shift window and reset counts
+          // Auto-advance to new shift window and reset active counts
           const newRange = currentWindow.timeRange;
           const newState = {
             ...prev,
@@ -386,7 +383,7 @@ export default function MpesaCodes() {
           };
 
           syncCounterToSupabase(newState);
-          addToast(`New shift window (${newRange}). Counters auto-reset!`, "info");
+          addToast(`New shift window (${newRange}). Last Hour Stats updated!`, "info");
           return newState;
         }
 
@@ -395,7 +392,7 @@ export default function MpesaCodes() {
     };
 
     checkHourRollover();
-    const interval = setInterval(checkHourRollover, 5000);
+    const interval = setInterval(checkHourRollover, 1000); // 1-second interval for live countdown
     return () => clearInterval(interval);
   }, []);
 
@@ -888,30 +885,43 @@ export default function MpesaCodes() {
         const prevDep = prevEntry ? (prevEntry.depositCount ?? 0) : 0;
         const prevWth = prevEntry ? (prevEntry.withdrawalCount ?? 0) : 0;
 
+        // Countdown mm:ss format helper
+        const formatCountdown = (totalSecs) => {
+          const mins = Math.floor(totalSecs / 60);
+          const secs = totalSecs % 60;
+          return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        };
+
         return (
           <div className="space-y-6">
 
-            {/* End of Hour Reminder Notification Banner */}
+            {/* End of Hour Alert Banner — Appears strictly in the LAST 5 MINUTES of the hour */}
             {isNearHourEnd && (
-              <div className="bg-[#baff55]/10 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-pulse">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#baff55] text-black rounded-xl font-black">
-                    <Clock size={20} />
+              <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 rounded-2xl p-4 md:px-6 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in duration-300">
+                <div className="flex items-center gap-3.5">
+                  <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl font-bold border border-amber-500/30 shrink-0">
+                    <AlertTriangle size={22} className="animate-pulse" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                      <Clock size={16} className="text-black" /> Shift Window Ending Soon ({minutesRemaining} min remaining)
-                    </h3>
-                    <p className="text-xs text-gray-300">
-                      Click <strong className="text-[#baff55]">Copy Report</strong> to log this shift before counters auto-reset!
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider">
+                        Shift Window Ending Soon
+                      </h3>
+                      <span className="text-xs font-mono font-black text-black bg-amber-400 px-2.5 py-0.5 rounded-full shadow flex items-center gap-1">
+                        <Clock size={11} /> {formatCountdown(secondsRemaining)} remaining
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-200/80 mt-1">
+                      The current shift is completing. Copy your report now or let it auto-archive to <strong className="text-white">Last Hour Stats</strong>.
                     </p>
                   </div>
                 </div>
+
                 <button
                   onClick={() => handleCopyCounterText()}
-                  className="w-full sm:w-auto bg-[#baff55] text-black font-black text-xs py-3 px-6 rounded-2xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shrink-0 shadow-lg"
+                  className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-black font-black text-xs py-3 px-5 rounded-xl flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg active:scale-95"
                 >
-                  <Copy size={14} />
+                  <Copy size={15} />
                   Copy Active Hour Report
                 </button>
               </div>
