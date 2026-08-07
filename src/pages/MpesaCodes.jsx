@@ -709,7 +709,7 @@ export default function MpesaCodes() {
             <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">MPesa Operations Hub</h1>
           </div>
           <p className="text-xs text-gray-400 font-medium">
-            Hourly counters & night-shift brackets (1am-7am) + real-time analytics & SMS ledger
+            Hourly counter & 1am-7am night bracket + real-time analytics & SMS ledger
           </p>
         </div>
 
@@ -746,7 +746,7 @@ export default function MpesaCodes() {
         </div>
       </div>
 
-      {/* ── TOP MINIMIZED SHIFT ANALYTICS HEADER ── */}
+      {/* ── TOP MINIMIZED ANALYTICS HEADER ── */}
       <div className="bg-[#131520] rounded-2xl p-3.5 md:px-5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Left: Section Label */}
         <div className="flex items-center gap-2.5">
@@ -755,11 +755,11 @@ export default function MpesaCodes() {
           </div>
           <div>
             <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <span>Shift Analytics Summary</span>
+              <span>24-Hour Analytics Summary</span>
               <span className="text-[9px] font-extrabold text-[#baff55] bg-[#baff55]/10 px-2 py-0.5 rounded-full lowercase tracking-normal">24hr window</span>
             </h3>
             <p className="text-[10px] text-gray-400">
-              Live statistics from shift reports recorded in the last 24 hours
+              Live statistics recorded in the last 24 hours
             </p>
           </div>
         </div>
@@ -783,12 +783,6 @@ export default function MpesaCodes() {
               <CheckCircle2 size={10} /> Logged
             </span>
           </div>
-
-          {/* Metric 3: Shifts Tracked */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">Shifts</span>
-            <span className="text-base font-black font-mono text-white">{totalShiftsLogged}</span>
-          </div>
         </div>
 
         {/* Collapsible History Log Toggle Button */}
@@ -807,7 +801,7 @@ export default function MpesaCodes() {
           <div className="flex items-center justify-between pb-3">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Calendar size={15} className="text-[#baff55]" />
-              Detailed Shift History Log
+              Detailed History Log
             </h3>
             {analyticsHistory.length > 0 && (
               <button
@@ -822,14 +816,14 @@ export default function MpesaCodes() {
           <div className="bg-[#0b0c12] rounded-xl overflow-hidden">
             {analyticsHistory.length === 0 ? (
               <div className="text-center py-10 text-xs text-gray-500 font-bold uppercase tracking-wider">
-                No shift reports saved yet — click "Copy Hourly Report" to log analytics
+                No reports saved yet — click "Copy Hourly Report" to log analytics
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-white/[0.02] text-[9px] font-black text-gray-400 uppercase tracking-widest">
                     <tr>
-                      <th className="p-3">Shift Date</th>
+                      <th className="p-3">Date</th>
                       <th className="p-3">Time Window</th>
                       <th className="p-3">Deposits</th>
                       <th className="p-3">Withdrawals</th>
@@ -920,14 +914,14 @@ export default function MpesaCodes() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider">
-                        Shift Window Ending Soon
+                        Hourly Window Ending Soon
                       </h3>
                       <span className="text-xs font-mono font-black text-black bg-amber-400 px-2.5 py-0.5 rounded-full shadow flex items-center gap-1">
                         <Clock size={11} /> {formatCountdown(secondsRemaining)} remaining
                       </span>
                     </div>
                     <p className="text-xs text-amber-200/80 mt-1">
-                      The current shift is completing. Copy your report now or let it auto-archive to <strong className="text-white">Last Hour Stats</strong>.
+                      The current hour is completing. Copy your report now or let it auto-archive to <strong className="text-white">Last Hour Stats</strong>.
                     </p>
                   </div>
                 </div>
@@ -957,14 +951,14 @@ export default function MpesaCodes() {
                       <div className="flex items-center gap-2.5">
                         <Clock size={18} className="text-[#baff55]" />
                         <h2 className="text-lg font-black text-white uppercase tracking-wider">
-                          MPesa Shift Counter
+                          MPesa Hourly Counter
                         </h2>
                         <span className="text-[10px] font-black uppercase text-black bg-[#baff55] px-3 py-1 rounded-full flex items-center gap-1.5 shadow-md">
                           <span className="w-2 h-2 rounded-full bg-black animate-ping" /> LATEST ACTIVE HOUR
                         </span>
                       </div>
                       <p className="text-xs text-gray-400 mt-1">
-                        Counters auto-reset on hour boundary. Showing live active shift.
+                        Counters auto-reset on hour boundary. Showing live active window.
                       </p>
                     </div>
                   </div>
@@ -972,13 +966,13 @@ export default function MpesaCodes() {
                   {/* Time Window Field */}
                   <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#191b28] p-3.5 rounded-2xl">
                     <span className="text-xs font-bold text-gray-400 shrink-0 flex items-center gap-1.5">
-                      <Clock size={14} className="text-[#baff55]" /> Active Shift Window:
+                      <Clock size={14} className="text-[#baff55]" /> Active Time Window:
                     </span>
                     <div className="flex-1 w-full flex items-center gap-2">
                       <button
                         onClick={() => handleStepShift(-1)}
                         className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl transition-all"
-                        title="Previous Shift Window"
+                        title="Previous Time Window"
                       >
                         <ChevronLeft size={16} />
                       </button>
@@ -992,7 +986,7 @@ export default function MpesaCodes() {
                       <button
                         onClick={() => handleStepShift(1)}
                         className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl transition-all"
-                        title="Next Shift Window"
+                        title="Next Time Window"
                       >
                         <ChevronRight size={16} />
                       </button>
@@ -1147,7 +1141,7 @@ export default function MpesaCodes() {
                       </h3>
                     </div>
                     <span className="text-[9px] font-black uppercase bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full flex items-center gap-1">
-                      {prevEntry ? "Archived Shift" : "Last Shift"}
+                      {prevEntry ? "Archived Hour" : "Last Hour"}
                     </span>
                   </div>
 
@@ -1155,7 +1149,7 @@ export default function MpesaCodes() {
                   <div className="bg-[#0e1322] rounded-2xl p-5 space-y-4 shadow-lg">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1">
-                        <Clock size={11} className="text-blue-400" /> Shift Window:
+                        <Clock size={11} className="text-blue-400" /> Time Window:
                       </span>
                       <span className="text-[9px] font-black uppercase text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-md">
                         Previous Hour
@@ -1188,7 +1182,7 @@ export default function MpesaCodes() {
 
                   {/* Quick Hint */}
                   <p className="text-[11px] text-gray-400 text-center leading-relaxed">
-                    Shows stats from the previous shift. Click <strong className="text-blue-400">Copy Last Hour Report</strong> to copy this shift instance.
+                    Shows stats from the previous hour. Click <strong className="text-blue-400">Copy Last Hour Report</strong> to copy this hour instance.
                   </p>
                 </div>
               </div>
