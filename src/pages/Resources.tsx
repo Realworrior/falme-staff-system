@@ -47,6 +47,11 @@ import {
   BrainCircuit,
   FileCheck,
 } from 'lucide-react';
+
+const RenderIcon = ({ icon: Icon, size = 20, className, style }: { icon?: LucideIcon; size?: number; className?: string; style?: React.CSSProperties }) => {
+  if (!Icon) return null;
+  return <Icon size={size} className={className} style={style} />;
+};
 import { 
   isAfter, 
   isBefore, 
@@ -1979,8 +1984,8 @@ function CrashGamesView({ accent }: { accent: string }) {
             }}
           >
             <div className="text-2xl mb-2">
-            {(() => { const I = g.themeIcon; return <I size={24} className="text-white/70" />; })()}
-          </div>
+              <RenderIcon icon={g.themeIcon} size={24} className="text-white/70" />
+            </div>
             <div className="text-white text-sm">{g.name}</div>
             <div className="text-white/40 text-xs mt-0.5">
               {g.theme}
@@ -2000,7 +2005,7 @@ function CrashGamesView({ accent }: { accent: string }) {
         >
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 rounded-xl bg-white/10">
-              {(() => { const I = selected.themeIcon; return <I size={24} className="text-white" />; })()}
+              <RenderIcon icon={selected.themeIcon} size={24} className="text-white" />
             </div>
             <div>
               <div className="text-white">{selected.name}</div>
@@ -2116,7 +2121,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
             style={{ background: "rgba(255,255,255,0.03)" }}
           >
             <div className="flex items-center gap-3">
-              {(() => { const I = categoryIcons[g.category] ?? Gamepad2; return <I size={24} className="text-white/60" />; })()}
+              <RenderIcon icon={categoryIcons[g.category] ?? Gamepad2} size={24} className="text-white/60" />
               <div>
                 <div className="text-white text-sm">
                   {g.name}
@@ -2295,11 +2300,7 @@ function CasinoView({ accent }: { accent: string }) {
               style={{ background: "rgba(255,255,255,0.03)" }}
             >
               <div className="text-2xl mb-2">
-                {(() => {
-                  const iconMap: Record<string, LucideIcon> = { Roulette: Dices, Blackjack: Layers, Baccarat: Gem, Poker: Trophy };
-                  const I = iconMap[g] ?? Gamepad2;
-                  return <I size={24} className="text-yellow-400" />;
-                })()}
+                <RenderIcon icon={{ Roulette: Dices, Blackjack: Layers, Baccarat: Gem, Poker: Trophy }[g] ?? Gamepad2} size={24} className="text-yellow-400" />
               </div>
               <div className="text-white text-sm">{g}</div>
               <div className="text-white/35 text-xs mt-1">
@@ -2416,7 +2417,7 @@ function MarketGuideView() {
       {/* Sport hero strip */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
         <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-          {(() => { const I = sport.icon; return <I size={22} style={{ color: sport.accent }} />; })()}
+          <RenderIcon icon={sport.icon} size={22} style={{ color: sport.accent }} />
         </div>
         <div>
           <div
@@ -2823,7 +2824,7 @@ function AgentManualView() {
       {/* Section Hero */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
         <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-          {(() => { const I = meta.icon; return <I size={22} style={{ color: meta.accent }} />; })()}
+          <RenderIcon icon={meta.icon} size={22} style={{ color: meta.accent }} />
         </div>
         <div>
           <div 
