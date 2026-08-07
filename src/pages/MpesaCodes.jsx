@@ -17,7 +17,7 @@ import {
   TrendingUp,
   BarChart3,
   Calendar,
-  CheckCircle2
+  FileText
 } from "lucide-react";
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
@@ -94,6 +94,7 @@ const DEFAULT_HOURLY_COUNTER = {
 };
 
 export default function MpesaCodes() {
+  const [activeTab, setActiveTab] = useState("counter"); // 'counter' or 'ledger'
   const [inputText, setInputText] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -314,7 +315,6 @@ export default function MpesaCodes() {
             };
 
             setAnalyticsHistory((prevHistory) => {
-              // Avoid exact duplicate
               if (prevHistory.some(h => h.timeRange === finishedRange && h.date === archiveEntry.date)) {
                 return prevHistory;
               }
@@ -339,7 +339,6 @@ export default function MpesaCodes() {
           return newState;
         }
 
-        // Just ensure lastActiveHour is set
         if (prev.lastActiveHour === undefined) {
           return { ...prev, lastActiveHour: currentHour };
         }
@@ -348,7 +347,7 @@ export default function MpesaCodes() {
     };
 
     checkHourRollover();
-    const interval = setInterval(checkHourRollover, 5000); // check every 5 seconds
+    const interval = setInterval(checkHourRollover, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -392,10 +391,6 @@ export default function MpesaCodes() {
     }));
   };
 
-  // Generate copyable text format:
-  // ⏰ 1:00 PM - 2:00 PM
-  // ✅ Deposit Completed: 1
-  // ✅Completed withdrawal: 0
   const getFormattedCounterText = (customRange, customDep, customWth) => {
     const range = customRange || counterState.timeRange || generateHourRange(0);
     const dIcon = counterState.depositIcon || '✅';
@@ -409,7 +404,6 @@ export default function MpesaCodes() {
     return `⏰ ${range}\n${dIcon} ${dLabel}: ${dCount}\n${wIcon}${wLabel}: ${wCount}`;
   };
 
-  // Copy and save to Analytics History
   const handleCopyCounterText = async (customRange, customDep, customWth) => {
     const textToCopy = getFormattedCounterText(customRange, customDep, customWth);
     const targetRange = customRange || counterState.timeRange || generateHourRange(0);
@@ -420,7 +414,6 @@ export default function MpesaCodes() {
       await navigator.clipboard.writeText(textToCopy);
       setCopiedCounter(true);
 
-      // Save to Analytics History
       const newAnalyticsEntry = {
         id: `analytics_${Date.now()}`,
         timeRange: targetRange,
@@ -431,7 +424,6 @@ export default function MpesaCodes() {
       };
 
       setAnalyticsHistory((prevHistory) => {
-        // Prevent exact duplicate entry within last 1 minute
         if (prevHistory.length > 0 && prevHistory[0].timeRange === targetRange && 
             Math.abs(new Date(prevHistory[0].copiedAt).getTime() - Date.now()) < 60000) {
           return prevHistory;
@@ -600,7 +592,7 @@ export default function MpesaCodes() {
     }
   };
 
-  // Filter SMS entries (excluding internal control records)
+  // Filter SMS entries
   const filtered = entries
     .filter(e => 
       e.id !== 'hourly_counter_global' && 
@@ -644,10 +636,10 @@ export default function MpesaCodes() {
   const totalShiftsLogged = analyticsHistory.length;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6">
 
       {/* ── PAGE HEADER ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="p-2 rounded-xl bg-[#baff55]/10 border border-[#baff55]/20 text-[#baff55]">
@@ -659,624 +651,661 @@ export default function MpesaCodes() {
             Hourly failure & completion counters + automatic shift analytics & SMS ledger
           </p>
         </div>
-        <div className="text-xs font-bold text-gray-400 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl flex items-center gap-2 self-start sm:self-auto">
-          <Activity size={14} className="text-[#baff55] animate-pulse" />
-          <span>Cross-Browser Sync Active</span>
+
+        {/* ── HEADER NAV TOGGLE SWITCH ── */}
+        <div className="flex items-center bg-[#161822] p-1.5 rounded-2xl border border-white/10 self-start md:self-auto shadow-inner">
+          <button
+            onClick={() => setActiveTab("counter")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "counter"
+                ? "bg-[#baff55] text-black shadow-lg shadow-[#baff55]/20"
+                : "text-gray-400 hover:text-white bg-transparent"
+            }`}
+          >
+            <Clock size={15} />
+            <span>Counter & Analytics</span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab("ledger")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "ledger"
+                ? "bg-[#baff55] text-black shadow-lg shadow-[#baff55]/20"
+                : "text-gray-400 hover:text-white bg-transparent"
+            }`}
+          >
+            <FileText size={15} />
+            <span>SMS Ledger</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              activeTab === "ledger" ? "bg-black/20 text-black font-extrabold" : "bg-white/10 text-gray-400"
+            }`}>
+              {filtered.length}
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* ── END OF HOUR REMINDER NOTIFICATION BANNER ── */}
-      {isNearHourEnd && (
-        <div className="bg-[#baff55]/10 border-2 border-[#baff55]/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-pulse">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#baff55] text-black rounded-xl font-black">
-              <Clock size={20} />
+      {/* ── TAB 1: MPESA HOURLY COUNTER & ANALYTICS ── */}
+      {activeTab === "counter" && (
+        <div className="space-y-6">
+
+          {/* End of Hour Reminder Notification Banner */}
+          {isNearHourEnd && (
+            <div className="bg-[#baff55]/10 border-2 border-[#baff55]/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#baff55] text-black rounded-xl font-black">
+                  <Clock size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                    ⏰ Shift Hour Ending Soon ({minutesRemaining} min remaining)
+                  </h3>
+                  <p className="text-xs text-gray-300">
+                    Click <strong className="text-[#baff55]">Copy Report</strong> to log this hour's report before counters auto-reset!
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleCopyCounterText()}
+                className="w-full sm:w-auto bg-[#baff55] text-black font-black text-xs py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shrink-0"
+              >
+                <Copy size={14} />
+                Copy Report Now
+              </button>
             </div>
-            <div>
-              <h3 className="text-sm font-black text-white uppercase tracking-wider">
-                ⏰ Shift Hour Ending Soon ({minutesRemaining} min remaining)
-              </h3>
-              <p className="text-xs text-gray-300">
-                Click <strong className="text-[#baff55]">Copy Report</strong> to log this hour's report before counters auto-reset!
-              </p>
+          )}
+
+          {/* Hourly Failure & Completion Counter Card */}
+          <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl relative overflow-hidden space-y-6">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#baff55]/5 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Counter Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Clock size={18} className="text-[#baff55]" />
+                  <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
+                    MPesa Hourly Counter
+                  </h2>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Auto-advances time & auto-resets counts each hour. Copies save directly to Analytics.
+                </p>
+              </div>
+
+              {/* Time Window Selector */}
+              <div className="flex items-center gap-2 bg-[#1a1c27] p-1.5 rounded-xl border border-white/10 shrink-0">
+                <button
+                  onClick={() => handleSetHourOffset(hourOffset - 1)}
+                  className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                  title="Previous Hour"
+                >
+                  &lt; Prev
+                </button>
+                <button
+                  onClick={() => handleSetHourOffset(0)}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                    hourOffset === 0 
+                      ? "bg-[#baff55] text-black font-black" 
+                      : "text-gray-300 hover:text-white bg-white/5"
+                  }`}
+                >
+                  Current Hour
+                </button>
+                <button
+                  onClick={() => handleSetHourOffset(offset => offset + 1)}
+                  className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                  title="Next Hour"
+                >
+                  Next &gt;
+                </button>
+              </div>
+            </div>
+
+            {/* Time Window Field */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#181a24] p-3 rounded-xl border border-white/5">
+              <span className="text-xs font-bold text-gray-400 shrink-0 flex items-center gap-1.5">
+                <Clock size={14} className="text-[#baff55]" /> Active Time Window:
+              </span>
+              <div className="flex-1 w-full flex items-center gap-2">
+                <span className="text-base shrink-0">⏰</span>
+                <input
+                  type="text"
+                  value={counterState.timeRange || generateHourRange(0)}
+                  onChange={(e) => updateCounterState({ timeRange: e.target.value })}
+                  className="flex-1 bg-[#0d0e14] border border-white/10 rounded-lg px-3 py-1.5 text-sm font-mono text-white outline-none focus:border-[#baff55]/50 transition-all"
+                  placeholder="e.g. 1:00 PM - 2:00 PM"
+                />
+                <button
+                  onClick={() => updateCounterState({ timeRange: generateHourRange(hourOffset) })}
+                  className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                  title="Reset Time Window"
+                >
+                  <RefreshCw size={12} />
+                  Reset Time
+                </button>
+              </div>
+            </div>
+
+            {/* Counter Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              {/* Deposit Completed / Failed Card */}
+              <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => updateCounterState({ depositIcon: counterState.depositIcon === '✅' ? '❌' : '✅' })}
+                      className="text-lg p-1 hover:bg-white/10 rounded-lg transition-all"
+                      title="Toggle status emoji"
+                    >
+                      {counterState.depositIcon || '✅'}
+                    </button>
+                    <input
+                      type="text"
+                      value={counterState.depositLabel || 'Deposit Completed'}
+                      onChange={(e) => updateCounterState({ depositLabel: e.target.value })}
+                      className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
+                    />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">Deposit</span>
+                </div>
+
+                <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
+                  <span className="text-4xl font-black font-mono text-[#baff55]">
+                    {counterState.depositCount ?? 0}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleAdjustCount('deposit', -1)}
+                      className="p-2.5 bg-white/5 hover:bg-white/15 text-white rounded-lg transition-all active:scale-95"
+                      title="Decrease count"
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleAdjustCount('deposit', 1)}
+                      className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95"
+                      title="Increase count"
+                    >
+                      <Plus size={16} />
+                    </button>
+                    <button
+                      onClick={() => updateCounterState({ depositCount: 0 })}
+                      className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                      title="Set to 0"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Completed / Failed Withdrawal Card */}
+              <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => updateCounterState({ withdrawalIcon: counterState.withdrawalIcon === '✅' ? '❌' : '✅' })}
+                      className="text-lg p-1 hover:bg-white/10 rounded-lg transition-all"
+                      title="Toggle status emoji"
+                    >
+                      {counterState.withdrawalIcon || '✅'}
+                    </button>
+                    <input
+                      type="text"
+                      value={counterState.withdrawalLabel || 'Completed withdrawal'}
+                      onChange={(e) => updateCounterState({ withdrawalLabel: e.target.value })}
+                      className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
+                    />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">Withdrawal</span>
+                </div>
+
+                <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
+                  <span className="text-4xl font-black font-mono text-[#baff55]">
+                    {counterState.withdrawalCount ?? 0}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleAdjustCount('withdrawal', -1)}
+                      className="p-2.5 bg-white/5 hover:bg-white/15 text-white rounded-lg transition-all active:scale-95"
+                      title="Decrease count"
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleAdjustCount('withdrawal', 1)}
+                      className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95"
+                      title="Increase count"
+                    >
+                      <Plus size={16} />
+                    </button>
+                    <button
+                      onClick={() => updateCounterState({ withdrawalCount: 0 })}
+                      className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                      title="Set to 0"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Copyable Summary Format Preview & Actions */}
+            <div className="bg-[#0b0c12] border border-white/10 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-[#baff55]" /> Copyable Format Preview:
+                </span>
+                <button
+                  onClick={handleResetCounts}
+                  className="text-[11px] font-bold text-gray-400 hover:text-red-400 transition-colors flex items-center gap-1"
+                >
+                  <RefreshCw size={11} /> Reset Counts
+                </button>
+              </div>
+
+              <pre className="bg-[#141620] border border-white/5 rounded-lg p-3 text-sm font-mono text-[#baff55] whitespace-pre-wrap select-all">
+                {getFormattedCounterText()}
+              </pre>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                <button
+                  onClick={() => handleCopyCounterText()}
+                  className="w-full sm:w-auto flex-1 bg-[#baff55] text-black hover:bg-[#a8f044] font-black text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
+                >
+                  {copiedCounter ? <Check size={18} /> : <Copy size={18} />}
+                  {copiedCounter ? "Copied & Saved to Analytics!" : "Copy Hourly Report & Save Analytics"}
+                </button>
+              </div>
             </div>
           </div>
-          <button
-            onClick={() => handleCopyCounterText()}
-            className="w-full sm:w-auto bg-[#baff55] text-black font-black text-xs py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shrink-0"
-          >
-            <Copy size={14} />
-            Copy Report Now
-          </button>
+
+          {/* MPesa Hourly Analytics Card */}
+          <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <BarChart3 size={18} className="text-[#baff55]" />
+                  <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
+                    MPesa Shift Analytics History
+                  </h2>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Historical record of copied and auto-archived hourly shift reports
+                </p>
+              </div>
+
+              {analyticsHistory.length > 0 && (
+                <button
+                  onClick={handleClearAnalytics}
+                  className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto"
+                >
+                  Clear Analytics History
+                </button>
+              )}
+            </div>
+
+            {/* Analytics Summary Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
+                  <TrendingUp size={14} className="text-[#baff55]" /> Total Deposits
+                </div>
+                <div className="text-2xl md:text-3xl font-black font-mono text-white">
+                  {totalDepositsLogged}
+                </div>
+              </div>
+
+              <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
+                  <TrendingUp size={14} className="text-[#baff55]" /> Total Withdrawals
+                </div>
+                <div className="text-2xl md:text-3xl font-black font-mono text-white">
+                  {totalWithdrawalsLogged}
+                </div>
+              </div>
+
+              <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1 col-span-2 md:col-span-1">
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
+                  <Calendar size={14} className="text-[#baff55]" /> Shifts Tracked
+                </div>
+                <div className="text-2xl md:text-3xl font-black font-mono text-white">
+                  {totalShiftsLogged}
+                </div>
+              </div>
+            </div>
+
+            {/* Analytics Table */}
+            <div className="bg-[#0b0c12] border border-white/5 rounded-xl overflow-hidden">
+              {analyticsHistory.length === 0 ? (
+                <div className="text-center py-12 text-xs text-gray-500 font-bold uppercase tracking-wider">
+                  No shift reports saved yet — click "Copy Hourly Report" above to log analytics
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-white/[0.02] border-b border-white/5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                      <tr>
+                        <th className="p-3">Shift Date</th>
+                        <th className="p-3">Time Window</th>
+                        <th className="p-3">Deposits</th>
+                        <th className="p-3">Withdrawals</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 font-mono">
+                      {analyticsHistory.map((item) => (
+                        <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
+                          <td className="p-3 text-gray-400 whitespace-nowrap">
+                            {item.date || new Date(item.copiedAt).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                          </td>
+                          <td className="p-3 text-white font-bold whitespace-nowrap">
+                            ⏰ {item.timeRange}
+                          </td>
+                          <td className="p-3 text-[#baff55] font-bold">
+                            ✅ {item.depositCount ?? 0}
+                          </td>
+                          <td className="p-3 text-[#baff55] font-bold">
+                            ✅ {item.withdrawalCount ?? 0}
+                          </td>
+                          <td className="p-3">
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                              item.autoArchived 
+                                ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
+                                : "bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20"
+                            }`}>
+                              {item.autoArchived ? 'Auto-Archived' : 'Copied & Logged'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleCopyCounterText(item.timeRange, item.depositCount, item.withdrawalCount)}
+                                className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                                title="Re-copy report"
+                              >
+                                <Copy size={12} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteAnalyticsItem(item.id)}
+                                className="p-1.5 text-gray-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
+                                title="Delete record"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
       )}
 
-      {/* ── SECTION 1: MPESA HOURLY FAILURE & COMPLETION COUNTER ── */}
-      <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl relative overflow-hidden space-y-6">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#baff55]/5 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Counter Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Clock size={18} className="text-[#baff55]" />
-              <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
-                MPesa Hourly Counter
-              </h2>
-            </div>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Auto-advances time & auto-resets counts each hour. Copies save directly to Analytics.
-            </p>
-          </div>
-
-          {/* Time Window Selector */}
-          <div className="flex items-center gap-2 bg-[#1a1c27] p-1.5 rounded-xl border border-white/10 shrink-0">
-            <button
-              onClick={() => handleSetHourOffset(hourOffset - 1)}
-              className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-              title="Previous Hour"
-            >
-              &lt; Prev
-            </button>
-            <button
-              onClick={() => handleSetHourOffset(0)}
-              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
-                hourOffset === 0 
-                  ? "bg-[#baff55] text-black font-black" 
-                  : "text-gray-300 hover:text-white bg-white/5"
-              }`}
-            >
-              Current Hour
-            </button>
-            <button
-              onClick={() => handleSetHourOffset(hourOffset + 1)}
-              className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-              title="Next Hour"
-            >
-              Next &gt;
-            </button>
-          </div>
-        </div>
-
-        {/* Time Window Field */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#181a24] p-3 rounded-xl border border-white/5">
-          <span className="text-xs font-bold text-gray-400 shrink-0 flex items-center gap-1.5">
-            <Clock size={14} className="text-[#baff55]" /> Active Time Window:
-          </span>
-          <div className="flex-1 w-full flex items-center gap-2">
-            <span className="text-base shrink-0">⏰</span>
-            <input
-              type="text"
-              value={counterState.timeRange || generateHourRange(0)}
-              onChange={(e) => updateCounterState({ timeRange: e.target.value })}
-              className="flex-1 bg-[#0d0e14] border border-white/10 rounded-lg px-3 py-1.5 text-sm font-mono text-white outline-none focus:border-[#baff55]/50 transition-all"
-              placeholder="e.g. 1:00 PM - 2:00 PM"
-            />
-            <button
-              onClick={() => updateCounterState({ timeRange: generateHourRange(hourOffset) })}
-              className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
-              title="Reset Time Window"
-            >
-              <RefreshCw size={12} />
-              Reset Time
-            </button>
-          </div>
-        </div>
-
-        {/* Counter Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          {/* Deposit Completed / Failed Card */}
-          <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-white/20 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => updateCounterState({ depositIcon: counterState.depositIcon === '✅' ? '❌' : '✅' })}
-                  className="text-lg p-1 hover:bg-white/10 rounded-lg transition-all"
-                  title="Toggle status emoji"
-                >
-                  {counterState.depositIcon || '✅'}
-                </button>
-                <input
-                  type="text"
-                  value={counterState.depositLabel || 'Deposit Completed'}
-                  onChange={(e) => updateCounterState({ depositLabel: e.target.value })}
-                  className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
-                />
+      {/* ── TAB 2: SMS VERIFICATION LEDGER (NOTES) ── */}
+      {activeTab === "ledger" && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-2">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent">
+                  <ClipboardList size={16} />
+                </div>
+                <h2 className="text-sm font-black text-white uppercase tracking-widest">SMS Verification Ledger</h2>
               </div>
-              <span className="text-[10px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">Deposit</span>
+              <p className="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em]">Temp MPESA Code Notes & SMS Repository</p>
             </div>
-
-            <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
-              <span className="text-4xl font-black font-mono text-[#baff55]">
-                {counterState.depositCount ?? 0}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => handleAdjustCount('deposit', -1)}
-                  className="p-2.5 bg-white/5 hover:bg-white/15 text-white rounded-lg transition-all active:scale-95"
-                  title="Decrease count"
-                >
-                  <Minus size={16} />
-                </button>
-                <button
-                  onClick={() => handleAdjustCount('deposit', 1)}
-                  className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95"
-                  title="Increase count"
-                >
-                  <Plus size={16} />
-                </button>
-                <button
-                  onClick={() => updateCounterState({ depositCount: 0 })}
-                  className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                  title="Set to 0"
-                >
-                  Clear
-                </button>
-              </div>
+            <div className="text-[11px] font-bold text-gray-400 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-2 self-start sm:self-auto">
+              <Clock size={12} className="text-accent" />
+              <span>24h Auto-Expiry Active</span>
             </div>
           </div>
 
-          {/* Completed / Failed Withdrawal Card */}
-          <div className="bg-[#181a26] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-white/20 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => updateCounterState({ withdrawalIcon: counterState.withdrawalIcon === '✅' ? '❌' : '✅' })}
-                  className="text-lg p-1 hover:bg-white/10 rounded-lg transition-all"
-                  title="Toggle status emoji"
-                >
-                  {counterState.withdrawalIcon || '✅'}
-                </button>
-                <input
-                  type="text"
-                  value={counterState.withdrawalLabel || 'Completed withdrawal'}
-                  onChange={(e) => updateCounterState({ withdrawalLabel: e.target.value })}
-                  className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
-                />
-              </div>
-              <span className="text-[10px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">Withdrawal</span>
-            </div>
-
-            <div className="flex items-center justify-between bg-[#0e1017] p-4 rounded-xl border border-white/5">
-              <span className="text-4xl font-black font-mono text-[#baff55]">
-                {counterState.withdrawalCount ?? 0}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => handleAdjustCount('withdrawal', -1)}
-                  className="p-2.5 bg-white/5 hover:bg-white/15 text-white rounded-lg transition-all active:scale-95"
-                  title="Decrease count"
-                >
-                  <Minus size={16} />
-                </button>
-                <button
-                  onClick={() => handleAdjustCount('withdrawal', 1)}
-                  className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95"
-                  title="Increase count"
-                >
-                  <Plus size={16} />
-                </button>
-                <button
-                  onClick={() => updateCounterState({ withdrawalCount: 0 })}
-                  className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                  title="Set to 0"
-                >
-                  Clear
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Copyable Summary Format Preview & Actions */}
-        <div className="bg-[#0b0c12] border border-white/10 rounded-xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
-              <Sparkles size={14} className="text-[#baff55]" /> Copyable Format Preview:
-            </span>
-            <button
-              onClick={handleResetCounts}
-              className="text-[11px] font-bold text-gray-400 hover:text-red-400 transition-colors flex items-center gap-1"
-            >
-              <RefreshCw size={11} /> Reset Counts
-            </button>
-          </div>
-
-          <pre className="bg-[#141620] border border-white/5 rounded-lg p-3 text-sm font-mono text-[#baff55] whitespace-pre-wrap select-all">
-            {getFormattedCounterText()}
-          </pre>
-
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
-            <button
-              onClick={() => handleCopyCounterText()}
-              className="w-full sm:w-auto flex-1 bg-[#baff55] text-black hover:bg-[#a8f044] font-black text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
-            >
-              {copiedCounter ? <Check size={18} /> : <Copy size={18} />}
-              {copiedCounter ? "Copied & Saved to Analytics!" : "Copy Hourly Report & Save Analytics"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── SECTION 2: MPESA HOURLY ANALYTICS ── */}
-      <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 md:p-6 shadow-2xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <BarChart3 size={18} className="text-[#baff55]" />
-              <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
-                MPesa Shift Analytics History
-              </h2>
-            </div>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Historical record of copied and auto-archived hourly shift reports
-            </p>
-          </div>
-
-          {analyticsHistory.length > 0 && (
-            <button
-              onClick={handleClearAnalytics}
-              className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto"
-            >
-              Clear Analytics History
-            </button>
-          )}
-        </div>
-
-        {/* Analytics Summary Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
-              <TrendingUp size={14} className="text-[#baff55]" /> Total Deposits
-            </div>
-            <div className="text-2xl md:text-3xl font-black font-mono text-white">
-              {totalDepositsLogged}
-            </div>
-          </div>
-
-          <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
-              <TrendingUp size={14} className="text-[#baff55]" /> Total Withdrawals
-            </div>
-            <div className="text-2xl md:text-3xl font-black font-mono text-white">
-              {totalWithdrawalsLogged}
-            </div>
-          </div>
-
-          <div className="bg-[#181a24] border border-white/5 rounded-xl p-4 space-y-1 col-span-2 md:col-span-1">
-            <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase">
-              <Calendar size={14} className="text-[#baff55]" /> Shifts Tracked
-            </div>
-            <div className="text-2xl md:text-3xl font-black font-mono text-white">
-              {totalShiftsLogged}
-            </div>
-          </div>
-        </div>
-
-        {/* Analytics Table */}
-        <div className="bg-[#0b0c12] border border-white/5 rounded-xl overflow-hidden">
-          {analyticsHistory.length === 0 ? (
-            <div className="text-center py-12 text-xs text-gray-500 font-bold uppercase tracking-wider">
-              No shift reports saved yet — click "Copy Hourly Report" above to log analytics
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-white/[0.02] border-b border-white/5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                  <tr>
-                    <th className="p-3">Shift Date</th>
-                    <th className="p-3">Time Window</th>
-                    <th className="p-3">Deposits</th>
-                    <th className="p-3">Withdrawals</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 font-mono">
-                  {analyticsHistory.map((item) => (
-                    <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
-                      <td className="p-3 text-gray-400 whitespace-nowrap">
-                        {item.date || new Date(item.copiedAt).toLocaleDateString([], { day: '2-digit', month: 'short' })}
-                      </td>
-                      <td className="p-3 text-white font-bold whitespace-nowrap">
-                        ⏰ {item.timeRange}
-                      </td>
-                      <td className="p-3 text-[#baff55] font-bold">
-                        ✅ {item.depositCount ?? 0}
-                      </td>
-                      <td className="p-3 text-[#baff55] font-bold">
-                        ✅ {item.withdrawalCount ?? 0}
-                      </td>
-                      <td className="p-3">
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                          item.autoArchived 
-                            ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
-                            : "bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20"
-                        }`}>
-                          {item.autoArchived ? 'Auto-Archived' : 'Copied & Logged'}
-                        </span>
-                      </td>
-                      <td className="p-3 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleCopyCounterText(item.timeRange, item.depositCount, item.withdrawalCount)}
-                            className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                            title="Re-copy report"
-                          >
-                            <Copy size={12} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteAnalyticsItem(item.id)}
-                            className="p-1.5 text-gray-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
-                            title="Delete record"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── SECTION 3: SMS CODE LEDGER & NOTES (PRESERVED) ── */}
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-2">
-          <div>
+          {/* Inline SMS Input Panel */}
+          <div className="glass-card border border-white/10 p-4 space-y-2">
             <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent">
-                <ClipboardList size={16} />
-              </div>
-              <h2 className="text-sm font-black text-white uppercase tracking-widest">SMS Verification Ledger</h2>
+              <Plus size={12} className="text-accent shrink-0" />
+              <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Paste Full SMS or Code</span>
+              <span className="ml-auto text-[9px] text-gray-600">Duplicates auto-filtered · Ctrl+Enter to submit</span>
             </div>
-            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em]">Temp MPESA Code Notes & SMS Repository</p>
-          </div>
-          <div className="text-[11px] font-bold text-gray-400 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-2 self-start sm:self-auto">
-            <Clock size={12} className="text-accent" />
-            <span>24h Auto-Expiry Active</span>
-          </div>
-        </div>
-
-        {/* Inline SMS Input Panel */}
-        <div className="glass-card border border-white/10 p-4 space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            <Plus size={12} className="text-accent shrink-0" />
-            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Paste Full SMS or Code</span>
-            <span className="ml-auto text-[9px] text-gray-600">Duplicates auto-filtered · Ctrl+Enter to submit</span>
-          </div>
-          <div className="flex items-end gap-3">
-            <textarea
-              ref={textareaRef}
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd(); }}
-              placeholder="UG2D2A2YF9 confirmed. Ksh1,000.00 from 0712345678 paid to METABET on 7/7/26…   or just: UG2D2A2YF9"
-              rows={2}
-              className="flex-1 bg-[#161616] border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/30 font-mono resize-none transition-all placeholder-gray-600 min-w-0"
-            />
-            <button
-              type="button"
-              onClick={handleAdd}
-              disabled={!inputText.trim()}
-              className="pill-lime shrink-0 flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none py-3 px-5"
-            >
-              <Plus size={14} />
-              Add Note
-            </button>
-          </div>
-        </div>
-
-        {/* Ledger Card */}
-        <div className="glass-card overflow-hidden">
-          {/* Search */}
-          <div className="flex items-center gap-3 px-4 md:px-6 py-3.5 border-b border-white/5 bg-white/[0.01]">
-            <Search size={14} className="text-gray-500 shrink-0" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-              placeholder="Search code, phone, merchant…"
-              className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 outline-none min-w-0"
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="text-gray-500 hover:text-white shrink-0">
-                <X size={13} />
+            <div className="flex items-end gap-3">
+              <textarea
+                ref={textareaRef}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd(); }}
+                placeholder="UG2D2A2YF9 confirmed. Ksh1,000.00 from 0712345678 paid to METABET on 7/7/26…   or just: UG2D2A2YF9"
+                rows={2}
+                className="flex-1 bg-[#161616] border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/30 font-mono resize-none transition-all placeholder-gray-600 min-w-0"
+              />
+              <button
+                type="button"
+                onClick={handleAdd}
+                disabled={!inputText.trim()}
+                className="pill-lime shrink-0 flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none py-3 px-5"
+              >
+                <Plus size={14} />
+                Add Note
               </button>
-            )}
-          </div>
-
-          {/* Table Header (Desktop) */}
-          <div className="hidden lg:grid text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 bg-white/[0.005]"
-            style={{ gridTemplateColumns: '32px 1fr 90px 108px 108px 76px auto 32px', padding: '10px 16px', gap: '12px' }}>
-            <span />
-            <span>Transaction Code</span>
-            <span>Amount</span>
-            <span>Phone</span>
-            <span>Merchant</span>
-            <span>Time</span>
-            <span className="text-center">Options</span>
-            <span />
-          </div>
-
-          {/* Rows */}
-          {paginatedEntries.length === 0 ? (
-            <div className="text-center py-16 text-sm text-gray-500 font-bold uppercase tracking-wider">
-              {entries.length === 0 ? "No code records yet — paste an SMS above" : "No matching records"}
             </div>
-          ) : (
-            paginatedEntries.map((entry, idx) => {
-              const breakLabel = getBreakLabel(paginatedEntries[idx - 1], entry);
-              return (
-                <React.Fragment key={entry.id}>
-                  {breakLabel && (
-                    <div className="flex items-center gap-3 px-4 py-2">
-                      <div className="flex-1 h-px bg-white/5" />
-                      <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest flex items-center gap-1.5 bg-white/[0.03] border border-white/5 rounded-full px-3 py-1">
-                        <Clock size={10} />
-                        {breakLabel} break
-                      </span>
-                      <div className="flex-1 h-px bg-white/5" />
-                    </div>
-                  )}
+          </div>
 
-                  {/* Mobile Card */}
-                  <div className={`lg:hidden px-4 py-4 border-b border-white/5 transition-colors ${
-                    entry.wasCopied ? "bg-[#baff55]/[0.03] border-l-2 border-l-[#baff55]" : "hover:bg-white/[0.01]"
-                  }`}>
-                    <div className="flex items-center gap-2 mb-2">
+          {/* Ledger Card */}
+          <div className="glass-card overflow-hidden">
+            {/* Search */}
+            <div className="flex items-center gap-3 px-4 md:px-6 py-3.5 border-b border-white/5 bg-white/[0.01]">
+              <Search size={14} className="text-gray-500 shrink-0" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                placeholder="Search code, phone, merchant…"
+                className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 outline-none min-w-0"
+              />
+              {search && (
+                <button onClick={() => setSearch("")} className="text-gray-500 hover:text-white shrink-0">
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+
+            {/* Table Header (Desktop) */}
+            <div className="hidden lg:grid text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 bg-white/[0.005]"
+              style={{ gridTemplateColumns: '32px 1fr 90px 108px 108px 76px auto 32px', padding: '10px 16px', gap: '12px' }}>
+              <span />
+              <span>Transaction Code</span>
+              <span>Amount</span>
+              <span>Phone</span>
+              <span>Merchant</span>
+              <span>Time</span>
+              <span className="text-center">Options</span>
+              <span />
+            </div>
+
+            {/* Rows */}
+            {paginatedEntries.length === 0 ? (
+              <div className="text-center py-16 text-sm text-gray-500 font-bold uppercase tracking-wider">
+                {entries.length === 0 ? "No code records yet — paste an SMS above" : "No matching records"}
+              </div>
+            ) : (
+              paginatedEntries.map((entry, idx) => {
+                const breakLabel = getBreakLabel(paginatedEntries[idx - 1], entry);
+                return (
+                  <React.Fragment key={entry.id}>
+                    {breakLabel && (
+                      <div className="flex items-center gap-3 px-4 py-2">
+                        <div className="flex-1 h-px bg-white/5" />
+                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest flex items-center gap-1.5 bg-white/[0.03] border border-white/5 rounded-full px-3 py-1">
+                          <Clock size={10} />
+                          {breakLabel} break
+                        </span>
+                        <div className="flex-1 h-px bg-white/5" />
+                      </div>
+                    )}
+
+                    {/* Mobile Card */}
+                    <div className={`lg:hidden px-4 py-4 border-b border-white/5 transition-colors ${
+                      entry.wasCopied ? "bg-[#baff55]/[0.03] border-l-2 border-l-[#baff55]" : "hover:bg-white/[0.01]"
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <button
+                          onClick={() => handleVerify(entry.id)}
+                          className={`w-5 h-5 rounded-lg border-2 shrink-0 flex items-center justify-center transition-all ${
+                            entry.verified ? "bg-[#baff55] border-[#baff55] text-black" : "border-white/20 hover:border-accent"
+                          }`}
+                        >
+                          {entry.verified && <Check size={11} strokeWidth={3} />}
+                        </button>
+                        <span className={`font-mono text-sm font-bold flex-1 min-w-0 truncate ${
+                          entry.verified ? "text-gray-400 line-through" : "text-white"
+                        }`}>
+                          {entry.transactionCode || <span className="text-gray-600 italic text-xs">No code</span>}
+                        </span>
+                        {entry.transactionCode && (
+                          <button
+                            onClick={() => handleCopy(entry.id)}
+                            className={`p-1.5 rounded-lg border shrink-0 transition-all ${
+                              entry.copiedCode ? "text-accent border-accent/40 bg-accent/5" : "text-gray-500 border-white/5 bg-white/5 hover:border-accent hover:text-accent"
+                            }`}
+                          >
+                            {entry.copiedCode ? <Check size={12} /> : <Copy size={12} />}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(entry.id)}
+                          className="p-1.5 rounded-xl text-gray-600 hover:text-red-400 hover:bg-red-500/10 shrink-0 transition-all"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 pl-7">
+                        {entry.amount && (
+                          <span className="font-mono text-[10px] font-bold text-white bg-white/5 px-2 py-0.5 rounded-lg">{entry.amount}</span>
+                        )}
+                        {entry.phone && (
+                          <span className="font-mono text-[10px] text-gray-300 bg-white/5 px-2 py-0.5 rounded-lg">{entry.phone}</span>
+                        )}
+                        {entry.merchant && (
+                          <span className="text-[9px] font-black bg-accent/10 text-accent border border-accent/20 px-2 py-0.5 rounded-lg uppercase tracking-wider">{entry.merchant}</span>
+                        )}
+                        <span className="text-[9px] text-gray-600 ml-auto">
+                          {new Date(entry.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })} · {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 pl-7 mt-2">
+                        <label className="flex items-center gap-1.5 cursor-pointer select-none" title="Auto-delete 1h after copied">
+                          <input type="checkbox" checked={entry.autoDeleteAfterCopy} onChange={() => handleToggleAutoDelete(entry.id)} className="w-3 h-3 accent-accent" />
+                          <span className="text-[9px] font-bold text-gray-600 uppercase">1h Kill</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer select-none" title="Keep beyond 24h">
+                          <input type="checkbox" checked={entry.keep} onChange={() => handleToggleKeep(entry.id)} className="w-3 h-3 accent-accent" />
+                          <span className="text-[9px] font-bold text-accent uppercase">Keep</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Desktop Row */}
+                    <div
+                      className={`hidden lg:grid items-center border-b border-white/5 last:border-0 transition-colors duration-200 ${
+                        entry.wasCopied ? "bg-[#baff55]/[0.02] border-l-2 border-l-[#baff55]" : "hover:bg-white/[0.01]"
+                      }`}
+                      style={{ gridTemplateColumns: '32px 1fr 90px 108px 108px 76px auto 32px', padding: '12px 16px', gap: '12px' }}
+                    >
                       <button
                         onClick={() => handleVerify(entry.id)}
-                        className={`w-5 h-5 rounded-lg border-2 shrink-0 flex items-center justify-center transition-all ${
+                        className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${
                           entry.verified ? "bg-[#baff55] border-[#baff55] text-black" : "border-white/20 hover:border-accent"
                         }`}
                       >
                         {entry.verified && <Check size={11} strokeWidth={3} />}
                       </button>
-                      <span className={`font-mono text-sm font-bold flex-1 min-w-0 truncate ${
-                        entry.verified ? "text-gray-400 line-through" : "text-white"
-                      }`}>
-                        {entry.transactionCode || <span className="text-gray-600 italic text-xs">No code</span>}
+
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`font-mono text-sm font-bold truncate ${entry.verified ? "text-gray-400 line-through" : "text-white"}`}>
+                          {entry.transactionCode || <span className="text-gray-600 font-normal italic text-xs">—</span>}
+                        </span>
+                        {entry.transactionCode && (
+                          <button onClick={() => handleCopy(entry.id)}
+                            className={`p-1.5 rounded-lg border shrink-0 transition-all ${
+                              entry.copiedCode ? "text-accent border-accent/40 bg-accent/5" : "text-gray-500 border-white/5 bg-white/5 hover:border-accent hover:text-accent"
+                            }`}>
+                            {entry.copiedCode ? <Check size={11} /> : <Copy size={11} />}
+                          </button>
+                        )}
+                        {entry.isCodeOnly && <span className="text-[8px] font-black text-gray-500 bg-white/10 px-1 py-0.5 rounded uppercase shrink-0">SMS</span>}
+                      </div>
+
+                      <span className="font-mono text-xs font-bold text-white truncate">
+                        {entry.amount || <span className="text-gray-600 font-normal">—</span>}
                       </span>
-                      {entry.transactionCode && (
-                        <button
-                          onClick={() => handleCopy(entry.id)}
-                          className={`p-1.5 rounded-lg border shrink-0 transition-all ${
-                            entry.copiedCode ? "text-accent border-accent/40 bg-accent/5" : "text-gray-500 border-white/5 bg-white/5 hover:border-accent hover:text-accent"
-                          }`}
-                        >
-                          {entry.copiedCode ? <Check size={12} /> : <Copy size={12} />}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="p-1.5 rounded-xl text-gray-600 hover:text-red-400 hover:bg-red-500/10 shrink-0 transition-all"
-                      >
+                      <span className="font-mono text-xs text-gray-300 truncate">
+                        {entry.phone || <span className="text-gray-600">—</span>}
+                      </span>
+
+                      <div className="min-w-0">
+                        {entry.merchant
+                          ? <span className="text-[9px] font-black bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 px-2 py-0.5 rounded-lg uppercase tracking-wider truncate block max-w-full">{entry.merchant}</span>
+                          : <span className="text-gray-600 text-xs">—</span>}
+                      </div>
+
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                          {new Date(entry.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                        </span>
+                        <span className="text-[9px] text-gray-600 whitespace-nowrap">
+                          {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        <label className="flex items-center gap-1 cursor-pointer select-none" title="Auto-delete 1h after copied">
+                          <input type="checkbox" checked={entry.autoDeleteAfterCopy} onChange={() => handleToggleAutoDelete(entry.id)} className="w-3 h-3 accent-accent" />
+                          <span className="text-[8.5px] font-bold text-gray-600 uppercase whitespace-nowrap">1h Kill</span>
+                        </label>
+                        <label className="flex items-center gap-1 cursor-pointer select-none" title="Keep beyond 24h">
+                          <input type="checkbox" checked={entry.keep} onChange={() => handleToggleKeep(entry.id)} className="w-3 h-3 accent-accent" />
+                          <span className="text-[8.5px] font-bold text-accent uppercase whitespace-nowrap">Keep</span>
+                        </label>
+                      </div>
+
+                      <button onClick={() => handleDelete(entry.id)}
+                        className="p-1.5 rounded-xl text-gray-600 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all shrink-0">
                         <Trash2 size={12} />
                       </button>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 pl-7">
-                      {entry.amount && (
-                        <span className="font-mono text-[10px] font-bold text-white bg-white/5 px-2 py-0.5 rounded-lg">{entry.amount}</span>
-                      )}
-                      {entry.phone && (
-                        <span className="font-mono text-[10px] text-gray-300 bg-white/5 px-2 py-0.5 rounded-lg">{entry.phone}</span>
-                      )}
-                      {entry.merchant && (
-                        <span className="text-[9px] font-black bg-accent/10 text-accent border border-accent/20 px-2 py-0.5 rounded-lg uppercase tracking-wider">{entry.merchant}</span>
-                      )}
-                      <span className="text-[9px] text-gray-600 ml-auto">
-                        {new Date(entry.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })} · {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 pl-7 mt-2">
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none" title="Auto-delete 1h after copied">
-                        <input type="checkbox" checked={entry.autoDeleteAfterCopy} onChange={() => handleToggleAutoDelete(entry.id)} className="w-3 h-3 accent-accent" />
-                        <span className="text-[9px] font-bold text-gray-600 uppercase">1h Kill</span>
-                      </label>
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none" title="Keep beyond 24h">
-                        <input type="checkbox" checked={entry.keep} onChange={() => handleToggleKeep(entry.id)} className="w-3 h-3 accent-accent" />
-                        <span className="text-[9px] font-bold text-accent uppercase">Keep</span>
-                      </label>
-                    </div>
-                  </div>
+                  </React.Fragment>
+                );
+              })
+            )}
 
-                  {/* Desktop Row */}
-                  <div
-                    className={`hidden lg:grid items-center border-b border-white/5 last:border-0 transition-colors duration-200 ${
-                      entry.wasCopied ? "bg-[#baff55]/[0.02] border-l-2 border-l-[#baff55]" : "hover:bg-white/[0.01]"
-                    }`}
-                    style={{ gridTemplateColumns: '32px 1fr 90px 108px 108px 76px auto 32px', padding: '12px 16px', gap: '12px' }}
-                  >
-                    <button
-                      onClick={() => handleVerify(entry.id)}
-                      className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${
-                        entry.verified ? "bg-[#baff55] border-[#baff55] text-black" : "border-white/20 hover:border-accent"
-                      }`}
-                    >
-                      {entry.verified && <Check size={11} strokeWidth={3} />}
-                    </button>
-
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className={`font-mono text-sm font-bold truncate ${entry.verified ? "text-gray-400 line-through" : "text-white"}`}>
-                        {entry.transactionCode || <span className="text-gray-600 font-normal italic text-xs">—</span>}
-                      </span>
-                      {entry.transactionCode && (
-                        <button onClick={() => handleCopy(entry.id)}
-                          className={`p-1.5 rounded-lg border shrink-0 transition-all ${
-                            entry.copiedCode ? "text-accent border-accent/40 bg-accent/5" : "text-gray-500 border-white/5 bg-white/5 hover:border-accent hover:text-accent"
-                          }`}>
-                          {entry.copiedCode ? <Check size={11} /> : <Copy size={11} />}
-                        </button>
-                      )}
-                      {entry.isCodeOnly && <span className="text-[8px] font-black text-gray-500 bg-white/10 px-1 py-0.5 rounded uppercase shrink-0">SMS</span>}
-                    </div>
-
-                    <span className="font-mono text-xs font-bold text-white truncate">
-                      {entry.amount || <span className="text-gray-600 font-normal">—</span>}
-                    </span>
-                    <span className="font-mono text-xs text-gray-300 truncate">
-                      {entry.phone || <span className="text-gray-600">—</span>}
-                    </span>
-
-                    <div className="min-w-0">
-                      {entry.merchant
-                        ? <span className="text-[9px] font-black bg-accent/10 text-accent border border-accent/20 px-2 py-0.5 rounded-lg uppercase tracking-wider truncate block max-w-full">{entry.merchant}</span>
-                        : <span className="text-gray-600 text-xs">—</span>}
-                    </div>
-
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-[#8e8e93] whitespace-nowrap">
-                        {new Date(entry.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
-                      </span>
-                      <span className="text-[9px] text-gray-600 whitespace-nowrap">
-                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                      <label className="flex items-center gap-1 cursor-pointer select-none" title="Auto-delete 1h after copied">
-                        <input type="checkbox" checked={entry.autoDeleteAfterCopy} onChange={() => handleToggleAutoDelete(entry.id)} className="w-3 h-3 accent-accent" />
-                        <span className="text-[8.5px] font-bold text-gray-600 uppercase whitespace-nowrap">1h Kill</span>
-                      </label>
-                      <label className="flex items-center gap-1 cursor-pointer select-none" title="Keep beyond 24h">
-                        <input type="checkbox" checked={entry.keep} onChange={() => handleToggleKeep(entry.id)} className="w-3 h-3 accent-accent" />
-                        <span className="text-[8.5px] font-bold text-accent uppercase whitespace-nowrap">Keep</span>
-                      </label>
-                    </div>
-
-                    <button onClick={() => handleDelete(entry.id)}
-                      className="p-1.5 rounded-xl text-gray-600 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all shrink-0">
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                </React.Fragment>
-              );
-            })
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-white/5 bg-white/[0.005]">
-              <span className="text-xs text-gray-500">
-                Page <strong className="text-white">{currentPage}</strong> / <strong className="text-white">{totalPages}</strong>
-                <span className="hidden sm:inline"> · {filtered.length} records</span>
-              </span>
-              <div className="flex items-center gap-2">
-                <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
-                  className="pill-dark py-1.5 px-4 text-xs disabled:opacity-40 disabled:pointer-events-none">Previous</button>
-                <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
-                  className="pill-dark py-1.5 px-4 text-xs disabled:opacity-40 disabled:pointer-events-none">Next</button>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 border-t border-white/5 bg-white/[0.005]">
+                <span className="text-xs text-gray-500">
+                  Page <strong className="text-white">{currentPage}</strong> / <strong className="text-white">{totalPages}</strong>
+                  <span className="hidden sm:inline"> · {filtered.length} records</span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
+                    className="pill-dark py-1.5 px-4 text-xs disabled:opacity-40 disabled:pointer-events-none">Previous</button>
+                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
+                    className="pill-dark py-1.5 px-4 text-xs disabled:opacity-40 disabled:pointer-events-none">Next</button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
   );
