@@ -677,10 +677,24 @@ export default function MpesaCodes() {
     return hrs > 0 ? `${hrs}h ${mins > 0 ? mins + 'm ' : ''}gap` : `${mins}m gap`;
   };
 
-  // Analytics Metrics Calculation
-  const totalDepositsLogged = analyticsHistory.reduce((sum, item) => sum + (item.depositCount || 0), 0);
-  const totalWithdrawalsLogged = analyticsHistory.reduce((sum, item) => sum + (item.withdrawalCount || 0), 0);
-  const totalShiftsLogged = analyticsHistory.length;
+  // 24-Hour Shift Analytics Metrics Calculation (Last 24 Hours)
+  const last24hAnalytics = analyticsHistory.filter((item) => {
+    if (!item) return false;
+    const itemTime = item.copiedAt
+      ? new Date(item.copiedAt).getTime()
+      : item.timestamp
+      ? new Date(item.timestamp).getTime()
+      : item.id && typeof item.id === 'string' && item.id.startsWith('analytics_')
+      ? parseInt(item.id.replace('analytics_', ''), 10)
+      : null;
+
+    if (!itemTime || isNaN(itemTime)) return true;
+    return (Date.now() - itemTime) <= 24 * 60 * 60 * 1000;
+  });
+
+  const totalDepositsLogged = last24hAnalytics.reduce((sum, item) => sum + (item.depositCount || 0), 0);
+  const totalWithdrawalsLogged = last24hAnalytics.reduce((sum, item) => sum + (item.withdrawalCount || 0), 0);
+  const totalShiftsLogged = last24hAnalytics.length;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-5">
@@ -740,11 +754,12 @@ export default function MpesaCodes() {
             <BarChart3 size={18} />
           </div>
           <div>
-            <h3 className="text-xs font-black text-white uppercase tracking-wider">
-              Shift Analytics Summary
+            <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <span>Shift Analytics Summary</span>
+              <span className="text-[9px] font-extrabold text-[#baff55] bg-[#baff55]/10 px-2 py-0.5 rounded-full lowercase tracking-normal">24hr window</span>
             </h3>
             <p className="text-[10px] text-gray-400">
-              Live statistics from current & past recorded shift reports
+              Live statistics from shift reports recorded in the last 24 hours
             </p>
           </div>
         </div>
