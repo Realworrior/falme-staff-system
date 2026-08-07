@@ -733,18 +733,25 @@ export default function MpesaCodes() {
         </div>
       </div>
 
-      {/* ── MINIMIZED TOP HEADER ANALYTICS BAR (INSPIRED BY MINIMAL HORIZONTAL BAR) ── */}
-      <div className="bg-[#141620] border border-white/10 rounded-2xl px-4 py-3 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Metric Pills Row */}
-        <div className="flex flex-wrap items-center gap-6 w-full md:w-auto">
-          {/* Label */}
-          <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-            <BarChart3 size={15} className="text-[#baff55]" />
-            <span>Analytics Summary</span>
+      {/* ── TOP MINIMIZED SHIFT ANALYTICS HEADER ── */}
+      <div className="bg-[#131520] rounded-2xl p-3.5 md:px-5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Left: Section Label */}
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-[#baff55]/10 text-[#baff55]">
+            <BarChart3 size={18} />
           </div>
+          <div>
+            <h3 className="text-xs font-black text-white uppercase tracking-wider">
+              Shift Analytics Summary
+            </h3>
+            <p className="text-[10px] text-gray-400">
+              Live statistics from current & past recorded shift reports
+            </p>
+          </div>
+        </div>
 
-          <div className="h-4 w-px bg-white/10 hidden sm:block" />
-
+        {/* Center: Live Quick Metrics */}
+        <div className="flex flex-wrap items-center justify-center gap-4 bg-[#1a1c2a] px-4 py-2 rounded-xl">
           {/* Metric 1: Deposits */}
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-400">Deposits</span>
@@ -754,8 +761,6 @@ export default function MpesaCodes() {
             </span>
           </div>
 
-          <div className="h-4 w-px bg-white/10 hidden sm:block" />
-
           {/* Metric 2: Withdrawals */}
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-400">Withdrawals</span>
@@ -764,8 +769,6 @@ export default function MpesaCodes() {
               <CheckCircle2 size={10} /> Logged
             </span>
           </div>
-
-          <div className="h-4 w-px bg-white/10 hidden sm:block" />
 
           {/* Metric 3: Shifts Tracked */}
           <div className="flex items-center gap-2">
@@ -777,7 +780,7 @@ export default function MpesaCodes() {
         {/* Collapsible History Log Toggle Button */}
         <button
           onClick={() => setShowAnalyticsDetails(!showAnalyticsDetails)}
-          className="w-full md:w-auto flex items-center justify-center gap-2 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/10 transition-all shrink-0"
+          className="w-full md:w-auto flex items-center justify-center gap-2 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl transition-all shrink-0"
         >
           <span>{showAnalyticsDetails ? "Hide History Log" : "View Detailed Log"}</span>
           {showAnalyticsDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -786,8 +789,8 @@ export default function MpesaCodes() {
 
       {/* ── EXPANDABLE DETAILED ANALYTICS LOG TABLE ── */}
       {showAnalyticsDetails && (
-        <div className="bg-[#12141c] border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="bg-[#131520] rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between pb-3">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Calendar size={15} className="text-[#baff55]" />
               Detailed Shift History Log
@@ -795,14 +798,14 @@ export default function MpesaCodes() {
             {analyticsHistory.length > 0 && (
               <button
                 onClick={handleClearAnalytics}
-                className="text-[11px] font-bold text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-lg transition-all"
+                className="text-[11px] font-bold text-red-400 hover:text-red-300 bg-red-500/10 px-3 py-1 rounded-xl transition-all"
               >
                 Clear History
               </button>
             )}
           </div>
 
-          <div className="bg-[#0b0c12] border border-white/5 rounded-xl overflow-hidden">
+          <div className="bg-[#0b0c12] rounded-xl overflow-hidden">
             {analyticsHistory.length === 0 ? (
               <div className="text-center py-10 text-xs text-gray-500 font-bold uppercase tracking-wider">
                 No shift reports saved yet — click "Copy Hourly Report" to log analytics
@@ -810,7 +813,7 @@ export default function MpesaCodes() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-white/[0.02] border-b border-white/5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                  <thead className="bg-white/[0.02] text-[9px] font-black text-gray-400 uppercase tracking-widest">
                     <tr>
                       <th className="p-3">Shift Date</th>
                       <th className="p-3">Time Window</th>
@@ -836,10 +839,10 @@ export default function MpesaCodes() {
                           <span className="flex items-center gap-1"><CheckCircle2 size={12} /> {item.withdrawalCount ?? 0}</span>
                         </td>
                         <td className="p-3">
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                          <span className={`text-[9px] font-bold px-2.5 py-1 rounded-full uppercase ${
                             item.autoArchived 
-                              ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
-                              : "bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20"
+                              ? "bg-blue-500/10 text-blue-400" 
+                              : "bg-[#baff55]/10 text-[#baff55]"
                           }`}>
                             {item.autoArchived ? 'Auto-Archived' : 'Copied & Logged'}
                           </span>
@@ -888,7 +891,7 @@ export default function MpesaCodes() {
 
             {/* End of Hour Reminder Notification Banner */}
             {isNearHourEnd && (
-              <div className="bg-[#baff55]/10 border-2 border-[#baff55]/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-pulse">
+              <div className="bg-[#baff55]/10 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-pulse">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-[#baff55] text-black rounded-xl font-black">
                     <Clock size={20} />
@@ -904,7 +907,7 @@ export default function MpesaCodes() {
                 </div>
                 <button
                   onClick={() => handleCopyCounterText()}
-                  className="w-full sm:w-auto bg-[#baff55] text-black font-black text-xs py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shrink-0"
+                  className="w-full sm:w-auto bg-[#baff55] text-black font-black text-xs py-3 px-6 rounded-2xl flex items-center justify-center gap-2 hover:bg-[#a8f044] transition-all shrink-0 shadow-lg"
                 >
                   <Copy size={14} />
                   Copy Active Hour Report
@@ -917,19 +920,19 @@ export default function MpesaCodes() {
 
               {/* Main Counter Card & Copy Controls (Left 2 cols) */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Main Card with DISTINCT Active Hour styling */}
-                <div className="bg-[#12141c] border-2 border-[#baff55]/70 rounded-2xl p-5 md:p-6 shadow-[0_0_30px_rgba(186,255,85,0.12)] relative overflow-hidden space-y-6">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#baff55]/10 rounded-full blur-3xl pointer-events-none" />
+                {/* Main Card with CLEAN BORDERLESS styling */}
+                <div className="bg-[#131520] rounded-[28px] p-6 md:p-8 shadow-2xl relative overflow-hidden space-y-6">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#baff55]/5 rounded-full blur-3xl pointer-events-none" />
 
                   {/* Counter Header */}
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
                     <div>
                       <div className="flex items-center gap-2.5">
                         <Clock size={18} className="text-[#baff55]" />
-                        <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wider">
+                        <h2 className="text-lg font-black text-white uppercase tracking-wider">
                           MPesa Shift Counter
                         </h2>
-                        <span className="text-[10px] font-black uppercase text-black bg-[#baff55] px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
+                        <span className="text-[10px] font-black uppercase text-black bg-[#baff55] px-3 py-1 rounded-full flex items-center gap-1.5 shadow-md">
                           <span className="w-2 h-2 rounded-full bg-black animate-ping" /> LATEST ACTIVE HOUR
                         </span>
                       </div>
@@ -939,10 +942,10 @@ export default function MpesaCodes() {
                     </div>
 
                     {/* Time Window Selector */}
-                    <div className="flex items-center gap-2 bg-[#1a1c27] p-1.5 rounded-xl border border-white/10 shrink-0">
+                    <div className="flex items-center gap-1.5 bg-[#1a1c2a] p-1.5 rounded-2xl shrink-0">
                       <button
                         onClick={() => handleStepShift(-1)}
-                        className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                        className="px-3 py-1.5 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
                         title="Previous Shift"
                       >
                         &lt; Prev Shift
@@ -952,7 +955,7 @@ export default function MpesaCodes() {
                           setShiftStepOffset(0);
                           updateCounterState({ timeRange: generateHourRange(0) });
                         }}
-                        className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
                           shiftStepOffset === 0 
                             ? "bg-[#baff55] text-black font-black" 
                             : "text-gray-300 hover:text-white bg-white/5"
@@ -962,7 +965,7 @@ export default function MpesaCodes() {
                       </button>
                       <button
                         onClick={() => handleStepShift(1)}
-                        className="px-2.5 py-1 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                        className="px-3 py-1.5 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
                         title="Next Shift"
                       >
                         Next Shift &gt;
@@ -971,7 +974,7 @@ export default function MpesaCodes() {
                   </div>
 
                   {/* Time Window Field */}
-                  <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#181a24] p-3 rounded-xl border border-white/5">
+                  <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#191b28] p-3.5 rounded-2xl">
                     <span className="text-xs font-bold text-gray-400 shrink-0 flex items-center gap-1.5">
                       <Clock size={14} className="text-[#baff55]" /> Active Shift Window:
                     </span>
@@ -981,7 +984,7 @@ export default function MpesaCodes() {
                         type="text"
                         value={counterState.timeRange || generateHourRange(0)}
                         onChange={(e) => updateCounterState({ timeRange: e.target.value })}
-                        className="flex-1 bg-[#0d0e14] border border-[#baff55]/40 rounded-lg px-3 py-1.5 text-sm font-mono font-bold text-[#baff55] outline-none focus:border-[#baff55] transition-all"
+                        className="flex-1 bg-[#0d0e15] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#baff55] outline-none transition-all"
                         placeholder="e.g. 1:00 PM - 2:00 PM or 1:00 AM - 7:00 AM"
                       />
                       <button
@@ -989,7 +992,7 @@ export default function MpesaCodes() {
                           setShiftStepOffset(0);
                           updateCounterState({ timeRange: generateHourRange(0) });
                         }}
-                        className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                        className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all"
                         title="Reset to current shift"
                       >
                         <RefreshCw size={12} />
@@ -998,16 +1001,16 @@ export default function MpesaCodes() {
                     </div>
                   </div>
 
-                  {/* Counter Cards Grid — DISTINCT STYLING FOR DEPOSITS VS WITHDRAWALS */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Counter Cards Grid — BORDERLESS SOFT TINTED CARDS LIKE INSPO */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     
-                    {/* Deposit Completed Card — NEON GREEN DISTINCT THEME */}
-                    <div className="bg-[#181d26] border-2 border-[#baff55]/40 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-[#baff55]/80 transition-all shadow-md">
+                    {/* Deposit Completed Card — SOFT GREEN TINTED CARD */}
+                    <div className="bg-[#1b241a] rounded-2xl p-5 flex flex-col justify-between space-y-5 shadow-lg">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => updateCounterState({ depositIcon: counterState.depositIcon === 'check' ? 'x' : 'check' })}
-                            className="p-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg transition-all"
+                            className="p-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-xl transition-all"
                             title="Toggle status icon"
                           >
                             {(counterState.depositIcon === 'x') ? <XCircle size={18} className="text-red-400" /> : <CheckCircle2 size={18} className="text-[#baff55]" />}
@@ -1016,36 +1019,36 @@ export default function MpesaCodes() {
                             type="text"
                             value={counterState.depositLabel || 'Deposit Completed'}
                             onChange={(e) => updateCounterState({ depositLabel: e.target.value })}
-                            className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-[#baff55]/40 transition-all"
+                            className="bg-transparent text-sm font-bold text-white outline-none"
                           />
                         </div>
-                        <span className="text-[10px] uppercase font-black tracking-wider text-black bg-[#baff55] px-2.5 py-0.5 rounded-full shadow">
+                        <span className="text-[10px] uppercase font-black tracking-wider text-black bg-[#baff55] px-3 py-1 rounded-full shadow">
                           DEPOSITS
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between bg-[#0b0f14] p-4 rounded-xl border border-[#baff55]/20">
-                        <span className="text-4xl font-black font-mono text-[#baff55]">
+                      <div className="flex items-center justify-between bg-[#0e140d] p-5 rounded-2xl">
+                        <span className="text-5xl font-black font-mono text-[#baff55]">
                           {counterState.depositCount ?? 0}
                         </span>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleAdjustCount('deposit', -1)}
-                            className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all active:scale-95"
+                            className="w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full transition-all flex items-center justify-center active:scale-95 shadow"
                             title="Decrease count"
                           >
-                            <Minus size={16} />
+                            <Minus size={18} />
                           </button>
                           <button
                             onClick={() => handleAdjustCount('deposit', 1)}
-                            className="p-2.5 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-lg transition-all font-black active:scale-95 shadow-md"
+                            className="w-10 h-10 bg-[#baff55] text-black hover:bg-[#a8f044] rounded-full transition-all font-black flex items-center justify-center active:scale-95 shadow-md"
                             title="Increase count"
                           >
-                            <Plus size={16} />
+                            <Plus size={18} />
                           </button>
                           <button
                             onClick={() => updateCounterState({ depositCount: 0 })}
-                            className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                            className="px-2.5 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
                             title="Set to 0"
                           >
                             Clear
@@ -1054,13 +1057,13 @@ export default function MpesaCodes() {
                       </div>
                     </div>
 
-                    {/* Completed Withdrawal Card — CYAN / SKY DISTINCT THEME */}
-                    <div className="bg-[#14202b] border-2 border-sky-400/40 rounded-xl p-4 flex flex-col justify-between space-y-4 hover:border-sky-400/80 transition-all shadow-md">
+                    {/* Completed Withdrawal Card — SOFT BLUE TINTED CARD */}
+                    <div className="bg-[#152230] rounded-2xl p-5 flex flex-col justify-between space-y-5 shadow-lg">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => updateCounterState({ withdrawalIcon: counterState.withdrawalIcon === 'check' ? 'x' : 'check' })}
-                            className="p-1.5 bg-sky-400/10 hover:bg-sky-400/20 rounded-lg transition-all"
+                            className="p-1.5 bg-sky-400/10 hover:bg-sky-400/20 rounded-xl transition-all"
                             title="Toggle status icon"
                           >
                             {(counterState.withdrawalIcon === 'x') ? <XCircle size={18} className="text-red-400" /> : <CheckCircle2 size={18} className="text-sky-400" />}
@@ -1069,36 +1072,36 @@ export default function MpesaCodes() {
                             type="text"
                             value={counterState.withdrawalLabel || 'Completed withdrawal'}
                             onChange={(e) => updateCounterState({ withdrawalLabel: e.target.value })}
-                            className="bg-transparent text-sm font-bold text-white outline-none border-b border-transparent focus:border-sky-400/40 transition-all"
+                            className="bg-transparent text-sm font-bold text-white outline-none"
                           />
                         </div>
-                        <span className="text-[10px] uppercase font-black tracking-wider text-black bg-sky-400 px-2.5 py-0.5 rounded-full shadow">
+                        <span className="text-[10px] uppercase font-black tracking-wider text-black bg-sky-400 px-3 py-1 rounded-full shadow">
                           WITHDRAWALS
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between bg-[#0a1118] p-4 rounded-xl border border-sky-400/20">
-                        <span className="text-4xl font-black font-mono text-sky-400">
+                      <div className="flex items-center justify-between bg-[#0b121a] p-5 rounded-2xl">
+                        <span className="text-5xl font-black font-mono text-sky-400">
                           {counterState.withdrawalCount ?? 0}
                         </span>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleAdjustCount('withdrawal', -1)}
-                            className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all active:scale-95"
+                            className="w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full transition-all flex items-center justify-center active:scale-95 shadow"
                             title="Decrease count"
                           >
-                            <Minus size={16} />
+                            <Minus size={18} />
                           </button>
                           <button
                             onClick={() => handleAdjustCount('withdrawal', 1)}
-                            className="p-2.5 bg-sky-400 text-black hover:bg-sky-300 rounded-lg transition-all font-black active:scale-95 shadow-md"
+                            className="w-10 h-10 bg-sky-400 text-black hover:bg-sky-300 rounded-full transition-all font-black flex items-center justify-center active:scale-95 shadow-md"
                             title="Increase count"
                           >
-                            <Plus size={16} />
+                            <Plus size={18} />
                           </button>
                           <button
                             onClick={() => updateCounterState({ withdrawalCount: 0 })}
-                            className="px-2 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                            className="px-2.5 py-2 text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
                             title="Set to 0"
                           >
                             Clear
@@ -1110,7 +1113,7 @@ export default function MpesaCodes() {
                   </div>
 
                   {/* Copyable Summary Format Preview & Actions for Current Active Hour */}
-                  <div className="bg-[#0b0c12] border border-white/10 rounded-xl p-4 space-y-3">
+                  <div className="bg-[#0a0b12] rounded-2xl p-5 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
                         <Sparkles size={14} className="text-[#baff55]" /> Active Hour Report Preview:
@@ -1123,14 +1126,14 @@ export default function MpesaCodes() {
                       </button>
                     </div>
 
-                    <pre className="bg-[#141620] border border-white/5 rounded-lg p-3 text-xs sm:text-sm font-mono text-[#baff55] whitespace-pre-wrap select-all">
+                    <pre className="bg-[#121420] rounded-xl p-4 text-xs sm:text-sm font-mono text-[#baff55] whitespace-pre-wrap select-all">
                       {getFormattedCounterText()}
                     </pre>
 
                     <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
                       <button
                         onClick={() => handleCopyCounterText()}
-                        className="w-full bg-[#baff55] text-black hover:bg-[#a8f044] font-black text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
+                        className="w-full bg-[#baff55] text-black hover:bg-[#a8f044] font-black text-sm py-4 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98]"
                       >
                         {copiedCounter ? <Check size={18} /> : <Copy size={18} />}
                         {copiedCounter ? "Copied Active Hour Report!" : "Copy Active Hour Report"}
@@ -1140,53 +1143,53 @@ export default function MpesaCodes() {
                 </div>
               </div>
 
-              {/* ── LAST HOUR STATS SIDE PANEL (Right 1 col - BLUE THEME) ── */}
+              {/* ── LAST HOUR STATS SIDE PANEL (Right 1 col - BLUE THEME BORDERLESS) ── */}
               <div className="lg:col-span-1 space-y-4">
-                <div className="bg-[#12141c] border border-blue-500/30 rounded-2xl p-5 shadow-2xl space-y-4 relative overflow-hidden">
+                <div className="bg-[#141829] rounded-[28px] p-6 shadow-2xl space-y-5 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 
                   {/* Header */}
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div className="flex items-center justify-between pb-1">
                     <div className="flex items-center gap-2">
                       <Clock size={18} className="text-blue-400" />
                       <h3 className="text-sm font-black text-white uppercase tracking-wider">
                         Last Hour Stats
                       </h3>
                     </div>
-                    <span className="text-[9px] font-black uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span className="text-[9px] font-black uppercase bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full flex items-center gap-1">
                       {prevEntry ? "Archived Shift" : "Last Shift"}
                     </span>
                   </div>
 
-                  {/* Last Hour Card (Blue Theme) */}
-                  <div className="bg-[#131b2e] border-2 border-blue-500/30 rounded-xl p-4 space-y-3 shadow-lg">
+                  {/* Last Hour Card (Blue Theme Borderless) */}
+                  <div className="bg-[#0e1322] rounded-2xl p-5 space-y-4 shadow-lg">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1">
                         <Clock size={11} className="text-blue-400" /> Shift Window:
                       </span>
-                      <span className="text-[9px] font-black uppercase text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                      <span className="text-[9px] font-black uppercase text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-md">
                         Previous Hour
                       </span>
                     </div>
 
-                    <div className="text-xs font-mono font-bold text-blue-400 bg-[#0a101d] px-3 py-2 rounded-lg border border-blue-500/20 truncate">
+                    <div className="text-xs font-mono font-bold text-blue-400 bg-[#161c30] px-3.5 py-2.5 rounded-xl truncate">
                       ⏰ {prevRange}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                      <div className="bg-[#0a101d] p-3 rounded-lg border border-white/5">
+                    <div className="grid grid-cols-2 gap-3 text-xs pt-1">
+                      <div className="bg-[#171f34] p-3.5 rounded-xl">
                         <span className="text-[10px] text-gray-400 block font-sans mb-0.5">Deposits</span>
-                        <span className="text-xl font-black font-mono text-[#baff55]">{prevDep}</span>
+                        <span className="text-2xl font-black font-mono text-[#baff55]">{prevDep}</span>
                       </div>
-                      <div className="bg-[#0a101d] p-3 rounded-lg border border-white/5">
+                      <div className="bg-[#171f34] p-3.5 rounded-xl">
                         <span className="text-[10px] text-gray-400 block font-sans mb-0.5">Withdrawals</span>
-                        <span className="text-xl font-black font-mono text-sky-400">{prevWth}</span>
+                        <span className="text-2xl font-black font-mono text-sky-400">{prevWth}</span>
                       </div>
                     </div>
 
                     <button
                       onClick={() => handleCopyCounterText(prevRange, prevDep, prevWth)}
-                      className="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+                      className="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95"
                     >
                       <Copy size={14} />
                       Copy Last Hour Report
