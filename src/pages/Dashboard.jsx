@@ -19,9 +19,7 @@ import {
   MessageSquare,
   Calculator,
   TrendingUp,
-  TrendingDown,
   Radio,
-  AlertTriangle,
   Plane
 } from 'lucide-react';
 import { 
@@ -46,23 +44,14 @@ import { useSupabaseData } from '../context/SupabaseDataContext';
    AVIATOR PULSE — Premium Aviation Card
 ───────────────────────────────────────── */
 const AviatorPulseCard = ({ logs, chartData }) => {
-  const [tick, setTick] = useState(0);
   const [prevCount, setPrevCount] = useState(0);
 
   const hourCount = useMemo(() => logs.filter(l => l.ts > Date.now() - 3600000).length, [logs]);
-  const dayCount  = useMemo(() => logs.filter(l => l.ts > Date.now() - 86400000).length, [logs]);
-  const peakVal   = useMemo(() => Math.max(0, ...chartData.map(d => d.logs)), [chartData]);
-  const avgVal    = useMemo(() => {
-    const sum = chartData.reduce((a, d) => a + d.logs, 0);
-    return chartData.length ? (sum / chartData.length).toFixed(1) : '0.0';
-  }, [chartData]);
 
   const trending = hourCount >= prevCount;
 
   useEffect(() => {
     setPrevCount(hourCount);
-    const id = setInterval(() => setTick(t => t + 1), 2000);
-    return () => clearInterval(id);
   }, [hourCount]);
 
   const statusLevel = hourCount > 10 ? 'CRITICAL' : hourCount > 4 ? 'ELEVATED' : 'NOMINAL';
@@ -243,35 +232,7 @@ const AviatorPulseCard = ({ logs, chartData }) => {
         </div>
       </div>
 
-      {/* Bottom stats strip */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-        gap: 1, background: 'rgba(255,255,255,0.04)',
-        marginTop: 4,
-      }}>
-        {[
-          { label: 'Today', value: dayCount, unit: 'logs', icon: <Activity size={13} color="#baff55" /> },
-          { label: 'Peak / Interval', value: peakVal, unit: 'max', icon: <AlertTriangle size={13} color="#ffa64d" /> },
-          { label: 'Avg / Segment', value: avgVal, unit: 'mean', icon: <TrendingUp size={13} color="#3b82f6" /> },
-        ].map((stat, i) => (
-          <div key={i} style={{
-            padding: '16px 18px',
-            background: '#131520',
-            display: 'flex', flexDirection: 'column', gap: 6,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              {stat.icon}
-              <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{stat.label}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                {stat.value}
-              </span>
-              <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600 }}>{stat.unit}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+
 
       {/* CSS keyframes via style tag */}
       <style>{`
