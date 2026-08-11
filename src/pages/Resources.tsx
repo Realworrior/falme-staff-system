@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import type { LucideIcon } from 'lucide-react';
 import {
   Trophy,
@@ -135,101 +135,85 @@ interface VirtualGame {
 // ─── Color map ────────────────────────────────────────────────────────────────
 const colorMap: Record<
   string,
-  { bg: string; border: string; text: string; dot: string }
+  { bg: string; text: string; dot: string }
 > = {
   green: {
     bg: "bg-green-500/10",
-    border: "border-green-500/30",
     text: "text-green-400",
     dot: "bg-green-400",
   },
   emerald: {
     bg: "bg-emerald-500/10",
-    border: "border-emerald-500/30",
     text: "text-emerald-400",
     dot: "bg-emerald-400",
   },
   cyan: {
     bg: "bg-cyan-500/10",
-    border: "border-cyan-500/30",
     text: "text-cyan-400",
     dot: "bg-cyan-400",
   },
   blue: {
     bg: "bg-blue-500/10",
-    border: "border-blue-500/30",
     text: "text-blue-400",
     dot: "bg-blue-400",
   },
   yellow: {
     bg: "bg-yellow-500/10",
-    border: "border-yellow-500/30",
     text: "text-yellow-400",
     dot: "bg-yellow-400",
   },
   lime: {
     bg: "bg-lime-500/10",
-    border: "border-lime-500/30",
     text: "text-lime-400",
     dot: "bg-lime-400",
   },
   teal: {
     bg: "bg-teal-500/10",
-    border: "border-teal-500/30",
     text: "text-teal-400",
     dot: "bg-teal-400",
   },
   red: {
     bg: "bg-red-500/10",
-    border: "border-red-500/30",
     text: "text-red-400",
     dot: "bg-red-400",
   },
   orange: {
     bg: "bg-orange-500/10",
-    border: "border-orange-500/30",
     text: "text-orange-400",
     dot: "bg-orange-400",
   },
   amber: {
     bg: "bg-amber-500/10",
-    border: "border-amber-500/30",
     text: "text-amber-400",
     dot: "bg-amber-400",
   },
   purple: {
     bg: "bg-purple-500/10",
-    border: "border-purple-500/30",
     text: "text-purple-400",
     dot: "bg-purple-400",
   },
   indigo: {
     bg: "bg-indigo-500/10",
-    border: "border-indigo-500/30",
     text: "text-indigo-400",
     dot: "bg-indigo-400",
   },
   slate: {
     bg: "bg-slate-500/10",
-    border: "border-slate-500/30",
     text: "text-slate-400",
     dot: "bg-slate-400",
   },
   pink: {
     bg: "bg-pink-500/10",
-    border: "border-pink-500/30",
     text: "text-pink-400",
     dot: "bg-pink-400",
   },
   rose: {
     bg: "bg-rose-500/10",
-    border: "border-rose-500/30",
     text: "text-rose-400",
     dot: "bg-rose-400",
   },
   sky: {
     bg: "bg-sky-500/10",
-    border: "border-sky-500/30",
     text: "text-sky-400",
     dot: "bg-sky-400",
   },
@@ -244,7 +228,7 @@ const sportsData: Record<Sport, SportData> = {
     icon: Shield,
     accent: "#22c55e",
     accentLight: "rgba(34,197,94,0.15)",
-    accentBorder: "rgba(34,197,94,0.4)",
+    accent,
     categories: [
       {
         id: "outcome",
@@ -683,7 +667,7 @@ const sportsData: Record<Sport, SportData> = {
     icon: Dices,
     accent: "#f97316",
     accentLight: "rgba(249,115,22,0.15)",
-    accentBorder: "rgba(249,115,22,0.4)",
+    accent,
     categories: [
       {
         id: "outcome",
@@ -895,7 +879,7 @@ const sportsData: Record<Sport, SportData> = {
     icon: Target,
     accent: "#eab308",
     accentLight: "rgba(234,179,8,0.15)",
-    accentBorder: "rgba(234,179,8,0.4)",
+    accent,
     categories: [
       {
         id: "match",
@@ -1058,7 +1042,7 @@ const sportsData: Record<Sport, SportData> = {
     icon: BrainCircuit,
     accent: "#a855f7",
     accentLight: "rgba(168,85,247,0.15)",
-    accentBorder: "rgba(168,85,247,0.4)",
+    accent,
     categories: [
       {
         id: "and",
@@ -1304,7 +1288,7 @@ const sportsData: Record<Sport, SportData> = {
     icon: Rocket,
     accent: "#ef4444",
     accentLight: "rgba(239,68,68,0.15)",
-    accentBorder: "rgba(239,68,68,0.4)",
+    accent,
     categories: [],
   },
   virtual: {
@@ -1312,7 +1296,7 @@ const sportsData: Record<Sport, SportData> = {
     icon: Globe,
     accent: "#06b6d4",
     accentLight: "rgba(6,182,212,0.15)",
-    accentBorder: "rgba(6,182,212,0.4)",
+    accent,
     categories: [],
   },
   casino: {
@@ -1320,7 +1304,7 @@ const sportsData: Record<Sport, SportData> = {
     icon: Gem,
     accent: "#f59e0b",
     accentLight: "rgba(245,158,11,0.15)",
-    accentBorder: "rgba(245,158,11,0.4)",
+    accent,
     categories: [],
   },
 };
@@ -1542,7 +1526,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> = {
     tagline: "Bonuses, cashback, VIP tiers, and referral program",
     accent: "#a855f7",
     accentLight: "rgba(168,85,247,0.15)",
-    accentBorder: "rgba(168,85,247,0.4)",
+    accent,
   },
   support: {
     label: "Agent Toolkit",
@@ -1550,7 +1534,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> = {
     tagline: "Troubleshooting, escalation matrix & key procedures",
     accent: "#3b82f6",
     accentLight: "rgba(59,130,246,0.15)",
-    accentBorder: "rgba(59,130,246,0.4)",
+    accent,
   },
   compliance: {
     label: "Compliance",
@@ -1558,7 +1542,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> = {
     tagline: "Responsible gaming, age verification & licensing",
     accent: "#10b981",
     accentLight: "rgba(16,185,129,0.15)",
-    accentBorder: "rgba(16,185,129,0.4)",
+    accent,
   },
   toolkit: {
     label: "Staff Toolkit",
@@ -1566,7 +1550,7 @@ const manualSections: Record<ManualSection, ManualSectionMeta> = {
     tagline: "Talking points, odds guide & common FAQs",
     accent: "#f472b6",
     accentLight: "rgba(244,114,182,0.15)",
-    accentBorder: "rgba(244,114,182,0.4)",
+    accent,
     isNew: true,
   },
 };
@@ -1578,20 +1562,20 @@ function ComplexityBadge({ level }: { level: Complexity }) {
   const cfg = {
     beginner: {
       label: "Beginner",
-      cls: "bg-green-500/20 text-green-400 border-green-500/40",
+      cls: "bg-green-500/20 text-green-400",
     },
     intermediate: {
       label: "Intermediate",
-      cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40",
+      cls: "bg-yellow-500/20 text-yellow-400",
     },
     advanced: {
       label: "Advanced",
-      cls: "bg-red-500/20 text-red-400 border-red-500/40",
+      cls: "bg-red-500/20 text-red-400",
     },
   }[level];
   return (
     <span
-      className={`text-[11px] px-2 py-0.5 rounded-full border whitespace-nowrap ${cfg.cls}`}
+      className={`text-[11px] px-2 py-0.5 rounded-full  whitespace-nowrap ${cfg.cls}`}
     >
       {cfg.label}
     </span>
@@ -1626,7 +1610,7 @@ function MarketCard({
           >
             {market.name}
             {market.isNew && (
-              <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none">New</span>
+              <span className="bg-red-500/20 text-red-400  text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none">New</span>
             )}
           </h4>
           <ComplexityBadge level={market.complexity} />
@@ -1635,7 +1619,7 @@ function MarketCard({
           {market.summary}
         </p>
         {hasExtra && (
-          <div className="flex flex-col gap-4 pt-3 border-t border-white/[0.06]">
+          <div className="flex flex-col gap-4 pt-3">
             {market.options && market.options.length > 0 && (
               <div className="flex flex-col gap-2.5">
                 {market.options.map((opt, i) => (
@@ -1664,7 +1648,7 @@ function MarketCard({
                 className="rounded-lg p-3.5 text-[12px] font-mono leading-relaxed whitespace-pre-wrap"
                 style={{
                   background: 'rgba(255,255,255,0.03)',
-                  border: `1px solid rgba(255,255,255,0.1)`,
+                  : `1px solid rgba(255,255,255,0.1)`,
                   color: "rgba(255,255,255,0.8)",
                 }}
               >
@@ -1723,9 +1707,9 @@ function CategorySection({
   return (
     <section className="mb-14">
       <div
-        className={`flex items-center gap-4 mb-6 rounded-2xl px-5 py-4 border border-border bg-card`}
+        className={`flex items-center gap-4 mb-6 rounded-2xl px-5 py-4  bg-card`}
       >
-        <div className={`p-2.5 rounded-xl ${colors.bg} ${colors.border} border`}>
+        <div className={`p-2.5 rounded-xl ${colors.bg} ${colors.} `}>
           <IconComp size={22} className={colors.text} />
         </div>
         <div>
@@ -1740,7 +1724,7 @@ function CategorySection({
           </p>
         </div>
         <div
-          className={`ml-auto text-xs px-3 py-1 rounded-full border ${colors.bg} ${colors.border} ${colors.text}`}
+          className={`ml-auto text-xs px-3 py-1 rounded-full  ${colors.bg} ${colors.} ${colors.text}`}
         >
           {category.markets.length}{" "}
           {category.markets.length === 1 ? "market" : "markets"}
@@ -1775,7 +1759,7 @@ function SportTab({
         background: active
           ? "var(--accent)"
           : "rgba(255,255,255,0.04)",
-        border: `1px solid ${active ? "var(--accent)" : "rgba(255,255,255,0.08)"}`,
+        : `1px solid ${active ? "var(--accent)" : "rgba(255,255,255,0.08)"}`,
         color: active ? "#fff" : "rgba(255,255,255,0.55)",
       }}
     >
@@ -1822,14 +1806,13 @@ function ManualTab({
         background: active
           ? meta.accentLight
           : "rgba(255,255,255,0.04)",
-        border: `1px solid ${active ? meta.accentBorder : "rgba(255,255,255,0.08)"}`,
         color: active ? meta.accent : "rgba(255,255,255,0.55)",
       }}
     >
       <IconComp size={16} />
       <span>{meta.label}</span>
       {meta.isNew && (
-        <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none ml-1">New</span>
+        <span className="bg-red-500/20 text-red-400  text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none ml-1">New</span>
       )}
     </button>
   );
@@ -1845,7 +1828,7 @@ function CrashGamesView({ accent }: { accent: string }) {
     <div>
       {/* Mechanics Banner */}
       <div
-        className="rounded-2xl p-5 mb-8 border border-red-500/20"
+        className="rounded-2xl p-5 mb-8 "
         style={{ background: "rgba(239,68,68,0.07)" }}
       >
         <div className="flex items-center gap-3 mb-3">
@@ -1946,7 +1929,7 @@ function CrashGamesView({ accent }: { accent: string }) {
           Game Directory
         </h3>
         <span
-          className="text-xs px-2 py-0.5 rounded-full border border-red-500/30 text-red-400"
+          className="text-xs px-2 py-0.5 rounded-full  text-red-400"
           style={{ background: "rgba(239,68,68,0.1)" }}
         >
           {crashGames.length} Games
@@ -1967,14 +1950,12 @@ function CrashGamesView({ accent }: { accent: string }) {
             onClick={() =>
               setSelected(selected?.name === g.name ? null : g)
             }
-            className="text-left rounded-xl p-4 border transition-all"
+            className="text-left rounded-xl p-4  transition-all"
             style={{
               background:
                 selected?.name === g.name
                   ? `${accent}18`
-                  : "rgba(255,255,255,0.03)",
-              borderColor:
-                selected?.name === g.name
+                  : "rgba(255,255,255,0.03)",                selected?.name === g.name
                   ? `${accent}60`
                   : "rgba(255,255,255,0.07)",
               boxShadow:
@@ -1997,10 +1978,9 @@ function CrashGamesView({ accent }: { accent: string }) {
       {/* Selected game detail */}
       {selected && (
         <div
-          className="mt-4 rounded-2xl p-5 border"
+          className="mt-4 rounded-2xl p-5 "
           style={{
             background: `${accent}10`,
-            borderColor: `${accent}40`,
           }}
         >
           <div className="flex items-center gap-3 mb-3">
@@ -2059,7 +2039,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
     <div>
       {/* RNG Banner */}
       <div
-        className="rounded-2xl p-5 mb-8 border border-cyan-500/20"
+        className="rounded-2xl p-5 mb-8 "
         style={{ background: "rgba(6,182,212,0.07)" }}
       >
         <div className="flex items-start gap-3">
@@ -2092,14 +2072,12 @@ function VirtualGamesView({ accent }: { accent: string }) {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className="px-5 py-2.5 rounded-xl text-sm border transition-all"
+            className="px-5 py-2.5 rounded-xl text-sm  transition-all"
             style={{
               background:
                 tab === t
                   ? `${accent}15`
-                  : "rgba(255,255,255,0.04)",
-              borderColor:
-                tab === t
+                  : "rgba(255,255,255,0.04)",                tab === t
                   ? `${accent}50`
                   : "rgba(255,255,255,0.08)",
               color:
@@ -2131,7 +2109,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
                 </div>
               </div>
             </div>
-            <p className="text-white/55 text-sm leading-relaxed border-t border-white/[0.06] pt-3">
+            <p className="text-white/55 text-sm leading-relaxed pt-3">
               {g.howToPlay}
             </p>
           </div>
@@ -2151,7 +2129,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div
-            className="rounded-xl p-4 border border-cyan-500/20"
+            className="rounded-xl p-4 "
             style={{ background: "rgba(6,182,212,0.06)" }}
           >
             <div className="text-cyan-400 text-sm mb-2">
@@ -2163,7 +2141,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
             </div>
           </div>
           <div
-            className="rounded-xl p-4 border border-cyan-500/20"
+            className="rounded-xl p-4 "
             style={{ background: "rgba(6,182,212,0.06)" }}
           >
             <div className="text-cyan-400 text-sm mb-2">
@@ -2200,7 +2178,7 @@ function CasinoView({ accent }: { accent: string }) {
       {/* Slots */}
       <div>
         <div
-          className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 border border-yellow-500/20"
+          className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 "
           style={{ background: "rgba(245,158,11,0.07)" }}
         >
           <Gem size={28} className="text-yellow-400" />
@@ -2275,7 +2253,7 @@ function CasinoView({ accent }: { accent: string }) {
       {/* Live Casino */}
       <div>
         <div
-          className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 border border-yellow-500/20"
+          className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 "
           style={{ background: "rgba(245,158,11,0.07)" }}
         >
           <Gamepad2 size={28} className="text-yellow-400" />
@@ -2338,7 +2316,7 @@ function CasinoView({ accent }: { accent: string }) {
           </p>
         </div>
         <div
-          className="rounded-xl p-5 border border-yellow-500/20"
+          className="rounded-xl p-5 "
           style={{ background: "rgba(245,158,11,0.07)" }}
         >
           <div className="flex items-center gap-2 mb-3">
@@ -2440,7 +2418,7 @@ function MarketGuideView() {
               className="rounded-2xl p-6 text-center"
               style={{
                 background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.06)",
+                : "1px solid rgba(255,255,255,0.06)",
               }}
             >
               <p className="text-white/30 text-sm">
@@ -2461,7 +2439,7 @@ function PromotionsView({ accent }: { accent: string }) {
   return (
     <div className="space-y-8">
       <div 
-        className="rounded-2xl p-6 border border-purple-500/20"
+        className="rounded-2xl p-6 "
         style={{ background: "rgba(168,85,247,0.07)" }}
       >
       <h3 className="text-white text-lg mb-4 flex items-center gap-2">
@@ -2506,7 +2484,7 @@ function PromotionsView({ accent }: { accent: string }) {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="text-white/40 text-xs uppercase tracking-widest border-b border-white/5">
+              <tr className="text-white/40 text-xs uppercase tracking-widest">
                 <th className="pb-3 px-2">Tier</th>
                 <th className="pb-3 px-2">Monthly Volume</th>
                 <th className="pb-3 px-2">Cashback %</th>
@@ -2520,7 +2498,7 @@ function PromotionsView({ accent }: { accent: string }) {
                 { name: "Gold", vol: "KES 200k+", cb: "10%", perks: "Personal Account Manager" },
                 { name: "Platinum", vol: "KES 1M+", cb: "15%", perks: "VIP Events & Gifts" }
               ].map((t, i) => (
-                <tr key={i} className="border-b border-white/[0.03] last:border-0">
+                <tr key={i} className=" ">
                   <td className="py-4 px-2 font-bold text-white">{t.name}</td>
                   <td className="py-4 px-2">{t.vol}</td>
                   <td className="py-4 px-2 text-purple-400">{t.cb}</td>
@@ -2540,7 +2518,7 @@ function SupportView({ accent }: { accent: string }) {
   return (
     <div className="space-y-8">
       <div 
-        className="rounded-2xl p-6 border border-blue-500/20"
+        className="rounded-2xl p-6 "
         style={{ background: "rgba(59,130,246,0.07)" }}
       >
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
@@ -2553,7 +2531,7 @@ function SupportView({ accent }: { accent: string }) {
             { level: "Level 3", role: "Operations Manager", handle: "Fraud investigations, major system outages, legal threats." }
           ].map((e, i) => (
             <div key={i} className="flex gap-4 p-4 rounded-xl bg-[#1b1e2b]">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-full bg-blue-500/20  flex items-center justify-center shrink-0">
                 <span className="text-blue-400 font-black">{i+1}</span>
               </div>
               <div>
@@ -2582,7 +2560,7 @@ function SupportView({ accent }: { accent: string }) {
             ))}
           </ul>
         </div>
-        <div className="rounded-2xl p-6 border border-red-500/10 bg-red-500/5">
+        <div className="rounded-2xl p-6  bg-red-500/5">
           <h4 className="text-red-400 mb-4 uppercase text-xs tracking-widest font-black">Emergency Protocols</h4>
           <ul className="space-y-3">
             {[
@@ -2608,7 +2586,7 @@ function ComplianceView({ accent }: { accent: string }) {
   return (
     <div className="space-y-8">
       <div 
-        className="rounded-2xl p-6 border border-emerald-500/20"
+        className="rounded-2xl p-6 "
         style={{ background: "rgba(16,185,129,0.07)" }}
       >
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
@@ -2660,7 +2638,7 @@ function ToolkitView({ accent }: { accent: string }) {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* ── Extension Deployment Card ── */}
       <div 
-        className="rounded-3xl p-8 border border-emerald-500/30 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+        className="rounded-3xl p-8  relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
         style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.1) 100%)" }}
       >
         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -2717,7 +2695,7 @@ function ToolkitView({ accent }: { accent: string }) {
                   3. Enable <span className="text-white/60">Developer Mode</span><br/>
                   4. Click <span className="text-white/60">Load unpacked</span> and select folder
                 </div>
-                <div className="border-t border-white/5 pt-2">
+                <div className=" pt-2">
                   <span className="text-orange-500 font-black">FIREFOX INSTALLATION:</span><br/>
                   1. Download the Firefox Add-on (.xpi)<br/>
                   2. Go to <span className="text-white/60">about:addons</span><br/>
@@ -2730,7 +2708,7 @@ function ToolkitView({ accent }: { accent: string }) {
       </div>
 
       <div 
-        className="rounded-2xl p-6 border border-pink-500/20"
+        className="rounded-2xl p-6 "
         style={{ background: "rgba(244,114,182,0.07)" }}
       >
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
@@ -2754,15 +2732,15 @@ function ToolkitView({ accent }: { accent: string }) {
         <div className="rounded-2xl p-6 bg-[#131520]">
           <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Odds Guide Reference</h4>
           <div className="space-y-4 text-sm">
-            <div className="flex justify-between border-b border-white/5 pb-2">
+            <div className="flex justify-between pb-2">
               <span className="text-white/40">Decimal 2.00</span>
               <span className="text-pink-400 font-bold">50% Probability</span>
             </div>
-            <div className="flex justify-between border-b border-white/5 pb-2">
+            <div className="flex justify-between pb-2">
               <span className="text-white/40">Decimal 1.50</span>
               <span className="text-pink-400 font-bold">66.7% Probability</span>
             </div>
-            <div className="flex justify-between border-b border-white/5 pb-2">
+            <div className="flex justify-between pb-2">
               <span className="text-white/40">Decimal 4.00</span>
               <span className="text-pink-400 font-bold">25% Probability</span>
             </div>
@@ -2773,7 +2751,7 @@ function ToolkitView({ accent }: { accent: string }) {
           <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Internal Tools Links</h4>
           <div className="grid grid-cols-2 gap-3">
             {["Admin Portal", "Slack Ops", "Zendesk", "Supabase", "Jira", "Vercel"].map(l => (
-              <div key={l} className="px-3 py-2 rounded-lg bg-[#1b1e2b] text-xs text-white/60 hover:text-pink-400 hover:border-pink-500/30 transition-all cursor-pointer">
+              <div key={l} className="px-3 py-2 rounded-lg bg-[#1b1e2b] text-xs text-white/60 hover:text-pink-400 transition-all cursor-pointer">
                 ↗ {l}
               </div>
             ))}
