@@ -2397,20 +2397,7 @@ function MarketGuideView() {
               onClick={() => setActiveSport(key)}
             />
           ))}
-          <div className="ml-auto flex items-center gap-4 pl-4 shrink-0">
-            <div className="flex items-center gap-1.5 text-xs text-green-400">
-              <span className="w-2 h-2 rounded-full bg-green-400" />{" "}
-              Beginner
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-yellow-400">
-              <span className="w-2 h-2 rounded-full bg-yellow-400" />{" "}
-              Intermediate
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-red-400">
-              <span className="w-2 h-2 rounded-full bg-red-400" />{" "}
-              Advanced
-            </div>
-          </div>
+
         </div>
       </div>
 

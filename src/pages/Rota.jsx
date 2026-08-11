@@ -380,10 +380,7 @@ export default function RotaPage() {
                   Operational Matrix
                 </h1>
               </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                <Shield size={10} className="text-accent" />
-                Mission Critical Scheduling System
-              </p>
+
             </div>
 
             <div className="flex items-center gap-3">

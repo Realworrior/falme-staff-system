@@ -19,7 +19,6 @@ import {
   MessageSquare,
   Calculator,
   TrendingUp,
-  Radio,
   Plane
 } from 'lucide-react';
 import { 
@@ -54,7 +53,6 @@ const AviatorPulseCard = ({ logs, chartData }) => {
     setPrevCount(hourCount);
   }, [hourCount]);
 
-  const statusLevel = hourCount > 10 ? 'CRITICAL' : hourCount > 4 ? 'ELEVATED' : 'NOMINAL';
   const statusColor = hourCount > 10 ? '#ff4d4d' : hourCount > 4 ? '#ffa64d' : '#baff55';
 
   return (
@@ -76,29 +74,7 @@ const AviatorPulseCard = ({ logs, chartData }) => {
         pointerEvents: 'none', transition: 'background 1s ease',
       }} />
 
-      {/* Top strip — Status bar */}
-      <div style={{
-        background: `linear-gradient(90deg, ${statusColor}22, transparent)`,
-        borderBottom: `1px solid ${statusColor}20`,
-        padding: '10px 28px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: statusColor,
-            boxShadow: `0 0 8px ${statusColor}`,
-            animation: 'aviator-blink 1.4s infinite',
-          }} />
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', color: statusColor, textTransform: 'uppercase' }}>
-            {statusLevel}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0.5 }}>
-          <Radio size={11} color="#8e8e93" />
-          <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600, letterSpacing: '0.1em' }}>LIVE FEED</span>
-        </div>
-      </div>
+
 
       {/* Main content */}
       <div style={{ padding: '24px 28px 0' }}>
@@ -326,13 +302,7 @@ const Dashboard = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
             Operational Overview
           </h1>
-          <div className="flex items-center gap-3 mt-2">
-             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#181a26]">
-               <div className="w-2 h-2 rounded-full bg-[#baff55]" />
-               <span className="text-xs font-semibold text-[#baff55]">Systems Online</span>
-             </div>
-             <p className="text-sm text-[#8e8e93] font-medium">Betfalme Infrastructure v4.0</p>
-          </div>
+        
         </div>
         
         <div className="flex items-center gap-4">

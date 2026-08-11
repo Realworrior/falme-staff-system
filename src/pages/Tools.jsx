@@ -608,12 +608,8 @@ Example:
       {/* Staff Guide & Protocol (On-Page) */}
       <div className="glass-card p-8 space-y-6">
          <div className="flex items-center justify-between">
-           <div className="flex items-center gap-3">
+           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
              <HelpCircle size={18} className="text-accent" />
-             <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Operational Protocol</span>
-           </div>
-           <div className="px-3 py-1 bg-accent/10 rounded-full border border-accent/20">
-             <span className="text-[8px] font-black text-accent uppercase">Staff Training</span>
            </div>
          </div>
 
@@ -717,11 +713,7 @@ export default function Tools() {
     <div className="min-h-screen bg-[#0e1017] pt-8 pb-32 px-4 md:px-8 max-w-7xl mx-auto space-y-8">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="px-3 py-1 bg-[#baff55]/10 rounded-full">
-              <span className="text-[10px] font-black text-[#baff55] uppercase tracking-[0.2em]">Operational Suite</span>
-            </div>
-          </div>
+
           <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Cashback Command Center</h1>
           <p className="text-gray-500 text-sm mt-2 max-w-md">Professional utilities designed to streamline support workflows and increase accuracy.</p>
         </div>
