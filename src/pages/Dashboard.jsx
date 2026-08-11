@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 // AI Knowledge Integration Active
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +17,12 @@ import {
   Cloud,
   Calendar,
   MessageSquare,
-  Calculator
+  Calculator,
+  TrendingUp,
+  TrendingDown,
+  Radio,
+  AlertTriangle,
+  Plane
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -37,7 +42,251 @@ import {
 import { isSameDay, subDays } from 'date-fns';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 
-import AviatorPulse from '../components/Dashboard/AviatorPulse';
+/* ─────────────────────────────────────────
+   AVIATOR PULSE — Premium Aviation Card
+───────────────────────────────────────── */
+const AviatorPulseCard = ({ logs, chartData }) => {
+  const [tick, setTick] = useState(0);
+  const [prevCount, setPrevCount] = useState(0);
+
+  const hourCount = useMemo(() => logs.filter(l => l.ts > Date.now() - 3600000).length, [logs]);
+  const dayCount  = useMemo(() => logs.filter(l => l.ts > Date.now() - 86400000).length, [logs]);
+  const peakVal   = useMemo(() => Math.max(0, ...chartData.map(d => d.logs)), [chartData]);
+  const avgVal    = useMemo(() => {
+    const sum = chartData.reduce((a, d) => a + d.logs, 0);
+    return chartData.length ? (sum / chartData.length).toFixed(1) : '0.0';
+  }, [chartData]);
+
+  const trending = hourCount >= prevCount;
+
+  useEffect(() => {
+    setPrevCount(hourCount);
+    const id = setInterval(() => setTick(t => t + 1), 2000);
+    return () => clearInterval(id);
+  }, [hourCount]);
+
+  const statusLevel = hourCount > 10 ? 'CRITICAL' : hourCount > 4 ? 'ELEVATED' : 'NOMINAL';
+  const statusColor = hourCount > 10 ? '#ff4d4d' : hourCount > 4 ? '#ffa64d' : '#baff55';
+
+  return (
+    <div
+      style={{
+        background: 'linear-gradient(145deg, #131520 0%, #0f111a 100%)',
+        borderRadius: 28,
+        padding: '0',
+        overflow: 'hidden',
+        boxShadow: `0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.05)`,
+        position: 'relative',
+      }}
+    >
+      {/* Ambient glow backdrop */}
+      <div style={{
+        position: 'absolute', top: -60, right: -40,
+        width: 300, height: 300, borderRadius: '50%',
+        background: `radial-gradient(circle, ${statusColor}18 0%, transparent 70%)`,
+        pointerEvents: 'none', transition: 'background 1s ease',
+      }} />
+
+      {/* Top strip — Status bar */}
+      <div style={{
+        background: `linear-gradient(90deg, ${statusColor}22, transparent)`,
+        borderBottom: `1px solid ${statusColor}20`,
+        padding: '10px 28px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: statusColor,
+            boxShadow: `0 0 8px ${statusColor}`,
+            animation: 'aviator-blink 1.4s infinite',
+          }} />
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', color: statusColor, textTransform: 'uppercase' }}>
+            {statusLevel}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0.5 }}>
+          <Radio size={11} color="#8e8e93" />
+          <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600, letterSpacing: '0.1em' }}>LIVE FEED</span>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div style={{ padding: '24px 28px 0' }}>
+
+        {/* Title row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {/* Animated plane icon */}
+            <div style={{
+              width: 44, height: 44, borderRadius: 16,
+              background: `linear-gradient(135deg, ${statusColor}25, ${statusColor}10)`,
+              border: `1px solid ${statusColor}30`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              position: 'relative', flexShrink: 0,
+            }}>
+              <Plane size={20} color={statusColor} style={{ transform: 'rotate(-45deg)' }} />
+              {/* Pulse ring */}
+              <div style={{
+                position: 'absolute', inset: -5, borderRadius: 20,
+                border: `1px solid ${statusColor}30`,
+                animation: 'aviator-ring 2s ease-out infinite',
+              }} />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em' }}>
+                Aviator Pulse
+              </h3>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: '#8e8e93', fontWeight: 500 }}>
+                Real-time Global Failure Index
+              </p>
+            </div>
+          </div>
+
+          {/* Frequency big number */}
+          <div style={{ textAlign: 'right' }}>
+            <span style={{ fontSize: 11, color: '#8e8e93', fontWeight: 600, letterSpacing: '0.05em', display: 'block', marginBottom: 4 }}>FREQ / HR</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, justifyContent: 'flex-end' }}>
+              <span style={{
+                fontSize: 38, fontWeight: 800, lineHeight: 1,
+                color: statusColor,
+                textShadow: `0 0 20px ${statusColor}60`,
+                fontVariantNumeric: 'tabular-nums',
+                letterSpacing: '-0.02em',
+              }}>
+                {hourCount}
+              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                {trending ? (
+                  <TrendingUp size={14} color="#baff55" />
+                ) : (
+                  <TrendingDown size={14} color="#ff4d4d" />
+                )}
+                <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600 }}>{trending ? 'UP' : 'DN'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <div style={{ height: 220, width: '100%', marginLeft: -8 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
+              <defs>
+                <linearGradient id="pulseGradMain" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={statusColor} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={statusColor} stopOpacity={0.0} />
+                </linearGradient>
+                <filter id="pulseGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <CartesianGrid strokeDasharray="2 6" vertical={false} stroke="rgba(255,255,255,0.035)" />
+              <XAxis
+                dataKey="name"
+                stroke="transparent"
+                fontSize={10}
+                fontWeight={600}
+                tick={{ fill: '#8e8e93' }}
+                axisLine={false}
+                tickLine={false}
+                dy={10}
+                interval={2}
+              />
+              <Tooltip
+                cursor={{ stroke: `${statusColor}40`, strokeWidth: 1, strokeDasharray: '4 4' }}
+                contentStyle={{
+                  backgroundColor: '#1a1d2b',
+                  border: `1px solid ${statusColor}30`,
+                  borderRadius: 14,
+                  padding: '10px 14px',
+                  boxShadow: `0 12px 40px rgba(0,0,0,0.6), 0 0 20px ${statusColor}10`,
+                }}
+                itemStyle={{ fontSize: 12, fontWeight: 700, color: statusColor }}
+                labelStyle={{ fontSize: 10, color: '#8e8e93', marginBottom: 4, fontWeight: 600, letterSpacing: '0.05em' }}
+              />
+              {/* Baseline ghost line */}
+              <Area
+                type="monotone"
+                dataKey="baseline"
+                stroke="rgba(255,255,255,0.06)"
+                fill="transparent"
+                strokeWidth={1}
+                strokeDasharray="4 4"
+                dot={false}
+                isAnimationActive={false}
+              />
+              {/* Main data area */}
+              <Area
+                type="monotone"
+                dataKey="logs"
+                stroke={statusColor}
+                fill="url(#pulseGradMain)"
+                strokeWidth={2.5}
+                dot={false}
+                activeDot={{
+                  r: 5,
+                  fill: statusColor,
+                  stroke: '#0f111a',
+                  strokeWidth: 2,
+                  style: { filter: `drop-shadow(0 0 6px ${statusColor})` }
+                }}
+                animationDuration={800}
+                animationEasing="ease-out"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Bottom stats strip */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+        gap: 1, background: 'rgba(255,255,255,0.04)',
+        marginTop: 4,
+      }}>
+        {[
+          { label: 'Today', value: dayCount, unit: 'logs', icon: <Activity size={13} color="#baff55" /> },
+          { label: 'Peak / Interval', value: peakVal, unit: 'max', icon: <AlertTriangle size={13} color="#ffa64d" /> },
+          { label: 'Avg / Segment', value: avgVal, unit: 'mean', icon: <TrendingUp size={13} color="#3b82f6" /> },
+        ].map((stat, i) => (
+          <div key={i} style={{
+            padding: '16px 18px',
+            background: '#131520',
+            display: 'flex', flexDirection: 'column', gap: 6,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              {stat.icon}
+              <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{stat.label}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                {stat.value}
+              </span>
+              <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600 }}>{stat.unit}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CSS keyframes via style tag */}
+      <style>{`
+        @keyframes aviator-blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+        @keyframes aviator-ring {
+          0% { opacity: 0.6; transform: scale(1); }
+          100% { opacity: 0; transform: scale(1.6); }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -83,6 +332,21 @@ const Dashboard = () => {
     };
   }, [overrides]);
 
+  const chartData = useMemo(() => {
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    return Array.from({ length: 14 }, (_, i) => {
+      const time = now - (13 - i) * (day / 14);
+      const count = logs.filter(l => l.ts > time - (day / 14) && l.ts <= time).length;
+      return {
+        name: new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        logs: count,
+        // Visual baseline to keep the graph "alive"
+        baseline: Math.sin(i * 0.5) * 2 + 5
+      };
+    });
+  }, [logs]);
+
   const shortcuts = [
     { name: "Cashback", icon: Calculator, path: "/tools", color: "#10b981" },
     { name: "Odds Converter", icon: Zap, path: "/tools", params: "?tab=odds", color: "#3b82f6" },
@@ -122,14 +386,15 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Aviator Pulse Main Section */}
-      <AviatorPulse />
-
-      {/* Shortcuts Grid & Shift Rota Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <div className="lg:col-span-8 space-y-4">
-          <h3 className="text-lg font-semibold text-white">Quick Shortcuts</h3>
+        {/* Main Infrastructure Section */}
+        <div className="lg:col-span-8 space-y-8">
+          
+          {/* Aviator Pulse — Premium Redesign */}
+          <AviatorPulseCard logs={logs} chartData={chartData} />
+
+          {/* Shortcuts Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
             {shortcuts.map(res => {
               const Icon = res.icon;
