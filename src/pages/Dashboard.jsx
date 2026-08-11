@@ -37,6 +37,8 @@ import {
 import { isSameDay, subDays } from 'date-fns';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 
+import AviatorPulse from '../components/Dashboard/AviatorPulse';
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { logs, overrides: rawOverrides, loading } = useSupabaseData();
@@ -81,21 +83,6 @@ const Dashboard = () => {
     };
   }, [overrides]);
 
-  const chartData = useMemo(() => {
-    const now = Date.now();
-    const day = 24 * 60 * 60 * 1000;
-    return Array.from({ length: 14 }, (_, i) => {
-      const time = now - (13 - i) * (day / 14);
-      const count = logs.filter(l => l.ts > time - (day / 14) && l.ts <= time).length;
-      return {
-        name: new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        logs: count,
-        // Visual baseline to keep the graph "alive"
-        baseline: Math.sin(i * 0.5) * 2 + 5
-      };
-    });
-  }, [logs]);
-
   const shortcuts = [
     { name: "Cashback", icon: Calculator, path: "/tools", color: "#10b981" },
     { name: "Odds Converter", icon: Zap, path: "/tools", params: "?tab=odds", color: "#3b82f6" },
@@ -135,86 +122,14 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Aviator Pulse Main Section */}
+      <AviatorPulse />
+
+      {/* Shortcuts Grid & Shift Rota Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Main Infrastructure Section */}
-        <div className="lg:col-span-8 space-y-8">
-          
-          {/* Aviator Pulse Graph */}
-          <div className="bg-[#131520] rounded-[28px] p-6 md:p-8 relative shadow-2xl">
-            <div className="flex items-start justify-between mb-8">
-              <div>
-                <h3 className="text-lg font-semibold text-white flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-2xl bg-[#1b1e2b] flex items-center justify-center">
-                    <Activity size={18} className="text-[#ff4d4d]" />
-                  </div>
-                  Aviator Pulse
-                </h3>
-                <p className="text-sm text-[#8e8e93] mt-1 font-medium">Real-time Global Failure Index</p>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs text-[#8e8e93] font-medium mb-1">Frequency</span>
-                <span className="text-2xl font-bold text-white">
-                  {logs.filter(l => l.ts > Date.now() - 3600000).length}
-                  <span className="text-sm text-[#8e8e93] font-normal ml-1">/hr</span>
-                </span>
-              </div>
-            </div>
-            
-            <div className="h-[240px] md:h-[320px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ff4d4d" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#ff4d4d" stopOpacity={0.0}/>
-                    </linearGradient>
-                  </defs>
-                  <Tooltip 
-                    cursor={{ stroke: 'rgba(186,255,85,0.2)', strokeWidth: 1 }}
-                    contentStyle={{ 
-                      backgroundColor: '#1b1e2b',
-                      border: 'none',
-                      borderRadius: '16px',
-                      padding: '12px 16px',
-                      boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-                    }}
-                    itemStyle={{ fontSize: '12px', fontWeight: '600', color: '#fff' }}
-                    labelStyle={{ fontSize: '11px', color: '#8e8e93', marginBottom: '4px' }}
-                  />
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="transparent"
-                    fontSize={11}
-                    fontWeight={500}
-                    tick={{ fill: '#8e8e93' }}
-                    axisLine={false} 
-                    tickLine={false}
-                    dy={10}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="logs" 
-                    stroke="#ff4d4d" 
-                    fill="url(#colorPulse)" 
-                    strokeWidth={2} 
-                    animationDuration={1000}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="baseline" 
-                    stroke="rgba(255,255,255,0.05)" 
-                    fill="transparent" 
-                    strokeWidth={1} 
-                    strokeDasharray="5 5"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Shortcuts Grid */}
+        <div className="lg:col-span-8 space-y-4">
+          <h3 className="text-lg font-semibold text-white">Quick Shortcuts</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
             {shortcuts.map(res => {
               const Icon = res.icon;

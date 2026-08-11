@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 import { useToast } from '../context/ToastContext';
+import AviatorPulse from '../components/Dashboard/AviatorPulse';
 
 const SlotTracker = () => {
   const { logs, loading: globalLoading, actions } = useSupabaseData();
@@ -144,12 +145,12 @@ const SlotTracker = () => {
             onClick={() => logFailure('Slot 1')}
             className="bg-[#131520] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#191c2b] transition-all group shadow-lg"
           >
-            <div className="w-10 h-10 rounded-2xl bg-[#ff4d4d]/10 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-[#ff4d4d]" />
+            <div className="w-10 h-10 rounded-2xl bg-[#10b981]/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-[#10b981]" />
             </div>
             <div className="text-left">
               <span className="block text-sm font-semibold text-white">Slot 1</span>
-              <span className="text-xs text-[#8e8e93]">Critical Event</span>
+              <span className="text-xs text-[#10b981]">Green Slot</span>
             </div>
           </button>
 
@@ -157,12 +158,12 @@ const SlotTracker = () => {
             onClick={() => logFailure('Slot 2')}
             className="bg-[#131520] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#191c2b] transition-all group shadow-lg"
           >
-            <div className="w-10 h-10 rounded-2xl bg-[#baff55]/10 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-[#baff55]" />
+            <div className="w-10 h-10 rounded-2xl bg-[#3b82f6]/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-[#3b82f6]" />
             </div>
             <div className="text-left">
               <span className="block text-sm font-semibold text-white">Slot 2</span>
-              <span className="text-xs text-[#8e8e93]">Critical Event</span>
+              <span className="text-xs text-[#3b82f6]">Blue Slot</span>
             </div>
           </button>
 
@@ -241,12 +242,12 @@ const SlotTracker = () => {
                     <td className="py-4 px-6">
                       <div className="flex gap-2">
                         {(log.type === 'Slot 1' || log.type === 'Both') && (
-                          <span className="px-3 py-1 rounded-full bg-[#ff4d4d]/10 text-[#ff4d4d] text-xs font-semibold">
+                          <span className="px-3 py-1 rounded-full bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20 text-xs font-semibold">
                             Slot 1
                           </span>
                         )}
                         {(log.type === 'Slot 2' || log.type === 'Both') && (
-                          <span className="px-3 py-1 rounded-full bg-[#baff55]/10 text-[#baff55] text-xs font-semibold">
+                          <span className="px-3 py-1 rounded-full bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 text-xs font-semibold">
                             Slot 2
                           </span>
                         )}
@@ -284,10 +285,10 @@ const SlotTracker = () => {
                   <div className="space-y-2">
                     <div className="flex gap-2">
                       {(log.type === 'Slot 1' || log.type === 'Both') && (
-                        <span className="px-3 py-1 rounded-full bg-[#ff4d4d]/10 text-[#ff4d4d] border border-[#ff4d4d]/20 text-xs font-semibold">Slot 1</span>
+                        <span className="px-3 py-1 rounded-full bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20 text-xs font-semibold">Slot 1</span>
                       )}
                       {(log.type === 'Slot 2' || log.type === 'Both') && (
-                        <span className="px-3 py-1 rounded-full bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 text-xs font-semibold">Slot 2</span>
+                        <span className="px-3 py-1 rounded-full bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 text-xs font-semibold">Slot 2</span>
                       )}
                     </div>
                     <div className="text-xs text-[#8e8e93]">
@@ -325,78 +326,9 @@ const SlotTracker = () => {
         </div>
       </motion.div>
 
-      {/* Performance Chart */}
-      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
-        className="bg-[#2a2b2f] rounded-[32px] p-6"
-      >
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#161616] border border-[#3a3b3f] flex items-center justify-center">
-              <Activity className="w-5 h-5 text-[#8e8e93]" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white">7-Day Performance</h2>
-              <p className="text-xs text-[#8e8e93]">Historical trend analysis</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#ff4d4d]" />
-              <span className="text-xs text-[#8e8e93]">Slot 1</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#baff55]" />
-              <span className="text-xs text-[#8e8e93]">Slot 2</span>
-            </div>
-          </div>
-        </div>
-        <div className="h-[260px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
-              <XAxis 
-                dataKey="day" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#8e8e93', fontSize: 11, fontWeight: 500 }}
-                dy={10}
-              />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#8e8e93', fontSize: 11, fontWeight: 500 }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#2a2b2f', 
-                  border: '1px solid #3a3b3f',
-                  borderRadius: '16px',
-                  padding: '12px 16px'
-                }}
-                itemStyle={{ fontWeight: 600, fontSize: '12px', color: '#fff' }}
-                labelStyle={{ color: '#8e8e93', marginBottom: '4px' }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="slot1" 
-                stroke="#ff4d4d" 
-                strokeWidth={2}
-                fill="#ff4d4d"
-                fillOpacity={0.06} 
-                animationDuration={1500}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="slot2" 
-                stroke="#baff55" 
-                strokeWidth={2}
-                fill="#baff55"
-                fillOpacity={0.06} 
-                animationDuration={1500}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+      {/* Performance Chart / Aviator Pulse */}
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
+        <AviatorPulse />
       </motion.div>
     </div>
   );
