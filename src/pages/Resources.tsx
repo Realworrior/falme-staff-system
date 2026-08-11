@@ -1,65 +1,65 @@
 ﻿import { useState, useEffect } from "react";
 import type { LucideIcon } from 'lucide-react';
 import {
-  Trophy,
-  Target,
-  Scale,
-  Clock,
-  Star,
-  Layers,
-  Hash,
-  CheckCircle2,
-  Shuffle,
-  Ban,
-  BarChart3,
-  Rocket,
-  Globe,
-  Dices,
-  Gem,
-  Wrench,
-  ShieldCheck,
-  Toolbox,
-  Shield,
-  Plane,
-  Flame,
-  Crown,
-  Cpu,
-  Palette,
-  Swords,
-  Ghost,
-  Building2,
-  Helicopter,
-  Gamepad2,
-  Zap,
-  BookOpen,
-  ClipboardList,
-  Gift,
-  TrendingDown,
-  Lock,
-  Package,
-  RefreshCw,
-  MousePointer,
-  AlertTriangle,
-  Folder,
-  Download,
-  WifiOff,
-  SlidersHorizontal,
-  BrainCircuit,
-  FileCheck,
+ Trophy,
+ Target,
+ Scale,
+ Clock,
+ Star,
+ Layers,
+ Hash,
+ CheckCircle2,
+ Shuffle,
+ Ban,
+ BarChart3,
+ Rocket,
+ Globe,
+ Dices,
+ Gem,
+ Wrench,
+ ShieldCheck,
+ Toolbox,
+ Shield,
+ Plane,
+ Flame,
+ Crown,
+ Cpu,
+ Palette,
+ Swords,
+ Ghost,
+ Building2,
+ Helicopter,
+ Gamepad2,
+ Zap,
+ BookOpen,
+ ClipboardList,
+ Gift,
+ TrendingDown,
+ Lock,
+ Package,
+ RefreshCw,
+ MousePointer,
+ AlertTriangle,
+ Folder,
+ Download,
+ WifiOff,
+ SlidersHorizontal,
+ BrainCircuit,
+ FileCheck,
 } from 'lucide-react';
 
 const RenderIcon = ({ icon: Icon, size = 20, className, style }: { icon?: LucideIcon; size?: number; className?: string; style?: React.CSSProperties }) => {
-  if (!Icon) return null;
-  return <Icon size={size} className={className} style={style} />;
+ if (!Icon) return null;
+ return <Icon size={size} className={className} style={style} />;
 };
 import { 
-  isAfter, 
-  isBefore, 
-  setHours, 
-  setMinutes, 
-  setSeconds,
-  subDays, 
-  parse 
+ isAfter, 
+ isBefore, 
+ setHours, 
+ setMinutes, 
+ setSeconds,
+ subDays, 
+ parse 
 } from "date-fns";
 import { SmartAssistant } from "../components/SmartAssistant";
 import { useSupabaseData } from "../context/SupabaseDataContext";
@@ -67,1246 +67,1246 @@ import { useSupabaseData } from "../context/SupabaseDataContext";
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AppSection = "guide" | "manual";
 type Sport =
-  | "soccer"
-  | "basketball"
-  | "tennis"
-  | "combos"
-  | "crash"
-  | "virtual"
-  | "casino";
+ | "soccer"
+ | "basketball"
+ | "tennis"
+ | "combos"
+ | "crash"
+ | "virtual"
+ | "casino";
 type ManualSection =
-  | "promotions"
-  | "support"
-  | "compliance"
-  | "toolkit";
+ | "promotions"
+ | "support"
+ | "compliance"
+ | "toolkit";
 type Complexity = "beginner" | "intermediate" | "advanced";
 
 interface MarketOption {
-  name: string;
-  description: string;
+ name: string;
+ description: string;
 }
 interface Rule {
-  text: string;
+ text: string;
 }
 interface Market {
-  id: string;
-  name: string;
-  summary: string;
-  complexity: Complexity;
-  options?: MarketOption[];
-  rules?: Rule[];
-  example?: string;
-  variations?: string[];
-  isNew?: boolean;
+ id: string;
+ name: string;
+ summary: string;
+ complexity: Complexity;
+ options?: MarketOption[];
+ rules?: Rule[];
+ example?: string;
+ variations?: string[];
+ isNew?: boolean;
 }
 interface Category {
-  id: string;
-  label: string;
-  tagline: string;
-  icon: LucideIcon;
-  colorKey: string;
-  markets: Market[];
-  isNew?: boolean;
+ id: string;
+ label: string;
+ tagline: string;
+ icon: LucideIcon;
+ colorKey: string;
+ markets: Market[];
+ isNew?: boolean;
 }
 interface SportData {
-  label: string;
-  icon: LucideIcon;
-  accent: string;
-  accentLight: string;
-  accentBorder: string;
-  categories: Category[];
+ label: string;
+ icon: LucideIcon;
+ accent: string;
+ accentLight: string;
+ accentBorder: string;
+ categories: Category[];
 }
 
 // ─── Crash Game ───────────────────────────────────────────────────────────────
 interface CrashGame {
-  name: string;
-  theme: string;
-  themeIcon: LucideIcon;
-  mechanic: string;
-  historyHow: string;
+ name: string;
+ theme: string;
+ themeIcon: LucideIcon;
+ mechanic: string;
+ historyHow: string;
 }
 // ─── Virtual Game ─────────────────────────────────────────────────────────────
 interface VirtualGame {
-  name: string;
-  category: string;
-  howToPlay: string;
+ name: string;
+ category: string;
+ howToPlay: string;
 }
 
 // ─── Color map ────────────────────────────────────────────────────────────────
 const colorMap: Record<
-  string,
-  { bg: string; text: string; dot: string }
+ string,
+ { bg: string; text: string; dot: string }
 > = {
-  green: {
-    bg: "bg-green-500/10",
-    text: "text-green-400",
-    dot: "bg-green-400",
-  },
-  emerald: {
-    bg: "bg-emerald-500/10",
-    text: "text-emerald-400",
-    dot: "bg-emerald-400",
-  },
-  cyan: {
-    bg: "bg-cyan-500/10",
-    text: "text-cyan-400",
-    dot: "bg-cyan-400",
-  },
-  blue: {
-    bg: "bg-blue-500/10",
-    text: "text-blue-400",
-    dot: "bg-blue-400",
-  },
-  yellow: {
-    bg: "bg-yellow-500/10",
-    text: "text-yellow-400",
-    dot: "bg-yellow-400",
-  },
-  lime: {
-    bg: "bg-lime-500/10",
-    text: "text-lime-400",
-    dot: "bg-lime-400",
-  },
-  teal: {
-    bg: "bg-teal-500/10",
-    text: "text-teal-400",
-    dot: "bg-teal-400",
-  },
-  red: {
-    bg: "bg-red-500/10",
-    text: "text-red-400",
-    dot: "bg-red-400",
-  },
-  orange: {
-    bg: "bg-orange-500/10",
-    text: "text-orange-400",
-    dot: "bg-orange-400",
-  },
-  amber: {
-    bg: "bg-amber-500/10",
-    text: "text-amber-400",
-    dot: "bg-amber-400",
-  },
-  purple: {
-    bg: "bg-purple-500/10",
-    text: "text-purple-400",
-    dot: "bg-purple-400",
-  },
-  indigo: {
-    bg: "bg-indigo-500/10",
-    text: "text-indigo-400",
-    dot: "bg-indigo-400",
-  },
-  slate: {
-    bg: "bg-slate-500/10",
-    text: "text-slate-400",
-    dot: "bg-slate-400",
-  },
-  pink: {
-    bg: "bg-pink-500/10",
-    text: "text-pink-400",
-    dot: "bg-pink-400",
-  },
-  rose: {
-    bg: "bg-rose-500/10",
-    text: "text-rose-400",
-    dot: "bg-rose-400",
-  },
-  sky: {
-    bg: "bg-sky-500/10",
-    text: "text-sky-400",
-    dot: "bg-sky-400",
-  },
+ green: {
+ bg: "bg-green-500/10",
+ text: "text-green-400",
+ dot: "bg-green-400",
+ },
+ emerald: {
+ bg: "bg-emerald-500/10",
+ text: "text-emerald-400",
+ dot: "bg-emerald-400",
+ },
+ cyan: {
+ bg: "bg-cyan-500/10",
+ text: "text-cyan-400",
+ dot: "bg-cyan-400",
+ },
+ blue: {
+ bg: "bg-blue-500/10",
+ text: "text-blue-400",
+ dot: "bg-blue-400",
+ },
+ yellow: {
+ bg: "bg-yellow-500/10",
+ text: "text-yellow-400",
+ dot: "bg-yellow-400",
+ },
+ lime: {
+ bg: "bg-lime-500/10",
+ text: "text-lime-400",
+ dot: "bg-lime-400",
+ },
+ teal: {
+ bg: "bg-teal-500/10",
+ text: "text-teal-400",
+ dot: "bg-teal-400",
+ },
+ red: {
+ bg: "bg-red-500/10",
+ text: "text-red-400",
+ dot: "bg-red-400",
+ },
+ orange: {
+ bg: "bg-orange-500/10",
+ text: "text-orange-400",
+ dot: "bg-orange-400",
+ },
+ amber: {
+ bg: "bg-amber-500/10",
+ text: "text-amber-400",
+ dot: "bg-amber-400",
+ },
+ purple: {
+ bg: "bg-purple-500/10",
+ text: "text-purple-400",
+ dot: "bg-purple-400",
+ },
+ indigo: {
+ bg: "bg-indigo-500/10",
+ text: "text-indigo-400",
+ dot: "bg-indigo-400",
+ },
+ slate: {
+ bg: "bg-slate-500/10",
+ text: "text-slate-400",
+ dot: "bg-slate-400",
+ },
+ pink: {
+ bg: "bg-pink-500/10",
+ text: "text-pink-400",
+ dot: "bg-pink-400",
+ },
+ rose: {
+ bg: "bg-rose-500/10",
+ text: "text-rose-400",
+ dot: "bg-rose-400",
+ },
+ sky: {
+ bg: "bg-sky-500/10",
+ text: "text-sky-400",
+ dot: "bg-sky-400",
+ },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MARKET GUIDE DATA
 // ═══════════════════════════════════════════════════════════════════════════════
 const sportsData: Record<Sport, SportData> = {
-  soccer: {
-    label: "Soccer",
-    icon: Shield,
-    accent: "#22c55e",
-    accentLight: "rgba(34,197,94,0.15)",
-    accent,
-    categories: [
-      {
-        id: "outcome",
-        label: "Who Takes the Points?",
-        tagline:
-          "Match result markets  -  the purest form of prediction.",
-        icon: Trophy,
-        colorKey: "green",
-        markets: [
-          {
-            id: "1x2",
-            name: "1X2  -  Match Result",
-            summary:
-              "The most fundamental market in soccer. Predict the final outcome after 90 minutes of play including stoppage time.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "1  -  Home Win",
-                description:
-                  "The home team (first-listed) wins the match.",
-              },
-              {
-                name: "X  -  Draw",
-                description:
-                  "The match ends level: 0-0, 1-1, 2-2, etc.",
-              },
-              {
-                name: "2  -  Away Win",
-                description:
-                  "The away team (second-listed) wins the match.",
-              },
-            ],
-            rules: [
-              {
-                text: "Settled at the end of 90 min + stoppage time. Extra time and penalties do NOT count.",
-              },
-              {
-                text: "Neutral venues: the first-listed team is always '1', the second is always '2'.",
-              },
-            ],
-          },
-          {
-            id: "double-chance",
-            name: "Double Chance",
-            summary:
-              "Cover two of the three possible 1X2 outcomes with a single bet  -  reduced risk, lower odds.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "1X  -  Home or Draw",
-                description:
-                  "Loses only if the away team wins outright.",
-              },
-              {
-                name: "X2  -  Draw or Away",
-                description:
-                  "Loses only if the home team wins outright.",
-              },
-              {
-                name: "12  -  Home or Away",
-                description:
-                  "Loses only if the match ends in a draw.",
-              },
-            ],
-          },
-          {
-            id: "dnb",
-            name: "Draw No Bet (DNB)",
-            summary:
-              "Back a team to win with a safety net  -  your stake is refunded if the match is drawn.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "Team Wins",
-                description: "Your selection wins → bet wins.",
-              },
-              {
-                name: "Draw",
-                description:
-                  "Match ends level → stake is fully refunded (bet voided).",
-              },
-              {
-                name: "Team Loses",
-                description:
-                  "Your selection loses → bet loses.",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "goals",
-        label: "How Many & Who Scores?",
-        tagline: "Total goals, exact scores, and goal bands.",
-        icon: Target,
-        colorKey: "emerald",
-        markets: [
-          {
-            id: "over-under",
-            name: "Over / Under  -  Total Goals",
-            summary:
-              "Wager on the combined number of goals scored by both teams across the full 90 minutes.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "Over 0.5",
-                description:
-                  "At least 1 goal scored. Loses only on 0-0.",
-              },
-              {
-                name: "Over 1.5",
-                description:
-                  "2 or more goals scored. Loses on 0-0 or 1-0 / 0-1.",
-              },
-              {
-                name: "Over 2.5 ★ Most popular",
-                description:
-                  "Wins with 3+ goals (e.g., 2-1, 3-0, 2-2).",
-              },
-              {
-                name: "Under 2.5",
-                description:
-                  "Wins with 0, 1, or 2 total goals.",
-              },
-            ],
-            rules: [
-              {
-                text: "Settled after 90 min + stoppage time. Extra time is excluded.",
-              },
-              { text: "Own goals count toward the total." },
-            ],
-          },
-          {
-            id: "btts",
-            name: "Both Teams To Score (BTTS)",
-            summary:
-              "A simple Yes/No wager  -  will both teams find the net at least once?",
-            complexity: "beginner",
-            options: [
-              {
-                name: "BTTS  -  Yes",
-                description:
-                  "Both teams score at least one goal (e.g., 1-1, 2-1, 1-3).",
-              },
-              {
-                name: "BTTS  -  No",
-                description:
-                  "At least one team fails to score (e.g., 0-0, 1-0, 0-2).",
-              },
-            ],
-            variations: [
-              "BTTS in Both Halves  -  both teams must score in the first half AND the second half.",
-              "BTTS + Over/Under  -  combined market requiring both teams to score AND total goals to clear/miss a line.",
-            ],
-          },
-          {
-            id: "correct-score",
-            name: "Correct Score",
-            summary:
-              "Predict the exact final scoreline. Difficulty is rewarded with notably high odds.",
-            complexity: "advanced",
-            options: [
-              {
-                name: "Standard Scores",
-                description:
-                  "0-0, 1-0, 0-1, 1-1, 2-1, 1-2, 2-0, 0-2, and so on.",
-              },
-              {
-                name: "Any Other Home Win",
-                description:
-                  "Covers rare home-win scores not explicitly listed (e.g., 5-1).",
-              },
-              {
-                name: "Any Other Draw",
-                description:
-                  "Covers unlisted drawn scorelines (e.g., 4-4).",
-              },
-              {
-                name: "Any Other Away Win",
-                description: "Covers unlisted away-win scores.",
-              },
-            ],
-            variations: [
-              "Multi-Scores  -  select multiple scorelines in one bet (e.g., 1-0, 2-0, or 3-0). More coverage, lower odds.",
-            ],
-          },
-          {
-            id: "goal-intervals",
-            name: "Goal Intervals & Bands",
-            summary:
-              "Wager on total goals falling within a defined range, or predict who scores first.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "0–1 Goals",
-                description: "Match ends 0-0, 1-0, or 0-1.",
-              },
-              {
-                name: "2–3 Goals",
-                description: "Total goals in the 2–3 range.",
-              },
-              {
-                name: "4–6 Goals",
-                description:
-                  "High-scoring: 4, 5, or 6 total goals.",
-              },
-              {
-                name: "7+ Goals",
-                description:
-                  "Seven or more goals  -  a rare thriller.",
-              },
-            ],
-            variations: [
-              "First Team to Score  -  Home, Away, or None (0-0 result only).",
-            ],
-          },
-        ],
-      },
-      {
-        id: "handicap",
-        label: "Evening the Odds",
-        tagline: "Virtual advantages that reshape the contest.",
-        icon: Scale,
-        colorKey: "cyan",
-        markets: [
-          {
-            id: "european-handicap",
-            name: "European Handicap (3-Way)",
-            summary:
-              "Betfalme's primary handicap format. A virtual goal advantage or deficit is applied before kick-off, creating three possible outcomes.",
-            complexity: "intermediate",
-            example:
-              "Sassuolo vs. Como  -  Handicap 0:1 (Como starts +1):\n• Handicap 1 (Sassuolo –1): Sassuolo must win by 2+ goals.\n• Handicap X (Draw –1): Sassuolo wins by exactly 1 goal (e.g., 1-0, 2-1).\n• Handicap 2 (Como +1): Como wins the match OR it ends in a draw.",
-          },
-          {
-            id: "asian-handicap",
-            name: "Asian Handicap (2-Way)",
-            summary:
-              "Eliminates the draw by using half-numbers. Cleaner two-way markets with no dead results.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "–0.5",
-                description:
-                  "Equivalent to a straight win for the team.",
-              },
-              {
-                name: "+0.5",
-                description:
-                  "Equivalent to Double Chance (Win or Draw).",
-              },
-              {
-                name: "–1.5",
-                description:
-                  "Team must win by 2 or more goals to pay out.",
-              },
-              {
-                name: "+1.5",
-                description:
-                  "Wins if the team wins, draws, OR loses by exactly 1 goal.",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "halftime",
-        label: "By the Clock",
-        tagline: "First 45 minutes  -  a match within the match.",
-        icon: Clock,
-        colorKey: "blue",
-        markets: [
-          {
-            id: "ht-result",
-            name: "Half-Time Result (1X2)",
-            summary:
-              "Settled at the referee's half-time whistle. Only the first 45 minutes plus stoppage time counts.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "1",
-                description: "Home team leading at the break.",
-              },
-              {
-                name: "X",
-                description: "Level at half-time (0-0, 1-1, etc.).",
-              },
-              {
-                name: "2",
-                description: "Away team leading at the break.",
-              },
-            ],
-          },
-          {
-            id: "ht-ft",
-            isNew: true,
-            name: "Half-Time / Full-Time (HT/FT)",
-            summary:
-              "Predict BOTH the half-time result AND the full-time result. Very high odds due to complexity.",
-            complexity: "advanced",
-            options: [
-              {
-                name: "Home/Home",
-                description: "Home leads at HT, Home wins FT.",
-              },
-              {
-                name: "Home/Draw",
-                description: "Home leads at HT, but ends in a draw.",
-              },
-              {
-                name: "Home/Away",
-                description: "Home leads at HT, Away comes back to win.",
-              },
-            ],
-          },
-          {
-            id: "second-half-result",
-            isNew: true,
-            name: "Second Half Result",
-            summary:
-              "Calculated based ONLY on goals scored in the second half. Previous score is ignored.",
-            complexity: "intermediate",
-            example: "If HT is 1-0 and FT is 1-1, the second half score is 0-1 (Away Win).",
-          },
-        ],
-      },
-      {
-        id: "player",
-        label: "Individual Brilliance",
-        tagline: "Back a specific player to deliver.",
-        icon: Star,
-        colorKey: "yellow",
-        markets: [
-          {
-            id: "anytime-goalscorer",
-            name: "Anytime Goalscorer",
-            summary:
-              "Your selected player must score at least one goal at any point during the match.",
-            complexity: "intermediate",
-            rules: [
-              {
-                text: "Own goals do NOT count toward the anytime goalscorer market.",
-              },
-              {
-                text: "Non-starters: bet stays active if the player comes on as a substitute. Voided if the player does not play at all.",
-              },
-            ],
-          },
-          {
-            id: "player-card",
-            isNew: true,
-            name: "Player To Receive a Card (Yellow/Red)",
-            summary: "Will a specific player receive a card during the match?",
-            complexity: "intermediate",
-            options: [
-              { name: "To Receive a Card", description: "Any card (e.g., Cucurella 3.50)." },
-              { name: "To Receive a Red Card", description: "Specifically sent off (odds very high, 40.00+)." }
-            ],
-          },
-          {
-            id: "player-stats",
-            isNew: true,
-            name: "Shots & Assists",
-            summary: "Specific performance metrics for individual players.",
-            complexity: "advanced",
-            options: [
-              { name: "Player to Assist", description: "Provides a pass leading to a goal." },
-              { name: "Player to Have 1+ Shots", description: "Any shot taken (e.g., Wood 1.11)." },
-              { name: "Shots on Target", description: "Directs a shot specifically on goal (e.g., Pedro 1.01)." },
-            ],
-          },
-          {
-            id: "scoring-milestones",
-            isNew: true,
-            name: "2+ Goals / Hat-Trick",
-            summary: "Predicting multiple goals for a single player.",
-            complexity: "advanced",
-            example: "To score a Hat-trick odds: 34.00 to 100.00.",
-          },
-        ],
-      },
-      {
-        id: "specials",
-        label: "Beyond the Score",
-        tagline: "Cards, corners, and shots on goal.",
-        icon: Layers,
-        colorKey: "red",
-        markets: [
-          {
-            id: "cards",
-            isNew: true,
-            name: "Card & Booking Markets",
-            summary:
-              "Wager on the total disciplinary cards or booking points accumulated during the 90 minutes.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "Exact Number of Cards",
-                description: "0 cards (34.00) | 2 cards (6.25) | 4 cards (4.60).",
-              },
-              {
-                name: "Booking Points",
-                description: "Yellow = 10 pts · Red = 25 pts · Double yellow = 35 pts.",
-              },
-            ],
-            rules: [
-              { text: "Cards shown to bench players or coaches do NOT count." },
-              { text: "Booking Points O/U 42.5 is a common market line." },
-            ],
-          },
-          {
-            id: "corners",
-            isNew: true,
-            name: "Corner Markets",
-            summary:
-              "Bet on the total corner kicks awarded and taken during the match.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "Corner Bands",
-                description: "0-2 (5.50), 3-4 (2.85), 7+ (3.50).",
-              },
-              {
-                name: "Team Corners",
-                description: "Home Team Total Corners O/U +5.5.",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
+ soccer: {
+ label: "Soccer",
+ icon: Shield,
+ accent: "#22c55e",
+ accentLight: "rgba(34,197,94,0.15)",
+ accent,
+ categories: [
+ {
+ id: "outcome",
+ label: "Who Takes the Points?",
+ tagline:
+ "Match result markets - the purest form of prediction.",
+ icon: Trophy,
+ colorKey: "green",
+ markets: [
+ {
+ id: "1x2",
+ name: "1X2 - Match Result",
+ summary:
+ "The most fundamental market in soccer. Predict the final outcome after 90 minutes of play including stoppage time.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "1 - Home Win",
+ description:
+ "The home team (first-listed) wins the match.",
+ },
+ {
+ name: "X - Draw",
+ description:
+ "The match ends level: 0-0, 1-1, 2-2, etc.",
+ },
+ {
+ name: "2 - Away Win",
+ description:
+ "The away team (second-listed) wins the match.",
+ },
+ ],
+ rules: [
+ {
+ text: "Settled at the end of 90 min + stoppage time. Extra time and penalties do NOT count.",
+ },
+ {
+ text: "Neutral venues: the first-listed team is always '1', the second is always '2'.",
+ },
+ ],
+ },
+ {
+ id: "double-chance",
+ name: "Double Chance",
+ summary:
+ "Cover two of the three possible 1X2 outcomes with a single bet - reduced risk, lower odds.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "1X - Home or Draw",
+ description:
+ "Loses only if the away team wins outright.",
+ },
+ {
+ name: "X2 - Draw or Away",
+ description:
+ "Loses only if the home team wins outright.",
+ },
+ {
+ name: "12 - Home or Away",
+ description:
+ "Loses only if the match ends in a draw.",
+ },
+ ],
+ },
+ {
+ id: "dnb",
+ name: "Draw No Bet (DNB)",
+ summary:
+ "Back a team to win with a safety net - your stake is refunded if the match is drawn.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "Team Wins",
+ description: "Your selection wins → bet wins.",
+ },
+ {
+ name: "Draw",
+ description:
+ "Match ends level → stake is fully refunded (bet voided).",
+ },
+ {
+ name: "Team Loses",
+ description:
+ "Your selection loses → bet loses.",
+ },
+ ],
+ },
+ ],
+ },
+ {
+ id: "goals",
+ label: "How Many & Who Scores?",
+ tagline: "Total goals, exact scores, and goal bands.",
+ icon: Target,
+ colorKey: "emerald",
+ markets: [
+ {
+ id: "over-under",
+ name: "Over / Under - Total Goals",
+ summary:
+ "Wager on the combined number of goals scored by both teams across the full 90 minutes.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "Over 0.5",
+ description:
+ "At least 1 goal scored. Loses only on 0-0.",
+ },
+ {
+ name: "Over 1.5",
+ description:
+ "2 or more goals scored. Loses on 0-0 or 1-0 / 0-1.",
+ },
+ {
+ name: "Over 2.5 ★ Most popular",
+ description:
+ "Wins with 3+ goals (e.g., 2-1, 3-0, 2-2).",
+ },
+ {
+ name: "Under 2.5",
+ description:
+ "Wins with 0, 1, or 2 total goals.",
+ },
+ ],
+ rules: [
+ {
+ text: "Settled after 90 min + stoppage time. Extra time is excluded.",
+ },
+ { text: "Own goals count toward the total." },
+ ],
+ },
+ {
+ id: "btts",
+ name: "Both Teams To Score (BTTS)",
+ summary:
+ "A simple Yes/No wager - will both teams find the net at least once?",
+ complexity: "beginner",
+ options: [
+ {
+ name: "BTTS - Yes",
+ description:
+ "Both teams score at least one goal (e.g., 1-1, 2-1, 1-3).",
+ },
+ {
+ name: "BTTS - No",
+ description:
+ "At least one team fails to score (e.g., 0-0, 1-0, 0-2).",
+ },
+ ],
+ variations: [
+ "BTTS in Both Halves - both teams must score in the first half AND the second half.",
+ "BTTS + Over/Under - combined market requiring both teams to score AND total goals to clear/miss a line.",
+ ],
+ },
+ {
+ id: "correct-score",
+ name: "Correct Score",
+ summary:
+ "Predict the exact final scoreline. Difficulty is rewarded with notably high odds.",
+ complexity: "advanced",
+ options: [
+ {
+ name: "Standard Scores",
+ description:
+ "0-0, 1-0, 0-1, 1-1, 2-1, 1-2, 2-0, 0-2, and so on.",
+ },
+ {
+ name: "Any Other Home Win",
+ description:
+ "Covers rare home-win scores not explicitly listed (e.g., 5-1).",
+ },
+ {
+ name: "Any Other Draw",
+ description:
+ "Covers unlisted drawn scorelines (e.g., 4-4).",
+ },
+ {
+ name: "Any Other Away Win",
+ description: "Covers unlisted away-win scores.",
+ },
+ ],
+ variations: [
+ "Multi-Scores - select multiple scorelines in one bet (e.g., 1-0, 2-0, or 3-0). More coverage, lower odds.",
+ ],
+ },
+ {
+ id: "goal-intervals",
+ name: "Goal Intervals & Bands",
+ summary:
+ "Wager on total goals falling within a defined range, or predict who scores first.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "0–1 Goals",
+ description: "Match ends 0-0, 1-0, or 0-1.",
+ },
+ {
+ name: "2–3 Goals",
+ description: "Total goals in the 2–3 range.",
+ },
+ {
+ name: "4–6 Goals",
+ description:
+ "High-scoring: 4, 5, or 6 total goals.",
+ },
+ {
+ name: "7+ Goals",
+ description:
+ "Seven or more goals - a rare thriller.",
+ },
+ ],
+ variations: [
+ "First Team to Score - Home, Away, or None (0-0 result only).",
+ ],
+ },
+ ],
+ },
+ {
+ id: "handicap",
+ label: "Evening the Odds",
+ tagline: "Virtual advantages that reshape the contest.",
+ icon: Scale,
+ colorKey: "cyan",
+ markets: [
+ {
+ id: "european-handicap",
+ name: "European Handicap (3-Way)",
+ summary:
+ "Betfalme's primary handicap format. A virtual goal advantage or deficit is applied before kick-off, creating three possible outcomes.",
+ complexity: "intermediate",
+ example:
+ "Sassuolo vs. Como - Handicap 0:1 (Como starts +1):\n• Handicap 1 (Sassuolo –1): Sassuolo must win by 2+ goals.\n• Handicap X (Draw –1): Sassuolo wins by exactly 1 goal (e.g., 1-0, 2-1).\n• Handicap 2 (Como +1): Como wins the match OR it ends in a draw.",
+ },
+ {
+ id: "asian-handicap",
+ name: "Asian Handicap (2-Way)",
+ summary:
+ "Eliminates the draw by using half-numbers. Cleaner two-way markets with no dead results.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "–0.5",
+ description:
+ "Equivalent to a straight win for the team.",
+ },
+ {
+ name: "+0.5",
+ description:
+ "Equivalent to Double Chance (Win or Draw).",
+ },
+ {
+ name: "–1.5",
+ description:
+ "Team must win by 2 or more goals to pay out.",
+ },
+ {
+ name: "+1.5",
+ description:
+ "Wins if the team wins, draws, OR loses by exactly 1 goal.",
+ },
+ ],
+ },
+ ],
+ },
+ {
+ id: "halftime",
+ label: "By the Clock",
+ tagline: "First 45 minutes - a match within the match.",
+ icon: Clock,
+ colorKey: "blue",
+ markets: [
+ {
+ id: "ht-result",
+ name: "Half-Time Result (1X2)",
+ summary:
+ "Settled at the referee's half-time whistle. Only the first 45 minutes plus stoppage time counts.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "1",
+ description: "Home team leading at the break.",
+ },
+ {
+ name: "X",
+ description: "Level at half-time (0-0, 1-1, etc.).",
+ },
+ {
+ name: "2",
+ description: "Away team leading at the break.",
+ },
+ ],
+ },
+ {
+ id: "ht-ft",
+ isNew: true,
+ name: "Half-Time / Full-Time (HT/FT)",
+ summary:
+ "Predict BOTH the half-time result AND the full-time result. Very high odds due to complexity.",
+ complexity: "advanced",
+ options: [
+ {
+ name: "Home/Home",
+ description: "Home leads at HT, Home wins FT.",
+ },
+ {
+ name: "Home/Draw",
+ description: "Home leads at HT, but ends in a draw.",
+ },
+ {
+ name: "Home/Away",
+ description: "Home leads at HT, Away comes back to win.",
+ },
+ ],
+ },
+ {
+ id: "second-half-result",
+ isNew: true,
+ name: "Second Half Result",
+ summary:
+ "Calculated based ONLY on goals scored in the second half. Previous score is ignored.",
+ complexity: "intermediate",
+ example: "If HT is 1-0 and FT is 1-1, the second half score is 0-1 (Away Win).",
+ },
+ ],
+ },
+ {
+ id: "player",
+ label: "Individual Brilliance",
+ tagline: "Back a specific player to deliver.",
+ icon: Star,
+ colorKey: "yellow",
+ markets: [
+ {
+ id: "anytime-goalscorer",
+ name: "Anytime Goalscorer",
+ summary:
+ "Your selected player must score at least one goal at any point during the match.",
+ complexity: "intermediate",
+ rules: [
+ {
+ text: "Own goals do NOT count toward the anytime goalscorer market.",
+ },
+ {
+ text: "Non-starters: bet stays active if the player comes on as a substitute. Voided if the player does not play at all.",
+ },
+ ],
+ },
+ {
+ id: "player-card",
+ isNew: true,
+ name: "Player To Receive a Card (Yellow/Red)",
+ summary: "Will a specific player receive a card during the match?",
+ complexity: "intermediate",
+ options: [
+ { name: "To Receive a Card", description: "Any card (e.g., Cucurella 3.50)." },
+ { name: "To Receive a Red Card", description: "Specifically sent off (odds very high, 40.00+)." }
+ ],
+ },
+ {
+ id: "player-stats",
+ isNew: true,
+ name: "Shots & Assists",
+ summary: "Specific performance metrics for individual players.",
+ complexity: "advanced",
+ options: [
+ { name: "Player to Assist", description: "Provides a pass leading to a goal." },
+ { name: "Player to Have 1+ Shots", description: "Any shot taken (e.g., Wood 1.11)." },
+ { name: "Shots on Target", description: "Directs a shot specifically on goal (e.g., Pedro 1.01)." },
+ ],
+ },
+ {
+ id: "scoring-milestones",
+ isNew: true,
+ name: "2+ Goals / Hat-Trick",
+ summary: "Predicting multiple goals for a single player.",
+ complexity: "advanced",
+ example: "To score a Hat-trick odds: 34.00 to 100.00.",
+ },
+ ],
+ },
+ {
+ id: "specials",
+ label: "Beyond the Score",
+ tagline: "Cards, corners, and shots on goal.",
+ icon: Layers,
+ colorKey: "red",
+ markets: [
+ {
+ id: "cards",
+ isNew: true,
+ name: "Card & Booking Markets",
+ summary:
+ "Wager on the total disciplinary cards or booking points accumulated during the 90 minutes.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "Exact Number of Cards",
+ description: "0 cards (34.00) | 2 cards (6.25) | 4 cards (4.60).",
+ },
+ {
+ name: "Booking Points",
+ description: "Yellow = 10 pts · Red = 25 pts · Double yellow = 35 pts.",
+ },
+ ],
+ rules: [
+ { text: "Cards shown to bench players or coaches do NOT count." },
+ { text: "Booking Points O/U 42.5 is a common market line." },
+ ],
+ },
+ {
+ id: "corners",
+ isNew: true,
+ name: "Corner Markets",
+ summary:
+ "Bet on the total corner kicks awarded and taken during the match.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "Corner Bands",
+ description: "0-2 (5.50), 3-4 (2.85), 7+ (3.50).",
+ },
+ {
+ name: "Team Corners",
+ description: "Home Team Total Corners O/U +5.5.",
+ },
+ ],
+ },
+ ],
+ },
+ ],
+ },
 
-  basketball: {
-    label: "Basketball",
-    icon: Dices,
-    accent: "#f97316",
-    accentLight: "rgba(249,115,22,0.15)",
-    accent,
-    categories: [
-      {
-        id: "outcome",
-        label: "Who Takes the W?",
-        tagline: "Pick a winner  -  with or without overtime.",
-        icon: Trophy,
-        colorKey: "orange",
-        markets: [
-          {
-            id: "moneyline",
-            name: "Money Line / Match Result",
-            summary:
-              "The simplest basketball market: pick which team wins the game outright.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "Excluding Overtime",
-                description: "Settled after 4 quarters. If tied, bets usually push.",
-              },
-              {
-                name: "Including Overtime",
-                description: "Winner after extra periods determines the bet.",
-              },
-              {
-                name: "Double Chance",
-                description: "Home or Draw (1.78), Home or Away (1.03).",
-              },
-            ],
-          },
-          {
-            id: "winning-margin",
-            isNew: true,
-            name: "Winning Margin",
-            summary: "Predict the exact point gap at the end of regulation.",
-            complexity: "intermediate",
-            example: "Tie: 27.00 | 1-2 points: 8.25 | 3-6 points: 3.90",
-          },
-        ],
-      },
-      {
-        id: "spread",
-        label: "Level the Court",
-        tagline: "Point spreads that close the talent gap.",
-        icon: Scale,
-        colorKey: "amber",
-        markets: [
-          {
-            id: "point-spread",
-            name: "Point Spread (Handicap)",
-            summary:
-              "A virtual points advantage or disadvantage is assigned to level the field between a heavy favorite and an underdog.",
-            complexity: "intermediate",
-            example:
-              "Phoenix Super LPG (–10.5) vs. Blackwater Bossing (+10.5):\n• Phoenix –10.5: Phoenix must win by 11 or more points.\n• Blackwater +10.5: Wins if Blackwater wins outright OR loses by 10 or fewer points.",
-          },
-        ],
-      },
-      {
-        id: "totals",
-        label: "The Scoreboard",
-        tagline: "Will it be a shootout or a grind?",
-        icon: Hash,
-        colorKey: "yellow",
-        markets: [
-          {
-            id: "total-points",
-            name: "Total Points (Over / Under)",
-            summary:
-              "Bet on whether the combined final score of both teams goes above or below a set number.",
-            complexity: "beginner",
-            example: "O/U 162.5: Over 1.85 (163+) | Under 1.93 (162 or fewer).",
-          },
-          {
-            id: "team-totals",
-            isNew: true,
-            name: "Team-Specific Totals",
-            summary: "Over/Under points for one team only.",
-            complexity: "intermediate",
-            example: "Home Over 81.5: 1.83 (Home scores 82+).",
-          },
-          {
-            id: "odd-even",
-            isNew: true,
-            name: "Odd or Even Total Points",
-            summary: "Will the final combined score be an odd or even number?",
-            complexity: "beginner",
-            example: "Even: 1.85 | Odd: 1.93",
-          },
-        ],
-      },
-      {
-        id: "segments",
-        label: "Quarter by Quarter",
-        tagline: "Every segment is its own battleground.",
-        icon: Clock,
-        colorKey: "blue",
-        markets: [
-          {
-            id: "race-to",
-            isNew: true,
-            name: "Race To X Points",
-            summary: "Which team reaches a point milestone first in the quarter?",
-            complexity: "intermediate",
-            example: "Race to 10 Points: Home 1.89 | Away 1.81",
-          },
-          {
-            id: "quarter-thresholds",
-            isNew: true,
-            name: "Scoring Thresholds",
-            summary: "Will a team score at least N points in this quarter?",
-            complexity: "intermediate",
-            example: "Home to score 15 Points: Yes 1.09 | No 6.15",
-          },
-          {
-            id: "quarter-betting",
-            name: "Quarter / Half Result",
-            summary: "Bet on winner, spread, or totals for a specific period.",
-            complexity: "intermediate",
-            options: [
-              { name: "Quarter Money Line", description: "Who wins each quarter (e.g. 1.90/1.83)." },
-              { name: "3-Way Quarter Handicap", description: "Includes Handicap Tie. e.g. +1: Home 2.25, Tie 14.00, Away 1.72." },
-              { name: "Half-Time Result", description: "Score at halftime (e.g. 2.03/1.88)." }
-            ],
-          },
-        ],
-      },
-      {
-        id: "player",
-        label: "Star Power",
-        tagline: "Individual stat lines and milestone bets.",
-        icon: Star,
-        colorKey: "purple",
-        markets: [
-          {
-            id: "player-points",
-            name: "Player Points Over / Under",
-            summary:
-              "Bet on whether a selected player will score above or below a set points threshold in the game.",
-            complexity: "intermediate",
-            example:
-              "LeBron James Over 25.5 Points\n→ Wins if he scores 26 or more points.",
-          },
-          {
-            id: "player-rebounds-assists",
-            name: "Player Rebounds / Assists",
-            summary:
-              "Same Over/Under concept applied to rebounds or assists  -  use official box-score statistics.",
-            complexity: "intermediate",
-          },
-          {
-            id: "double-triple",
-            name: "Double-Double / Triple-Double",
-            summary:
-              "Will a player reach 10+ in multiple statistical categories? One of basketball's most iconic milestones.",
-            complexity: "advanced",
-            options: [
-              {
-                name: "Double-Double",
-                description:
-                  "Records 10 or more in any 2 of: Points, Rebounds, Assists, Steals, Blocks.",
-              },
-              {
-                name: "Triple-Double",
-                description:
-                  "Records 10 or more in any 3 of the five categories above.",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "rules",
-        label: "The Rulebook",
-        tagline:
-          "What every agent must know before settling bets.",
-        icon: ClipboardList,
-        colorKey: "slate",
-        markets: [
-          {
-            id: "overtime-yes-no",
-            isNew: true,
-            name: "Will there be Overtime?",
-            summary: "Straight Yes/No on whether the game ends tied in regulation.",
-            complexity: "beginner",
-            example: "Yes: 10.00 | No: 1.02",
-          },
-          {
-            id: "basketball-rules",
-            name: "Key Settlement Rules",
-            summary:
-              "Critical rules governing basketball markets on Betfame.",
-            complexity: "beginner",
-            rules: [
-              {
-                text: "Most Match Result and Total Points markets exclude overtime unless stated.",
-              },
-              {
-                text: "If a game is not played within 24–48 hours, bets are typically voided.",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
+ basketball: {
+ label: "Basketball",
+ icon: Dices,
+ accent: "#f97316",
+ accentLight: "rgba(249,115,22,0.15)",
+ accent,
+ categories: [
+ {
+ id: "outcome",
+ label: "Who Takes the W?",
+ tagline: "Pick a winner - with or without overtime.",
+ icon: Trophy,
+ colorKey: "orange",
+ markets: [
+ {
+ id: "moneyline",
+ name: "Money Line / Match Result",
+ summary:
+ "The simplest basketball market: pick which team wins the game outright.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "Excluding Overtime",
+ description: "Settled after 4 quarters. If tied, bets usually push.",
+ },
+ {
+ name: "Including Overtime",
+ description: "Winner after extra periods determines the bet.",
+ },
+ {
+ name: "Double Chance",
+ description: "Home or Draw (1.78), Home or Away (1.03).",
+ },
+ ],
+ },
+ {
+ id: "winning-margin",
+ isNew: true,
+ name: "Winning Margin",
+ summary: "Predict the exact point gap at the end of regulation.",
+ complexity: "intermediate",
+ example: "Tie: 27.00 | 1-2 points: 8.25 | 3-6 points: 3.90",
+ },
+ ],
+ },
+ {
+ id: "spread",
+ label: "Level the Court",
+ tagline: "Point spreads that close the talent gap.",
+ icon: Scale,
+ colorKey: "amber",
+ markets: [
+ {
+ id: "point-spread",
+ name: "Point Spread (Handicap)",
+ summary:
+ "A virtual points advantage or disadvantage is assigned to level the field between a heavy favorite and an underdog.",
+ complexity: "intermediate",
+ example:
+ "Phoenix Super LPG (–10.5) vs. Blackwater Bossing (+10.5):\n• Phoenix –10.5: Phoenix must win by 11 or more points.\n• Blackwater +10.5: Wins if Blackwater wins outright OR loses by 10 or fewer points.",
+ },
+ ],
+ },
+ {
+ id: "totals",
+ label: "The Scoreboard",
+ tagline: "Will it be a shootout or a grind?",
+ icon: Hash,
+ colorKey: "yellow",
+ markets: [
+ {
+ id: "total-points",
+ name: "Total Points (Over / Under)",
+ summary:
+ "Bet on whether the combined final score of both teams goes above or below a set number.",
+ complexity: "beginner",
+ example: "O/U 162.5: Over 1.85 (163+) | Under 1.93 (162 or fewer).",
+ },
+ {
+ id: "team-totals",
+ isNew: true,
+ name: "Team-Specific Totals",
+ summary: "Over/Under points for one team only.",
+ complexity: "intermediate",
+ example: "Home Over 81.5: 1.83 (Home scores 82+).",
+ },
+ {
+ id: "odd-even",
+ isNew: true,
+ name: "Odd or Even Total Points",
+ summary: "Will the final combined score be an odd or even number?",
+ complexity: "beginner",
+ example: "Even: 1.85 | Odd: 1.93",
+ },
+ ],
+ },
+ {
+ id: "segments",
+ label: "Quarter by Quarter",
+ tagline: "Every segment is its own battleground.",
+ icon: Clock,
+ colorKey: "blue",
+ markets: [
+ {
+ id: "race-to",
+ isNew: true,
+ name: "Race To X Points",
+ summary: "Which team reaches a point milestone first in the quarter?",
+ complexity: "intermediate",
+ example: "Race to 10 Points: Home 1.89 | Away 1.81",
+ },
+ {
+ id: "quarter-thresholds",
+ isNew: true,
+ name: "Scoring Thresholds",
+ summary: "Will a team score at least N points in this quarter?",
+ complexity: "intermediate",
+ example: "Home to score 15 Points: Yes 1.09 | No 6.15",
+ },
+ {
+ id: "quarter-betting",
+ name: "Quarter / Half Result",
+ summary: "Bet on winner, spread, or totals for a specific period.",
+ complexity: "intermediate",
+ options: [
+ { name: "Quarter Money Line", description: "Who wins each quarter (e.g. 1.90/1.83)." },
+ { name: "3-Way Quarter Handicap", description: "Includes Handicap Tie. e.g. +1: Home 2.25, Tie 14.00, Away 1.72." },
+ { name: "Half-Time Result", description: "Score at halftime (e.g. 2.03/1.88)." }
+ ],
+ },
+ ],
+ },
+ {
+ id: "player",
+ label: "Star Power",
+ tagline: "Individual stat lines and milestone bets.",
+ icon: Star,
+ colorKey: "purple",
+ markets: [
+ {
+ id: "player-points",
+ name: "Player Points Over / Under",
+ summary:
+ "Bet on whether a selected player will score above or below a set points threshold in the game.",
+ complexity: "intermediate",
+ example:
+ "LeBron James Over 25.5 Points\n→ Wins if he scores 26 or more points.",
+ },
+ {
+ id: "player-rebounds-assists",
+ name: "Player Rebounds / Assists",
+ summary:
+ "Same Over/Under concept applied to rebounds or assists - use official box-score statistics.",
+ complexity: "intermediate",
+ },
+ {
+ id: "double-triple",
+ name: "Double-Double / Triple-Double",
+ summary:
+ "Will a player reach 10+ in multiple statistical categories? One of basketball's most iconic milestones.",
+ complexity: "advanced",
+ options: [
+ {
+ name: "Double-Double",
+ description:
+ "Records 10 or more in any 2 of: Points, Rebounds, Assists, Steals, Blocks.",
+ },
+ {
+ name: "Triple-Double",
+ description:
+ "Records 10 or more in any 3 of the five categories above.",
+ },
+ ],
+ },
+ ],
+ },
+ {
+ id: "rules",
+ label: "The Rulebook",
+ tagline:
+ "What every agent must know before settling bets.",
+ icon: ClipboardList,
+ colorKey: "slate",
+ markets: [
+ {
+ id: "overtime-yes-no",
+ isNew: true,
+ name: "Will there be Overtime?",
+ summary: "Straight Yes/No on whether the game ends tied in regulation.",
+ complexity: "beginner",
+ example: "Yes: 10.00 | No: 1.02",
+ },
+ {
+ id: "basketball-rules",
+ name: "Key Settlement Rules",
+ summary:
+ "Critical rules governing basketball markets on Betfame.",
+ complexity: "beginner",
+ rules: [
+ {
+ text: "Most Match Result and Total Points markets exclude overtime unless stated.",
+ },
+ {
+ text: "If a game is not played within 24–48 hours, bets are typically voided.",
+ },
+ ],
+ },
+ ],
+ },
+ ],
+ },
 
-  tennis: {
-    label: "Tennis",
-    icon: Target,
-    accent: "#eab308",
-    accentLight: "rgba(234,179,8,0.15)",
-    accent,
-    categories: [
-      {
-        id: "match",
-        label: "Who Walks Off Victorious?",
-        tagline: "Match-level markets  -  no draws, ever.",
-        icon: Trophy,
-        colorKey: "yellow",
-        markets: [
-          {
-            id: "match-winner",
-            name: "Match Winner  -  2-Way",
-            summary:
-              "Bet on which player wins the match. Tennis always produces a winner  -  no draw option exists.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "Player 1 (Home/First-listed)",
-                description:
-                  "The first player shown in the fixture listing.",
-              },
-              {
-                name: "Player 2 (Away/Second-listed)",
-                description:
-                  "The second player shown in the fixture listing.",
-              },
-            ],
-            rules: [
-              {
-                text: "Retirements: If at least one set is completed, the player advancing is declared the winner. If no set is complete, bets are typically voided.",
-              },
-            ],
-          },
-          {
-            id: "set-betting",
-            name: "Set Betting  -  Correct Score in Sets",
-            summary:
-              "Predict the final match score in sets  -  a harder call than a simple winner bet.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "Best of 3 Sets",
-                description:
-                  "Possible outcomes: 2-0, 2-1, 0-2, 1-2.",
-              },
-              {
-                name: "Best of 5 Sets (Grand Slams)",
-                description:
-                  "Outcomes include: 3-0, 3-1, 3-2, 0-3, 1-3, 2-3.",
-              },
-            ],
-          },
-          {
-            id: "set-handicap",
-            name: "Set Handicap",
-            summary:
-              "A handicap applied to the number of sets won  -  forces a player to dominate to cover.",
-            complexity: "intermediate",
-            example:
-              "Player 2 (–1.5 Sets) in a best-of-3:\n• Wins only if Player 2 wins the match 2-0.\n• Loses if Player 2 wins 2-1 or loses the match.",
-          },
-        ],
-      },
-      {
-        id: "games",
-        label: "Zooming into Games",
-        tagline: "Total game counts across the full match.",
-        icon: Hash,
-        colorKey: "lime",
-        markets: [
-          {
-            id: "total-games",
-            name: "Total Games  -  Over / Under",
-            summary:
-              "Wager on the total number of games played across all sets in the entire match.",
-            complexity: "intermediate",
-            example:
-              "Over/Under 22.5 Games:\n• 6-4, 6-3 = 19 total games → Under 22.5 wins.\n• 7-6, 6-4 = 23 total games → Over 22.5 wins.",
-          },
-          {
-            id: "game-handicap",
-            name: "Game Handicap",
-            summary:
-              "A handicap applied to the total games won by each player across the whole match  -  can flip a loser into a winner.",
-            complexity: "advanced",
-            example:
-              "Player 1 (+4.5 Games), match: Player 1 loses 6-4, 6-4\n→ Player 1 wins 8 games; Player 2 wins 12.\n→ With +4.5: Player 1's handicap total = 12.5 > 12\n→ BET WINS despite the match loss.",
-          },
-        ],
-      },
-      {
-        id: "set-specific",
-        label: "Inside a Single Set",
-        tagline: "Drill into the opening set and beyond.",
-        icon: Target,
-        colorKey: "teal",
-        markets: [
-          {
-            id: "set-winner",
-            name: "1st Set Winner",
-            summary:
-              "Which player claims the opening set? A straightforward two-way market within the match.",
-            complexity: "beginner",
-          },
-          {
-            id: "set-total-games",
-            name: "1st Set Total Games",
-            summary:
-              "Over/Under for the number of games played in the first set only  -  excludes all subsequent sets.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "Common Lines",
-                description:
-                  "Over/Under 8.5, 9.5, or 10.5 games in the 1st set. A 7-5 set = 12 games (Over 8.5 wins).",
-              },
-            ],
-          },
-          {
-            id: "set-correct-score",
-            name: "1st Set Correct Score",
-            summary:
-              "Predict the exact score of the first set (e.g., 6-0, 6-4, 7-6). High risk, high reward.",
-            complexity: "advanced",
-          },
-        ],
-      },
-      {
-        id: "rules",
-        label: "Tennis Rulebook",
-        tagline:
-          "Rain delays, retirements, and tie-breaks explained.",
-        icon: ClipboardList,
-        colorKey: "slate",
-        markets: [
-          {
-            id: "tennis-rules",
-            name: "Key Settlement Rules for Tennis",
-            summary:
-              "Essential rules every agent needs when handling tennis markets on Betfalme.",
-            complexity: "beginner",
-            rules: [
-              {
-                text: "Match Tie-Break  -  In some tournaments a 10-point tie-break replaces the 3rd set. It counts as ONE set and ONE game for all betting purposes.",
-              },
-              {
-                text: "Change of Surface  -  If a match is moved from outdoor to indoor court (or vice versa), bets remain active.",
-              },
-              {
-                text: "Delays  -  Rain delays are common in tennis. Bets stay active as long as the match is eventually completed within the tournament's scheduled timeframe.",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
+ tennis: {
+ label: "Tennis",
+ icon: Target,
+ accent: "#eab308",
+ accentLight: "rgba(234,179,8,0.15)",
+ accent,
+ categories: [
+ {
+ id: "match",
+ label: "Who Walks Off Victorious?",
+ tagline: "Match-level markets - no draws, ever.",
+ icon: Trophy,
+ colorKey: "yellow",
+ markets: [
+ {
+ id: "match-winner",
+ name: "Match Winner - 2-Way",
+ summary:
+ "Bet on which player wins the match. Tennis always produces a winner - no draw option exists.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "Player 1 (Home/First-listed)",
+ description:
+ "The first player shown in the fixture listing.",
+ },
+ {
+ name: "Player 2 (Away/Second-listed)",
+ description:
+ "The second player shown in the fixture listing.",
+ },
+ ],
+ rules: [
+ {
+ text: "Retirements: If at least one set is completed, the player advancing is declared the winner. If no set is complete, bets are typically voided.",
+ },
+ ],
+ },
+ {
+ id: "set-betting",
+ name: "Set Betting - Correct Score in Sets",
+ summary:
+ "Predict the final match score in sets - a harder call than a simple winner bet.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "Best of 3 Sets",
+ description:
+ "Possible outcomes: 2-0, 2-1, 0-2, 1-2.",
+ },
+ {
+ name: "Best of 5 Sets (Grand Slams)",
+ description:
+ "Outcomes include: 3-0, 3-1, 3-2, 0-3, 1-3, 2-3.",
+ },
+ ],
+ },
+ {
+ id: "set-handicap",
+ name: "Set Handicap",
+ summary:
+ "A handicap applied to the number of sets won - forces a player to dominate to cover.",
+ complexity: "intermediate",
+ example:
+ "Player 2 (–1.5 Sets) in a best-of-3:\n• Wins only if Player 2 wins the match 2-0.\n• Loses if Player 2 wins 2-1 or loses the match.",
+ },
+ ],
+ },
+ {
+ id: "games",
+ label: "Zooming into Games",
+ tagline: "Total game counts across the full match.",
+ icon: Hash,
+ colorKey: "lime",
+ markets: [
+ {
+ id: "total-games",
+ name: "Total Games - Over / Under",
+ summary:
+ "Wager on the total number of games played across all sets in the entire match.",
+ complexity: "intermediate",
+ example:
+ "Over/Under 22.5 Games:\n• 6-4, 6-3 = 19 total games → Under 22.5 wins.\n• 7-6, 6-4 = 23 total games → Over 22.5 wins.",
+ },
+ {
+ id: "game-handicap",
+ name: "Game Handicap",
+ summary:
+ "A handicap applied to the total games won by each player across the whole match - can flip a loser into a winner.",
+ complexity: "advanced",
+ example:
+ "Player 1 (+4.5 Games), match: Player 1 loses 6-4, 6-4\n→ Player 1 wins 8 games; Player 2 wins 12.\n→ With +4.5: Player 1's handicap total = 12.5 > 12\n→ BET WINS despite the match loss.",
+ },
+ ],
+ },
+ {
+ id: "set-specific",
+ label: "Inside a Single Set",
+ tagline: "Drill into the opening set and beyond.",
+ icon: Target,
+ colorKey: "teal",
+ markets: [
+ {
+ id: "set-winner",
+ name: "1st Set Winner",
+ summary:
+ "Which player claims the opening set? A straightforward two-way market within the match.",
+ complexity: "beginner",
+ },
+ {
+ id: "set-total-games",
+ name: "1st Set Total Games",
+ summary:
+ "Over/Under for the number of games played in the first set only - excludes all subsequent sets.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "Common Lines",
+ description:
+ "Over/Under 8.5, 9.5, or 10.5 games in the 1st set. A 7-5 set = 12 games (Over 8.5 wins).",
+ },
+ ],
+ },
+ {
+ id: "set-correct-score",
+ name: "1st Set Correct Score",
+ summary:
+ "Predict the exact score of the first set (e.g., 6-0, 6-4, 7-6). High risk, high reward.",
+ complexity: "advanced",
+ },
+ ],
+ },
+ {
+ id: "rules",
+ label: "Tennis Rulebook",
+ tagline:
+ "Rain delays, retirements, and tie-breaks explained.",
+ icon: ClipboardList,
+ colorKey: "slate",
+ markets: [
+ {
+ id: "tennis-rules",
+ name: "Key Settlement Rules for Tennis",
+ summary:
+ "Essential rules every agent needs when handling tennis markets on Betfalme.",
+ complexity: "beginner",
+ rules: [
+ {
+ text: "Match Tie-Break - In some tournaments a 10-point tie-break replaces the 3rd set. It counts as ONE set and ONE game for all betting purposes.",
+ },
+ {
+ text: "Change of Surface - If a match is moved from outdoor to indoor court (or vice versa), bets remain active.",
+ },
+ {
+ text: "Delays - Rain delays are common in tennis. Bets stay active as long as the match is eventually completed within the tournament's scheduled timeframe.",
+ },
+ ],
+ },
+ ],
+ },
+ ],
+ },
 
-  combos: {
-    label: "Logic & Combos",
-    icon: BrainCircuit,
-    accent: "#a855f7",
-    accentLight: "rgba(168,85,247,0.15)",
-    accent,
-    categories: [
-      {
-        id: "and",
-        label: "AND  -  Every Condition Must Be Met",
-        tagline:
-          "All conditions must hold simultaneously. One failure = full loss.",
-        icon: CheckCircle2,
-        colorKey: "purple",
-        markets: [
-          {
-            id: "result-and-btts",
-            name: "Match Result AND Both Teams To Score",
-            summary:
-              "Combines the 1X2 outcome with whether both teams score. Both conditions must be satisfied.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "Home and Yes",
-                description:
-                  "Home wins AND both teams score → e.g., 2-1, 3-1, 3-2.",
-              },
-              {
-                name: "Home and No",
-                description:
-                  "Home wins AND only the home team scores → e.g., 1-0, 2-0, 3-0.",
-              },
-              {
-                name: "Draw and Yes",
-                description:
-                  "Match drawn AND both teams score → e.g., 1-1, 2-2, 3-3.",
-              },
-              {
-                name: "Draw and No",
-                description:
-                  "Match drawn AND no goals scored → 0-0 only.",
-              },
-              {
-                name: "Away and Yes",
-                description:
-                  "Away wins AND both teams score → e.g., 1-2, 2-3.",
-              },
-              {
-                name: "Away and No",
-                description:
-                  "Away wins AND only the away team scores → e.g., 0-1, 0-2.",
-              },
-            ],
-          },
-          {
-            id: "result-and-ou",
-            name: "Match Result AND Total Goals Over / Under",
-            summary:
-              "Combines the final result with a goal-count threshold. Both conditions are independently required.",
-            complexity: "intermediate",
-            example:
-              "Home and Over 2.5:\n• Condition 1: Home team wins.\n• Condition 2: Total goals ≥ 3.\n• Wins: 2-1, 3-0, 3-1\n• Loses: 2-0 (home wins but only 2 goals) OR 2-2 (3+ goals but it's a draw).",
-          },
-          {
-            id: "ht-and-btts",
-            name: "Half-Time Result AND Both Teams To Score",
-            summary:
-              "The same logic as the full-match version, but assessed exclusively at the half-time whistle.",
-            complexity: "advanced",
-            example:
-              "Selection: Draw and Yes (HT)\n• Condition 1: Match must be level at half-time.\n• Condition 2: Both teams must have scored at least once by the break.\n• Winning HT scores: 1-1, 2-2.",
-          },
-        ],
-      },
-      {
-        id: "or",
-        label: "OR  -  One Condition Is Enough",
-        tagline:
-          "Bet wins if at least one specified outcome occurs.",
-        icon: Shuffle,
-        colorKey: "blue",
-        markets: [
-          {
-            id: "double-chance-or",
-            name: "Double Chance  -  The Pure OR Market",
-            summary:
-              "Double Chance is logically an OR between two 1X2 outcomes  -  easier to win, lower odds.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "1X  -  Home OR Draw",
-                description:
-                  "Wins if the home team wins OR the match is drawn.",
-              },
-              {
-                name: "X2  -  Draw OR Away",
-                description:
-                  "Wins if the match is drawn OR the away team wins.",
-              },
-              {
-                name: "12  -  Home OR Away",
-                description:
-                  "Wins on any decisive result. Only a draw loses.",
-              },
-            ],
-          },
-          {
-            id: "dc-and-btts",
-            name: "Double Chance AND BTTS",
-            summary:
-              "A hybrid: an OR condition (Double Chance) combined with an AND condition (BTTS). Two operators in one market.",
-            complexity: "advanced",
-            example:
-              "Home or Draw AND BTTS Yes:\n• Condition 1 (OR): Home wins OR it's a draw.\n• Condition 2 (AND): Both teams score.\n• Wins: 1-1, 2-1, 2-2, 3-1, 3-2\n• Loses: 1-0 (home wins but only one team scores)\n• Loses: 1-2 (both score but away wins  -  Cond 1 fails).",
-          },
-          {
-            id: "multiscores",
-            name: "Multi-Scores  -  OR of Exact Scorelines",
-            summary:
-              "Select multiple correct scores in a single bet. A logical OR across two or more precise outcomes.",
-            complexity: "advanced",
-            example:
-              "Selection: 1-0, 2-0, or 3-0\n→ Wins if the final score is 1-0 OR 2-0 OR 3-0.\n→ More coverage than a single correct score, but lower odds.",
-          },
-        ],
-      },
-      {
-        id: "no-nor",
-        label: "NO / NOR  -  Betting on Absence",
-        tagline: "Win when specific events do NOT happen.",
-        icon: Ban,
-        colorKey: "red",
-        markets: [
-          {
-            id: "btts-no",
-            name: "BTTS  -  NO",
-            summary:
-              "Wins if at most one team scores. The logical negation of BTTS-Yes.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "Winning Scores",
-                description:
-                  "0-0, 1-0, 0-1, 2-0, 0-2  -  any score where one side is kept off the board.",
-              },
-              {
-                name: "Losing Scores",
-                description:
-                  "1-1, 2-1, 1-2, 2-2  -  any score where both teams register at least one goal.",
-              },
-            ],
-          },
-          {
-            id: "clean-sheet",
-            name: "Clean Sheet  -  Home / Away",
-            summary:
-              "Equivalent to 'the opposing team scores ZERO goals.' Straightforward but powerful.",
-            complexity: "intermediate",
-            options: [
-              {
-                name: "Home Clean Sheet  -  Yes",
-                description:
-                  "Away team scores NO goals. Home team does not concede.",
-              },
-              {
-                name: "Home Clean Sheet  -  No",
-                description:
-                  "Away team scores at least 1 goal. Home team concedes.",
-              },
-            ],
-          },
-          {
-            id: "neither-team",
-            name: "Neither Team to Score (NOR)",
-            summary:
-              "A joint negation  -  Home scores NO goals AND Away scores NO goals. The only winning result is 0-0.",
-            complexity: "intermediate",
-            rules: [
-              { text: "Only winning score: 0-0." },
-              {
-                text: "Typically found as the 'None' option inside 'First Team to Score' markets.",
-              },
-            ],
-          },
-          {
-            id: "no-draw-btts",
-            name: "No Draw BTTS  -  NO",
-            summary:
-              "A complex negation: the match will NOT end in a scoring draw. Scoring draws (1-1, 2-2) are the ONLY losing outcomes.",
-            complexity: "advanced",
-            options: [
-              {
-                name: "Losing Scenarios",
-                description:
-                  "1-1, 2-2, 3-3  -  any drawn match where both teams scored.",
-              },
-              {
-                name: "Winning Scenarios",
-                description:
-                  "Any decisive result (1-0, 0-1, 2-1) OR a goalless 0-0 draw.",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "summary",
-        label: "Operator Cheat Sheet",
-        tagline:
-          "The logical reference every agent needs on hand.",
-        icon: BarChart3,
-        colorKey: "indigo",
-        markets: [
-          {
-            id: "logic-table",
-            name: "Logical Operator Quick Reference",
-            summary:
-              "Four operators govern every combo market on Betfalme. Know them, settle correctly.",
-            complexity: "beginner",
-            options: [
-              {
-                name: "AND  -  Conjunction",
-                description:
-                  "ALL listed conditions must be true for the bet to win.",
-              },
-              {
-                name: "OR  -  Disjunction",
-                description:
-                  "AT LEAST ONE listed condition must be true for the bet to win.",
-              },
-              {
-                name: "NO / NOT  -  Negation",
-                description:
-                  "The specified event must NOT happen for the bet to win.",
-              },
-              {
-                name: "NOR  -  Joint Negation",
-                description:
-                  "NEITHER event A NOR event B must happen for the bet to win.",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  crash: {
-    label: "Crash",
-    icon: Rocket,
-    accent: "#ef4444",
-    accentLight: "rgba(239,68,68,0.15)",
-    accent,
-    categories: [],
-  },
-  virtual: {
-    label: "Virtuals",
-    icon: Globe,
-    accent: "#06b6d4",
-    accentLight: "rgba(6,182,212,0.15)",
-    accent,
-    categories: [],
-  },
-  casino: {
-    label: "Casino",
-    icon: Gem,
-    accent: "#f59e0b",
-    accentLight: "rgba(245,158,11,0.15)",
-    accent,
-    categories: [],
-  },
+ combos: {
+ label: "Logic & Combos",
+ icon: BrainCircuit,
+ accent: "#a855f7",
+ accentLight: "rgba(168,85,247,0.15)",
+ accent,
+ categories: [
+ {
+ id: "and",
+ label: "AND - Every Condition Must Be Met",
+ tagline:
+ "All conditions must hold simultaneously. One failure = full loss.",
+ icon: CheckCircle2,
+ colorKey: "purple",
+ markets: [
+ {
+ id: "result-and-btts",
+ name: "Match Result AND Both Teams To Score",
+ summary:
+ "Combines the 1X2 outcome with whether both teams score. Both conditions must be satisfied.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "Home and Yes",
+ description:
+ "Home wins AND both teams score → e.g., 2-1, 3-1, 3-2.",
+ },
+ {
+ name: "Home and No",
+ description:
+ "Home wins AND only the home team scores → e.g., 1-0, 2-0, 3-0.",
+ },
+ {
+ name: "Draw and Yes",
+ description:
+ "Match drawn AND both teams score → e.g., 1-1, 2-2, 3-3.",
+ },
+ {
+ name: "Draw and No",
+ description:
+ "Match drawn AND no goals scored → 0-0 only.",
+ },
+ {
+ name: "Away and Yes",
+ description:
+ "Away wins AND both teams score → e.g., 1-2, 2-3.",
+ },
+ {
+ name: "Away and No",
+ description:
+ "Away wins AND only the away team scores → e.g., 0-1, 0-2.",
+ },
+ ],
+ },
+ {
+ id: "result-and-ou",
+ name: "Match Result AND Total Goals Over / Under",
+ summary:
+ "Combines the final result with a goal-count threshold. Both conditions are independently required.",
+ complexity: "intermediate",
+ example:
+ "Home and Over 2.5:\n• Condition 1: Home team wins.\n• Condition 2: Total goals ≥ 3.\n• Wins: 2-1, 3-0, 3-1\n• Loses: 2-0 (home wins but only 2 goals) OR 2-2 (3+ goals but it's a draw).",
+ },
+ {
+ id: "ht-and-btts",
+ name: "Half-Time Result AND Both Teams To Score",
+ summary:
+ "The same logic as the full-match version, but assessed exclusively at the half-time whistle.",
+ complexity: "advanced",
+ example:
+ "Selection: Draw and Yes (HT)\n• Condition 1: Match must be level at half-time.\n• Condition 2: Both teams must have scored at least once by the break.\n• Winning HT scores: 1-1, 2-2.",
+ },
+ ],
+ },
+ {
+ id: "or",
+ label: "OR - One Condition Is Enough",
+ tagline:
+ "Bet wins if at least one specified outcome occurs.",
+ icon: Shuffle,
+ colorKey: "blue",
+ markets: [
+ {
+ id: "double-chance-or",
+ name: "Double Chance - The Pure OR Market",
+ summary:
+ "Double Chance is logically an OR between two 1X2 outcomes - easier to win, lower odds.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "1X - Home OR Draw",
+ description:
+ "Wins if the home team wins OR the match is drawn.",
+ },
+ {
+ name: "X2 - Draw OR Away",
+ description:
+ "Wins if the match is drawn OR the away team wins.",
+ },
+ {
+ name: "12 - Home OR Away",
+ description:
+ "Wins on any decisive result. Only a draw loses.",
+ },
+ ],
+ },
+ {
+ id: "dc-and-btts",
+ name: "Double Chance AND BTTS",
+ summary:
+ "A hybrid: an OR condition (Double Chance) combined with an AND condition (BTTS). Two operators in one market.",
+ complexity: "advanced",
+ example:
+ "Home or Draw AND BTTS Yes:\n• Condition 1 (OR): Home wins OR it's a draw.\n• Condition 2 (AND): Both teams score.\n• Wins: 1-1, 2-1, 2-2, 3-1, 3-2\n• Loses: 1-0 (home wins but only one team scores)\n• Loses: 1-2 (both score but away wins - Cond 1 fails).",
+ },
+ {
+ id: "multiscores",
+ name: "Multi-Scores - OR of Exact Scorelines",
+ summary:
+ "Select multiple correct scores in a single bet. A logical OR across two or more precise outcomes.",
+ complexity: "advanced",
+ example:
+ "Selection: 1-0, 2-0, or 3-0\n→ Wins if the final score is 1-0 OR 2-0 OR 3-0.\n→ More coverage than a single correct score, but lower odds.",
+ },
+ ],
+ },
+ {
+ id: "no-nor",
+ label: "NO / NOR - Betting on Absence",
+ tagline: "Win when specific events do NOT happen.",
+ icon: Ban,
+ colorKey: "red",
+ markets: [
+ {
+ id: "btts-no",
+ name: "BTTS - NO",
+ summary:
+ "Wins if at most one team scores. The logical negation of BTTS-Yes.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "Winning Scores",
+ description:
+ "0-0, 1-0, 0-1, 2-0, 0-2 - any score where one side is kept off the board.",
+ },
+ {
+ name: "Losing Scores",
+ description:
+ "1-1, 2-1, 1-2, 2-2 - any score where both teams register at least one goal.",
+ },
+ ],
+ },
+ {
+ id: "clean-sheet",
+ name: "Clean Sheet - Home / Away",
+ summary:
+ "Equivalent to 'the opposing team scores ZERO goals.' Straightforward but powerful.",
+ complexity: "intermediate",
+ options: [
+ {
+ name: "Home Clean Sheet - Yes",
+ description:
+ "Away team scores NO goals. Home team does not concede.",
+ },
+ {
+ name: "Home Clean Sheet - No",
+ description:
+ "Away team scores at least 1 goal. Home team concedes.",
+ },
+ ],
+ },
+ {
+ id: "neither-team",
+ name: "Neither Team to Score (NOR)",
+ summary:
+ "A joint negation - Home scores NO goals AND Away scores NO goals. The only winning result is 0-0.",
+ complexity: "intermediate",
+ rules: [
+ { text: "Only winning score: 0-0." },
+ {
+ text: "Typically found as the 'None' option inside 'First Team to Score' markets.",
+ },
+ ],
+ },
+ {
+ id: "no-draw-btts",
+ name: "No Draw BTTS - NO",
+ summary:
+ "A complex negation: the match will NOT end in a scoring draw. Scoring draws (1-1, 2-2) are the ONLY losing outcomes.",
+ complexity: "advanced",
+ options: [
+ {
+ name: "Losing Scenarios",
+ description:
+ "1-1, 2-2, 3-3 - any drawn match where both teams scored.",
+ },
+ {
+ name: "Winning Scenarios",
+ description:
+ "Any decisive result (1-0, 0-1, 2-1) OR a goalless 0-0 draw.",
+ },
+ ],
+ },
+ ],
+ },
+ {
+ id: "summary",
+ label: "Operator Cheat Sheet",
+ tagline:
+ "The logical reference every agent needs on hand.",
+ icon: BarChart3,
+ colorKey: "indigo",
+ markets: [
+ {
+ id: "logic-table",
+ name: "Logical Operator Quick Reference",
+ summary:
+ "Four operators govern every combo market on Betfalme. Know them, settle correctly.",
+ complexity: "beginner",
+ options: [
+ {
+ name: "AND - Conjunction",
+ description:
+ "ALL listed conditions must be true for the bet to win.",
+ },
+ {
+ name: "OR - Disjunction",
+ description:
+ "AT LEAST ONE listed condition must be true for the bet to win.",
+ },
+ {
+ name: "NO / NOT - Negation",
+ description:
+ "The specified event must NOT happen for the bet to win.",
+ },
+ {
+ name: "NOR - Joint Negation",
+ description:
+ "NEITHER event A NOR event B must happen for the bet to win.",
+ },
+ ],
+ },
+ ],
+ },
+ ],
+ },
+ crash: {
+ label: "Crash",
+ icon: Rocket,
+ accent: "#ef4444",
+ accentLight: "rgba(239,68,68,0.15)",
+ accent,
+ categories: [],
+ },
+ virtual: {
+ label: "Virtuals",
+ icon: Globe,
+ accent: "#06b6d4",
+ accentLight: "rgba(6,182,212,0.15)",
+ accent,
+ categories: [],
+ },
+ casino: {
+ label: "Casino",
+ icon: Gem,
+ accent: "#f59e0b",
+ accentLight: "rgba(245,158,11,0.15)",
+ accent,
+ categories: [],
+ },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1314,472 +1314,472 @@ const sportsData: Record<Sport, SportData> = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const crashGames: CrashGame[] = [
-  {
-    name: "Aviator",
-    theme: "Aviation",
-    themeIcon: Plane,
-    mechanic:
-      "Bet on the plane; cash out before it flies away.",
-    historyHow: 'Click the "History" icon (top right).',
-  },
-  {
-    name: "JetX",
-    theme: "Space",
-    themeIcon: Rocket,
-    mechanic: "Bet on the jet; cash out before it explodes.",
-    historyHow: 'Use the "Stats" tab on the left.',
-  },
-  {
-    name: "Crash 1917",
-    theme: "Vintage",
-    themeIcon: Plane,
-    mechanic: "Classic flight; cash out before the crash.",
-    historyHow: "History bar at the top.",
-  },
-  {
-    name: "Crash Royale",
-    theme: "Luxury",
-    themeIcon: Crown,
-    mechanic: "Royal theme; cash out before the end.",
-    historyHow: '"Recent Rounds" at the bottom.',
-  },
-  {
-    name: "Avionix",
-    theme: "Futurist",
-    themeIcon: Cpu,
-    mechanic: "Futuristic jet; cash out before explosion.",
-    historyHow: '"Clock" icon in the menu.',
-  },
-  {
-    name: "Aviatrix",
-    theme: "NFT",
-    themeIcon: Palette,
-    mechanic: "Upgrade planes; cash out before crash.",
-    historyHow: '"My Bets" tab in-game.',
-  },
-  {
-    name: "FootballX",
-    theme: "Sports",
-    themeIcon: Shield,
-    mechanic: "Juggling ball; cash out before it drops.",
-    historyHow: "Ball icons at the top.",
-  },
-  {
-    name: "Bazooka",
-    theme: "Military",
-    themeIcon: Swords,
-    mechanic: "Missile launch; cash out before detonation.",
-    historyHow: '"Log" section in settings.',
-  },
-  {
-    name: "Crash Witch",
-    theme: "Fantasy",
-    themeIcon: Ghost,
-    mechanic: "Witch on broom; cash out before she falls.",
-    historyHow: "Scrollable list on the side.",
-  },
-  {
-    name: "Balloon",
-    theme: "Carnival",
-    themeIcon: Globe,
-    mechanic: "Inflate balloon; cash out before it pops.",
-    historyHow: '"Stats" menu in-game.',
-  },
-  {
-    name: "Dragon Flare",
-    theme: "Mythical",
-    themeIcon: Flame,
-    mechanic: "Dragon flight; cash out before it vanishes.",
-    historyHow: '"Dragon Log" in-game.',
-  },
-  {
-    name: "Crash 3DX",
-    theme: "3D",
-    themeIcon: Gamepad2,
-    mechanic: "3D visuals; cash out before the crash.",
-    historyHow: "3D overlay sidebar.",
-  },
-  {
-    name: "Hotcrash",
-    theme: "Fire",
-    themeIcon: Flame,
-    mechanic: "Heat-themed; cash out before the crash.",
-    historyHow: '"Recent" tab in-game.',
-  },
-  {
-    name: "Limbo",
-    theme: "Minimal",
-    themeIcon: TrendingDown,
-    mechanic:
-      "Predict if next number > your target multiplier.",
-    historyHow: "List of previous numbers shown.",
-  },
-  {
-    name: "Crash Ghostly",
-    theme: "Spooky",
-    themeIcon: Ghost,
-    mechanic: "Ghostly ascent; cash out before it vanishes.",
-    historyHow: '"Spirit Log" section.',
-  },
-  {
-    name: "Tower",
-    theme: "Building",
-    themeIcon: Building2,
-    mechanic: "Climb tower; cash out before collapse.",
-    historyHow: '"Floor History" tab.',
-  },
-  {
-    name: "HelicopterX",
-    theme: "Aviation",
-    themeIcon: Helicopter,
-    mechanic: "Chopper flight; cash out before crash.",
-    historyHow: "History bar at the top.",
-  },
+ {
+ name: "Aviator",
+ theme: "Aviation",
+ themeIcon: Plane,
+ mechanic:
+ "Bet on the plane; cash out before it flies away.",
+ historyHow: 'Click the "History" icon (top right).',
+ },
+ {
+ name: "JetX",
+ theme: "Space",
+ themeIcon: Rocket,
+ mechanic: "Bet on the jet; cash out before it explodes.",
+ historyHow: 'Use the "Stats" tab on the left.',
+ },
+ {
+ name: "Crash 1917",
+ theme: "Vintage",
+ themeIcon: Plane,
+ mechanic: "Classic flight; cash out before the crash.",
+ historyHow: "History bar at the top.",
+ },
+ {
+ name: "Crash Royale",
+ theme: "Luxury",
+ themeIcon: Crown,
+ mechanic: "Royal theme; cash out before the end.",
+ historyHow: '"Recent Rounds" at the bottom.',
+ },
+ {
+ name: "Avionix",
+ theme: "Futurist",
+ themeIcon: Cpu,
+ mechanic: "Futuristic jet; cash out before explosion.",
+ historyHow: '"Clock" icon in the menu.',
+ },
+ {
+ name: "Aviatrix",
+ theme: "NFT",
+ themeIcon: Palette,
+ mechanic: "Upgrade planes; cash out before crash.",
+ historyHow: '"My Bets" tab in-game.',
+ },
+ {
+ name: "FootballX",
+ theme: "Sports",
+ themeIcon: Shield,
+ mechanic: "Juggling ball; cash out before it drops.",
+ historyHow: "Ball icons at the top.",
+ },
+ {
+ name: "Bazooka",
+ theme: "Military",
+ themeIcon: Swords,
+ mechanic: "Missile launch; cash out before detonation.",
+ historyHow: '"Log" section in settings.',
+ },
+ {
+ name: "Crash Witch",
+ theme: "Fantasy",
+ themeIcon: Ghost,
+ mechanic: "Witch on broom; cash out before she falls.",
+ historyHow: "Scrollable list on the side.",
+ },
+ {
+ name: "Balloon",
+ theme: "Carnival",
+ themeIcon: Globe,
+ mechanic: "Inflate balloon; cash out before it pops.",
+ historyHow: '"Stats" menu in-game.',
+ },
+ {
+ name: "Dragon Flare",
+ theme: "Mythical",
+ themeIcon: Flame,
+ mechanic: "Dragon flight; cash out before it vanishes.",
+ historyHow: '"Dragon Log" in-game.',
+ },
+ {
+ name: "Crash 3DX",
+ theme: "3D",
+ themeIcon: Gamepad2,
+ mechanic: "3D visuals; cash out before the crash.",
+ historyHow: "3D overlay sidebar.",
+ },
+ {
+ name: "Hotcrash",
+ theme: "Fire",
+ themeIcon: Flame,
+ mechanic: "Heat-themed; cash out before the crash.",
+ historyHow: '"Recent" tab in-game.',
+ },
+ {
+ name: "Limbo",
+ theme: "Minimal",
+ themeIcon: TrendingDown,
+ mechanic:
+ "Predict if next number > your target multiplier.",
+ historyHow: "List of previous numbers shown.",
+ },
+ {
+ name: "Crash Ghostly",
+ theme: "Spooky",
+ themeIcon: Ghost,
+ mechanic: "Ghostly ascent; cash out before it vanishes.",
+ historyHow: '"Spirit Log" section.',
+ },
+ {
+ name: "Tower",
+ theme: "Building",
+ themeIcon: Building2,
+ mechanic: "Climb tower; cash out before collapse.",
+ historyHow: '"Floor History" tab.',
+ },
+ {
+ name: "HelicopterX",
+ theme: "Aviation",
+ themeIcon: Helicopter,
+ mechanic: "Chopper flight; cash out before crash.",
+ historyHow: "History bar at the top.",
+ },
 ];
 
 const virtualSports: VirtualGame[] = [
-  {
-    name: "Ligi Kuu",
-    category: "Soccer",
-    howToPlay:
-      "Bet on simulated Kenyan league matches. Markets: 1X2, O/U, GG.",
-  },
-  {
-    name: "Virtual World Cup",
-    category: "Soccer",
-    howToPlay:
-      "Tournament simulation. Bet on group stages and knockouts.",
-  },
-  {
-    name: "Virtual Turbo League",
-    category: "Soccer",
-    howToPlay: "Fast-paced matches every 2 minutes.",
-  },
-  {
-    name: "Virtual Champions League",
-    category: "Soccer",
-    howToPlay: "Elite club competition simulation.",
-  },
-  {
-    name: "Basketball",
-    category: "Sports",
-    howToPlay: "Bet on winner, total points, and handicaps.",
-  },
-  {
-    name: "Tennis",
-    category: "Sports",
-    howToPlay:
-      "Bet on set winner, game score, and total games.",
-  },
+ {
+ name: "Ligi Kuu",
+ category: "Soccer",
+ howToPlay:
+ "Bet on simulated Kenyan league matches. Markets: 1X2, O/U, GG.",
+ },
+ {
+ name: "Virtual World Cup",
+ category: "Soccer",
+ howToPlay:
+ "Tournament simulation. Bet on group stages and knockouts.",
+ },
+ {
+ name: "Virtual Turbo League",
+ category: "Soccer",
+ howToPlay: "Fast-paced matches every 2 minutes.",
+ },
+ {
+ name: "Virtual Champions League",
+ category: "Soccer",
+ howToPlay: "Elite club competition simulation.",
+ },
+ {
+ name: "Basketball",
+ category: "Sports",
+ howToPlay: "Bet on winner, total points, and handicaps.",
+ },
+ {
+ name: "Tennis",
+ category: "Sports",
+ howToPlay:
+ "Bet on set winner, game score, and total games.",
+ },
 ];
 
 const virtualRacing: VirtualGame[] = [
-  {
-    name: "Marble Racing",
-    category: "Racing",
-    howToPlay: "Bet on the winning marble.",
-  },
-  {
-    name: "Drag Racing",
-    category: "Racing",
-    howToPlay: "Bet on the winning car or top 2 finishers.",
-  },
-  {
-    name: "Cycle Racing",
-    category: "Racing",
-    howToPlay: "Velodrome cycling; bet on winner or podium.",
-  },
-  {
-    name: "Greyhound Racing",
-    category: "Racing",
-    howToPlay:
-      "Virtual dog racing; bet on winner, forecast, or tricast.",
-  },
-  {
-    name: "Horse Racing",
-    category: "Racing",
-    howToPlay:
-      "Virtual horse racing; various track conditions.",
-  },
-  {
-    name: "Instant Racing",
-    category: "Racing",
-    howToPlay:
-      "On-demand races that start when the user is ready.",
-  },
+ {
+ name: "Marble Racing",
+ category: "Racing",
+ howToPlay: "Bet on the winning marble.",
+ },
+ {
+ name: "Drag Racing",
+ category: "Racing",
+ howToPlay: "Bet on the winning car or top 2 finishers.",
+ },
+ {
+ name: "Cycle Racing",
+ category: "Racing",
+ howToPlay: "Velodrome cycling; bet on winner or podium.",
+ },
+ {
+ name: "Greyhound Racing",
+ category: "Racing",
+ howToPlay:
+ "Virtual dog racing; bet on winner, forecast, or tricast.",
+ },
+ {
+ name: "Horse Racing",
+ category: "Racing",
+ howToPlay:
+ "Virtual horse racing; various track conditions.",
+ },
+ {
+ name: "Instant Racing",
+ category: "Racing",
+ howToPlay:
+ "On-demand races that start when the user is ready.",
+ },
 ];
 
 interface ManualSectionMeta {
-  label: string;
-  icon: LucideIcon;
-  tagline: string;
-  accent: string;
-  accentLight: string;
-  accentBorder: string;
-  isNew?: boolean;
+ label: string;
+ icon: LucideIcon;
+ tagline: string;
+ accent: string;
+ accentLight: string;
+ accentBorder: string;
+ isNew?: boolean;
 }
 const manualSections: Record<ManualSection, ManualSectionMeta> = {
 
-  promotions: {
-    label: "Rewards & Perks",
-    icon: Gift,
-    tagline: "Bonuses, cashback, VIP tiers, and referral program",
-    accent: "#a855f7",
-    accentLight: "rgba(168,85,247,0.15)",
-    accent,
-  },
-  support: {
-    label: "Agent Toolkit",
-    icon: Wrench,
-    tagline: "Troubleshooting, escalation matrix & key procedures",
-    accent: "#3b82f6",
-    accentLight: "rgba(59,130,246,0.15)",
-    accent,
-  },
-  compliance: {
-    label: "Compliance",
-    icon: ShieldCheck,
-    tagline: "Responsible gaming, age verification & licensing",
-    accent: "#10b981",
-    accentLight: "rgba(16,185,129,0.15)",
-    accent,
-  },
-  toolkit: {
-    label: "Staff Toolkit",
-    icon: SlidersHorizontal,
-    tagline: "Talking points, odds guide & common FAQs",
-    accent: "#f472b6",
-    accentLight: "rgba(244,114,182,0.15)",
-    accent,
-    isNew: true,
-  },
+ promotions: {
+ label: "Rewards & Perks",
+ icon: Gift,
+ tagline: "Bonuses, cashback, VIP tiers, and referral program",
+ accent: "#a855f7",
+ accentLight: "rgba(168,85,247,0.15)",
+ accent,
+ },
+ support: {
+ label: "Agent Toolkit",
+ icon: Wrench,
+ tagline: "Troubleshooting, escalation matrix & key procedures",
+ accent: "#3b82f6",
+ accentLight: "rgba(59,130,246,0.15)",
+ accent,
+ },
+ compliance: {
+ label: "Compliance",
+ icon: ShieldCheck,
+ tagline: "Responsible gaming, age verification & licensing",
+ accent: "#10b981",
+ accentLight: "rgba(16,185,129,0.15)",
+ accent,
+ },
+ toolkit: {
+ label: "Staff Toolkit",
+ icon: SlidersHorizontal,
+ tagline: "Talking points, odds guide & common FAQs",
+ accent: "#f472b6",
+ accentLight: "rgba(244,114,182,0.15)",
+ accent,
+ isNew: true,
+ },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MARKET GUIDE COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 function ComplexityBadge({ level }: { level: Complexity }) {
-  const cfg = {
-    beginner: {
-      label: "Beginner",
-      cls: "bg-green-500/20 text-green-400",
-    },
-    intermediate: {
-      label: "Intermediate",
-      cls: "bg-yellow-500/20 text-yellow-400",
-    },
-    advanced: {
-      label: "Advanced",
-      cls: "bg-red-500/20 text-red-400",
-    },
-  }[level];
-  return (
-    <span
-      className={`text-[11px] px-2 py-0.5 rounded-full  whitespace-nowrap ${cfg.cls}`}
-    >
-      {cfg.label}
-    </span>
-  );
+ const cfg = {
+ beginner: {
+ label: "Beginner",
+ cls: "bg-green-500/20 text-green-400",
+ },
+ intermediate: {
+ label: "Intermediate",
+ cls: "bg-yellow-500/20 text-yellow-400",
+ },
+ advanced: {
+ label: "Advanced",
+ cls: "bg-red-500/20 text-red-400",
+ },
+ }[level];
+ return (
+ <span
+ className={`text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap ${cfg.cls}`}
+ >
+ {cfg.label}
+ </span>
+ );
 }
 
 function MarketCard({
-  market,
-  accent,
+ market,
+ accent,
 }: {
-  market: Market;
-  accent: string;
+ market: Market;
+ accent: string;
 }) {
-  const hasExtra =
-    (market.options?.length ?? 0) > 0 ||
-    !!market.example ||
-    (market.rules?.length ?? 0) > 0 ||
-    (market.variations?.length ?? 0) > 0;
-  return (
-    <div
-      className="rounded-xl bg-[#131520] overflow-hidden flex flex-col"
-    >
-      <div
-        className="h-[2px] w-full"
-        style={{ background: accent }}
-      />
-      <div className="p-5 flex flex-col gap-3 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <h4
-            className="text-white leading-snug flex-1 flex items-center gap-2"
-            style={{ fontSize: "0.92rem" }}
-          >
-            {market.name}
-            {market.isNew && (
-              <span className="bg-red-500/20 text-red-400  text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none">New</span>
-            )}
-          </h4>
-          <ComplexityBadge level={market.complexity} />
-        </div>
-        <p className="text-white/60 text-[13px] leading-relaxed">
-          {market.summary}
-        </p>
-        {hasExtra && (
-          <div className="flex flex-col gap-4 pt-3">
-            {market.options && market.options.length > 0 && (
-              <div className="flex flex-col gap-2.5">
-                {market.options.map((opt, i) => (
-                  <div
-                    key={i}
-                    className="flex gap-2.5 items-start"
-                  >
-                    <div
-                      className="w-1.5 h-1.5 rounded-full mt-[6px] shrink-0"
-                      style={{ background: accent }}
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-white text-[13px] font-semibold leading-tight">
-                        {opt.name}
-                      </span>
-                      <span className="text-white/40 text-[12px] mt-0.5 leading-relaxed">
-                        {opt.description}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {market.example && (
-              <div
-                className="rounded-lg p-3.5 text-[12px] font-mono leading-relaxed whitespace-pre-wrap"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  : `1px solid rgba(255,255,255,0.1)`,
-                  color: "rgba(255,255,255,0.8)",
-                }}
-              >
-                <div className="text-[10px] uppercase tracking-wider mb-1.5 opacity-50 font-sans font-bold" style={{ color: accent }}>Example</div>
-                {market.example}
-              </div>
-            )}
-            {market.rules && market.rules.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <div className="text-[10px] uppercase tracking-wider opacity-50 font-bold" style={{ color: accent }}>Key Rules</div>
-                {market.rules.map((rule, i) => (
-                  <div
-                    key={i}
-                    className="flex gap-2 items-start text-sm text-yellow-300/60"
-                  >
-                    <AlertTriangle size={12} className="text-yellow-400/60 shrink-0 mt-0.5" />
-                    <span className="text-[12px] leading-relaxed">{rule.text}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {market.variations &&
-              market.variations.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <p className="text-[10px] uppercase tracking-wider opacity-50 font-bold" style={{ color: accent }}>
-                    Variations
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {market.variations.map((v, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] px-2 py-0.5 rounded-md text-white/40 bg-white/5"
-                      >
-                        {v}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+ const hasExtra =
+ (market.options?.length ?? 0) > 0 ||
+ !!market.example ||
+ (market.rules?.length ?? 0) > 0 ||
+ (market.variations?.length ?? 0) > 0;
+ return (
+ <div
+ className="rounded-xl bg-[#131520] overflow-hidden flex flex-col"
+ >
+ <div
+ className="h-[2px] w-full"
+ style={{ background: accent }}
+ />
+ <div className="p-5 flex flex-col gap-3 flex-1">
+ <div className="flex items-start justify-between gap-2">
+ <h4
+ className="text-white leading-snug flex-1 flex items-center gap-2"
+ style={{ fontSize: "0.92rem" }}
+ >
+ {market.name}
+ {market.isNew && (
+ <span className="bg-red-500/20 text-red-400 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none">New</span>
+ )}
+ </h4>
+ <ComplexityBadge level={market.complexity} />
+ </div>
+ <p className="text-white/60 text-[13px] leading-relaxed">
+ {market.summary}
+ </p>
+ {hasExtra && (
+ <div className="flex flex-col gap-4 pt-3">
+ {market.options && market.options.length > 0 && (
+ <div className="flex flex-col gap-2.5">
+ {market.options.map((opt, i) => (
+ <div
+ key={i}
+ className="flex gap-2.5 items-start"
+ >
+ <div
+ className="w-1.5 h-1.5 rounded-full mt-[6px] shrink-0"
+ style={{ background: accent }}
+ />
+ <div className="flex flex-col">
+ <span className="text-white text-[13px] font-semibold leading-tight">
+ {opt.name}
+ </span>
+ <span className="text-white/40 text-[12px] mt-0.5 leading-relaxed">
+ {opt.description}
+ </span>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+ {market.example && (
+ <div
+ className="rounded-lg p-3.5 text-[12px] font-mono leading-relaxed whitespace-pre-wrap"
+ style={{
+ background: 'rgba(255,255,255,0.03)',
+
+ color: "rgba(255,255,255,0.8)",
+ }}
+ >
+ <div className="text-[10px] uppercase tracking-wider mb-1.5 opacity-50 font-sans font-bold" style={{ color: accent }}>Example</div>
+ {market.example}
+ </div>
+ )}
+ {market.rules && market.rules.length > 0 && (
+ <div className="flex flex-col gap-2">
+ <div className="text-[10px] uppercase tracking-wider opacity-50 font-bold" style={{ color: accent }}>Key Rules</div>
+ {market.rules.map((rule, i) => (
+ <div
+ key={i}
+ className="flex gap-2 items-start text-sm text-yellow-300/60"
+ >
+ <AlertTriangle size={12} className="text-yellow-400/60 shrink-0 mt-0.5" />
+ <span className="text-[12px] leading-relaxed">{rule.text}</span>
+ </div>
+ ))}
+ </div>
+ )}
+ {market.variations &&
+ market.variations.length > 0 && (
+ <div className="flex flex-col gap-2">
+ <p className="text-[10px] uppercase tracking-wider opacity-50 font-bold" style={{ color: accent }}>
+ Variations
+ </p>
+ <div className="flex flex-wrap gap-2">
+ {market.variations.map((v, i) => (
+ <span
+ key={i}
+ className="text-[10px] px-2 py-0.5 rounded-md text-white/40 bg-white/5"
+ >
+ {v}
+ </span>
+ ))}
+ </div>
+ </div>
+ )}
+ </div>
+ )}
+ </div>
+ </div>
+ );
 }
 
 function CategorySection({
-  category,
-  accent,
+ category,
+ accent,
 }: {
-  category: Category;
-  accent: string;
+ category: Category;
+ accent: string;
 }) {
-  const colors = colorMap[category.colorKey] ?? colorMap.slate;
-  const IconComp = category.icon;
-  return (
-    <section className="mb-14">
-      <div
-        className={`flex items-center gap-4 mb-6 rounded-2xl px-5 py-4  bg-card`}
-      >
-        <div className={`p-2.5 rounded-xl ${colors.bg} ${colors.} `}>
-          <IconComp size={22} className={colors.text} />
-        </div>
-        <div>
-          <h2
-            className={`${colors.text}`}
-            style={{ fontSize: "1.1rem" }}
-          >
-            {category.label}
-          </h2>
-          <p className="text-white/45 text-sm">
-            {category.tagline}
-          </p>
-        </div>
-        <div
-          className={`ml-auto text-xs px-3 py-1 rounded-full  ${colors.bg} ${colors.} ${colors.text}`}
-        >
-          {category.markets.length}{" "}
-          {category.markets.length === 1 ? "market" : "markets"}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {category.markets.map((m) => (
-          <MarketCard key={m.id} market={m} accent={accent} />
-        ))}
-      </div>
-    </section>
-  );
+ const colors = colorMap[category.colorKey] ?? colorMap.slate;
+ const IconComp = category.icon;
+ return (
+ <section className="mb-14">
+ <div
+ className={`flex items-center gap-4 mb-6 rounded-2xl px-5 py-4 bg-card`}
+ >
+ <div className={`p-2.5 rounded-xl ${colors.bg} `}>
+ <IconComp size={22} className={colors.text} />
+ </div>
+ <div>
+ <h2
+ className={`${colors.text}`}
+ style={{ fontSize: "1.1rem" }}
+ >
+ {category.label}
+ </h2>
+ <p className="text-white/45 text-sm">
+ {category.tagline}
+ </p>
+ </div>
+ <div
+ className={`ml-auto text-xs px-3 py-1 rounded-full ${colors.bg} ${colors.text}`}
+ >
+ {category.markets.length}{" "}
+ {category.markets.length === 1 ? "market" : "markets"}
+ </div>
+ </div>
+ <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+ {category.markets.map((m) => (
+ <MarketCard key={m.id} market={m} accent={accent} />
+ ))}
+ </div>
+ </section>
+ );
 }
 
 function SportTab({
-  sport,
-  data,
-  active,
-  onClick,
+ sport,
+ data,
+ active,
+ onClick,
 }: {
-  sport: Sport;
-  data: SportData;
-  active: boolean;
-  onClick: () => void;
+ sport: Sport;
+ data: SportData;
+ active: boolean;
+ onClick: () => void;
 }) {
-  const IconComp = data.icon;
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm transition-all whitespace-nowrap"
-      style={{
-        background: active
-          ? "var(--accent)"
-          : "rgba(255,255,255,0.04)",
-        : `1px solid ${active ? "var(--accent)" : "rgba(255,255,255,0.08)"}`,
-        color: active ? "#fff" : "rgba(255,255,255,0.55)",
-      }}
-    >
-      <IconComp size={18} style={{ opacity: active ? 1 : 0.7 }} />
-      <span>{data.label}</span>
-      <span
-        className="text-xs px-2 py-0.5 rounded-full"
-        style={{
-          background: active
-            ? `${data.accent}30`
-            : "rgba(255,255,255,0.07)",
-          color: active
-            ? data.accent
-            : "rgba(255,255,255,0.35)",
-        }}
-      >
-        {data.categories.length}
-      </span>
-    </button>
-  );
+ const IconComp = data.icon;
+ return (
+ <button
+ onClick={onClick}
+ className="flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm transition-all whitespace-nowrap"
+ style={{
+ background: active
+ ? "var(--accent)"
+ : "rgba(255,255,255,0.04)",
+
+ color: active ? "#fff" : "rgba(255,255,255,0.55)",
+ }}
+ >
+ <IconComp size={18} style={{ opacity: active ? 1 : 0.7 }} />
+ <span>{data.label}</span>
+ <span
+ className="text-xs px-2 py-0.5 rounded-full"
+ style={{
+ background: active
+ ? `${data.accent}30`
+ : "rgba(255,255,255,0.07)",
+ color: active
+ ? data.accent
+ : "rgba(255,255,255,0.35)",
+ }}
+ >
+ {data.categories.length}
+ </span>
+ </button>
+ );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1787,1118 +1787,1118 @@ function SportTab({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function ManualTab({
-  id,
-  meta,
-  active,
-  onClick,
+ id,
+ meta,
+ active,
+ onClick,
 }: {
-  id: ManualSection;
-  meta: ManualSectionMeta;
-  active: boolean;
-  onClick: () => void;
+ id: ManualSection;
+ meta: ManualSectionMeta;
+ active: boolean;
+ onClick: () => void;
 }) {
-  const IconComp = meta.icon;
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap"
-      style={{
-        background: active
-          ? meta.accentLight
-          : "rgba(255,255,255,0.04)",
-        color: active ? meta.accent : "rgba(255,255,255,0.55)",
-      }}
-    >
-      <IconComp size={16} />
-      <span>{meta.label}</span>
-      {meta.isNew && (
-        <span className="bg-red-500/20 text-red-400  text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none ml-1">New</span>
-      )}
-    </button>
-  );
+ const IconComp = meta.icon;
+ return (
+ <button
+ onClick={onClick}
+ className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap"
+ style={{
+ background: active
+ ? meta.accentLight
+ : "rgba(255,255,255,0.04)",
+ color: active ? meta.accent : "rgba(255,255,255,0.55)",
+ }}
+ >
+ <IconComp size={16} />
+ <span>{meta.label}</span>
+ {meta.isNew && (
+ <span className="bg-red-500/20 text-red-400 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md leading-none ml-1">New</span>
+ )}
+ </button>
+ );
 }
 
 // ── Crash Games View ──────────────────────────────────────────────────────────
 function CrashGamesView({ accent }: { accent: string }) {
-  const [selected, setSelected] = useState<CrashGame | null>(
-    null,
-  );
+ const [selected, setSelected] = useState<CrashGame | null>(
+ null,
+ );
 
-  return (
-    <div>
-      {/* Mechanics Banner */}
-      <div
-        className="rounded-2xl p-5 mb-8 "
-        style={{ background: "rgba(239,68,68,0.07)" }}
-      >
-        <div className="flex items-center gap-3 mb-3">
-          <Zap size={24} className="text-red-400" />
-          <h3
-            className="text-white"
-            style={{ fontSize: "1rem" }}
-          >
-            How All Crash Games Work
-          </h3>
-        </div>
-        <p className="text-white/60 text-sm leading-relaxed">
-          A multiplier starts at{" "}
-          <span className="text-red-400">1.00x</span> and climbs
-          continuously. Players must click{" "}
-          <span className="text-white/80">"Cash Out"</span>{" "}
-          before the game crashes. Cash out in time → win your
-          stake × multiplier. Wait too long → lose your stake.
-          Each round is independently determined.
-        </p>
-        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-          {[
-            ["Place Bet", "Set stake before round starts", "1"],
-            [
-              "Watch Multiplier Climb",
-              "1.00x → 2.00x → 10.00x ...",
-              "2",
-            ],
-            [
-              "Cash Out in Time",
-              "Before the crash point!",
-              "3",
-            ],
-          ].map(([title, sub, n]) => (
-            <div
-              key={n}
-              className="rounded-xl p-3 "
-              style={{ background: "rgba(255,255,255,0.03)" }}
-            >
-              <div className="text-red-400 text-xs mb-1">
-                Step {n}
-              </div>
-              <div className="text-white text-sm">{title}</div>
-              <div className="text-white/40 text-xs mt-1">
-                {sub}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+ return (
+ <div>
+ {/* Mechanics Banner */}
+ <div
+ className="rounded-2xl p-5 mb-8 "
+ style={{ background: "rgba(239,68,68,0.07)" }}
+ >
+ <div className="flex items-center gap-3 mb-3">
+ <Zap size={24} className="text-red-400" />
+ <h3
+ className="text-white"
+ style={{ fontSize: "1rem" }}
+ >
+ How All Crash Games Work
+ </h3>
+ </div>
+ <p className="text-white/60 text-sm leading-relaxed">
+ A multiplier starts at{" "}
+ <span className="text-red-400">1.00x</span> and climbs
+ continuously. Players must click{" "}
+ <span className="text-white/80">"Cash Out"</span>{" "}
+ before the game crashes. Cash out in time → win your
+ stake × multiplier. Wait too long → lose your stake.
+ Each round is independently determined.
+ </p>
+ <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+ {[
+ ["Place Bet", "Set stake before round starts", "1"],
+ [
+ "Watch Multiplier Climb",
+ "1.00x → 2.00x → 10.00x ...",
+ "2",
+ ],
+ [
+ "Cash Out in Time",
+ "Before the crash point!",
+ "3",
+ ],
+ ].map(([title, sub, n]) => (
+ <div
+ key={n}
+ className="rounded-xl p-3 "
+ style={{ background: "rgba(255,255,255,0.03)" }}
+ >
+ <div className="text-red-400 text-xs mb-1">
+ Step {n}
+ </div>
+ <div className="text-white text-sm">{title}</div>
+ <div className="text-white/40 text-xs mt-1">
+ {sub}
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
 
-      {/* History Lookup */}
-      <div
-        className="rounded-2xl p-5 mb-8 "
-        style={{ background: "rgba(255,255,255,0.02)" }}
-      >
-        <h3
-          className="text-white mb-4 flex items-center gap-2"
-          style={{ fontSize: "1rem" }}
-        >
-          <ClipboardList size={18} className="text-white/50" /> History Checking Procedures  - 
-          Universal Steps
-        </h3>
-        {[
-          [
-            "In-Game History",
-            "Most crash games display the last 10–20 round multipliers directly on the main screen.",
-          ],
-          [
-            "Detailed Logs",
-            'Click the "History" or "Stats" icon for a timestamped list of all rounds, including crash point and the user\'s specific action.',
-          ],
-          [
-            "Platform History",
-            'If a user disputes a result, check "My Bets" on the main Betfalme site  -  records Bet ID, Stake, and Settlement Status.',
-          ],
-        ].map(([step, desc], i) => (
-          <div key={i} className="flex gap-4 mb-4 last:mb-0">
-            <div
-              className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-sm"
-              style={{ background: accent, color: "#000" }}
-            >
-              {i + 1}
-            </div>
-            <div>
-              <div className="text-white text-sm">{step}</div>
-              <div className="text-white/50 text-sm mt-0.5">
-                {desc}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+ {/* History Lookup */}
+ <div
+ className="rounded-2xl p-5 mb-8 "
+ style={{ background: "rgba(255,255,255,0.02)" }}
+ >
+ <h3
+ className="text-white mb-4 flex items-center gap-2"
+ style={{ fontSize: "1rem" }}
+ >
+ <ClipboardList size={18} className="text-white/50" /> History Checking Procedures - 
+ Universal Steps
+ </h3>
+ {[
+ [
+ "In-Game History",
+ "Most crash games display the last 10–20 round multipliers directly on the main screen.",
+ ],
+ [
+ "Detailed Logs",
+ 'Click the "History" or "Stats" icon for a timestamped list of all rounds, including crash point and the user\'s specific action.',
+ ],
+ [
+ "Platform History",
+ 'If a user disputes a result, check "My Bets" on the main Betfalme site - records Bet ID, Stake, and Settlement Status.',
+ ],
+ ].map(([step, desc], i) => (
+ <div key={i} className="flex gap-4 mb-4 last:mb-0">
+ <div
+ className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-sm"
+ style={{ background: accent, color: "#000" }}
+ >
+ {i + 1}
+ </div>
+ <div>
+ <div className="text-white text-sm">{step}</div>
+ <div className="text-white/50 text-sm mt-0.5">
+ {desc}
+ </div>
+ </div>
+ </div>
+ ))}
+ </div>
 
-      {/* Game Grid */}
-      <div className="mb-4 flex items-center gap-2">
-        <h3 className="text-white/70 text-sm uppercase tracking-wider">
-          Game Directory
-        </h3>
-        <span
-          className="text-xs px-2 py-0.5 rounded-full  text-red-400"
-          style={{ background: "rgba(239,68,68,0.1)" }}
-        >
-          {crashGames.length} Games
-        </span>
-        {selected && (
-          <button
-            onClick={() => setSelected(null)}
-            className="ml-auto text-xs text-white/40 hover:text-white/70 transition-colors"
-          >
-            ✕ Clear selection
-          </button>
-        )}
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-        {crashGames.map((g) => (
-          <button
-            key={g.name}
-            onClick={() =>
-              setSelected(selected?.name === g.name ? null : g)
-            }
-            className="text-left rounded-xl p-4  transition-all"
-            style={{
-              background:
-                selected?.name === g.name
-                  ? `${accent}18`
-                  : "rgba(255,255,255,0.03)",                selected?.name === g.name
-                  ? `${accent}60`
-                  : "rgba(255,255,255,0.07)",
-              boxShadow:
-                selected?.name === g.name
-                  ? `0 0 20px ${accent}20`
-                  : "none",
-            }}
-          >
-            <div className="text-2xl mb-2">
-              <RenderIcon icon={g.themeIcon} size={24} className="text-white/70" />
-            </div>
-            <div className="text-white text-sm">{g.name}</div>
-            <div className="text-white/40 text-xs mt-0.5">
-              {g.theme}
-            </div>
-          </button>
-        ))}
-      </div>
+ {/* Game Grid */}
+ <div className="mb-4 flex items-center gap-2">
+ <h3 className="text-white/70 text-sm uppercase tracking-wider">
+ Game Directory
+ </h3>
+ <span
+ className="text-xs px-2 py-0.5 rounded-full text-red-400"
+ style={{ background: "rgba(239,68,68,0.1)" }}
+ >
+ {crashGames.length} Games
+ </span>
+ {selected && (
+ <button
+ onClick={() => setSelected(null)}
+ className="ml-auto text-xs text-white/40 hover:text-white/70 transition-colors"
+ >
+ ✕ Clear selection
+ </button>
+ )}
+ </div>
+ <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+ {crashGames.map((g) => (
+ <button
+ key={g.name}
+ onClick={() =>
+ setSelected(selected?.name === g.name ? null : g)
+ }
+ className="text-left rounded-xl p-4 transition-all"
+ style={{
+ background:
+ selected?.name === g.name
+ ? `${accent}18`
+ : "rgba(255,255,255,0.03)", selected?.name === g.name
+ ? `${accent}60`
+ : "rgba(255,255,255,0.07)",
+ boxShadow:
+ selected?.name === g.name
+ ? `0 0 20px ${accent}20`
+ : "none",
+ }}
+ >
+ <div className="text-2xl mb-2">
+ <RenderIcon icon={g.themeIcon} size={24} className="text-white/70" />
+ </div>
+ <div className="text-white text-sm">{g.name}</div>
+ <div className="text-white/40 text-xs mt-0.5">
+ {g.theme}
+ </div>
+ </button>
+ ))}
+ </div>
 
-      {/* Selected game detail */}
-      {selected && (
-        <div
-          className="mt-4 rounded-2xl p-5 "
-          style={{
-            background: `${accent}10`,
-          }}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-xl bg-white/10">
-              <RenderIcon icon={selected.themeIcon} size={24} className="text-white" />
-            </div>
-            <div>
-              <div className="text-white">{selected.name}</div>
-              <div className="text-white/40 text-sm">
-                {selected.theme} Theme
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div
-              className="rounded-xl p-4 "
-              style={{ background: "rgba(0,0,0,0.2)" }}
-            >
-              <div className="text-xs text-white/40 uppercase tracking-wider mb-2">
-                How to Play
-              </div>
-              <div className="text-white/80 text-sm">
-                {selected.mechanic}
-              </div>
-            </div>
-            <div
-              className="rounded-xl p-4 "
-              style={{ background: "rgba(0,0,0,0.2)" }}
-            >
-              <div className="text-xs text-white/40 uppercase tracking-wider mb-2">
-                Checking History
-              </div>
-              <div className="text-white/80 text-sm">
-                {selected.historyHow}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+ {/* Selected game detail */}
+ {selected && (
+ <div
+ className="mt-4 rounded-2xl p-5 "
+ style={{
+ background: `${accent}10`,
+ }}
+ >
+ <div className="flex items-center gap-3 mb-3">
+ <div className="p-2 rounded-xl bg-white/10">
+ <RenderIcon icon={selected.themeIcon} size={24} className="text-white" />
+ </div>
+ <div>
+ <div className="text-white">{selected.name}</div>
+ <div className="text-white/40 text-sm">
+ {selected.theme} Theme
+ </div>
+ </div>
+ </div>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div
+ className="rounded-xl p-4 "
+ style={{ background: "rgba(0,0,0,0.2)" }}
+ >
+ <div className="text-xs text-white/40 uppercase tracking-wider mb-2">
+ How to Play
+ </div>
+ <div className="text-white/80 text-sm">
+ {selected.mechanic}
+ </div>
+ </div>
+ <div
+ className="rounded-xl p-4 "
+ style={{ background: "rgba(0,0,0,0.2)" }}
+ >
+ <div className="text-xs text-white/40 uppercase tracking-wider mb-2">
+ Checking History
+ </div>
+ <div className="text-white/80 text-sm">
+ {selected.historyHow}
+ </div>
+ </div>
+ </div>
+ </div>
+ )}
+ </div>
+ );
 }
 
 // ── Virtual Games View ────────────────────────────────────────────────────────
 function VirtualGamesView({ accent }: { accent: string }) {
-  const [tab, setTab] = useState<"sports" | "racing">("sports");
-  const games =
-    tab === "sports" ? virtualSports : virtualRacing;
-  const categoryIcons: Record<string, LucideIcon> = {
-    Soccer: Shield,
-    Sports: Trophy,
-    Racing: Rocket,
-  };
+ const [tab, setTab] = useState<"sports" | "racing">("sports");
+ const games =
+ tab === "sports" ? virtualSports : virtualRacing;
+ const categoryIcons: Record<string, LucideIcon> = {
+ Soccer: Shield,
+ Sports: Trophy,
+ Racing: Rocket,
+ };
 
-  return (
-    <div>
-      {/* RNG Banner */}
-      <div
-        className="rounded-2xl p-5 mb-8 "
-        style={{ background: "rgba(6,182,212,0.07)" }}
-      >
-        <div className="flex items-start gap-3">
-          <Lock size={24} className="text-cyan-400 mt-0.5 shrink-0" />
-          <div>
-            <h3
-              className="text-cyan-400 mb-1"
-              style={{ fontSize: "0.95rem" }}
-            >
-              RNG Certification & Fairness
-            </h3>
-            <p className="text-white/60 text-sm leading-relaxed">
-              All virtual games on Betfalme.ke are powered by a
-              certified{" "}
-              <span className="text-white/80">
-                Random Number Generator (RNG)
-              </span>
-              . Every match, race, or event is completely
-              unbiased and statistically independent of all
-              previous results. Agents can confirm this to users
-              with confidence.
-            </p>
-          </div>
-        </div>
-      </div>
+ return (
+ <div>
+ {/* RNG Banner */}
+ <div
+ className="rounded-2xl p-5 mb-8 "
+ style={{ background: "rgba(6,182,212,0.07)" }}
+ >
+ <div className="flex items-start gap-3">
+ <Lock size={24} className="text-cyan-400 mt-0.5 shrink-0" />
+ <div>
+ <h3
+ className="text-cyan-400 mb-1"
+ style={{ fontSize: "0.95rem" }}
+ >
+ RNG Certification & Fairness
+ </h3>
+ <p className="text-white/60 text-sm leading-relaxed">
+ All virtual games on Betfalme.ke are powered by a
+ certified{" "}
+ <span className="text-white/80">
+ Random Number Generator (RNG)
+ </span>
+ . Every match, race, or event is completely
+ unbiased and statistically independent of all
+ previous results. Agents can confirm this to users
+ with confidence.
+ </p>
+ </div>
+ </div>
+ </div>
 
-      {/* Sub-tab */}
-      <div className="flex gap-3 mb-6">
-        {(["sports", "racing"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className="px-5 py-2.5 rounded-xl text-sm  transition-all"
-            style={{
-              background:
-                tab === t
-                  ? `${accent}15`
-                  : "rgba(255,255,255,0.04)",                tab === t
-                  ? `${accent}50`
-                  : "rgba(255,255,255,0.08)",
-              color:
-                tab === t ? accent : "rgba(255,255,255,0.5)",
-            }}
-          >
-            {t === "sports"
-              ? <span className="flex items-center gap-2"><Trophy size={14} /> Virtual Sports</span>
-              : <span className="flex items-center gap-2"><Rocket size={14} /> Virtual Racing</span>}
-          </button>
-        ))}
-      </div>
+ {/* Sub-tab */}
+ <div className="flex gap-3 mb-6">
+ {(["sports", "racing"] as const).map((t) => (
+ <button
+ key={t}
+ onClick={() => setTab(t)}
+ className="px-5 py-2.5 rounded-xl text-sm transition-all"
+ style={{
+ background:
+ tab === t
+ ? `${accent}15`
+ : "rgba(255,255,255,0.04)", tab === t
+ ? `${accent}50`
+ : "rgba(255,255,255,0.08)",
+ color:
+ tab === t ? accent : "rgba(255,255,255,0.5)",
+ }}
+ >
+ {t === "sports"
+ ? <span className="flex items-center gap-2"><Trophy size={14} /> Virtual Sports</span>
+ : <span className="flex items-center gap-2"><Rocket size={14} /> Virtual Racing</span>}
+ </button>
+ ))}
+ </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {games.map((g) => (
-          <div
-            key={g.name}
-            className="rounded-xl p-4  flex flex-col gap-3"
-            style={{ background: "rgba(255,255,255,0.03)" }}
-          >
-            <div className="flex items-center gap-3">
-              <RenderIcon icon={categoryIcons[g.category] ?? Gamepad2} size={24} className="text-white/60" />
-              <div>
-                <div className="text-white text-sm">
-                  {g.name}
-                </div>
-                <div className="text-white/35 text-xs">
-                  {g.category}
-                </div>
-              </div>
-            </div>
-            <p className="text-white/55 text-sm leading-relaxed pt-3">
-              {g.howToPlay}
-            </p>
-          </div>
-        ))}
-      </div>
+ <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+ {games.map((g) => (
+ <div
+ key={g.name}
+ className="rounded-xl p-4 flex flex-col gap-3"
+ style={{ background: "rgba(255,255,255,0.03)" }}
+ >
+ <div className="flex items-center gap-3">
+ <RenderIcon icon={categoryIcons[g.category] ?? Gamepad2} size={24} className="text-white/60" />
+ <div>
+ <div className="text-white text-sm">
+ {g.name}
+ </div>
+ <div className="text-white/35 text-xs">
+ {g.category}
+ </div>
+ </div>
+ </div>
+ <p className="text-white/55 text-sm leading-relaxed pt-3">
+ {g.howToPlay}
+ </p>
+ </div>
+ ))}
+ </div>
 
-      {/* History procedures */}
-      <div
-        className="mt-8 rounded-2xl p-5 "
-        style={{ background: "rgba(255,255,255,0.02)" }}
-      >
-        <h3
-          className="text-white mb-4 flex items-center gap-2"
-          style={{ fontSize: "1rem" }}
-        >
-          <ClipboardList size={18} className="text-white/50" /> Checking Virtual Bet History
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div
-            className="rounded-xl p-4 "
-            style={{ background: "rgba(6,182,212,0.06)" }}
-          >
-            <div className="text-cyan-400 text-sm mb-2">
-              Results Tab
-            </div>
-            <div className="text-white/60 text-sm">
-              Every virtual game has a "Results" or "History"
-              tab showing the outcomes of the last 50 events.
-            </div>
-          </div>
-          <div
-            className="rounded-xl p-4 "
-            style={{ background: "rgba(6,182,212,0.06)" }}
-          >
-            <div className="text-cyan-400 text-sm mb-2">
-              My Bets → Settled
-            </div>
-            <div className="text-white/60 text-sm">
-              Users can see their specific virtual bets in the
-              "My Bets" → "Settled" section of their account.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ {/* History procedures */}
+ <div
+ className="mt-8 rounded-2xl p-5 "
+ style={{ background: "rgba(255,255,255,0.02)" }}
+ >
+ <h3
+ className="text-white mb-4 flex items-center gap-2"
+ style={{ fontSize: "1rem" }}
+ >
+ <ClipboardList size={18} className="text-white/50" /> Checking Virtual Bet History
+ </h3>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div
+ className="rounded-xl p-4 "
+ style={{ background: "rgba(6,182,212,0.06)" }}
+ >
+ <div className="text-cyan-400 text-sm mb-2">
+ Results Tab
+ </div>
+ <div className="text-white/60 text-sm">
+ Every virtual game has a "Results" or "History"
+ tab showing the outcomes of the last 50 events.
+ </div>
+ </div>
+ <div
+ className="rounded-xl p-4 "
+ style={{ background: "rgba(6,182,212,0.06)" }}
+ >
+ <div className="text-cyan-400 text-sm mb-2">
+ My Bets → Settled
+ </div>
+ <div className="text-white/60 text-sm">
+ Users can see their specific virtual bets in the
+ "My Bets" → "Settled" section of their account.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 }
 
 // ── Casino & Slots View ───────────────────────────────────────────────────────
 function CasinoView({ accent }: { accent: string }) {
-  const popularSlots = [
-    "Honey Money",
-    "Sweet Bonanza",
-    "Gates of Olympus",
-    "The Dog House",
-  ];
-  const liveGames = [
-    "Roulette",
-    "Blackjack",
-    "Baccarat",
-    "Poker",
-  ];
+ const popularSlots = [
+ "Honey Money",
+ "Sweet Bonanza",
+ "Gates of Olympus",
+ "The Dog House",
+ ];
+ const liveGames = [
+ "Roulette",
+ "Blackjack",
+ "Baccarat",
+ "Poker",
+ ];
 
-  return (
-    <div className="flex flex-col gap-8">
-      {/* Slots */}
-      <div>
-        <div
-          className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 "
-          style={{ background: "rgba(245,158,11,0.07)" }}
-        >
-          <Gem size={28} className="text-yellow-400" />
-          <div>
-            <h3
-              className="text-yellow-400"
-              style={{ fontSize: "1rem" }}
-            >
-              Slots  -  Mechanics & RTP
-            </h3>
-            <p className="text-white/45 text-sm">
-              Return to Player typically ranges from 94% to 98%
-            </p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div
-            className="rounded-xl p-4 "
-            style={{ background: "rgba(255,255,255,0.03)" }}
-          >
-            <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
-              How to Play
-            </div>
-            <p className="text-white/65 text-sm">
-              Set the coin value or bet level, then click{" "}
-              <span className="text-white/90">"Spin."</span>{" "}
-              Matching symbols on paylines trigger wins. Each
-              game's rules differ  -  check the paytable.
-            </p>
-          </div>
-          <div
-            className="rounded-xl p-4 "
-            style={{ background: "rgba(255,255,255,0.03)" }}
-          >
-            <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
-              Popular Slots
-            </div>
-            <div className="flex flex-col gap-2">
-              {popularSlots.map((s) => (
-                <div
-                  key={s}
-                  className="flex items-center gap-2 text-sm text-white/75"
-                >
-                  <div
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ background: accent }}
-                  />
-                  {s}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div
-            className="rounded-xl p-4 "
-            style={{ background: "rgba(255,255,255,0.03)" }}
-          >
-            <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
-              Bonus Rounds
-            </div>
-            <p className="text-white/65 text-sm">
-              Many slots feature{" "}
-              <span className="text-white/90">Free Spins</span>{" "}
-              or{" "}
-              <span className="text-white/90">"Pick Me"</span>{" "}
-              bonuses triggered by Scatter symbols landing on
-              the reels simultaneously.
-            </p>
-          </div>
-        </div>
-      </div>
+ return (
+ <div className="flex flex-col gap-8">
+ {/* Slots */}
+ <div>
+ <div
+ className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 "
+ style={{ background: "rgba(245,158,11,0.07)" }}
+ >
+ <Gem size={28} className="text-yellow-400" />
+ <div>
+ <h3
+ className="text-yellow-400"
+ style={{ fontSize: "1rem" }}
+ >
+ Slots - Mechanics & RTP
+ </h3>
+ <p className="text-white/45 text-sm">
+ Return to Player typically ranges from 94% to 98%
+ </p>
+ </div>
+ </div>
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+ <div
+ className="rounded-xl p-4 "
+ style={{ background: "rgba(255,255,255,0.03)" }}
+ >
+ <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
+ How to Play
+ </div>
+ <p className="text-white/65 text-sm">
+ Set the coin value or bet level, then click{" "}
+ <span className="text-white/90">"Spin."</span>{" "}
+ Matching symbols on paylines trigger wins. Each
+ game's rules differ - check the paytable.
+ </p>
+ </div>
+ <div
+ className="rounded-xl p-4 "
+ style={{ background: "rgba(255,255,255,0.03)" }}
+ >
+ <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
+ Popular Slots
+ </div>
+ <div className="flex flex-col gap-2">
+ {popularSlots.map((s) => (
+ <div
+ key={s}
+ className="flex items-center gap-2 text-sm text-white/75"
+ >
+ <div
+ className="w-1.5 h-1.5 rounded-full shrink-0"
+ style={{ background: accent }}
+ />
+ {s}
+ </div>
+ ))}
+ </div>
+ </div>
+ <div
+ className="rounded-xl p-4 "
+ style={{ background: "rgba(255,255,255,0.03)" }}
+ >
+ <div className="text-white/40 text-xs uppercase tracking-wider mb-3">
+ Bonus Rounds
+ </div>
+ <p className="text-white/65 text-sm">
+ Many slots feature{" "}
+ <span className="text-white/90">Free Spins</span>{" "}
+ or{" "}
+ <span className="text-white/90">"Pick Me"</span>{" "}
+ bonuses triggered by Scatter symbols landing on
+ the reels simultaneously.
+ </p>
+ </div>
+ </div>
+ </div>
 
-      {/* Live Casino */}
-      <div>
-        <div
-          className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 "
-          style={{ background: "rgba(245,158,11,0.07)" }}
-        >
-          <Gamepad2 size={28} className="text-yellow-400" />
-          <div>
-            <h3
-              className="text-yellow-400"
-              style={{ fontSize: "1rem" }}
-            >
-              Live Casino  -  Real Dealers, Real Time
-            </h3>
-            <p className="text-white/45 text-sm">
-              Streamed from professional studios  -  results via
-              physical action, not RNG
-            </p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {liveGames.map((g) => (
-            <div
-              key={g}
-              className="rounded-xl p-4  text-center"
-              style={{ background: "rgba(255,255,255,0.03)" }}
-            >
-              <div className="text-2xl mb-2">
-                <RenderIcon icon={{ Roulette: Dices, Blackjack: Layers, Baccarat: Gem, Poker: Trophy }[g] ?? Gamepad2} size={24} className="text-yellow-400" />
-              </div>
-              <div className="text-white text-sm">{g}</div>
-              <div className="text-white/35 text-xs mt-1">
-                Live Dealer
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-white/40 text-sm px-1">
-          Users can chat with the dealer and other players in
-          real time. Results are physical  -  no RNG involved.
-        </p>
-      </div>
+ {/* Live Casino */}
+ <div>
+ <div
+ className="flex items-center gap-3 mb-5 rounded-2xl px-5 py-4 "
+ style={{ background: "rgba(245,158,11,0.07)" }}
+ >
+ <Gamepad2 size={28} className="text-yellow-400" />
+ <div>
+ <h3
+ className="text-yellow-400"
+ style={{ fontSize: "1rem" }}
+ >
+ Live Casino - Real Dealers, Real Time
+ </h3>
+ <p className="text-white/45 text-sm">
+ Streamed from professional studios - results via
+ physical action, not RNG
+ </p>
+ </div>
+ </div>
+ <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+ {liveGames.map((g) => (
+ <div
+ key={g}
+ className="rounded-xl p-4 text-center"
+ style={{ background: "rgba(255,255,255,0.03)" }}
+ >
+ <div className="text-2xl mb-2">
+ <RenderIcon icon={{ Roulette: Dices, Blackjack: Layers, Baccarat: Gem, Poker: Trophy }[g] ?? Gamepad2} size={24} className="text-yellow-400" />
+ </div>
+ <div className="text-white text-sm">{g}</div>
+ <div className="text-white/35 text-xs mt-1">
+ Live Dealer
+ </div>
+ </div>
+ ))}
+ </div>
+ <p className="mt-3 text-white/40 text-sm px-1">
+ Users can chat with the dealer and other players in
+ real time. Results are physical - no RNG involved.
+ </p>
+ </div>
 
-      {/* Table Games + Logs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div
-          className="rounded-xl p-5 "
-          style={{ background: "rgba(255,255,255,0.03)" }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Dices size={20} className="text-white/60" />
-            <span
-              className="text-white"
-              style={{ fontSize: "0.95rem" }}
-            >
-              Table Games (RNG)
-            </span>
-          </div>
-          <p className="text-white/60 text-sm leading-relaxed">
-            Digital versions of classic casino games. RNG-based
-            and faster-paced than live casino. Same core rules  - 
-            Blackjack, Roulette, Baccarat  -  but without the
-            dealer stream.
-          </p>
-        </div>
-        <div
-          className="rounded-xl p-5 "
-          style={{ background: "rgba(245,158,11,0.07)" }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Folder size={20} className="text-yellow-400" />
-            <span
-              className="text-yellow-400"
-              style={{ fontSize: "0.95rem" }}
-            >
-              Accessing Game Logs
-            </span>
-          </div>
-          <p className="text-white/60 text-sm leading-relaxed">
-            Within any casino game, click the{" "}
-            <span className="text-white/80">Menu (≡)</span> or{" "}
-            <span className="text-white/80">Settings (⚙)</span>{" "}
-            icon and select{" "}
-            <span className="text-yellow-400">
-              "Game History."
-            </span>{" "}
-            This provides a complete breakdown of every spin or
-            hand played with timestamps.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+ {/* Table Games + Logs */}
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div
+ className="rounded-xl p-5 "
+ style={{ background: "rgba(255,255,255,0.03)" }}
+ >
+ <div className="flex items-center gap-2 mb-3">
+ <Dices size={20} className="text-white/60" />
+ <span
+ className="text-white"
+ style={{ fontSize: "0.95rem" }}
+ >
+ Table Games (RNG)
+ </span>
+ </div>
+ <p className="text-white/60 text-sm leading-relaxed">
+ Digital versions of classic casino games. RNG-based
+ and faster-paced than live casino. Same core rules - 
+ Blackjack, Roulette, Baccarat - but without the
+ dealer stream.
+ </p>
+ </div>
+ <div
+ className="rounded-xl p-5 "
+ style={{ background: "rgba(245,158,11,0.07)" }}
+ >
+ <div className="flex items-center gap-2 mb-3">
+ <Folder size={20} className="text-yellow-400" />
+ <span
+ className="text-yellow-400"
+ style={{ fontSize: "0.95rem" }}
+ >
+ Accessing Game Logs
+ </span>
+ </div>
+ <p className="text-white/60 text-sm leading-relaxed">
+ Within any casino game, click the{" "}
+ <span className="text-white/80">Menu (≡)</span> or{" "}
+ <span className="text-white/80">Settings (⚙)</span>{" "}
+ icon and select{" "}
+ <span className="text-yellow-400">
+ "Game History."
+ </span>{" "}
+ This provides a complete breakdown of every spin or
+ hand played with timestamps.
+ </p>
+ </div>
+ </div>
+ </div>
+ );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MARKET GUIDE SHELL
 // ═══════════════════════════════════════════════════════════════════════════════
 function MarketGuideView() {
-  const [activeSport, setActiveSport] =
-    useState<Sport>("soccer");
-  const sport = sportsData[activeSport];
-  const totalMarkets = sport.categories.reduce(
-    (acc, cat) => acc + cat.markets.length,
-    0,
-  );
+ const [activeSport, setActiveSport] =
+ useState<Sport>("soccer");
+ const sport = sportsData[activeSport];
+ const totalMarkets = sport.categories.reduce(
+ (acc, cat) => acc + cat.markets.length,
+ 0,
+ );
 
-  return (
-    <div>
-      {/* Sport Nav */}
-      <div
-        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/90"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
-          {(
-            Object.entries(sportsData) as [Sport, SportData][]
-          ).map(([key, data]) => (
-            <SportTab
-              key={key}
-              sport={key}
-              data={data}
-              active={activeSport === key}
-              onClick={() => setActiveSport(key)}
-            />
-          ))}
+ return (
+ <div>
+ {/* Sport Nav */}
+ <div
+ className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/90"
+ >
+ <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
+ {(
+ Object.entries(sportsData) as [Sport, SportData][]
+ ).map(([key, data]) => (
+ <SportTab
+ key={key}
+ sport={key}
+ data={data}
+ active={activeSport === key}
+ onClick={() => setActiveSport(key)}
+ />
+ ))}
 
-        </div>
-      </div>
+ </div>
+ </div>
 
-      {/* Sport hero strip */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-[#1b1e2b]">
-          <RenderIcon icon={sport.icon} size={22} style={{ color: sport.accent }} />
-        </div>
-        <div>
-          <div
-            className="text-white"
-            style={{ fontSize: "1rem", color: sport.accent }}
-          >
-            {sport.label} Markets
-          </div>
-          <div className="text-white/35 text-sm">
-            {sport.categories.length} categories ·{" "}
-            {totalMarkets} markets
-          </div>
-        </div>
-      </div>
+ {/* Sport hero strip */}
+ <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
+ <div className="p-2.5 rounded-xl bg-[#1b1e2b]">
+ <RenderIcon icon={sport.icon} size={22} style={{ color: sport.accent }} />
+ </div>
+ <div>
+ <div
+ className="text-white"
+ style={{ fontSize: "1rem", color: sport.accent }}
+ >
+ {sport.label} Markets
+ </div>
+ <div className="text-white/35 text-sm">
+ {sport.categories.length} categories ·{" "}
+ {totalMarkets} markets
+ </div>
+ </div>
+ </div>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
-        {activeSport === "crash" ? (
-          <CrashGamesView accent={sport.accent} />
-        ) : activeSport === "virtual" ? (
-          <VirtualGamesView accent={sport.accent} />
-        ) : activeSport === "casino" ? (
-          <CasinoView accent={sport.accent} />
-        ) : (
-          <>
-            {sport.categories.map((cat) => (
-              <CategorySection
-                key={cat.id}
-                category={cat}
-                accent={sport.accent}
-              />
-            ))}
-            <div
-              className="rounded-2xl p-6 text-center"
-              style={{
-                background: "rgba(255,255,255,0.02)",
-                : "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <p className="text-white/30 text-sm">
-                Betfalme.ke Sportsbook Market Guide · Soccer Parts
-                1–3 · Basketball Part 4 · Tennis Part 5 · Logical
-                &amp; Combo Markets
-              </p>
-            </div>
-          </>
-        )}
-      </main>
-    </div>
-  );
+ <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
+ {activeSport === "crash" ? (
+ <CrashGamesView accent={sport.accent} />
+ ) : activeSport === "virtual" ? (
+ <VirtualGamesView accent={sport.accent} />
+ ) : activeSport === "casino" ? (
+ <CasinoView accent={sport.accent} />
+ ) : (
+ <>
+ {sport.categories.map((cat) => (
+ <CategorySection
+ key={cat.id}
+ category={cat}
+ accent={sport.accent}
+ />
+ ))}
+ <div
+ className="rounded-2xl p-6 text-center"
+ style={{
+ background: "rgba(255,255,255,0.02)",
+
+ }}
+ >
+ <p className="text-white/30 text-sm">
+ Betfalme.ke Sportsbook Market Guide · Soccer Parts
+ 1–3 · Basketball Part 4 · Tennis Part 5 · Logical
+ &amp; Combo Markets
+ </p>
+ </div>
+ </>
+ )}
+ </main>
+ </div>
+ );
 }
 
 // ── Promotions View ──────────────────────────────────────────────────────────
 function PromotionsView({ accent }: { accent: string }) {
-  return (
-    <div className="space-y-8">
-      <div 
-        className="rounded-2xl p-6 "
-        style={{ background: "rgba(168,85,247,0.07)" }}
-      >
-      <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <Gift size={20} className="text-purple-400" /> Active Promotions & Bonuses
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              title: "Welcome Bonus",
-              desc: "100% first deposit match up to KES 5,000.",
-              rule: "4x wagering requirement on odds 2.0+."
-            },
-            {
-              title: "Weekly Cashback",
-              desc: "10% back on net losses every Monday.",
-              rule: "Minimum loss of KES 100 to qualify."
-            },
-            {
-              title: "Accumulator Boost",
-              desc: "Up to 50% extra winnings on 5+ selections.",
-              rule: "Each selection must be odds 1.30+."
-            },
-            {
-              title: "Refer a Friend",
-              desc: "Earn KES 500 for every successful referral.",
-              rule: "Referral must deposit at least KES 1,000."
-            }
-          ].map((p, i) => (
-            <div key={i} className="p-4 rounded-xl bg-[#1b1e2b]">
-              <div className="text-purple-400 font-bold mb-1">{p.title}</div>
-              <p className="text-white/70 text-sm mb-2">{p.desc}</p>
-              <div className="text-[10px] text-white/30 uppercase tracking-wider font-bold">Key Rule: {p.rule}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+ return (
+ <div className="space-y-8">
+ <div 
+ className="rounded-2xl p-6 "
+ style={{ background: "rgba(168,85,247,0.07)" }}
+ >
+ <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+ <Gift size={20} className="text-purple-400" /> Active Promotions & Bonuses
+ </h3>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ {[
+ {
+ title: "Welcome Bonus",
+ desc: "100% first deposit match up to KES 5,000.",
+ rule: "4x wagering requirement on odds 2.0+."
+ },
+ {
+ title: "Weekly Cashback",
+ desc: "10% back on net losses every Monday.",
+ rule: "Minimum loss of KES 100 to qualify."
+ },
+ {
+ title: "Accumulator Boost",
+ desc: "Up to 50% extra winnings on 5+ selections.",
+ rule: "Each selection must be odds 1.30+."
+ },
+ {
+ title: "Refer a Friend",
+ desc: "Earn KES 500 for every successful referral.",
+ rule: "Referral must deposit at least KES 1,000."
+ }
+ ].map((p, i) => (
+ <div key={i} className="p-4 rounded-xl bg-[#1b1e2b]">
+ <div className="text-purple-400 font-bold mb-1">{p.title}</div>
+ <p className="text-white/70 text-sm mb-2">{p.desc}</p>
+ <div className="text-[10px] text-white/30 uppercase tracking-wider font-bold">Key Rule: {p.rule}</div>
+ </div>
+ ))}
+ </div>
+ </div>
 
-      <div className="rounded-2xl p-6 bg-[#131520]">
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <Gem size={20} className="text-purple-400" /> VIP & Loyalty Tiers
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-white/40 text-xs uppercase tracking-widest">
-                <th className="pb-3 px-2">Tier</th>
-                <th className="pb-3 px-2">Monthly Volume</th>
-                <th className="pb-3 px-2">Cashback %</th>
-                <th className="pb-3 px-2">Perks</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm text-white/70">
-              {[
-                { name: "Bronze", vol: "KES 0+", cb: "5%", perks: "Standard Support" },
-                { name: "Silver", vol: "KES 50k+", cb: "7%", perks: "Faster Withdrawals" },
-                { name: "Gold", vol: "KES 200k+", cb: "10%", perks: "Personal Account Manager" },
-                { name: "Platinum", vol: "KES 1M+", cb: "15%", perks: "VIP Events & Gifts" }
-              ].map((t, i) => (
-                <tr key={i} className=" ">
-                  <td className="py-4 px-2 font-bold text-white">{t.name}</td>
-                  <td className="py-4 px-2">{t.vol}</td>
-                  <td className="py-4 px-2 text-purple-400">{t.cb}</td>
-                  <td className="py-4 px-2 text-xs">{t.perks}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+ <div className="rounded-2xl p-6 bg-[#131520]">
+ <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+ <Gem size={20} className="text-purple-400" /> VIP & Loyalty Tiers
+ </h3>
+ <div className="overflow-x-auto">
+ <table className="w-full text-left">
+ <thead>
+ <tr className="text-white/40 text-xs uppercase tracking-widest">
+ <th className="pb-3 px-2">Tier</th>
+ <th className="pb-3 px-2">Monthly Volume</th>
+ <th className="pb-3 px-2">Cashback %</th>
+ <th className="pb-3 px-2">Perks</th>
+ </tr>
+ </thead>
+ <tbody className="text-sm text-white/70">
+ {[
+ { name: "Bronze", vol: "KES 0+", cb: "5%", perks: "Standard Support" },
+ { name: "Silver", vol: "KES 50k+", cb: "7%", perks: "Faster Withdrawals" },
+ { name: "Gold", vol: "KES 200k+", cb: "10%", perks: "Personal Account Manager" },
+ { name: "Platinum", vol: "KES 1M+", cb: "15%", perks: "VIP Events & Gifts" }
+ ].map((t, i) => (
+ <tr key={i} className=" ">
+ <td className="py-4 px-2 font-bold text-white">{t.name}</td>
+ <td className="py-4 px-2">{t.vol}</td>
+ <td className="py-4 px-2 text-purple-400">{t.cb}</td>
+ <td className="py-4 px-2 text-xs">{t.perks}</td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ );
 }
 
 // ── Support View ─────────────────────────────────────────────────────────────
 function SupportView({ accent }: { accent: string }) {
-  return (
-    <div className="space-y-8">
-      <div 
-        className="rounded-2xl p-6 "
-        style={{ background: "rgba(59,130,246,0.07)" }}
-      >
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <Wrench size={20} className="text-blue-400" /> Escalation Matrix
-        </h3>
-        <div className="space-y-4">
-          {[
-            { level: "Level 1", role: "General Agent", handle: "Password resets, bet queries, basic technical help." },
-            { level: "Level 2", role: "Team Leader", handle: "Large withdrawal approvals, account closures, complex bet disputes." },
-            { level: "Level 3", role: "Operations Manager", handle: "Fraud investigations, major system outages, legal threats." }
-          ].map((e, i) => (
-            <div key={i} className="flex gap-4 p-4 rounded-xl bg-[#1b1e2b]">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20  flex items-center justify-center shrink-0">
-                <span className="text-blue-400 font-black">{i+1}</span>
-              </div>
-              <div>
-                <div className="text-white font-bold">{e.level} — {e.role}</div>
-                <p className="text-white/50 text-sm mt-1">{e.handle}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+ return (
+ <div className="space-y-8">
+ <div 
+ className="rounded-2xl p-6 "
+ style={{ background: "rgba(59,130,246,0.07)" }}
+ >
+ <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+ <Wrench size={20} className="text-blue-400" /> Escalation Matrix
+ </h3>
+ <div className="space-y-4">
+ {[
+ { level: "Level 1", role: "General Agent", handle: "Password resets, bet queries, basic technical help." },
+ { level: "Level 2", role: "Team Leader", handle: "Large withdrawal approvals, account closures, complex bet disputes." },
+ { level: "Level 3", role: "Operations Manager", handle: "Fraud investigations, major system outages, legal threats." }
+ ].map((e, i) => (
+ <div key={i} className="flex gap-4 p-4 rounded-xl bg-[#1b1e2b]">
+ <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+ <span className="text-blue-400 font-black">{i+1}</span>
+ </div>
+ <div>
+ <div className="text-white font-bold">{e.level} — {e.role}</div>
+ <p className="text-white/50 text-sm mt-1">{e.handle}</p>
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-2xl p-6 bg-[#131520]">
-          <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Standard Procedures</h4>
-          <ul className="space-y-3">
-            {[
-              "Verify user identity via Email/Phone OTP before sharing account data.",
-              "Document every call/chat with a unique Ticket ID.",
-              "Check 'Risk Score' before approving withdrawals over KES 10,000.",
-              "Tag 'Responsible Gaming' flags immediately for Level 2 review."
-            ].map((s, i) => (
-              <li key={i} className="flex gap-3 text-sm text-white/60">
-                <span className="text-blue-500 mt-0.5">●</span>
-                {s}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-2xl p-6  bg-red-500/5">
-          <h4 className="text-red-400 mb-4 uppercase text-xs tracking-widest font-black">Emergency Protocols</h4>
-          <ul className="space-y-3">
-            {[
-              "Platform Crash: Notify DevOps channel on Slack immediately.",
-              "Security Breach: Lock all admin accounts and initiate 'Code Red'.",
-              "Suspicious Betting: Suspend the market and notify Odds Team.",
-              "Self-Harm Threat: Follow the 'Duty of Care' script and escalate to L3."
-            ].map((s, i) => (
-              <li key={i} className="flex gap-3 text-sm text-red-400/70">
-                <AlertTriangle size={14} className="text-red-500 mt-0.5 shrink-0" />
-                {s}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+ <div className="rounded-2xl p-6 bg-[#131520]">
+ <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Standard Procedures</h4>
+ <ul className="space-y-3">
+ {[
+ "Verify user identity via Email/Phone OTP before sharing account data.",
+ "Document every call/chat with a unique Ticket ID.",
+ "Check 'Risk Score' before approving withdrawals over KES 10,000.",
+ "Tag 'Responsible Gaming' flags immediately for Level 2 review."
+ ].map((s, i) => (
+ <li key={i} className="flex gap-3 text-sm text-white/60">
+ <span className="text-blue-500 mt-0.5">●</span>
+ {s}
+ </li>
+ ))}
+ </ul>
+ </div>
+ <div className="rounded-2xl p-6 bg-red-500/5">
+ <h4 className="text-red-400 mb-4 uppercase text-xs tracking-widest font-black">Emergency Protocols</h4>
+ <ul className="space-y-3">
+ {[
+ "Platform Crash: Notify DevOps channel on Slack immediately.",
+ "Security Breach: Lock all admin accounts and initiate 'Code Red'.",
+ "Suspicious Betting: Suspend the market and notify Odds Team.",
+ "Self-Harm Threat: Follow the 'Duty of Care' script and escalate to L3."
+ ].map((s, i) => (
+ <li key={i} className="flex gap-3 text-sm text-red-400/70">
+ <AlertTriangle size={14} className="text-red-500 mt-0.5 shrink-0" />
+ {s}
+ </li>
+ ))}
+ </ul>
+ </div>
+ </div>
+ </div>
+ );
 }
 
 // ── Compliance View ──────────────────────────────────────────────────────────
 function ComplianceView({ accent }: { accent: string }) {
-  return (
-    <div className="space-y-8">
-      <div 
-        className="rounded-2xl p-6 "
-        style={{ background: "rgba(16,185,129,0.07)" }}
-      >
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <ShieldCheck size={20} className="text-emerald-400" /> Responsible Gaming Pillars
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { title: "Self-Exclusion", icon: Lock, desc: "Permanent or temporary account locking at user request." },
-            { title: "Deposit Limits", icon: TrendingDown, desc: "Daily, weekly, or monthly caps on how much a user can fund." },
-            { title: "Reality Checks", icon: Clock, desc: "Automated alerts showing time spent and net position." }
-          ].map((p, i) => (
-            <div key={i} className="p-5 rounded-xl bg-[#1b1e2b] text-center">
-              <div className="flex justify-center mb-3">
-                <RenderIcon icon={p.icon} size={28} className="text-emerald-400" />
-              </div>
-              <div className="text-emerald-400 font-bold mb-2">{p.title}</div>
-              <p className="text-white/50 text-xs leading-relaxed">{p.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+ return (
+ <div className="space-y-8">
+ <div 
+ className="rounded-2xl p-6 "
+ style={{ background: "rgba(16,185,129,0.07)" }}
+ >
+ <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+ <ShieldCheck size={20} className="text-emerald-400" /> Responsible Gaming Pillars
+ </h3>
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+ {[
+ { title: "Self-Exclusion", icon: Lock, desc: "Permanent or temporary account locking at user request." },
+ { title: "Deposit Limits", icon: TrendingDown, desc: "Daily, weekly, or monthly caps on how much a user can fund." },
+ { title: "Reality Checks", icon: Clock, desc: "Automated alerts showing time spent and net position." }
+ ].map((p, i) => (
+ <div key={i} className="p-5 rounded-xl bg-[#1b1e2b] text-center">
+ <div className="flex justify-center mb-3">
+ <RenderIcon icon={p.icon} size={28} className="text-emerald-400" />
+ </div>
+ <div className="text-emerald-400 font-bold mb-2">{p.title}</div>
+ <p className="text-white/50 text-xs leading-relaxed">{p.desc}</p>
+ </div>
+ ))}
+ </div>
+ </div>
 
-      <div className="rounded-2xl p-6 bg-[#131520]">
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <FileCheck size={20} className="text-white/60" /> KYC & Licensing Requirements
-        </h3>
-        <div className="space-y-6">
-          <div className="p-4 rounded-xl bg-[#1b1e2b]">
-            <div className="text-white text-sm font-bold mb-2">Proof of Identity (ID)</div>
-            <p className="text-white/40 text-xs">National ID, Passport, or Alien Card. Must be valid and clear. Scan both sides.</p>
-          </div>
-          <div className="p-4 rounded-xl bg-[#1b1e2b]">
-            <div className="text-white text-sm font-bold mb-2">Proof of Address (POA)</div>
-            <p className="text-white/40 text-xs">Utility bill or bank statement (not older than 3 months). Must match account name.</p>
-          </div>
-          <div className="p-4 rounded-xl bg-[#1b1e2b]">
-            <div className="text-white text-sm font-bold mb-2">Age Verification</div>
-            <p className="text-white/40 text-xs text-red-400/60 font-bold">STRICT 18+ POLICY. No exceptions. Any account suspected of underage play must be locked instantly.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ <div className="rounded-2xl p-6 bg-[#131520]">
+ <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+ <FileCheck size={20} className="text-white/60" /> KYC & Licensing Requirements
+ </h3>
+ <div className="space-y-6">
+ <div className="p-4 rounded-xl bg-[#1b1e2b]">
+ <div className="text-white text-sm font-bold mb-2">Proof of Identity (ID)</div>
+ <p className="text-white/40 text-xs">National ID, Passport, or Alien Card. Must be valid and clear. Scan both sides.</p>
+ </div>
+ <div className="p-4 rounded-xl bg-[#1b1e2b]">
+ <div className="text-white text-sm font-bold mb-2">Proof of Address (POA)</div>
+ <p className="text-white/40 text-xs">Utility bill or bank statement (not older than 3 months). Must match account name.</p>
+ </div>
+ <div className="p-4 rounded-xl bg-[#1b1e2b]">
+ <div className="text-white text-sm font-bold mb-2">Age Verification</div>
+ <p className="text-white/40 text-xs text-red-400/60 font-bold">STRICT 18+ POLICY. No exceptions. Any account suspected of underage play must be locked instantly.</p>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 }
 
 // ── Staff Toolkit View ───────────────────────────────────────────────────────
 function ToolkitView({ accent }: { accent: string }) {
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* ── Extension Deployment Card ── */}
-      <div 
-        className="rounded-3xl p-8  relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
-        style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.1) 100%)" }}
-      >
-        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-           <img src="/favicon.svg" alt="BG" className="w-32 h-32 rotate-12" />
-        </div>
+ return (
+ <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+ {/* ── Extension Deployment Card ── */}
+ <div 
+ className="rounded-3xl p-8 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+ style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.1) 100%)" }}
+ >
+ <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+ <img src="/favicon.svg" alt="BG" className="w-32 h-32 rotate-12" />
+ </div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
-          <div className="w-20 h-20 group-hover:scale-110 transition-transform duration-500 overflow-hidden">
-             <img src="/favicon.svg" alt="Extension" className="w-20 h-20 object-contain animate-logo-pulse" />
-          </div>
-          
-          <div className="flex-1 text-center lg:text-left">
-            <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
-              <h3 className="text-white text-2xl font-black tracking-tight">BlastChat Accelerator</h3>
-              <span className="px-2.5 py-0.5 bg-accent text-black text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg">v1.0 STABLE</span>
-            </div>
-            <p className="text-white/60 text-base max-w-xl leading-relaxed">
-              Equip your browser with real-time smart intelligence. This extension syncs with our live templates to provide instant suggestions as you chat with clients.
-            </p>
-            <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-4">
-               <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
-                  <BrainCircuit size={12} /> Smart Matcher
-               </div>
-               <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
-                  <RefreshCw size={12} /> Live Sync
-               </div>
-               <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
-                  <MousePointer size={12} /> Highlight-to-Match
-               </div>
-            </div>
-          </div>
+ <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
+ <div className="w-20 h-20 group-hover:scale-110 transition-transform duration-500 overflow-hidden">
+ <img src="/favicon.svg" alt="Extension" className="w-20 h-20 object-contain animate-logo-pulse" />
+ </div>
+ 
+ <div className="flex-1 text-center lg:text-left">
+ <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
+ <h3 className="text-white text-2xl font-black tracking-tight">BlastChat Accelerator</h3>
+ <span className="px-2.5 py-0.5 bg-accent text-black text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg">v1.0 STABLE</span>
+ </div>
+ <p className="text-white/60 text-base max-w-xl leading-relaxed">
+ Equip your browser with real-time smart intelligence. This extension syncs with our live templates to provide instant suggestions as you chat with clients.
+ </p>
+ <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-4">
+ <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+ <BrainCircuit size={12} /> Smart Matcher
+ </div>
+ <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+ <RefreshCw size={12} /> Live Sync
+ </div>
+ <div className="flex items-center gap-2 px-3 py-1 bg-[#1b1e2b] rounded-lg/5 text-[10px] text-white/50 font-bold uppercase tracking-widest">
+ <MousePointer size={12} /> Highlight-to-Match
+ </div>
+ </div>
+ </div>
 
-          <div className="flex flex-col gap-3 min-w-[220px]">
-             <a 
-               href="/blastchat-extension.zip"
-               download="blastchat-extension.zip"
-               className="w-full px-6 py-4 bg-accent text-black rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
-             >
-               <Download size={16} /> Download Extension (Chrome)
-             </a>
+ <div className="flex flex-col gap-3 min-w-[220px]">
+ <a 
+ href="/blastchat-extension.zip"
+ download="blastchat-extension.zip"
+ className="w-full px-6 py-4 bg-accent text-black rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
+ >
+ <Download size={16} /> Download Extension (Chrome)
+ </a>
 
-             <a 
-               href="/templates/blastchat-extension.xpi"
-               className="w-full px-6 py-4 bg-orange-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(234,88,12,0.3)] hover:shadow-[0_15px_30px_rgba(234,88,12,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
-             >
-               <WifiOff size={16} /> Install Add-on (Firefox)
-             </a>
-             
-             <div className="p-4 rounded-2xl bg-[#1b1e2b] text-[10px] text-white/40 leading-relaxed space-y-2">
-                <div>
-                  <span className="text-accent font-black">CHROME INSTALLATION:</span><br/>
-                  1. Unzip .zip download<br/>
-                  2. Go to <span className="text-white/60">chrome://extensions</span><br/>
-                  3. Enable <span className="text-white/60">Developer Mode</span><br/>
-                  4. Click <span className="text-white/60">Load unpacked</span> and select folder
-                </div>
-                <div className=" pt-2">
-                  <span className="text-orange-500 font-black">FIREFOX INSTALLATION:</span><br/>
-                  1. Download the Firefox Add-on (.xpi)<br/>
-                  2. Go to <span className="text-white/60">about:addons</span><br/>
-                  3. Click the <span className="text-white/60">gear icon</span> (Settings)<br/>
-                  4. Select <span className="text-white/60">Install Add-on From File...</span> and select .xpi
-                </div>
-             </div>
-          </div>
-        </div>
-      </div>
+ <a 
+ href="/templates/blastchat-extension.xpi"
+ className="w-full px-6 py-4 bg-orange-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(234,88,12,0.3)] hover:shadow-[0_15px_30px_rgba(234,88,12,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
+ >
+ <WifiOff size={16} /> Install Add-on (Firefox)
+ </a>
+ 
+ <div className="p-4 rounded-2xl bg-[#1b1e2b] text-[10px] text-white/40 leading-relaxed space-y-2">
+ <div>
+ <span className="text-accent font-black">CHROME INSTALLATION:</span><br/>
+ 1. Unzip .zip download<br/>
+ 2. Go to <span className="text-white/60">chrome://extensions</span><br/>
+ 3. Enable <span className="text-white/60">Developer Mode</span><br/>
+ 4. Click <span className="text-white/60">Load unpacked</span> and select folder
+ </div>
+ <div className=" pt-2">
+ <span className="text-orange-500 font-black">FIREFOX INSTALLATION:</span><br/>
+ 1. Download the Firefox Add-on (.xpi)<br/>
+ 2. Go to <span className="text-white/60">about:addons</span><br/>
+ 3. Click the <span className="text-white/60">gear icon</span> (Settings)<br/>
+ 4. Select <span className="text-white/60">Install Add-on From File...</span> and select .xpi
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-      <div 
-        className="rounded-2xl p-6 "
-        style={{ background: "rgba(244,114,182,0.07)" }}
-      >
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <SlidersHorizontal size={20} className="text-pink-400" /> Staff Talking Points
-        </h3>
-        <div className="space-y-4">
-          {[
-            { q: "Why was my bet voided?", a: "Explain abandonment rules or postponement beyond 48h. Reference Rule 4.2." },
-            { q: "My withdrawal is taking too long.", a: "Check if KYC is pending. Remind user of the 24-48h processing window." },
-            { q: "I didn't get my bonus.", a: "Verify if minimum deposit was met. Check for duplicate accounts (Bonus Abuse)." }
-          ].map((t, i) => (
-            <div key={i} className="p-4 rounded-xl bg-[#1b1e2b]">
-              <div className="text-pink-400 text-xs font-black uppercase mb-1">Scenario: {t.q}</div>
-              <p className="text-white/70 text-sm">Response: <span className="italic text-white/90">"{t.a}"</span></p>
-            </div>
-          ))}
-        </div>
-      </div>
+ <div 
+ className="rounded-2xl p-6 "
+ style={{ background: "rgba(244,114,182,0.07)" }}
+ >
+ <h3 className="text-white text-lg mb-4 flex items-center gap-2">
+ <SlidersHorizontal size={20} className="text-pink-400" /> Staff Talking Points
+ </h3>
+ <div className="space-y-4">
+ {[
+ { q: "Why was my bet voided?", a: "Explain abandonment rules or postponement beyond 48h. Reference Rule 4.2." },
+ { q: "My withdrawal is taking too long.", a: "Check if KYC is pending. Remind user of the 24-48h processing window." },
+ { q: "I didn't get my bonus.", a: "Verify if minimum deposit was met. Check for duplicate accounts (Bonus Abuse)." }
+ ].map((t, i) => (
+ <div key={i} className="p-4 rounded-xl bg-[#1b1e2b]">
+ <div className="text-pink-400 text-xs font-black uppercase mb-1">Scenario: {t.q}</div>
+ <p className="text-white/70 text-sm">Response: <span className="italic text-white/90">"{t.a}"</span></p>
+ </div>
+ ))}
+ </div>
+ </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-2xl p-6 bg-[#131520]">
-          <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Odds Guide Reference</h4>
-          <div className="space-y-4 text-sm">
-            <div className="flex justify-between pb-2">
-              <span className="text-white/40">Decimal 2.00</span>
-              <span className="text-pink-400 font-bold">50% Probability</span>
-            </div>
-            <div className="flex justify-between pb-2">
-              <span className="text-white/40">Decimal 1.50</span>
-              <span className="text-pink-400 font-bold">66.7% Probability</span>
-            </div>
-            <div className="flex justify-between pb-2">
-              <span className="text-white/40">Decimal 4.00</span>
-              <span className="text-pink-400 font-bold">25% Probability</span>
-            </div>
-            <p className="text-[10px] text-white/30 italic pt-2">Formula: (1 / Odds) * 100 = Implied Probability</p>
-          </div>
-        </div>
-        <div className="rounded-2xl p-6 bg-[#131520]">
-          <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Internal Tools Links</h4>
-          <div className="grid grid-cols-2 gap-3">
-            {["Admin Portal", "Slack Ops", "Zendesk", "Supabase", "Jira", "Vercel"].map(l => (
-              <div key={l} className="px-3 py-2 rounded-lg bg-[#1b1e2b] text-xs text-white/60 hover:text-pink-400 transition-all cursor-pointer">
-                ↗ {l}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+ <div className="rounded-2xl p-6 bg-[#131520]">
+ <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Odds Guide Reference</h4>
+ <div className="space-y-4 text-sm">
+ <div className="flex justify-between pb-2">
+ <span className="text-white/40">Decimal 2.00</span>
+ <span className="text-pink-400 font-bold">50% Probability</span>
+ </div>
+ <div className="flex justify-between pb-2">
+ <span className="text-white/40">Decimal 1.50</span>
+ <span className="text-pink-400 font-bold">66.7% Probability</span>
+ </div>
+ <div className="flex justify-between pb-2">
+ <span className="text-white/40">Decimal 4.00</span>
+ <span className="text-pink-400 font-bold">25% Probability</span>
+ </div>
+ <p className="text-[10px] text-white/30 italic pt-2">Formula: (1 / Odds) * 100 = Implied Probability</p>
+ </div>
+ </div>
+ <div className="rounded-2xl p-6 bg-[#131520]">
+ <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Internal Tools Links</h4>
+ <div className="grid grid-cols-2 gap-3">
+ {["Admin Portal", "Slack Ops", "Zendesk", "Supabase", "Jira", "Vercel"].map(l => (
+ <div key={l} className="px-3 py-2 rounded-lg bg-[#1b1e2b] text-xs text-white/60 hover:text-pink-400 transition-all cursor-pointer">
+ ↗ {l}
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 }
 
 // ── Main Agent Manual View ───────────────────────────────────────────────────
 function AgentManualView() {
-  const [activeSection, setActiveSection] = useState<ManualSection>("promotions");
-  const meta = manualSections[activeSection];
+ const [activeSection, setActiveSection] = useState<ManualSection>("promotions");
+ const meta = manualSections[activeSection];
 
-  return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Manual Section Nav */}
-      <div 
-        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/90"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
-          {(Object.entries(manualSections) as [ManualSection, ManualSectionMeta][]).map(([id, data]) => (
-            <ManualTab
-              key={id}
-              id={id}
-              meta={data}
-              active={activeSection === id}
-              onClick={() => setActiveSection(id)}
-            />
-          ))}
-        </div>
-      </div>
+ return (
+ <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+ {/* Manual Section Nav */}
+ <div 
+ className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/90"
+ >
+ <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
+ {(Object.entries(manualSections) as [ManualSection, ManualSectionMeta][]).map(([id, data]) => (
+ <ManualTab
+ key={id}
+ id={id}
+ meta={data}
+ active={activeSection === id}
+ onClick={() => setActiveSection(id)}
+ />
+ ))}
+ </div>
+ </div>
 
-      {/* Section Hero */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-[#1b1e2b]">
-          <RenderIcon icon={meta.icon} size={22} style={{ color: meta.accent }} />
-        </div>
-        <div>
-          <div 
-            className="text-white font-bold" 
-            style={{ fontSize: "1.1rem", color: meta.accent }}
-          >
-            {meta.label}
-          </div>
-          <div className="text-white/35 text-sm">
-            {meta.tagline}
-          </div>
-        </div>
-      </div>
+ {/* Section Hero */}
+ <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
+ <div className="p-2.5 rounded-xl bg-[#1b1e2b]">
+ <RenderIcon icon={meta.icon} size={22} style={{ color: meta.accent }} />
+ </div>
+ <div>
+ <div 
+ className="text-white font-bold" 
+ style={{ fontSize: "1.1rem", color: meta.accent }}
+ >
+ {meta.label}
+ </div>
+ <div className="text-white/35 text-sm">
+ {meta.tagline}
+ </div>
+ </div>
+ </div>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
-        {activeSection === "promotions" && <PromotionsView accent={meta.accent} />}
-        {activeSection === "support" && <SupportView accent={meta.accent} />}
-        {activeSection === "compliance" && <ComplianceView accent={meta.accent} />}
-        {activeSection === "toolkit" && <ToolkitView accent={meta.accent} />}
-      </main>
-    </div>
-  );
+ <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
+ {activeSection === "promotions" && <PromotionsView accent={meta.accent} />}
+ {activeSection === "support" && <SupportView accent={meta.accent} />}
+ {activeSection === "compliance" && <ComplianceView accent={meta.accent} />}
+ {activeSection === "toolkit" && <ToolkitView accent={meta.accent} />}
+ </main>
+ </div>
+ );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function Resources() {
-  const [section, setSection] = useState<AppSection>("guide");
-  const { templates } = useSupabaseData();
+ const [section, setSection] = useState<AppSection>("guide");
+ const { templates } = useSupabaseData();
 
-  // Handle section from URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sec = params.get('section') as AppSection;
-    if (sec && (sec === 'guide' || sec === 'manual')) {
-      setSection(sec);
-    }
-  }, []);
+ // Handle section from URL
+ useEffect(() => {
+ const params = new URLSearchParams(window.location.search);
+ const sec = params.get('section') as AppSection;
+ if (sec && (sec === 'guide' || sec === 'manual')) {
+ setSection(sec);
+ }
+ }, []);
 
-  return (
-    <div className="text-white font-sans">
-      {/* ── Top Nav ── */}
-      <div
-        className="sticky top-0 z-50 backdrop-blur-xl bg-background/90"
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center justify-center gap-2 md:gap-6">
-
-
+ return (
+ <div className="text-white font-sans">
+ {/* ── Top Nav ── */}
+ <div
+ className="sticky top-0 z-50 backdrop-blur-xl bg-background/90"
+ >
+ <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center justify-center gap-2 md:gap-6">
 
 
-          {/* Section switcher */}
-          <div
-            className="flex gap-1 rounded-xl p-1"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-            }}
-          >
-            {(
-              [
-                {
-                  id: "guide",
-                  label: "Market Guide",
-                  icon: BookOpen,
-                },
-                {
-                  id: "manual",
-                  label: "Agent Manual",
-                  icon: Shield,
-                },
-              ] as {
-                id: AppSection;
-                label: string;
-                icon: LucideIcon;
-              }[]
-            ).map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSection(s.id)}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm transition-all"
-                style={{
-                  background:
-                    section === s.id
-                      ? "rgba(255,255,255,0.1)"
-                      : "transparent",
-                  color:
-                    section === s.id
-                      ? "#fff"
-                      : "rgba(255,255,255,0.45)",
-                  
-                }}
-              >
-                <RenderIcon icon={s.icon} size={15} />
-                <span>{s.label}</span>
-              </button>
-            ))}
-          </div>
 
 
-        </div>
-      </div>
+ {/* Section switcher */}
+ <div
+ className="flex gap-1 rounded-xl p-1"
+ style={{
+ background: "rgba(255,255,255,0.05)",
+ }}
+ >
+ {(
+ [
+ {
+ id: "guide",
+ label: "Market Guide",
+ icon: BookOpen,
+ },
+ {
+ id: "manual",
+ label: "Agent Manual",
+ icon: Shield,
+ },
+ ] as {
+ id: AppSection;
+ label: string;
+ icon: LucideIcon;
+ }[]
+ ).map((s) => (
+ <button
+ key={s.id}
+ onClick={() => setSection(s.id)}
+ className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm transition-all"
+ style={{
+ background:
+ section === s.id
+ ? "rgba(255,255,255,0.1)"
+ : "transparent",
+ color:
+ section === s.id
+ ? "#fff"
+ : "rgba(255,255,255,0.45)",
+ 
+ }}
+ >
+ <RenderIcon icon={s.icon} size={15} />
+ <span>{s.label}</span>
+ </button>
+ ))}
+ </div>
 
 
-      {/* ── Views ── */}
-      {section === "guide" && <MarketGuideView />}
-      {section === "manual" && <AgentManualView />}
-      
-      {/* Global AI Assistant */}
-      <SmartAssistant templates={templates} />
-    </div>
-  );
+ </div>
+ </div>
+
+
+ {/* ── Views ── */}
+ {section === "guide" && <MarketGuideView />}
+ {section === "manual" && <AgentManualView />}
+ 
+ {/* Global AI Assistant */}
+ <SmartAssistant templates={templates} />
+ </div>
+ );
 }
