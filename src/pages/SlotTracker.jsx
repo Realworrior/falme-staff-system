@@ -145,12 +145,12 @@ const SlotTracker = () => {
             onClick={() => logFailure('Slot 1')}
             className="bg-[#131520] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#191c2b] transition-all group shadow-lg"
           >
-            <div className="w-10 h-10 rounded-2xl bg-[#10b981]/10 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-[#10b981]" />
+            <div className="w-10 h-10 rounded-2xl bg-[#ef4444]/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-[#ef4444]" />
             </div>
             <div className="text-left">
               <span className="block text-sm font-semibold text-white">Slot 1</span>
-              <span className="text-xs text-[#10b981]">Green Slot</span>
+              <span className="text-xs text-[#ef4444]">Red Slot</span>
             </div>
           </button>
 
@@ -158,12 +158,12 @@ const SlotTracker = () => {
             onClick={() => logFailure('Slot 2')}
             className="bg-[#131520] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#191c2b] transition-all group shadow-lg"
           >
-            <div className="w-10 h-10 rounded-2xl bg-[#3b82f6]/10 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-[#3b82f6]" />
+            <div className="w-10 h-10 rounded-2xl bg-[#10b981]/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-[#10b981]" />
             </div>
             <div className="text-left">
               <span className="block text-sm font-semibold text-white">Slot 2</span>
-              <span className="text-xs text-[#3b82f6]">Blue Slot</span>
+              <span className="text-xs text-[#10b981]">Green Slot</span>
             </div>
           </button>
 
@@ -242,12 +242,12 @@ const SlotTracker = () => {
                     <td className="py-4 px-6">
                       <div className="flex gap-2">
                         {(log.type === 'Slot 1' || log.type === 'Both') && (
-                          <span className="px-3 py-1 rounded-full bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20 text-xs font-semibold">
+                          <span className="px-3 py-1 rounded-full bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20 text-xs font-semibold">
                             Slot 1
                           </span>
                         )}
                         {(log.type === 'Slot 2' || log.type === 'Both') && (
-                          <span className="px-3 py-1 rounded-full bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 text-xs font-semibold">
+                          <span className="px-3 py-1 rounded-full bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20 text-xs font-semibold">
                             Slot 2
                           </span>
                         )}
@@ -285,10 +285,10 @@ const SlotTracker = () => {
                   <div className="space-y-2">
                     <div className="flex gap-2">
                       {(log.type === 'Slot 1' || log.type === 'Both') && (
-                        <span className="px-3 py-1 rounded-full bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20 text-xs font-semibold">Slot 1</span>
+                        <span className="px-3 py-1 rounded-full bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20 text-xs font-semibold">Slot 1</span>
                       )}
                       {(log.type === 'Slot 2' || log.type === 'Both') && (
-                        <span className="px-3 py-1 rounded-full bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20 text-xs font-semibold">Slot 2</span>
+                        <span className="px-3 py-1 rounded-full bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20 text-xs font-semibold">Slot 2</span>
                       )}
                     </div>
                     <div className="text-xs text-[#8e8e93]">
