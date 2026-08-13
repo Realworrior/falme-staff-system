@@ -1955,7 +1955,7 @@ function CrashGamesView({ accent }: { accent: string }) {
  background:
  selected?.name === g.name
  ? `${accent}18`
- : "rgba(255,255,255,0.03)", selected?.name === g.name
+ : "rgba(255,255,255,0.03)", borderColor: selected?.name === g.name
  ? `${accent}60`
  : "rgba(255,255,255,0.07)",
  boxShadow:
