@@ -147,20 +147,32 @@ export default function MpesaCodes() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [entries, setEntries] = useState(() => {
-    const saved = localStorage.getItem("betfalme_mpesa_entries");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("betfalme_mpesa_entries");
+      return (saved && saved !== "undefined" && saved !== "null") ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
   });
 
   // Hourly Counter State
   const [counterState, setCounterState] = useState(() => {
-    const saved = localStorage.getItem("betfalme_mpesa_hourly_counter");
-    return saved ? JSON.parse(saved) : DEFAULT_HOURLY_COUNTER;
+    try {
+      const saved = localStorage.getItem("betfalme_mpesa_hourly_counter");
+      return (saved && saved !== "undefined" && saved !== "null") ? JSON.parse(saved) : DEFAULT_HOURLY_COUNTER;
+    } catch (e) {
+      return DEFAULT_HOURLY_COUNTER;
+    }
   });
 
   // Analytics History State
   const [analyticsHistory, setAnalyticsHistory] = useState(() => {
-    const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
+      return (saved && saved !== "undefined" && saved !== "null") ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
   });
 
   const [copiedCounter, setCopiedCounter] = useState(false);

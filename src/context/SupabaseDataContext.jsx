@@ -19,10 +19,15 @@ export const SupabaseDataProvider = ({ children }) => {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 1. Check for stored session locally
-    const storedUser = localStorage.getItem('betwin_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    // 1. Check for stored session locally safely
+    try {
+      const storedUser = localStorage.getItem('betwin_user');
+      if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (err) {
+      console.warn('Failed to parse stored user:', err);
+      localStorage.removeItem('betwin_user');
     }
   }, []);
 
