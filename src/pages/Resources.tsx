@@ -2077,7 +2077,7 @@ function VirtualGamesView({ accent }: { accent: string }) {
  background:
  tab === t
  ? `${accent}15`
- : "rgba(255,255,255,0.04)", tab === t
+ : "rgba(255,255,255,0.04)", borderColor: tab === t
  ? `${accent}50`
  : "rgba(255,255,255,0.08)",
  color:
