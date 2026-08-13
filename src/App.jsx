@@ -1,6 +1,7 @@
 import React from 'react';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import AppShell from './components/AppShell';
 import Dashboard from './pages/Dashboard';
 import Templates from './pages/Templates';
@@ -87,6 +88,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>
+      <SpeedInsights />
     </ThemeProvider>
   );
 }
