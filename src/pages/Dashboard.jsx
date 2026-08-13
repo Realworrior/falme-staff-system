@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Calculator,
   TrendingUp,
+  TrendingDown,
   Plane
 } from 'lucide-react';
 import { 
