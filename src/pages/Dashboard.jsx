@@ -40,9 +40,9 @@ import { isSameDay, subDays } from 'date-fns';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 
 /* ─────────────────────────────────────────
-   AVIATOR PULSE — Premium Aviation Card
+   AVIATOR STATUS
 ───────────────────────────────────────── */
-const AviatorPulseCard = ({ logs, chartData }) => {
+const AviatorStatusCard = ({ logs, chartData }) => {
   const [prevCount, setPrevCount] = useState(0);
 
   const hourCount = useMemo(() => logs.filter(l => l.ts > Date.now() - 3600000).length, [logs]);
@@ -91,16 +91,10 @@ const AviatorPulseCard = ({ logs, chartData }) => {
               position: 'relative', flexShrink: 0,
             }}>
               <Plane size={20} color={statusColor} style={{ transform: 'rotate(-45deg)' }} />
-              {/* Pulse ring */}
-              <div style={{
-                position: 'absolute', inset: -5, borderRadius: 20,
-                border: `1px solid ${statusColor}30`,
-                animation: 'aviator-ring 2s ease-out infinite',
-              }} />
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em' }}>
-                Aviator Pulse
+                Aviator Status
               </h3>
               <p style={{ margin: '3px 0 0', fontSize: 12, color: '#8e8e93', fontWeight: 500 }}>
                 Real-time Global Failure Index
@@ -216,10 +210,6 @@ const AviatorPulseCard = ({ logs, chartData }) => {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
         }
-        @keyframes aviator-ring {
-          0% { opacity: 0.6; transform: scale(1); }
-          100% { opacity: 0; transform: scale(1.6); }
-        }
       `}</style>
     </div>
   );
@@ -290,7 +280,7 @@ const Dashboard = () => {
     { name: "Agent Manual", icon: ShieldCheck, path: "/resources", params: "?section=manual", color: "#ff7a59" },
     { name: "Market Guide", icon: FileText, path: "/resources", params: "?section=guide", color: "#8b5cf6" },
     { name: "Templates", icon: MessageSquare, path: "/templates", color: "#60a5fa" },
-    { name: "Aviator Matrix", icon: Activity, path: "/slots", color: "#ef4444" },
+    { name: "Aviator Slots", icon: Activity, path: "/slots", color: "#ef4444" },
   ];
 
   return (
@@ -322,8 +312,8 @@ const Dashboard = () => {
         {/* Main Infrastructure Section */}
         <div className="lg:col-span-8 space-y-8">
           
-          {/* Aviator Pulse — Premium Redesign */}
-          <AviatorPulseCard logs={logs} chartData={chartData} />
+          {/* Aviator Status */}
+          <AviatorStatusCard logs={logs} chartData={chartData} />
 
           {/* Shortcuts Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">

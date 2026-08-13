@@ -359,7 +359,7 @@ export default function RotaPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
         <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 animate-pulse">Initializing Matrix...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Initializing Rota...</p>
       </div>
     );
   }

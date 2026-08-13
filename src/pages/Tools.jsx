@@ -111,7 +111,8 @@ function OddsCalculator() {
         <div className="glass-card p-8 flex flex-col justify-between">
           <div className="space-y-8">
             <div className="text-center lg:text-left">
-              <span className="text-[10px] font-black text-accent uppercase tracking-widest block mb-2">Potential Returns</span>
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest flex items-center gap-1.5">Potential Returns</span>
               <div className="text-5xl font-black text-white tracking-tighter">
                 <span className="text-xl text-gray-600 mr-2">KES</span>
                 {Number(totalReturn).toLocaleString()}
@@ -135,7 +136,7 @@ function OddsCalculator() {
               <TrendingUp size={16} className="text-gray-700" />
               <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Market Advantage Active</span>
             </div>
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
         </div>
       </div>
@@ -515,13 +516,6 @@ Example:
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-[9px] font-black text-[#baff55] uppercase tracking-widest">{day.label} Cycle</span>
-                        {day.label === 'Current' && (
-                          <motion.span
-                            animate={{ opacity: [1, 0.4, 1] }}
-                            transition={{ repeat: Infinity, duration: 1.5 }}
-                            className="w-1.5 h-1.5 rounded-full bg-[#baff55]"
-                          />
-                        )}
                       </div>
                       <p className="text-xs font-black text-white mt-0.5 uppercase tracking-tight">
                         {format(day.end, 'eeee, MMM d')}
@@ -596,9 +590,8 @@ Example:
 
           {/* Protocol card */}
           <div className="bg-[#131520] rounded-2xl p-4 shadow-xl space-y-2">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={14} className="text-[#baff55]" />
-              <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">Protocol</span>
             </div>
             <p className="text-[10px] text-gray-500 leading-relaxed italic">Calculated daily 8:30 PM – 8:30 PM. The 8:30–8:40 PM window is a reset gap; deposits in this window are excluded from the cycle.</p>
           </div>
@@ -648,8 +641,8 @@ Example:
                loading="lazy"
              />
              {/* Loading / Fallback UI */}
-             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-white/5 animate-pulse">
-               <Calculator size={20} className="text-gray-800 mb-2" />
+             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-white/5">
+               <span className="text-white text-sm font-semibold mb-2">No Image Found</span>
                <span className="text-[7px] font-black text-gray-700 uppercase tracking-widest">Loading Tutorial...</span>
              </div>
              

@@ -50,9 +50,9 @@ function getShiftWindow(dateInput) {
   } else {
     // Regular 1-hour window
     const start = new Date(date);
-    start.setMinutes(0, 0, 0);
+    start.setHours(hour, 0, 0, 0);
     const end = new Date(start);
-    end.setHours(end.getHours() + 1);
+    end.setHours(hour + 1, 0, 0, 0);
     const formatTime = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
     return {
       startTime: start,
@@ -706,10 +706,10 @@ export default function MpesaCodes() {
             <div className="p-2 rounded-xl bg-[#baff55]/10 border border-[#baff55]/20 text-[#baff55]">
               <ClipboardList size={20} />
             </div>
-            <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">MPesa Operations Hub</h1>
+            <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">M-Pesa Counter</h1>
           </div>
           <p className="text-xs text-gray-400 font-medium">
-            Hourly counter & 1am-7am night bracket + real-time analytics & SMS ledger
+            Hourly counter and real-time analytics
           </p>
         </div>
 
@@ -909,7 +909,7 @@ export default function MpesaCodes() {
               <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 rounded-2xl p-4 md:px-6 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in duration-300">
                 <div className="flex items-center gap-3.5">
                   <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl font-bold border border-amber-500/30 shrink-0">
-                    <AlertTriangle size={22} className="animate-pulse" />
+                    <AlertTriangle size={22} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -921,7 +921,7 @@ export default function MpesaCodes() {
                       </span>
                     </div>
                     <p className="text-xs text-amber-200/80 mt-1">
-                      The current hour is completing. Copy your report now or let it auto-archive to <strong className="text-white">Last Hour Stats</strong>.
+                      The current hour is completing. Copy your report now or let it auto-archive to <strong className="text-white">Previous Hours</strong>.
                     </p>
                   </div>
                 </div>
@@ -951,10 +951,10 @@ export default function MpesaCodes() {
                       <div className="flex items-center gap-2.5">
                         <Clock size={18} className="text-[#baff55]" />
                         <h2 className="text-lg font-black text-white uppercase tracking-wider">
-                          MPesa Hourly Counter
+                          M-Pesa Hourly Counter
                         </h2>
                         <span className="text-[10px] font-black uppercase text-black bg-[#baff55] px-3 py-1 rounded-full flex items-center gap-1.5 shadow-md">
-                          <span className="w-2 h-2 rounded-full bg-black animate-ping" /> LATEST ACTIVE HOUR
+                          LATEST ACTIVE HOUR
                         </span>
                       </div>
                       <p className="text-xs text-gray-400 mt-1">
@@ -1106,7 +1106,7 @@ export default function MpesaCodes() {
                   <div className="bg-[#0a0b12] rounded-2xl p-5 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
-                        <Sparkles size={14} className="text-[#baff55]" /> Active Hour Report Preview:
+                        <FileText size={14} className="text-[#baff55]" /> Active Hour Report Preview:
                       </span>
                     </div>
 
@@ -1127,63 +1127,62 @@ export default function MpesaCodes() {
                 </div>
               </div>
 
-              {/* ── LAST HOUR STATS SIDE PANEL (Right 1 col - BLUE THEME BORDERLESS) ── */}
+              {/* ── PREVIOUS HOURS SIDE NAV (Right 1 col - BLUE THEME BORDERLESS) ── */}
               <div className="lg:col-span-1 space-y-4">
-                <div className="bg-[#141829] rounded-[28px] p-6 shadow-2xl space-y-5 relative overflow-hidden">
+                <div className="bg-[#141829] rounded-[28px] p-6 shadow-2xl relative overflow-hidden flex flex-col h-[500px]">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 
                   {/* Header */}
-                  <div className="flex items-center justify-between pb-1">
+                  <div className="flex items-center justify-between pb-4 shrink-0 border-b border-white/5">
                     <div className="flex items-center gap-2">
                       <Clock size={18} className="text-blue-400" />
                       <h3 className="text-sm font-black text-white uppercase tracking-wider">
-                        Last Hour Stats
+                        Previous Hours
                       </h3>
                     </div>
-                    <span className="text-[9px] font-black uppercase bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full flex items-center gap-1">
-                      {prevEntry ? "Archived Hour" : "Last Hour"}
-                    </span>
                   </div>
 
-                  {/* Last Hour Card (Blue Theme Borderless) */}
-                  <div className="bg-[#0e1322] rounded-2xl p-5 space-y-4 shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1">
-                        <Clock size={11} className="text-blue-400" /> Time Window:
-                      </span>
-                      <span className="text-[9px] font-black uppercase text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-md">
-                        Previous Hour
-                      </span>
-                    </div>
+                  {/* Scrollable Side Nav List */}
+                  <div className="flex-1 overflow-y-auto pr-2 space-y-3 mt-4 custom-scrollbar">
+                    {analyticsHistory.filter(item => item.timeRange !== "1:00 AM - 7:00 AM").length === 0 ? (
+                      <div className="text-[11px] text-gray-500 text-center py-6">No previous hours recorded.</div>
+                    ) : (
+                      analyticsHistory
+                        .filter(item => item.timeRange !== "1:00 AM - 7:00 AM")
+                        .map((entry) => (
+                          <div key={entry.id} className="bg-[#0e1322] rounded-2xl p-4 space-y-4 shadow-lg border border-white/5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[9px] font-black uppercase text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-md">
+                                Archived Hour
+                              </span>
+                            </div>
 
-                    <div className="text-xs font-mono font-bold text-blue-400 bg-[#161c30] px-3.5 py-2.5 rounded-xl truncate">
-                      ⏰ {prevRange}
-                    </div>
+                            <div className="text-xs font-mono font-bold text-blue-400 bg-[#161c30] px-3.5 py-2.5 rounded-xl truncate">
+                              ⏰ {entry.timeRange}
+                            </div>
 
-                    <div className="grid grid-cols-2 gap-3 text-xs pt-1">
-                      <div className="bg-[#171f34] p-3.5 rounded-xl">
-                        <span className="text-[10px] text-gray-400 block font-sans mb-0.5">Deposits</span>
-                        <span className="text-2xl font-black font-mono text-[#baff55]">{prevDep}</span>
-                      </div>
-                      <div className="bg-[#171f34] p-3.5 rounded-xl">
-                        <span className="text-[10px] text-gray-400 block font-sans mb-0.5">Withdrawals</span>
-                        <span className="text-2xl font-black font-mono text-sky-400">{prevWth}</span>
-                      </div>
-                    </div>
+                            <div className="grid grid-cols-2 gap-3 text-xs pt-1">
+                              <div className="bg-[#171f34] p-3 rounded-xl">
+                                <span className="text-[9px] text-gray-400 block font-sans mb-0.5">Deposits</span>
+                                <span className="text-lg font-black font-mono text-[#baff55]">{entry.depositCount ?? 0}</span>
+                              </div>
+                              <div className="bg-[#171f34] p-3 rounded-xl">
+                                <span className="text-[9px] text-gray-400 block font-sans mb-0.5">Withdrawals</span>
+                                <span className="text-lg font-black font-mono text-sky-400">{entry.withdrawalCount ?? 0}</span>
+                              </div>
+                            </div>
 
-                    <button
-                      onClick={() => handleCopyCounterText(prevRange, prevDep, prevWth)}
-                      className="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95"
-                    >
-                      <Copy size={14} />
-                      Copy Last Hour Report
-                    </button>
+                            <button
+                              onClick={() => handleCopyCounterText(entry.timeRange, entry.depositCount, entry.withdrawalCount)}
+                              className="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95"
+                            >
+                              <Copy size={13} />
+                              Copy Report
+                            </button>
+                          </div>
+                        ))
+                    )}
                   </div>
-
-                  {/* Quick Hint */}
-                  <p className="text-[11px] text-gray-400 text-center leading-relaxed">
-                    Shows stats from the previous hour. Click <strong className="text-blue-400">Copy Last Hour Report</strong> to copy this hour instance.
-                  </p>
                 </div>
               </div>
 
