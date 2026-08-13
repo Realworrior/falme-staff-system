@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { LucideIcon } from 'lucide-react';
 import {
  Trophy,
@@ -1955,9 +1955,10 @@ function CrashGamesView({ accent }: { accent: string }) {
  background:
  selected?.name === g.name
  ? `${accent}18`
- : "rgba(255,255,255,0.03)", borderColor: selected?.name === g.name
- ? `${accent}60`
- : "rgba(255,255,255,0.07)",
+ : "rgba(255,255,255,0.03)",
+ border: selected?.name === g.name
+ ? `1px solid ${accent}60`
+ : "1px solid rgba(255,255,255,0.07)",
  boxShadow:
  selected?.name === g.name
  ? `0 0 20px ${accent}20`
@@ -2077,9 +2078,10 @@ function VirtualGamesView({ accent }: { accent: string }) {
  background:
  tab === t
  ? `${accent}15`
- : "rgba(255,255,255,0.04)", borderColor: tab === t
- ? `${accent}50`
- : "rgba(255,255,255,0.08)",
+ : "rgba(255,255,255,0.04)",
+ border: tab === t
+ ? `1px solid ${accent}50`
+ : "1px solid rgba(255,255,255,0.08)",
  color:
  tab === t ? accent : "rgba(255,255,255,0.5)",
  }}
