@@ -23,7 +23,7 @@ const TourGuide = () => {
     },
     {
       target: '.tour-nav-bar',
-      content: 'This is your main navigation. Use it to switch between Dashboard, Templates, Tickets, Rota, and more.',
+      content: 'This is your main navigation. Use it to switch between Overview, Templates, Aviator, MPesa, Rota, and Resources.',
       placement: 'right',
     },
     {

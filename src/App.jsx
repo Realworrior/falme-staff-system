@@ -4,7 +4,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './components/AppShell';
 import Dashboard from './pages/Dashboard';
 import Templates from './pages/Templates';
-import Tickets from './pages/Tickets';
 import SlotTracker from './pages/SlotTracker';
 import Rota from './pages/Rota';
 import Resources from './pages/Resources';
@@ -77,7 +76,6 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/templates" element={<Templates />} />
-          <Route path="/tickets" element={<Tickets />} />
           <Route path="/slots" element={<SlotTracker />} />
           <Route path="/rota" element={<Rota />} />
           <Route path="/resources" element={<Resources />} />

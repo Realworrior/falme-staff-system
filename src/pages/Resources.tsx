@@ -2380,60 +2380,66 @@ function MarketGuideView() {
   );
 
   return (
-    <div>
-      {/* Sport Nav */}
-      <div
-        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/90"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
+    <div className="space-y-6">
+      {/* Sport Nav Bar */}
+      <div className="bg-[#131520] p-3 rounded-2xl border border-white/[0.06] shadow-xl">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {(
             Object.entries(sportsData) as [Sport, SportData][]
-          ).map(([key, data]) => (
-            <SportTab
-              key={key}
-              sport={key}
-              data={data}
-              active={activeSport === key}
-              onClick={() => setActiveSport(key)}
-            />
-          ))}
-          <div className="ml-auto flex items-center gap-4 pl-4 shrink-0">
-            <div className="flex items-center gap-1.5 text-xs text-green-400">
-              <span className="w-2 h-2 rounded-full bg-green-400" />{" "}
-              Beginner
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-yellow-400">
-              <span className="w-2 h-2 rounded-full bg-yellow-400" />{" "}
-              Intermediate
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-red-400">
-              <span className="w-2 h-2 rounded-full bg-red-400" />{" "}
-              Advanced
-            </div>
-          </div>
+          ).map(([key, data]) => {
+            const isActive = activeSport === key;
+            const IconComp = data.icon;
+            return (
+              <button
+                key={key}
+                onClick={() => setActiveSport(key)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  isActive
+                    ? "bg-[#baff55] text-black shadow-md font-bold"
+                    : "text-[#8e8e93] hover:text-white bg-[#0e1017]"
+                }`}
+              >
+                <IconComp size={16} />
+                <span>{data.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${isActive ? 'bg-black/20 text-black' : 'bg-white/10 text-white/60'}`}>
+                  {data.categories.length}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Sport hero strip */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-[#1b1e2b]">
-          <RenderIcon icon={sport.icon} size={22} style={{ color: sport.accent }} />
-        </div>
-        <div>
-          <div
-            className="text-white"
-            style={{ fontSize: "1rem", color: sport.accent }}
-          >
-            {sport.label} Markets
+      <div className="bg-[#131520] rounded-2xl p-5 border border-white/[0.06] flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-[#0e1017]">
+            <RenderIcon icon={sport.icon} size={22} style={{ color: sport.accent }} />
           </div>
-          <div className="text-white/35 text-sm">
-            {sport.categories.length} categories ·{" "}
-            {totalMarkets} markets
+          <div>
+            <div className="text-base font-bold text-white">
+              {sport.label} Markets
+            </div>
+            <div className="text-[#8e8e93] text-xs mt-0.5">
+              {sport.categories.length} categories · {totalMarkets} market definitions
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-4 text-xs font-medium">
+          <div className="flex items-center gap-1.5 text-green-400">
+            <span className="w-2 h-2 rounded-full bg-green-400" /> Beginner
+          </div>
+          <div className="flex items-center gap-1.5 text-yellow-400">
+            <span className="w-2 h-2 rounded-full bg-yellow-400" /> Intermediate
+          </div>
+          <div className="flex items-center gap-1.5 text-red-400">
+            <span className="w-2 h-2 rounded-full bg-red-400" /> Advanced
           </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
+      <main className="space-y-8">
         {activeSport === "crash" ? (
           <CrashGamesView accent={sport.accent} />
         ) : activeSport === "virtual" ? (
@@ -2449,19 +2455,6 @@ function MarketGuideView() {
                 accent={sport.accent}
               />
             ))}
-            <div
-              className="rounded-2xl p-6 text-center"
-              style={{
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <p className="text-white/30 text-sm">
-                Betfalme.ke Sportsbook Market Guide · Soccer Parts
-                1–3 · Basketball Part 4 · Tennis Part 5 · Logical
-                &amp; Combo Markets
-              </p>
-            </div>
           </>
         )}
       </main>
@@ -2803,43 +2796,49 @@ function AgentManualView() {
   const meta = manualSections[activeSection];
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6">
       {/* Manual Section Nav */}
-      <div 
-        className="sticky top-[57px] z-40 backdrop-blur-xl bg-background/90"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-3 flex gap-3 overflow-x-auto">
-          {(Object.entries(manualSections) as [ManualSection, ManualSectionMeta][]).map(([id, data]) => (
-            <ManualTab
-              key={id}
-              id={id}
-              meta={data}
-              active={activeSection === id}
-              onClick={() => setActiveSection(id)}
-            />
-          ))}
+      <div className="bg-[#131520] p-3 rounded-2xl border border-white/[0.06] shadow-xl">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {(Object.entries(manualSections) as [ManualSection, ManualSectionMeta][]).map(([id, data]) => {
+            const isActive = activeSection === id;
+            const IconComp = data.icon;
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveSection(id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  isActive
+                    ? "bg-[#baff55] text-black shadow-md font-bold"
+                    : "text-[#8e8e93] hover:text-white bg-[#0e1017]"
+                }`}
+              >
+                <IconComp size={16} />
+                <span>{data.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Section Hero */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-2 flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-[#1b1e2b]">
+      <div className="bg-[#131520] rounded-2xl p-5 border border-white/[0.06] flex items-center gap-3.5">
+        <div className="p-3 rounded-xl bg-[#0e1017]">
           <RenderIcon icon={meta.icon} size={22} style={{ color: meta.accent }} />
         </div>
         <div>
           <div 
-            className="text-white font-bold" 
-            style={{ fontSize: "1.1rem", color: meta.accent }}
+            className="text-base font-bold text-white"
           >
             {meta.label}
           </div>
-          <div className="text-white/35 text-sm">
+          <div className="text-[#8e8e93] text-xs mt-0.5">
             {meta.tagline}
           </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-20 md:pb-8">
+      <main className="space-y-8">
         {activeSection === "promotions" && <PromotionsView accent={meta.accent} />}
         {activeSection === "support" && <SupportView accent={meta.accent} />}
         {activeSection === "compliance" && <ComplianceView accent={meta.accent} />}
@@ -2854,7 +2853,6 @@ function AgentManualView() {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function Resources() {
   const [section, setSection] = useState<AppSection>("guide");
-  const { templates } = useSupabaseData();
 
   // Handle section from URL
   useEffect(() => {
@@ -2866,64 +2864,59 @@ export default function Resources() {
   }, []);
 
   return (
-    <div className="text-white font-sans">
-      {/* ── Top Nav ── */}
-      <div
-        className="sticky top-0 z-50 backdrop-blur-xl bg-background/90"
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-[57px] flex items-center justify-center gap-2 md:gap-6">
+    <div className="p-4 md:p-8 space-y-6 w-full max-w-[1600px] mx-auto min-h-screen bg-[#0e1017] text-white">
+      {/* ── Page Header & Section Switcher ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/[0.06] pb-6">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 rounded-2xl bg-[#1b1e2b] flex items-center justify-center text-[#8b5cf6]">
+              <BookOpen size={20} />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+              Knowledge & Guidelines
+            </h1>
+          </div>
+          <p className="text-sm text-[#8e8e93] font-medium mt-1">
+            Betting markets reference and agent operational procedures
+          </p>
+        </div>
 
-
-
-
-          {/* Section switcher */}
-          <div
-            className="flex gap-1 rounded-xl p-1"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-            }}
-          >
-            {(
-              [
-                {
-                  id: "guide",
-                  label: "Market Guide",
-                  icon: BookOpen,
-                },
-                {
-                  id: "manual",
-                  label: "Agent Manual",
-                  icon: Shield,
-                },
-              ] as {
-                id: AppSection;
-                label: string;
-                icon: LucideIcon;
-              }[]
-            ).map((s) => (
+        {/* Section switcher tabs */}
+        <div className="flex items-center bg-[#131520] p-1.5 rounded-2xl border border-white/[0.06] self-start md:self-auto shadow-lg">
+          {(
+            [
+              {
+                id: "guide",
+                label: "Market Guide",
+                icon: BookOpen,
+              },
+              {
+                id: "manual",
+                label: "Agent Manual",
+                icon: Shield,
+              },
+            ] as {
+              id: AppSection;
+              label: string;
+              icon: LucideIcon;
+            }[]
+          ).map((s) => {
+            const isActive = section === s.id;
+            return (
               <button
                 key={s.id}
                 onClick={() => setSection(s.id)}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm transition-all"
-                style={{
-                  background:
-                    section === s.id
-                      ? "rgba(255,255,255,0.1)"
-                      : "transparent",
-                  color:
-                    section === s.id
-                      ? "#fff"
-                      : "rgba(255,255,255,0.45)",
-                  
-                }}
+                className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  isActive
+                    ? "bg-[#baff55] text-black shadow-md font-bold"
+                    : "text-[#8e8e93] hover:text-white bg-transparent"
+                }`}
               >
                 <RenderIcon icon={s.icon} size={15} />
                 <span>{s.label}</span>
               </button>
-            ))}
-          </div>
-
-
+            );
+          })}
         </div>
       </div>
 
