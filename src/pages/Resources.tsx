@@ -1610,19 +1610,16 @@ function MarketCard({
     !!market.example ||
     (market.rules?.length ?? 0) > 0 ||
     (market.variations?.length ?? 0) > 0;
+
   return (
     <div
-      className="rounded-xl bg-[#131520] overflow-hidden flex flex-col"
+      className="rounded-2xl bg-[#131520] border border-white/[0.05] hover:border-white/[0.12] transition-all overflow-hidden flex flex-col p-5 shadow-lg group"
     >
-      <div
-        className="h-[2px] w-full"
-        style={{ background: accent }}
-      />
-      <div className="p-5 flex flex-col gap-3 flex-1">
+      <div className="flex flex-col gap-3 flex-1">
         <div className="flex items-start justify-between gap-2">
           <h4
-            className="text-white leading-snug flex-1 flex items-center gap-2"
-            style={{ fontSize: "0.92rem" }}
+            className="text-white font-bold leading-snug flex-1 flex items-center gap-2 group-hover:text-white transition-colors"
+            style={{ fontSize: "0.95rem" }}
           >
             {market.name}
             {market.isNew && (
@@ -1631,45 +1628,56 @@ function MarketCard({
           </h4>
           <ComplexityBadge level={market.complexity} />
         </div>
-        <p className="text-white/60 text-[13px] leading-relaxed">
+        <p className="text-[#8e8e93] text-xs leading-relaxed">
           {market.summary}
         </p>
+
         {hasExtra && (
-          <div className="flex flex-col gap-4 pt-3 border-t border-white/[0.06]">
+          <div className="flex flex-col gap-4 pt-3 mt-1 border-t border-white/[0.04]">
+            {/* Visual Outcome Options */}
             {market.options && market.options.length > 0 && (
-              <div className="flex flex-col gap-2.5">
-                {market.options.map((opt, i) => (
-                  <div
-                    key={i}
-                    className="flex gap-2.5 items-start"
-                  >
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase tracking-wider text-[#8e8e93] font-bold block">
+                  Outcomes & Odds Rules
+                </span>
+                <div className="grid grid-cols-1 gap-2">
+                  {market.options.map((opt, i) => (
                     <div
-                      className="w-1.5 h-1.5 rounded-full mt-[6px] shrink-0"
-                      style={{ background: accent }}
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-white text-[13px] font-semibold leading-tight">
-                        {opt.name}
-                      </span>
-                      <span className="text-white/40 text-[12px] mt-0.5 leading-relaxed">
-                        {opt.description}
-                      </span>
+                      key={i}
+                      className="bg-[#0e1017] border border-white/[0.04] rounded-xl p-2.5 flex items-start gap-2.5"
+                    >
+                      <div
+                        className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                        style={{ background: accent }}
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-white text-xs font-semibold leading-tight">
+                          {opt.name}
+                        </span>
+                        <span className="text-[#8e8e93] text-[11px] mt-0.5 leading-normal">
+                          {opt.description}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* Visual Match Example Card */}
             {market.example && (
               <div
-                className="rounded-lg p-3.5 text-[12px] font-mono leading-relaxed whitespace-pre-wrap"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: `1px solid rgba(255,255,255,0.1)`,
-                  color: "rgba(255,255,255,0.8)",
-                }}
+                className="rounded-xl p-3 bg-[#0e1017] border border-white/[0.06] space-y-1.5"
               >
-                <div className="text-[10px] uppercase tracking-wider mb-1.5 opacity-50 font-sans font-bold" style={{ color: accent }}>Example</div>
-                {market.example}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-[#baff55]">
+                    💡 Real Match Example
+                  </span>
+                  <span className="text-[9px] font-mono text-[#8e8e93]">Settlement Guide</span>
+                </div>
+                <div className="text-[11px] text-gray-300 font-mono leading-relaxed bg-[#131520] p-2.5 rounded-lg">
+                  {market.example}
+                </div>
               </div>
             )}
             {market.rules && market.rules.length > 0 && (
@@ -1721,26 +1729,25 @@ function CategorySection({
   const colors = colorMap[category.colorKey] ?? colorMap.slate;
   const IconComp = category.icon;
   return (
-    <section className="mb-14">
+    <section className="mb-10">
       <div
-        className={`flex items-center gap-4 mb-6 rounded-2xl px-5 py-4 border border-border bg-card`}
+        className="flex items-center gap-4 mb-5 rounded-2xl px-6 py-4 bg-[#131520] border border-white/[0.05] shadow-lg"
       >
-        <div className={`p-2.5 rounded-xl ${colors.bg} ${colors.border} border`}>
-          <IconComp size={22} className={colors.text} />
+        <div className={`p-2.5 rounded-xl ${colors.bg} border border-white/[0.05]`}>
+          <IconComp size={20} className={colors.text} />
         </div>
         <div>
           <h2
-            className={`${colors.text}`}
-            style={{ fontSize: "1.1rem" }}
+            className="text-base font-bold text-white"
           >
             {category.label}
           </h2>
-          <p className="text-white/45 text-sm">
+          <p className="text-[#8e8e93] text-xs mt-0.5">
             {category.tagline}
           </p>
         </div>
         <div
-          className={`ml-auto text-xs px-3 py-1 rounded-full border ${colors.bg} ${colors.border} ${colors.text}`}
+          className={`ml-auto text-xs px-3 py-1 rounded-full ${colors.bg} ${colors.text} font-bold text-[11px]`}
         >
           {category.markets.length}{" "}
           {category.markets.length === 1 ? "market" : "markets"}
@@ -2466,75 +2473,96 @@ function MarketGuideView() {
 function PromotionsView({ accent }: { accent: string }) {
   return (
     <div className="space-y-8">
-      <div 
-        className="rounded-2xl p-6 border border-purple-500/20"
-        style={{ background: "rgba(168,85,247,0.07)" }}
-      >
-      <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <Gift size={20} className="text-purple-400" /> Active Promotions & Bonuses
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Active Promotions Grid */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Gift size={18} className="text-[#baff55]" />
+            <h3 className="text-base font-bold text-white">Active Promotions & Bonuses</h3>
+          </div>
+          <span className="text-xs text-[#8e8e93]">4 active customer programs</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
             {
               title: "Welcome Bonus",
+              tag: "100% Match",
               desc: "100% first deposit match up to KES 5,000.",
-              rule: "4x wagering requirement on odds 2.0+."
+              rule: "4x wagering requirement on odds 2.0+.",
+              color: "#baff55",
+              bg: "rgba(186, 255, 85, 0.1)"
             },
             {
               title: "Weekly Cashback",
+              tag: "10% Weekly",
               desc: "10% back on net losses every Monday.",
-              rule: "Minimum loss of KES 100 to qualify."
+              rule: "Minimum loss of KES 100 to qualify.",
+              color: "#10b981",
+              bg: "rgba(16, 185, 129, 0.1)"
             },
             {
               title: "Accumulator Boost",
-              desc: "Up to 50% extra winnings on 5+ selections.",
-              rule: "Each selection must be odds 1.30+."
+              tag: "Up to 50%",
+              desc: "Extra winnings multiplier on 5+ selections.",
+              rule: "Each leg must have minimum odds of 1.30+.",
+              color: "#3b82f6",
+              bg: "rgba(59, 130, 246, 0.1)"
             },
             {
               title: "Refer a Friend",
-              desc: "Earn KES 500 for every successful referral.",
-              rule: "Referral must deposit at least KES 1,000."
+              tag: "KES 500 Fixed",
+              desc: "KES 500 reward for every verified referral.",
+              rule: "Referred user must deposit at least KES 1,000.",
+              color: "#ff7a59",
+              bg: "rgba(255, 122, 89, 0.1)"
             }
           ].map((p, i) => (
-            <div key={i} className="p-4 rounded-xl bg-[#1b1e2b]">
-              <div className="text-purple-400 font-bold mb-1">{p.title}</div>
-              <p className="text-white/70 text-sm mb-2">{p.desc}</p>
-              <div className="text-[10px] text-white/30 uppercase tracking-wider font-bold">Key Rule: {p.rule}</div>
+            <div key={i} className="bg-[#131520] border border-white/[0.05] hover:border-white/[0.12] rounded-2xl p-5 space-y-3 transition-all">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-white">{p.title}</span>
+                <span 
+                  className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                  style={{ background: p.bg, color: p.color }}
+                >
+                  {p.tag}
+                </span>
+              </div>
+              <p className="text-xs text-[#8e8e93] leading-relaxed">{p.desc}</p>
+              <div className="bg-[#0e1017] p-2.5 rounded-xl text-[11px] text-gray-300 font-mono flex items-center gap-2">
+                <span className="text-[#baff55] font-bold">Rule:</span> {p.rule}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="rounded-2xl p-6 bg-[#131520]">
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <Gem size={20} className="text-purple-400" /> VIP & Loyalty Tiers
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-white/40 text-xs uppercase tracking-widest border-b border-white/5">
-                <th className="pb-3 px-2">Tier</th>
-                <th className="pb-3 px-2">Monthly Volume</th>
-                <th className="pb-3 px-2">Cashback %</th>
-                <th className="pb-3 px-2">Perks</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm text-white/70">
-              {[
-                { name: "Bronze", vol: "KES 0+", cb: "5%", perks: "Standard Support" },
-                { name: "Silver", vol: "KES 50k+", cb: "7%", perks: "Faster Withdrawals" },
-                { name: "Gold", vol: "KES 200k+", cb: "10%", perks: "Personal Account Manager" },
-                { name: "Platinum", vol: "KES 1M+", cb: "15%", perks: "VIP Events & Gifts" }
-              ].map((t, i) => (
-                <tr key={i} className="border-b border-white/[0.03] last:border-0">
-                  <td className="py-4 px-2 font-bold text-white">{t.name}</td>
-                  <td className="py-4 px-2">{t.vol}</td>
-                  <td className="py-4 px-2 text-purple-400">{t.cb}</td>
-                  <td className="py-4 px-2 text-xs">{t.perks}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* VIP & Loyalty Tiers */}
+      <div className="bg-[#131520] border border-white/[0.05] rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Gem size={18} className="text-purple-400" />
+            <h3 className="text-base font-bold text-white">VIP & Loyalty Tiers</h3>
+          </div>
+          <span className="text-xs text-[#8e8e93]">Monthly tier thresholds</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { name: "Bronze", vol: "KES 0+", cb: "5%", perks: "Standard Support", color: "#ffa64d" },
+            { name: "Silver", vol: "KES 50,000+", cb: "7%", perks: "Faster Withdrawals", color: "#e2e8f0" },
+            { name: "Gold", vol: "KES 200,000+", cb: "10%", perks: "Account Manager", color: "#facc15" },
+            { name: "Platinum", vol: "KES 1,000,000+", cb: "15%", perks: "VIP Events & Gifts", color: "#a855f7" }
+          ].map((t, i) => (
+            <div key={i} className="bg-[#0e1017] border border-white/[0.04] rounded-2xl p-4 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white uppercase tracking-wider">{t.name}</span>
+                <span className="text-sm font-mono font-black" style={{ color: t.color }}>{t.cb}</span>
+              </div>
+              <div className="text-lg font-black font-mono text-white">{t.vol}</div>
+              <p className="text-[11px] text-[#8e8e93]">{t.perks}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -2545,60 +2573,67 @@ function PromotionsView({ accent }: { accent: string }) {
 function SupportView({ accent }: { accent: string }) {
   return (
     <div className="space-y-8">
-      <div 
-        className="rounded-2xl p-6 border border-blue-500/20"
-        style={{ background: "rgba(59,130,246,0.07)" }}
-      >
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <Wrench size={20} className="text-blue-400" /> Escalation Matrix
-        </h3>
-        <div className="space-y-4">
+      {/* Escalation Matrix */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Wrench size={18} className="text-[#3b82f6]" />
+            <h3 className="text-base font-bold text-white">Issue Escalation Matrix</h3>
+          </div>
+          <span className="text-xs text-[#8e8e93]">3-tier resolution framework</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { level: "Level 1", role: "General Agent", handle: "Password resets, bet queries, basic technical help." },
-            { level: "Level 2", role: "Team Leader", handle: "Large withdrawal approvals, account closures, complex bet disputes." },
-            { level: "Level 3", role: "Operations Manager", handle: "Fraud investigations, major system outages, legal threats." }
+            { level: "Level 1", role: "General Agent", handle: "Password resets, bet queries, basic technical help.", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.1)" },
+            { level: "Level 2", role: "Team Leader", handle: "Large withdrawal approvals, account closures, complex bet disputes.", color: "#baff55", bg: "rgba(186, 255, 85, 0.1)" },
+            { level: "Level 3", role: "Operations Lead", handle: "Fraud investigations, major system outages, regulatory inquiries.", color: "#ff4d4d", bg: "rgba(255, 77, 77, 0.1)" }
           ].map((e, i) => (
-            <div key={i} className="flex gap-4 p-4 rounded-xl bg-[#1b1e2b]">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
-                <span className="text-blue-400 font-black">{i+1}</span>
+            <div key={i} className="bg-[#131520] border border-white/[0.05] rounded-2xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span 
+                  className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                  style={{ background: e.bg, color: e.color }}
+                >
+                  {e.level}
+                </span>
+                <span className="text-xs font-bold text-white">{e.role}</span>
               </div>
-              <div>
-                <div className="text-white font-bold">{e.level} — {e.role}</div>
-                <p className="text-white/50 text-sm mt-1">{e.handle}</p>
-              </div>
+              <p className="text-xs text-[#8e8e93] leading-relaxed">{e.handle}</p>
             </div>
           ))}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-2xl p-6 bg-[#131520]">
-          <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Standard Procedures</h4>
+        <div className="bg-[#131520] border border-white/[0.05] rounded-2xl p-6 space-y-4">
+          <h4 className="text-white text-sm font-bold uppercase tracking-wider">Standard Operating Procedures</h4>
           <ul className="space-y-3">
             {[
               "Verify user identity via Email/Phone OTP before sharing account data.",
-              "Document every call/chat with a unique Ticket ID.",
-              "Check 'Risk Score' before approving withdrawals over KES 10,000.",
-              "Tag 'Responsible Gaming' flags immediately for Level 2 review."
+              "Document every call/chat with a clear summary log.",
+              "Check risk score before approving transactions over KES 10,000.",
+              "Tag responsible gaming flags immediately for Level 2 review."
             ].map((s, i) => (
-              <li key={i} className="flex gap-3 text-sm text-white/60">
-                <span className="text-blue-500 mt-0.5">●</span>
+              <li key={i} className="flex items-start gap-2.5 text-xs text-[#8e8e93] leading-relaxed">
+                <span className="text-[#3b82f6] font-bold">●</span>
                 {s}
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-2xl p-6 border border-red-500/10 bg-red-500/5">
-          <h4 className="text-red-400 mb-4 uppercase text-xs tracking-widest font-black">Emergency Protocols</h4>
+
+        <div className="bg-[#131520] border border-white/[0.05] rounded-2xl p-6 space-y-4">
+          <h4 className="text-[#ff4d4d] text-sm font-bold uppercase tracking-wider">Emergency Protocols</h4>
           <ul className="space-y-3">
             {[
-              "Platform Crash: Notify DevOps channel on Slack immediately.",
-              "Security Breach: Lock all admin accounts and initiate 'Code Red'.",
-              "Suspicious Betting: Suspend the market and notify Odds Team.",
-              "Self-Harm Threat: Follow the 'Duty of Care' script and escalate to L3."
+              "Platform Crash: Notify Technical team immediately.",
+              "Security Breach: Suspend affected accounts and flag incident.",
+              "Suspicious Betting: Suspend market and alert Risk Management.",
+              "Self-Harm Mention: Follow Duty of Care guidelines and escalate to Level 3."
             ].map((s, i) => (
-              <li key={i} className="flex gap-3 text-sm text-red-400/70">
-                <AlertTriangle size={14} className="text-red-500 mt-0.5 shrink-0" />
+              <li key={i} className="flex items-start gap-2.5 text-xs text-red-200/80 leading-relaxed">
+                <AlertTriangle size={14} className="text-[#ff4d4d] shrink-0 mt-0.5" />
                 {s}
               </li>
             ))}
@@ -2613,46 +2648,52 @@ function SupportView({ accent }: { accent: string }) {
 function ComplianceView({ accent }: { accent: string }) {
   return (
     <div className="space-y-8">
-      <div 
-        className="rounded-2xl p-6 border border-emerald-500/20"
-        style={{ background: "rgba(16,185,129,0.07)" }}
-      >
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <ShieldCheck size={20} className="text-emerald-400" /> Responsible Gaming Pillars
-        </h3>
+      {/* Responsible Gaming */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} className="text-[#10b981]" />
+            <h3 className="text-base font-bold text-white">Responsible Gaming Pillars</h3>
+          </div>
+          <span className="text-xs text-[#8e8e93]">Customer safety standards</span>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { title: "Self-Exclusion", icon: Lock, desc: "Permanent or temporary account locking at user request." },
-            { title: "Deposit Limits", icon: TrendingDown, desc: "Daily, weekly, or monthly caps on how much a user can fund." },
-            { title: "Reality Checks", icon: Clock, desc: "Automated alerts showing time spent and net position." }
+            { title: "Self-Exclusion", icon: Lock, desc: "Permanent or temporary account locking at user request.", color: "#10b981" },
+            { title: "Deposit Limits", icon: TrendingDown, desc: "Daily, weekly, or monthly caps on funding amounts.", color: "#3b82f6" },
+            { title: "Reality Checks", icon: Clock, desc: "Automated session prompts showing time and net position.", color: "#ffa64d" }
           ].map((p, i) => (
-            <div key={i} className="p-5 rounded-xl bg-[#1b1e2b] text-center">
-              <div className="flex justify-center mb-3">
-                <RenderIcon icon={p.icon} size={28} className="text-emerald-400" />
+            <div key={i} className="bg-[#131520] border border-white/[0.05] rounded-2xl p-5 space-y-3 text-center">
+              <div className="w-10 h-10 rounded-xl bg-[#0e1017] flex items-center justify-center mx-auto" style={{ color: p.color }}>
+                <RenderIcon icon={p.icon} size={20} />
               </div>
-              <div className="text-emerald-400 font-bold mb-2">{p.title}</div>
-              <p className="text-white/50 text-xs leading-relaxed">{p.desc}</p>
+              <div className="text-sm font-bold text-white">{p.title}</div>
+              <p className="text-xs text-[#8e8e93] leading-relaxed">{p.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="rounded-2xl p-6 bg-[#131520]">
-        <h3 className="text-white text-lg mb-4 flex items-center gap-2">
-          <FileCheck size={20} className="text-white/60" /> KYC & Licensing Requirements
-        </h3>
-        <div className="space-y-6">
-          <div className="p-4 rounded-xl bg-[#1b1e2b]">
-            <div className="text-white text-sm font-bold mb-2">Proof of Identity (ID)</div>
-            <p className="text-white/40 text-xs">National ID, Passport, or Alien Card. Must be valid and clear. Scan both sides.</p>
+      {/* KYC & Verification Requirements */}
+      <div className="bg-[#131520] border border-white/[0.05] rounded-2xl p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <FileCheck size={18} className="text-[#baff55]" />
+          <h3 className="text-base font-bold text-white">KYC & Document Verification</h3>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-[#0e1017] border border-white/[0.04] rounded-2xl p-4 space-y-1.5">
+            <span className="text-xs font-bold text-white">Proof of Identity (ID)</span>
+            <p className="text-xs text-[#8e8e93] leading-relaxed">
+              National ID, Passport, or Alien Card. Must be valid, unexpired, with clear photos of front and back.
+            </p>
           </div>
-          <div className="p-4 rounded-xl bg-[#1b1e2b]">
-            <div className="text-white text-sm font-bold mb-2">Proof of Address (POA)</div>
-            <p className="text-white/40 text-xs">Utility bill or bank statement (not older than 3 months). Must match account name.</p>
-          </div>
-          <div className="p-4 rounded-xl bg-[#1b1e2b]">
-            <div className="text-white text-sm font-bold mb-2">Age Verification</div>
-            <p className="text-white/40 text-xs text-red-400/60 font-bold">STRICT 18+ POLICY. No exceptions. Any account suspected of underage play must be locked instantly.</p>
+          <div className="bg-[#0e1017] border border-white/[0.04] rounded-2xl p-4 space-y-1.5">
+            <span className="text-xs font-bold text-white">Proof of Address (POA)</span>
+            <p className="text-xs text-[#8e8e93] leading-relaxed">
+              Utility bill, bank statement, or official government letter issued within the last 90 days.
+            </p>
           </div>
         </div>
       </div>
