@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // Format time string consistently across all environments (e.g. "7:00 AM", "12:00 PM")
 function formatWindowHour(d) {
@@ -148,7 +149,16 @@ const DEFAULT_HOURLY_COUNTER = {
 };
 
 export default function MpesaCodes() {
-  const [activeTab, setActiveTab] = useState("counter"); // 'counter' or 'ledger'
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryView = new URLSearchParams(location.search).get('view');
+  const activeTab = queryView === 'ledger' ? 'ledger' : 'counter';
+  const setActiveTab = (tab) => {
+    const params = new URLSearchParams(location.search);
+    if (tab === 'counter') params.delete('view');
+    else params.set('view', tab);
+    navigate({ search: params.toString() }, { replace: true });
+  };
   const [showAnalyticsDetails, setShowAnalyticsDetails] = useState(false);
   const [inputText, setInputText] = useState("");
   const [search, setSearch] = useState("");

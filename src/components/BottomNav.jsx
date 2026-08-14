@@ -32,7 +32,11 @@ const navItems = [
     label: 'MPesa Counts', 
     icon: ClipboardList,
     badge: 'Live',
-    badgeColor: 'bg-[#baff55] text-black'
+    badgeColor: 'bg-[#baff55] text-black',
+    subItems: [
+      { label: 'Hourly Counter', path: '/mpesa' },
+      { label: 'SMS Ledger', path: '/mpesa?view=ledger' }
+    ]
   },
   { 
     path: '/slots', 
@@ -46,9 +50,9 @@ const navItems = [
     icon: Calculator,
     badge: null,
     subItems: [
-      { label: 'Cashback Calc', path: '/tools?tab=cashback' },
+      { label: 'Cashback Calc', path: '/tools' },
       { label: 'Odds Converter', path: '/tools?tab=odds' },
-      { label: 'Calculation Rules', path: '/tools?tab=rules' }
+      { label: 'Cashback Rules', path: '/tools?tab=rules' }
     ]
   },
   { 

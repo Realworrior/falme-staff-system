@@ -694,6 +694,113 @@ Example:
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CASHBACK RULES COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+function CashbackRules() {
+  const rules = [
+    {
+      id: "01",
+      title: "Cycle Window",
+      color: "#baff55",
+      desc: "Each cashback cycle runs from 8:30 PM to 8:30 PM the following day. Transactions outside this window do not count toward the current cycle.",
+      example: "Deposits at 8:45 PM on Monday count for Monday's cycle, which closes at 8:30 PM Tuesday."
+    },
+    {
+      id: "02",
+      title: "Net Loss Calculation",
+      color: "#3b82f6",
+      desc: "Cashback = 10% of net loss. Net loss = Total Deposits − Total Withdrawals within the cycle. If withdrawals exceed deposits, net loss is KES 0 and no cashback applies.",
+      example: "Deposits KES 3,000 · Withdrawals KES 1,200 → Net Loss KES 1,800 → Cashback KES 180."
+    },
+    {
+      id: "03",
+      title: "Eligible Transaction Types",
+      color: "#ffa64d",
+      desc: "Only Deposit and Withdrawal transactions count. Admin Deposits, Cash Back credits, and any 'other' type entries are ignored in the calculation.",
+      example: "A KES 500 Cash Back credit does NOT add to the deposit total."
+    },
+    {
+      id: "04",
+      title: "One Cashback Per Cycle",
+      color: "#a855f7",
+      desc: "Only one cashback can be awarded per customer per cycle, regardless of how many transactions they made during that window.",
+      example: "A user who deposited 10 times still gets a single cashback payout at end of cycle."
+    },
+    {
+      id: "05",
+      title: "Minimum Threshold",
+      color: "#10b981",
+      desc: "Net loss must be at least KES 100 for the customer to qualify. Below this threshold no cashback is generated even if they have a net loss.",
+      example: "Deposits KES 500 · Withdrawals KES 450 → Net Loss KES 50 → No cashback (below KES 100 minimum)."
+    },
+    {
+      id: "06",
+      title: "Cashback Payout",
+      color: "#ff4d4d",
+      desc: "Cashback is credited as bonus funds and is NOT withdrawable directly. It can be used for betting only. Wagering requirements may apply per the active promotion terms.",
+      example: "KES 300 cashback credited → customer can bet with KES 300 but must wager before withdrawing any winnings from it."
+    }
+  ];
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header */}
+      <div className="bg-[#131520] rounded-2xl p-6 flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-[#baff55]/10 flex items-center justify-center">
+          <ShieldCheck size={22} className="text-[#baff55]" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-white">Cashback Rules</h2>
+          <p className="text-xs text-gray-500 mt-0.5">Official eligibility criteria and calculation logic — 6 rules</p>
+        </div>
+      </div>
+
+      {/* Rules Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {rules.map((rule) => (
+          <div key={rule.id} className="bg-[#131520] rounded-2xl p-6 space-y-3 hover:bg-[#161824] transition-all">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">Rule {rule.id}</span>
+              <span 
+                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                style={{ background: `${rule.color}18`, color: rule.color }}
+              >
+                {rule.title}
+              </span>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">{rule.desc}</p>
+            <div className="bg-[#0e1017] rounded-xl p-3 flex gap-2">
+              <span className="text-[#baff55] text-[10px] font-black shrink-0 uppercase tracking-wider mt-0.5">eg.</span>
+              <span className="text-[11px] text-gray-300 leading-relaxed font-mono">{rule.example}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Reference Formula */}
+      <div className="bg-[#131520] rounded-2xl p-6 space-y-4">
+        <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+          <Calculator size={14} className="text-[#baff55]" /> Quick Formula Reference
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { label: "Net Loss", formula: "Deposits − Withdrawals", color: "#3b82f6" },
+            { label: "Cashback", formula: "Net Loss × 10%", color: "#baff55" },
+            { label: "Minimum", formula: "Net Loss ≥ KES 100", color: "#10b981" }
+          ].map((f) => (
+            <div key={f.label} className="bg-[#0e1017] rounded-2xl p-4 text-center space-y-1">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">{f.label}</span>
+              <span className="text-sm font-black font-mono" style={{ color: f.color }}>{f.formula}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN TOOLS PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -701,7 +808,7 @@ export default function Tools() {
   const location = useLocation();
   const navigate = useNavigate();
   const queryTab = new URLSearchParams(location.search).get('tab');
-  const activeTab = queryTab === 'odds' ? 'odds' : 'cashback';
+  const activeTab = queryTab === 'odds' ? 'odds' : queryTab === 'rules' ? 'rules' : 'cashback';
 
   const setActiveTab = (tab) => {
     const params = new URLSearchParams(location.search);
@@ -713,27 +820,39 @@ export default function Tools() {
     navigate({ search: params.toString() }, { replace: true });
   };
 
+  const tabs = [
+    { id: 'cashback', label: 'Calculator' },
+    { id: 'odds', label: 'Odds Converter' },
+    { id: 'rules', label: 'Cashback Rules' },
+  ];
+
   return (
     <div className="min-h-screen bg-[#0e1017] pt-8 pb-32 px-4 md:px-8 max-w-7xl mx-auto space-y-8">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="px-3 py-1 bg-[#baff55]/10 rounded-full">
-              <span className="text-[10px] font-black text-[#baff55] uppercase tracking-[0.2em]">Operational Suite</span>
-            </div>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Cashback Command Center</h1>
-          <p className="text-gray-500 text-sm mt-2 max-w-md">Professional utilities designed to streamline support workflows and increase accuracy.</p>
+          <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Cashback & Tools</h1>
+          <p className="text-gray-500 text-sm mt-2 max-w-md">Calculators, converters, and the rules that govern them.</p>
         </div>
 
         <div className="flex bg-[#131520] p-1.5 rounded-2xl shadow-lg">
-          <button onClick={() => setActiveTab('cashback')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'cashback' ? 'bg-[#baff55] text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}>Calculator</button>
-          <button onClick={() => setActiveTab('odds')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'odds' ? 'bg-[#baff55] text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}>Odds Converter</button>
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
+                activeTab === t.id ? 'bg-[#baff55] text-black shadow-lg' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-        {activeTab === 'cashback' ? <CashbackCalculator /> : <OddsCalculator />}
+        {activeTab === 'cashback' && <CashbackCalculator />}
+        {activeTab === 'odds' && <OddsCalculator />}
+        {activeTab === 'rules' && <CashbackRules />}
       </motion.div>
     </div>
   );
