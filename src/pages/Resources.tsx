@@ -61,7 +61,7 @@ import {
   subDays, 
   parse 
 } from "date-fns";
-import { SmartAssistant } from "../components/SmartAssistant";
+import { templates } from "../data/templatesData";
 import { useSupabaseData } from "../context/SupabaseDataContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -2927,13 +2927,9 @@ export default function Resources() {
         </div>
       </div>
 
-
       {/* ── Views ── */}
       {section === "guide" && <MarketGuideView />}
       {section === "manual" && <AgentManualView />}
-      
-      {/* Global AI Assistant */}
-      <SmartAssistant templates={templates} />
     </div>
   );
 }

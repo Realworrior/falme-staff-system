@@ -377,12 +377,11 @@ export default function RotaPage() {
                   <CalendarIcon size={18} className="text-white" />
                 </div>
                 <h1 className="text-2xl md:text-3xl font-black tracking-tighter uppercase font-heading">
-                  Operational Matrix
+                  Shift Rota
                 </h1>
               </div>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                <Shield size={10} className="text-accent" />
-                Mission Critical Scheduling System
+                Monthly team schedule
               </p>
             </div>
 

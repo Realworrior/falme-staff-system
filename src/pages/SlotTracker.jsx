@@ -136,7 +136,7 @@ const SlotTracker = () => {
       <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight">Aviator Tracker</h1>
-          <p className="text-[#8e8e93] text-sm mt-1">Record and analyze real-time slot failure performance</p>
+          <p className="text-[#8e8e93] text-sm mt-1">Log slot failure occurrences</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
@@ -149,7 +149,7 @@ const SlotTracker = () => {
             </div>
             <div className="text-left">
               <span className="block text-sm font-semibold text-white">Slot 1</span>
-              <span className="text-xs text-[#8e8e93]">Critical Event</span>
+              <span className="text-xs text-[#8e8e93]">Log issue</span>
             </div>
           </button>
 
@@ -162,7 +162,7 @@ const SlotTracker = () => {
             </div>
             <div className="text-left">
               <span className="block text-sm font-semibold text-white">Slot 2</span>
-              <span className="text-xs text-[#8e8e93]">Critical Event</span>
+              <span className="text-xs text-[#8e8e93]">Log issue</span>
             </div>
           </button>
 
@@ -174,8 +174,8 @@ const SlotTracker = () => {
               <Activity className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <span className="block text-sm font-semibold text-white">Both</span>
-              <span className="text-xs text-[#8e8e93]">Simultaneous</span>
+              <span className="block text-sm font-semibold text-white">Both Slots</span>
+              <span className="text-xs text-[#8e8e93]">Log issue</span>
             </div>
           </button>
         </div>

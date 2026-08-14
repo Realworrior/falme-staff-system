@@ -16,7 +16,7 @@ const navItems = [
   { path: '/', label: 'Overview', icon: LayoutDashboard },
   { path: '/templates', label: 'Templates', icon: FileText },
   { path: '/slots', label: 'Aviator', icon: Activity },
-  { path: '/mpesa', label: 'MPesa', icon: ClipboardList, isNew: true },
+  { path: '/mpesa', label: 'MPesa', icon: ClipboardList },
   { path: '/tools', label: 'Cashback', icon: Calculator },
   { path: '/rota', label: 'Rota', icon: CalendarDays },
   { path: '/resources', label: 'Resources', icon: BookOpen },
@@ -55,9 +55,6 @@ const BottomNav = ({ className }) => {
                   <span className={`text-[8px] font-semibold truncate w-full text-center leading-tight ${isActive ? 'text-black font-bold' : 'text-[#8e8e93]'}`}>
                     {item.label}
                   </span>
-                  {item.isNew && (
-                    <div className="absolute top-0.5 right-1 w-1.5 h-1.5 bg-[#baff55] rounded-full border border-[#2a2b2f]" />
-                  )}
                 </div>
               </NavLink>
             );
@@ -108,9 +105,6 @@ const BottomNav = ({ className }) => {
                       {item.label}
                     </span>
                   </div>
-                  {item.isNew && (
-                    <div className="absolute top-2 right-2 w-2 h-2 bg-[#baff55] rounded-full border-2 border-[#1e1f22]" />
-                  )}
                 </div>
               </NavLink>
             );

@@ -87,16 +87,13 @@ const AviatorPulseCard = ({ logs, chartData }) => {
           <div style={{
             width: 8, height: 8, borderRadius: '50%',
             background: statusColor,
-            boxShadow: `0 0 8px ${statusColor}`,
-            animation: 'aviator-blink 1.4s infinite',
           }} />
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', color: statusColor, textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: statusColor, textTransform: 'uppercase' }}>
             {statusLevel}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0.5 }}>
-          <Radio size={11} color="#8e8e93" />
-          <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600, letterSpacing: '0.1em' }}>LIVE FEED</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0.6 }}>
+          <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600 }}>Live Activity</span>
         </div>
       </div>
 
@@ -106,28 +103,21 @@ const AviatorPulseCard = ({ logs, chartData }) => {
         {/* Title row */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            {/* Animated plane icon */}
             <div style={{
               width: 44, height: 44, borderRadius: 16,
               background: `linear-gradient(135deg, ${statusColor}25, ${statusColor}10)`,
               border: `1px solid ${statusColor}30`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              position: 'relative', flexShrink: 0,
+              flexShrink: 0,
             }}>
               <Plane size={20} color={statusColor} style={{ transform: 'rotate(-45deg)' }} />
-              {/* Pulse ring */}
-              <div style={{
-                position: 'absolute', inset: -5, borderRadius: 20,
-                border: `1px solid ${statusColor}30`,
-                animation: 'aviator-ring 2s ease-out infinite',
-              }} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em' }}>
-                Aviator Pulse
+              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#fff' }}>
+                Aviator Activity
               </h3>
               <p style={{ margin: '3px 0 0', fontSize: 12, color: '#8e8e93', fontWeight: 500 }}>
-                Real-time Global Failure Index
+                Failure logs per hour
               </p>
             </div>
           </div>
@@ -314,7 +304,7 @@ const Dashboard = () => {
     { name: "Agent Manual", icon: ShieldCheck, path: "/resources", params: "?section=manual", color: "#ff7a59" },
     { name: "Market Guide", icon: FileText, path: "/resources", params: "?section=guide", color: "#8b5cf6" },
     { name: "Templates", icon: MessageSquare, path: "/templates", color: "#60a5fa" },
-    { name: "Aviator Matrix", icon: Activity, path: "/slots", color: "#ef4444" },
+    { name: "Aviator", icon: Activity, path: "/slots", color: "#ef4444" },
   ];
 
   return (
@@ -324,21 +314,15 @@ const Dashboard = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-            Operational Overview
+            Overview
           </h1>
-          <div className="flex items-center gap-3 mt-2">
-             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#181a26]">
-               <div className="w-2 h-2 rounded-full bg-[#baff55]" />
-               <span className="text-xs font-semibold text-[#baff55]">Systems Online</span>
-             </div>
-             <p className="text-sm text-[#8e8e93] font-medium">Betfalme Infrastructure v4.0</p>
-          </div>
+          <p className="text-sm text-[#8e8e93] font-medium mt-1">Falme Staff Portal</p>
         </div>
         
         <div className="flex items-center gap-4">
            <div className="flex flex-col items-end">
-             <span className="text-xs font-medium text-[#8e8e93] mb-1">Shift Status</span>
-             <span className="text-sm font-semibold text-white bg-[#181a26] px-4 py-2 rounded-full">{onDutyInfo.current} Phase Active</span>
+             <span className="text-xs font-medium text-[#8e8e93] mb-1">Current Shift</span>
+             <span className="text-sm font-semibold text-white bg-[#181a26] px-4 py-2 rounded-full">{onDutyInfo.current} Shift</span>
            </div>
            <div className="bg-[#181a26] rounded-full flex items-center gap-3 px-5 py-2.5">
               <Clock size={15} className="text-[#baff55]" />
@@ -349,10 +333,9 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Main Infrastructure Section */}
+        {/* Main Section */}
         <div className="lg:col-span-8 space-y-8">
           
-          {/* Aviator Pulse — Premium Redesign */}
           <AviatorPulseCard logs={logs} chartData={chartData} />
 
           {/* Shortcuts Grid */}
@@ -372,7 +355,7 @@ const Dashboard = () => {
                     <Icon size={18} style={{ color: res.color }} />
                   </div>
                   <div>
-                    <span className="block text-xs text-[#8e8e93] font-medium mb-1">Launch</span>
+                    <span className="block text-xs text-[#8e8e93] font-medium mb-1">Open</span>
                     <span className="block text-sm font-semibold text-white">{res.name}</span>
                   </div>
                   <div className="absolute top-3 right-3 w-8 h-8 bg-[#1b1e2b] rounded-full flex items-center justify-center transition-all">
@@ -394,8 +377,8 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-lg font-semibold text-white">Daily Deployment</h3>
-                <p className="text-sm text-[#8e8e93] mt-1">Staff Rota Status</p>
+                <h3 className="text-lg font-semibold text-white">Staff on Duty</h3>
+                <p className="text-sm text-[#8e8e93] mt-1">Shift schedule</p>
               </div>
               <Calendar size={20} className="text-[#8e8e93]" />
             </div>

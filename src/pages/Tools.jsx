@@ -594,26 +594,26 @@ Example:
             )}
           </div>
 
-          {/* Protocol card */}
+          {/* Rules card */}
           <div className="bg-[#131520] rounded-2xl p-4 shadow-xl space-y-2">
             <div className="flex items-center gap-2">
               <ShieldCheck size={14} className="text-[#baff55]" />
-              <span className="text-[10px] font-black text-white uppercase tracking-widest">System Protocol</span>
+              <span className="text-[10px] font-bold text-white uppercase tracking-wider">Calculation Rules</span>
             </div>
-            <p className="text-[10px] text-gray-500 leading-relaxed italic">Calculated daily 8:30 PM – 8:30 PM. The 8:30–8:40 PM window is a reset gap; deposits in this window are excluded from the cycle.</p>
+            <p className="text-[10px] text-gray-400 leading-relaxed">Calculated daily from 8:30 PM to 8:30 PM. The 8:30 PM to 8:40 PM window is a reset gap; deposits during this time are not counted.</p>
           </div>
         </div>
       </div>
 
-      {/* Staff Guide & Protocol (On-Page) */}
+      {/* Staff Guidelines (On-Page) */}
       <div className="glass-card p-8 space-y-6">
          <div className="flex items-center justify-between">
            <div className="flex items-center gap-3">
              <HelpCircle size={18} className="text-accent" />
-             <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Operational Protocol</span>
+             <span className="text-xs font-bold text-white uppercase tracking-wider">Staff Guidelines</span>
            </div>
            <div className="px-3 py-1 bg-accent/10 rounded-full border border-accent/20">
-             <span className="text-[8px] font-black text-accent uppercase">Staff Training</span>
+             <span className="text-[9px] font-bold text-accent uppercase">Reference</span>
            </div>
          </div>
 
