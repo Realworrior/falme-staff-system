@@ -20,7 +20,8 @@ import {
   Calculator,
   TrendingUp,
   Radio,
-  Plane
+  Plane,
+  ClipboardList
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -560,12 +561,62 @@ const Dashboard = () => {
   }, [logs]);
 
   const shortcuts = [
-    { name: "Cashback", icon: Calculator, path: "/tools", color: "#10b981" },
-    { name: "Odds Converter", icon: Zap, path: "/tools", params: "?tab=odds", color: "#3b82f6" },
-    { name: "Agent Manual", icon: ShieldCheck, path: "/resources", params: "?section=manual", color: "#ff7a59" },
-    { name: "Market Guide", icon: FileText, path: "/resources", params: "?section=guide", color: "#8b5cf6" },
-    { name: "Templates", icon: MessageSquare, path: "/templates", color: "#60a5fa" },
-    { name: "Aviator", icon: Activity, path: "/slots", color: "#ef4444" },
+    { 
+      name: "MPesa Tracker", 
+      desc: "Hourly counts & SMS records", 
+      icon: ClipboardList, 
+      path: "/mpesa", 
+      color: "#baff55",
+      accentBg: "rgba(186, 255, 85, 0.12)",
+      tag: "Live Sync"
+    },
+    { 
+      name: "Cashback Calculator", 
+      desc: "24h cycle net loss calculation", 
+      icon: Calculator, 
+      path: "/tools", 
+      color: "#10b981",
+      accentBg: "rgba(16, 185, 129, 0.12)",
+      tag: "8:30 PM Cycle"
+    },
+    { 
+      name: "Response Templates", 
+      desc: "Instant customer reply macros", 
+      icon: MessageSquare, 
+      path: "/templates", 
+      color: "#60a5fa",
+      accentBg: "rgba(96, 165, 250, 0.12)",
+      tag: "Quick Copy"
+    },
+    { 
+      name: "Aviator Tracker", 
+      desc: "Slot 1 & Slot 2 failure log", 
+      icon: Activity, 
+      path: "/slots", 
+      color: "#ff4d4d",
+      accentBg: "rgba(255, 77, 77, 0.12)",
+      tag: "Incident Log"
+    },
+    { 
+      name: "Agent Manual", 
+      desc: "Operational guidelines & escalation", 
+      icon: ShieldCheck, 
+      path: "/resources", 
+      params: "?section=manual", 
+      color: "#ff7a59",
+      accentBg: "rgba(255, 122, 89, 0.12)",
+      tag: "Guidelines"
+    },
+    { 
+      name: "Market Guide", 
+      desc: "Sports markets & betting rules", 
+      icon: FileText, 
+      path: "/resources", 
+      params: "?section=guide", 
+      color: "#8b5cf6",
+      accentBg: "rgba(139, 92, 246, 0.12)",
+      tag: "Reference"
+    },
   ];
 
   return (
@@ -599,32 +650,60 @@ const Dashboard = () => {
           
           <AviatorPulseCard logs={logs} chartData={chartData} />
 
-          {/* Shortcuts Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
-            {shortcuts.map(res => {
-              const Icon = res.icon;
-              return (
-                <button 
-                  key={res.name} 
-                  onClick={() => navigate(res.path + (res.params || ''))}
-                  className="bg-[#131520] hover:bg-[#191c2b] rounded-2xl flex flex-col items-start gap-4 p-5 transition-all duration-300 group relative overflow-hidden cursor-pointer text-left shadow-lg"
-                >
-                  <div 
-                    className="w-10 h-10 rounded-2xl flex items-center justify-center"
-                    style={{ background: `${res.color}20` }}
+          {/* Quick Access Grid — Premium Card Design */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider">Quick Actions & Workflows</h2>
+              <span className="text-xs text-[#8e8e93]">6 direct access modules</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {shortcuts.map(res => {
+                const Icon = res.icon;
+                return (
+                  <button 
+                    key={res.name} 
+                    onClick={() => navigate(res.path + (res.params || ''))}
+                    className="bg-[#131520] hover:bg-[#181b29] border border-white/[0.04] hover:border-white/[0.12] rounded-2xl p-5 transition-all duration-200 group relative flex flex-col justify-between text-left shadow-lg hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 cursor-pointer min-h-[140px]"
                   >
-                    <Icon size={18} style={{ color: res.color }} />
-                  </div>
-                  <div>
-                    <span className="block text-xs text-[#8e8e93] font-medium mb-1">Open</span>
-                    <span className="block text-sm font-semibold text-white">{res.name}</span>
-                  </div>
-                  <div className="absolute top-3 right-3 w-8 h-8 bg-[#1b1e2b] rounded-full flex items-center justify-center transition-all">
-                    <ArrowUpRight size={14} className="text-white" />
-                  </div>
-                </button>
-              );
-            })}
+                    {/* Top Row: Icon + Badge + Arrow */}
+                    <div className="flex items-center justify-between w-full mb-3">
+                      <div 
+                        className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
+                        style={{ background: res.accentBg }}
+                      >
+                        <Icon size={20} style={{ color: res.color }} />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span 
+                          className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                          style={{ 
+                            background: res.accentBg, 
+                            color: res.color 
+                          }}
+                        >
+                          {res.tag}
+                        </span>
+                        <div className="w-7 h-7 rounded-full bg-white/5 group-hover:bg-white/10 flex items-center justify-center text-[#8e8e93] group-hover:text-white transition-colors">
+                          <ArrowUpRight size={14} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Name + Description */}
+                    <div>
+                      <h3 className="text-sm font-bold text-white group-hover:text-[#baff55] transition-colors leading-snug">
+                        {res.name}
+                      </h3>
+                      <p className="text-xs text-[#8e8e93] mt-1 leading-normal line-clamp-1">
+                        {res.desc}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
