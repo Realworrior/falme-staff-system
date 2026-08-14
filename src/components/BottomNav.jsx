@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -7,33 +7,97 @@ import {
   CalendarDays,
   BookOpen,
   Calculator,
-  ArrowLeft,
-  ClipboardList
+  ClipboardList,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Sparkles,
+  Shield,
+  HelpCircle,
+  TrendingDown,
+  Layers,
+  ArrowUpRight
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
-  { path: '/', label: 'Overview', icon: LayoutDashboard },
-  { path: '/templates', label: 'Templates', icon: FileText },
-  { path: '/slots', label: 'Aviator', icon: Activity },
-  { path: '/mpesa', label: 'MPesa', icon: ClipboardList },
-  { path: '/tools', label: 'Cashback', icon: Calculator },
-  { path: '/rota', label: 'Rota', icon: CalendarDays },
-  { path: '/resources', label: 'Resources', icon: BookOpen },
+  { 
+    path: '/', 
+    label: 'Overview', 
+    icon: LayoutDashboard,
+    badge: null
+  },
+  { 
+    path: '/mpesa', 
+    label: 'MPesa Counts', 
+    icon: ClipboardList,
+    badge: 'Live',
+    badgeColor: 'bg-[#baff55] text-black'
+  },
+  { 
+    path: '/slots', 
+    label: 'Aviator Logs', 
+    icon: Activity,
+    badge: null
+  },
+  { 
+    path: '/tools', 
+    label: 'Cashback & Tools', 
+    icon: Calculator,
+    badge: null,
+    subItems: [
+      { label: 'Cashback Calc', path: '/tools?tab=cashback' },
+      { label: 'Odds Converter', path: '/tools?tab=odds' },
+      { label: 'Calculation Rules', path: '/tools?tab=rules' }
+    ]
+  },
+  { 
+    path: '/templates', 
+    label: 'Templates', 
+    icon: FileText,
+    badge: '18',
+    badgeColor: 'bg-emerald-500/20 text-emerald-400'
+  },
+  { 
+    path: '/rota', 
+    label: 'Shift Rota', 
+    icon: CalendarDays,
+    badge: null
+  },
+  { 
+    path: '/resources', 
+    label: 'Resources', 
+    icon: BookOpen,
+    badge: null,
+    subItems: [
+      { label: 'Market Guide', path: '/resources?section=guide' },
+      { label: 'Agent Manual', path: '/resources?section=manual' }
+    ]
+  },
 ];
 
 const BottomNav = ({ className }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [openSubMenus, setOpenSubMenus] = useState({ '/resources': true, '/tools': false });
+  const [hoveredItem, setHoveredItem] = useState(null);
+
+  const toggleSubMenu = (path, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpenSubMenus(prev => ({
+      ...prev,
+      [path]: !prev[path]
+    }));
+  };
 
   return (
     <>
       {/* ── MOBILE BOTTOM DOCK ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden px-2 pb-2">
+      <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden px-3 pb-3">
         <div
-          className="flex items-center justify-around bg-[#2a2b2f]/95 backdrop-blur-md rounded-[24px] px-1 py-1.5 border border-[#3a3b3f] shadow-2xl w-full"
-          style={{ 
-            boxShadow: '0 -4px 40px rgba(0,0,0,0.5)',
-          }}
+          className="flex items-center justify-around bg-[#121318]/95 backdrop-blur-xl rounded-[26px] px-2 py-2 border border-white/[0.06] shadow-[0_-10px_35px_rgba(0,0,0,0.6)] w-full"
         >
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -47,13 +111,17 @@ const BottomNav = ({ className }) => {
                 to={item.path}
                 className="no-underline flex-1 min-w-0 flex justify-center"
               >
-                <div className={`relative flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-xl transition-all w-full max-w-[56px] ${isActive ? 'bg-[#baff55]' : 'bg-transparent'}`}>
+                <div className={`relative flex flex-col items-center justify-center gap-1 px-1.5 py-2 rounded-2xl transition-all w-full max-w-[54px] ${
+                  isActive ? 'bg-[#baff55] shadow-lg scale-105' : 'bg-transparent text-gray-400 hover:text-white'
+                }`}>
                   <Icon 
-                    size={18} 
-                    className={isActive ? 'text-black' : 'text-[#8e8e93]'} 
+                    size={17} 
+                    className={isActive ? 'text-black' : 'text-gray-400'} 
                   />
-                  <span className={`text-[8px] font-semibold truncate w-full text-center leading-tight ${isActive ? 'text-black font-bold' : 'text-[#8e8e93]'}`}>
-                    {item.label}
+                  <span className={`text-[8px] font-semibold truncate w-full text-center leading-tight ${
+                    isActive ? 'text-black font-bold' : 'text-gray-400'
+                  }`}>
+                    {item.label.split(' ')[0]}
                   </span>
                 </div>
               </NavLink>
@@ -62,64 +130,187 @@ const BottomNav = ({ className }) => {
         </div>
       </div>
 
-      {/* ── DESKTOP VERTICAL SIDEBAR ── */}
+      {/* ── DESKTOP COLLAPSIBLE SIDEBAR (Exact Inspo Design) ── */}
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className={`hidden md:flex flex-col items-center w-[88px] h-screen bg-[#1e1f22] border-r border-[#2a2b2f] py-8 sticky top-0 shrink-0 ${className || ''}`}
+        initial={false}
+        animate={{ width: isCollapsed ? 76 : 240 }}
+        transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
+        className={`hidden md:flex flex-col h-screen bg-[#111216] border-r border-white/[0.04] py-5 sticky top-0 shrink-0 z-50 select-none relative ${className || ''}`}
       >
-        {/* Logo */}
-        <NavLink to="/" className="no-underline mb-10 flex flex-col items-center gap-1 group">
-          <div className="w-11 h-11 bg-[#2a2b2f] rounded-2xl flex items-center justify-center border border-[#3a3b3f] group-hover:border-[#baff55]/40 transition-all overflow-hidden">
-            <img src="/favicon.svg" alt="Falme" className="w-7 h-7 object-contain" />
-          </div>
-        </NavLink>
+        {/* Toggle Collapse Button (Floating Circular Pill on Border) */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-8 w-6 h-6 rounded-full bg-[#1b1d24] hover:bg-[#252832] border border-white/10 text-gray-300 hover:text-white flex items-center justify-center shadow-xl transition-all z-50 cursor-pointer"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+        </button>
 
-        {/* Nav Links */}
-        <div className="flex flex-col gap-1 flex-1 w-full px-3">
+        {/* Top Window Controls + Brand Squircle */}
+        <div className={`px-5 mb-6 flex flex-col gap-4 ${isCollapsed ? 'items-center px-2' : ''}`}>
+          {/* macOS window dots */}
+          <div className="flex items-center gap-1.5 opacity-60">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+          </div>
+
+          {/* Squircle Brand Badge */}
+          <NavLink to="/" className="no-underline flex items-center gap-3 group mt-1">
+            <div className="w-10 h-10 rounded-[14px] bg-white text-black flex items-center justify-center shadow-lg font-black text-xl tracking-tighter shrink-0 transition-transform group-hover:scale-105">
+              <span className="w-4 h-4 rounded-full border-[3.5px] border-black inline-block" />
+            </div>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="overflow-hidden whitespace-nowrap"
+              >
+                <span className="text-sm font-bold text-white tracking-tight block">Falme Staff</span>
+                <span className="text-[10px] text-gray-400 block font-medium">Ops & Resources</span>
+              </motion.div>
+            )}
+          </NavLink>
+        </div>
+
+        {/* Navigation Items */}
+        <div className="flex flex-col gap-1 flex-1 overflow-y-auto px-3 no-scrollbar">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.path === '/' 
               ? location.pathname === '/' 
               : location.pathname.startsWith(item.path);
+            const hasSub = item.subItems && item.subItems.length > 0;
+            const isSubOpen = openSubMenus[item.path] ?? false;
 
             return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className="no-underline"
+              <div 
+                key={item.path} 
+                className="relative"
+                onMouseEnter={() => isCollapsed && setHoveredItem(item)}
+                onMouseLeave={() => isCollapsed && setHoveredItem(null)}
               >
-                <div className="relative group">
-                  <div className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-all cursor-pointer
-                    ${isActive
-                      ? 'bg-[#baff55]'
-                      : 'bg-transparent hover:bg-[#2a2b2f]'
-                    }`}
-                  >
-                    <Icon
-                      size={20}
-                      className={isActive ? 'text-black' : 'text-[#8e8e93] group-hover:text-white transition-colors'}
+                <div
+                  onClick={() => {
+                    if (hasSub && !isCollapsed) {
+                      setOpenSubMenus(prev => ({ ...prev, [item.path]: !prev[item.path] }));
+                    } else {
+                      navigate(item.path);
+                    }
+                  }}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                    isActive && !isCollapsed
+                      ? 'bg-[#1a1c24] text-white font-bold'
+                      : isActive && isCollapsed
+                      ? 'bg-[#baff55] text-black shadow-md'
+                      : 'text-gray-400 hover:text-white hover:bg-white/[0.03]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon 
+                      size={18} 
+                      className={`shrink-0 ${isActive && isCollapsed ? 'text-black' : isActive ? 'text-[#baff55]' : 'text-gray-400'}`} 
                     />
-                    <span className={`text-[9px] font-semibold leading-none ${isActive ? 'text-black' : 'text-[#8e8e93] group-hover:text-white transition-colors'}`}>
-                      {item.label}
-                    </span>
+                    {!isCollapsed && (
+                      <span className="text-xs tracking-tight truncate">
+                        {item.label}
+                      </span>
+                    )}
                   </div>
+
+                  {!isCollapsed && (
+                    <div className="flex items-center gap-1.5">
+                      {item.badge && (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${item.badgeColor || 'bg-white/10 text-white'}`}>
+                          {item.badge}
+                        </span>
+                      )}
+                      {hasSub && (
+                        <ChevronDown 
+                          size={14} 
+                          className={`text-gray-500 transition-transform duration-200 ${isSubOpen ? 'rotate-180 text-white' : ''}`}
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
-              </NavLink>
+
+                {/* Expanded Tree Submenu (When Sidebar is Expanded) */}
+                {!isCollapsed && hasSub && isSubOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="relative pl-6 pr-2 py-1 flex flex-col gap-1 overflow-hidden"
+                  >
+                    {/* Vertical Connecting Tree Line */}
+                    <div className="absolute left-[21px] top-0 bottom-3 w-[1px] bg-white/10" />
+
+                    {item.subItems.map((sub, sIdx) => {
+                      const isSubActive = location.search 
+                        ? (item.path + location.search) === sub.path 
+                        : location.pathname === sub.path;
+
+                      return (
+                        <NavLink
+                          key={sIdx}
+                          to={sub.path}
+                          className="no-underline relative"
+                        >
+                          {/* Horizontal connecting tick line */}
+                          <div className="absolute -left-[14px] top-1/2 w-2.5 h-[1px] bg-white/10" />
+                          <div className={`text-xs py-1.5 px-3 rounded-lg transition-all ${
+                            isSubActive
+                              ? 'text-[#baff55] font-semibold bg-white/[0.04]'
+                              : 'text-gray-400 hover:text-white hover:bg-white/[0.02]'
+                          }`}>
+                            {sub.label}
+                          </div>
+                        </NavLink>
+                      );
+                    })}
+                  </motion.div>
+                )}
+
+                {/* Hover Flyout Popover (When Sidebar is Collapsed - Exact Image Look) */}
+                {isCollapsed && hoveredItem?.path === item.path && (
+                  <div className="absolute left-[70px] top-0 z-[100] bg-[#161820] border border-white/[0.08] rounded-2xl p-3 shadow-2xl min-w-[170px] animate-in fade-in zoom-in-95 duration-150">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/[0.06]">
+                      <span className="text-xs font-bold text-white">{item.label}</span>
+                      {item.badge && (
+                        <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${item.badgeColor || 'bg-white/10 text-white'}`}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    {hasSub ? (
+                      <div className="space-y-1">
+                        {item.subItems.map((sub, sIdx) => (
+                          <button
+                            key={sIdx}
+                            onClick={() => navigate(sub.path)}
+                            className="w-full text-left text-xs py-1.5 px-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/[0.06] transition-all flex items-center justify-between"
+                          >
+                            <span>{sub.label}</span>
+                            <ChevronRight size={11} className="text-gray-500" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => navigate(item.path)}
+                        className="w-full text-left text-xs py-1 px-1 text-gray-400 hover:text-white flex items-center gap-1.5"
+                      >
+                        <span>Open {item.label}</span>
+                        <ArrowUpRight size={12} />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             );
           })}
-        </div>
-
-        {/* Back button */}
-        <div className="w-full px-3 mt-4">
-          <button
-            onClick={() => window.history.back()}
-            className="w-full flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-transparent hover:bg-[#2a2b2f] transition-all group"
-          >
-            <ArrowLeft size={18} className="text-[#8e8e93] group-hover:text-white transition-colors" />
-            <span className="text-[9px] font-semibold text-[#8e8e93] group-hover:text-white transition-colors">Back</span>
-          </button>
         </div>
       </motion.div>
     </>

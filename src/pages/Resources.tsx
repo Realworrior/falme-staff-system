@@ -2389,7 +2389,7 @@ function MarketGuideView() {
   return (
     <div className="space-y-6">
       {/* Sport Nav Bar */}
-      <div className="bg-[#131520] p-3 rounded-2xl border border-white/[0.06] shadow-xl">
+      <div className="bg-[#131520] p-3 rounded-2xl shadow-xl">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {(
             Object.entries(sportsData) as [Sport, SportData][]
@@ -2418,7 +2418,7 @@ function MarketGuideView() {
       </div>
 
       {/* Sport hero strip */}
-      <div className="bg-[#131520] rounded-2xl p-5 border border-white/[0.06] flex items-center justify-between gap-4">
+      <div className="bg-[#131520] rounded-2xl p-5 flex items-center justify-between gap-4 shadow-lg">
         <div className="flex items-center gap-3.5">
           <div className="p-3 rounded-xl bg-[#0e1017]">
             <RenderIcon icon={sport.icon} size={22} style={{ color: sport.accent }} />
@@ -2764,7 +2764,7 @@ function ToolkitView({ accent }: { accent: string }) {
                   3. Enable <span className="text-white/60">Developer Mode</span><br/>
                   4. Click <span className="text-white/60">Load unpacked</span> and select folder
                 </div>
-                <div className="border-t border-white/5 pt-2">
+                <div className="pt-2">
                   <span className="text-orange-500 font-black">FIREFOX INSTALLATION:</span><br/>
                   1. Download the Firefox Add-on (.xpi)<br/>
                   2. Go to <span className="text-white/60">about:addons</span><br/>
@@ -2777,7 +2777,7 @@ function ToolkitView({ accent }: { accent: string }) {
       </div>
 
       <div 
-        className="rounded-2xl p-6 border border-pink-500/20"
+        className="rounded-2xl p-6"
         style={{ background: "rgba(244,114,182,0.07)" }}
       >
         <h3 className="text-white text-lg mb-4 flex items-center gap-2">
@@ -2801,15 +2801,15 @@ function ToolkitView({ accent }: { accent: string }) {
         <div className="rounded-2xl p-6 bg-[#131520]">
           <h4 className="text-white mb-4 uppercase text-xs tracking-widest font-black">Odds Guide Reference</h4>
           <div className="space-y-4 text-sm">
-            <div className="flex justify-between border-b border-white/5 pb-2">
+            <div className="flex justify-between border-white/5 pb-2">
               <span className="text-white/40">Decimal 2.00</span>
               <span className="text-pink-400 font-bold">50% Probability</span>
             </div>
-            <div className="flex justify-between border-b border-white/5 pb-2">
+            <div className="flex justify-between border-white/5 pb-2">
               <span className="text-white/40">Decimal 1.50</span>
               <span className="text-pink-400 font-bold">66.7% Probability</span>
             </div>
-            <div className="flex justify-between border-b border-white/5 pb-2">
+            <div className="flex justify-between border-white/5 pb-2">
               <span className="text-white/40">Decimal 4.00</span>
               <span className="text-pink-400 font-bold">25% Probability</span>
             </div>
@@ -2839,7 +2839,7 @@ function AgentManualView() {
   return (
     <div className="space-y-6">
       {/* Manual Section Nav */}
-      <div className="bg-[#131520] p-3 rounded-2xl border border-white/[0.06] shadow-xl">
+      <div className="bg-[#131520] p-3 rounded-2xl shadow-xl">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {(Object.entries(manualSections) as [ManualSection, ManualSectionMeta][]).map(([id, data]) => {
             const isActive = activeSection === id;
@@ -2863,7 +2863,7 @@ function AgentManualView() {
       </div>
 
       {/* Section Hero */}
-      <div className="bg-[#131520] rounded-2xl p-5 border border-white/[0.06] flex items-center gap-3.5">
+      <div className="bg-[#131520] rounded-2xl p-5 flex items-center gap-3.5 shadow-lg">
         <div className="p-3 rounded-xl bg-[#0e1017]">
           <RenderIcon icon={meta.icon} size={22} style={{ color: meta.accent }} />
         </div>
@@ -2907,7 +2907,7 @@ export default function Resources() {
   return (
     <div className="p-4 md:p-8 space-y-6 w-full max-w-[1600px] mx-auto min-h-screen bg-[#0e1017] text-white">
       {/* ── Page Header & Section Switcher ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/[0.06] pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-2xl bg-[#1b1e2b] flex items-center justify-center text-[#8b5cf6]">
