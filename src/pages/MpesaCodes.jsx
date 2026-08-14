@@ -842,6 +842,7 @@ export default function MpesaCodes() {
       {/* ── CONDITIONAL VIEW ROUTING ── */}
       {activeTab === "counter" && (() => {
           const prevEntry = analyticsHistory.length > 0 ? analyticsHistory[0] : null;
+          const prevRange = prevEntry ? prevEntry.timeRange : generateHourRange(-1);
           const prevDep = prevEntry ? (prevEntry.depositCount ?? 0) : 0;
           const prevWth = prevEntry ? (prevEntry.withdrawalCount ?? 0) : 0;
 
