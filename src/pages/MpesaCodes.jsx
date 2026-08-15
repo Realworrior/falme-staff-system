@@ -365,13 +365,13 @@ export default function MpesaCodes() {
       setIsNearHourEnd(secsLeft > 0 && secsLeft <= 300);
 
       setCounterState((prev) => {
-        // If current window is different from recorded active window
+        // If current window is different from recorded active window, auto-archive the finished window
         if (prev.timeRange && prev.timeRange !== currentWindow.timeRange) {
           const finishedRange = prev.timeRange;
           const depCount = prev.depositCount || 0;
           const wthCount = prev.withdrawalCount || 0;
 
-          // ALWAYS auto-archive completed shift to Analytics so Last Hour Stats has 8-9 stats immediately at 9:01
+          // Auto-archive completed shift to Analytics
           const archiveEntry = {
             id: `analytics_${Date.now()}`,
             timeRange: finishedRange,
@@ -400,7 +400,7 @@ export default function MpesaCodes() {
           };
 
           syncCounterToSupabase(newState);
-          addToast(`New shift window (${newRange}). Last Hour Stats updated!`, "info");
+          addToast(`New shift window (${newRange}). Previous hour saved to history!`, "info");
           return newState;
         }
 
@@ -409,7 +409,7 @@ export default function MpesaCodes() {
     };
 
     checkHourRollover();
-    const interval = setInterval(checkHourRollover, 1000); // 1-second interval for live countdown
+    const interval = setInterval(checkHourRollover, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -469,10 +469,10 @@ export default function MpesaCodes() {
   };
 
   const handleCopyCounterText = async (customRange, customDep, customWth) => {
-    const textToCopy = getFormattedCounterText(customRange, customDep, customWth);
     const targetRange = customRange || counterState.timeRange || generateHourRange(0);
-    const depVal = customDep ?? counterState.depositCount ?? 0;
-    const wthVal = customWth ?? counterState.withdrawalCount ?? 0;
+    const depVal = customDep !== undefined ? customDep : (counterState.depositCount ?? 0);
+    const wthVal = customWth !== undefined ? customWth : (counterState.withdrawalCount ?? 0);
+    const textToCopy = getFormattedCounterText(targetRange, depVal, wthVal);
 
     try {
       await navigator.clipboard.writeText(textToCopy);
@@ -488,16 +488,14 @@ export default function MpesaCodes() {
       };
 
       setAnalyticsHistory((prevHistory) => {
-        if (prevHistory.length > 0 && prevHistory[0].timeRange === targetRange && 
-            Math.abs(new Date(prevHistory[0].copiedAt).getTime() - Date.now()) < 60000) {
-          return prevHistory;
-        }
-        const updated = [newAnalyticsEntry, ...prevHistory];
+        // Upsert by timeRange or prepend if new
+        const filtered = prevHistory.filter(h => h.timeRange !== targetRange);
+        const updated = [newAnalyticsEntry, ...filtered];
         syncAnalyticsToSupabase(updated);
         return updated;
       });
 
-      addToast("Copied MPesa report & saved to Analytics!", "success");
+      addToast("Copied MPesa report & saved to History!", "success");
       setTimeout(() => setCopiedCounter(false), 3000);
     } catch (err) {
       addToast("Failed to copy report", "error");
@@ -505,10 +503,10 @@ export default function MpesaCodes() {
   };
 
   const handleClearAnalytics = async () => {
-    if (window.confirm("Are you sure you want to clear all analytics history?")) {
+    if (window.confirm("Are you sure you want to clear all recorded hour history?")) {
       setAnalyticsHistory([]);
       syncAnalyticsToSupabase([]);
-      addToast("Analytics history cleared", "info");
+      addToast("History cleared", "info");
     }
   };
 
@@ -518,7 +516,7 @@ export default function MpesaCodes() {
       syncAnalyticsToSupabase(next);
       return next;
     });
-    addToast("Analytics entry removed", "info");
+    addToast("History entry removed", "info");
   };
 
   // SMS Ledger Handlers
