@@ -9,6 +9,8 @@ import Rota from './pages/Rota';
 import Resources from './pages/Resources';
 import Tools from './pages/Tools';
 import MpesaCodes from './pages/MpesaCodes';
+import Login from './pages/Login';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Maintain the MUI theme for underlying MUI components (like Dialogs) 
 // but ensure it aligns with the new design's core palette.
@@ -68,23 +70,37 @@ export const theme = createTheme({
   },
 });
 
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  return (
+    <AppShell>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/templates" element={<Templates />} />
+        <Route path="/slots" element={<SlotTracker />} />
+        <Route path="/rota" element={<Rota />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/tools" element={<Tools />} />
+        <Route path="/mpesa" element={<MpesaCodes />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AppShell>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppShell>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/slots" element={<SlotTracker />} />
-          <Route path="/rota" element={<Rota />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/tools" element={<Tools />} />
-          <Route path="/mpesa" element={<MpesaCodes />} />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AppShell>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }

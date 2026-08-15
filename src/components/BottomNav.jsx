@@ -16,9 +16,11 @@ import {
   HelpCircle,
   TrendingDown,
   Layers,
-  ArrowUpRight
+  ArrowUpRight,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { 
@@ -81,6 +83,7 @@ const navItems = [
 ];
 
 const BottomNav = ({ className }) => {
+  const { logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -315,6 +318,24 @@ const BottomNav = ({ className }) => {
               </div>
             );
           })}
+        </div>
+
+        {/* Footer: Lock / Logout button */}
+        <div className={`px-3 pt-3 mt-auto border-t border-white/[0.04] w-full ${isCollapsed ? 'flex justify-center' : ''}`}>
+          <button
+            onClick={() => {
+              if (window.confirm("Lock terminal and log out?")) {
+                logout();
+              }
+            }}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer w-full ${
+              isCollapsed ? 'justify-center !px-0' : ''
+            }`}
+            title="Lock terminal"
+          >
+            <LogOut size={16} className="shrink-0" />
+            {!isCollapsed && <span>Lock Session</span>}
+          </button>
         </div>
       </motion.div>
     </>
