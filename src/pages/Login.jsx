@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, KeyRound, ShieldCheck, ArrowRight, Delete, AlertCircle, Sparkles } from 'lucide-react';
+import { Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
@@ -13,34 +13,10 @@ export default function Login() {
 
   const PIN_LENGTH = 5;
 
-  // Auto focus input on mount
+  // Auto focus input on mount and keep focused
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
-
-  const handleKeyPress = (num) => {
-    if (loading) return;
-    setError('');
-    if (pin.length < PIN_LENGTH) {
-      const nextPin = pin + num;
-      setPin(nextPin);
-      if (nextPin.length === PIN_LENGTH) {
-        verifyPin(nextPin);
-      }
-    }
-  };
-
-  const handleDelete = () => {
-    if (loading) return;
-    setError('');
-    setPin(prev => prev.slice(0, -1));
-  };
-
-  const handleClear = () => {
-    if (loading) return;
-    setError('');
-    setPin('');
-  };
 
   const verifyPin = (candidatePin) => {
     setLoading(true);
@@ -53,62 +29,67 @@ export default function Login() {
         setLoading(false);
         setTimeout(() => setShake(false), 500);
       }
-    }, 250);
+    }, 200);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key >= '0' && e.key <= '9') {
-      handleKeyPress(e.key);
-    } else if (e.key === 'Backspace') {
-      handleDelete();
-    } else if (e.key === 'Escape') {
-      handleClear();
-    } else if (e.key === 'Enter' && pin.length === PIN_LENGTH) {
-      verifyPin(pin);
+  const handleInputChange = (e) => {
+    if (loading) return;
+    const value = e.target.value.replace(/\D/g, '').slice(0, PIN_LENGTH);
+    setError('');
+    setPin(value);
+    if (value.length === PIN_LENGTH) {
+      verifyPin(value);
     }
   };
 
   return (
     <div 
-      className="min-h-screen w-full bg-[#0a0b10] flex items-center justify-center p-4 relative overflow-hidden select-none outline-none"
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      ref={inputRef}
+      className="min-h-screen w-full bg-[#0a0b10] flex items-center justify-center p-4 relative overflow-hidden select-none"
+      onClick={() => inputRef.current?.focus()}
     >
       {/* Dynamic Background Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#baff55]/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-[350px] h-[350px] bg-[#3b82f6]/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-[#baff55]/10 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-10 right-1/3 w-[300px] h-[300px] bg-[#3b82f6]/10 rounded-full blur-[100px] pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        initial={{ opacity: 0, y: 15, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-        className="w-full max-w-md relative z-10"
+        transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
+        className="w-full max-w-sm relative z-10"
       >
-        {/* Main Card */}
+        {/* Main Minimal Glass Card */}
         <div className="bg-[#12141c]/90 backdrop-blur-2xl rounded-[32px] p-8 md:p-10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] border border-white/[0.06] flex flex-col items-center text-center relative overflow-hidden">
           
-          {/* Subtle Top Indicator Pill */}
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-white/[0.04] rounded-full border border-white/[0.06] mb-6">
-            <span className="w-2 h-2 rounded-full bg-[#baff55] animate-pulse" />
-            <span className="text-[10px] font-bold text-gray-300 tracking-wider uppercase">Staff Access Required</span>
+          {/* Subtle Icon */}
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.04] text-gray-400 flex items-center justify-center mb-5 border border-white/[0.06]">
+            <Lock size={20} className="text-gray-300" />
           </div>
 
-          {/* App Brand Squircle */}
-          <div className="w-16 h-16 rounded-[22px] bg-white text-black flex items-center justify-center shadow-2xl mb-4 font-black text-2xl tracking-tighter shrink-0">
-            <span className="w-7 h-7 rounded-full border-[5px] border-black inline-block" />
-          </div>
-
-          <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">Falme Staff Portal</h1>
-          <p className="text-xs text-gray-400 mt-1 max-w-[260px] leading-relaxed">
-            Enter your 5-digit PIN to access operational tools and logs
+          <h1 className="text-xl font-bold text-white tracking-tight">Enter PIN</h1>
+          <p className="text-xs text-gray-500 mt-1">
+            Type your 5-digit access code
           </p>
 
-          {/* PIN Dots Display */}
+          {/* Hidden real input for physical keyboard and mobile keyboard support */}
+          <input
+            ref={inputRef}
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={PIN_LENGTH}
+            value={pin}
+            onChange={handleInputChange}
+            disabled={loading}
+            className="opacity-0 absolute pointer-events-auto inset-0 cursor-default"
+            autoFocus
+          />
+
+          {/* Visual PIN Dots */}
           <motion.div 
             animate={shake ? { x: [-12, 12, -8, 8, -4, 4, 0] } : {}}
             transition={{ duration: 0.4 }}
-            className="flex items-center justify-center gap-3.5 my-7"
+            className="flex items-center justify-center gap-3.5 my-8 cursor-pointer"
+            onClick={() => inputRef.current?.focus()}
           >
             {Array.from({ length: PIN_LENGTH }).map((_, index) => {
               const isFilled = index < pin.length;
@@ -126,13 +107,13 @@ export default function Login() {
           </motion.div>
 
           {/* Error Message Alert */}
-          <div className="min-h-[24px] mb-4 flex items-center justify-center">
+          <div className="min-h-[24px] flex items-center justify-center">
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
-                  initial={{ opacity: 0, y: -6 }}
+                  initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
+                  exit={{ opacity: 0, y: -4 }}
                   className="flex items-center gap-1.5 text-xs text-red-400 font-semibold bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20"
                 >
                   <AlertCircle size={13} />
@@ -140,54 +121,6 @@ export default function Login() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-
-          {/* Keypad Grid (3x4) */}
-          <div className="grid grid-cols-3 gap-3 w-full max-w-[280px]">
-            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
-              <button
-                key={digit}
-                type="button"
-                onClick={() => handleKeyPress(digit)}
-                className="h-14 rounded-2xl bg-[#1a1d29] hover:bg-[#242838] active:bg-[#baff55] active:text-black text-white text-xl font-bold font-mono transition-all flex items-center justify-center shadow-md active:scale-95 cursor-pointer select-none"
-              >
-                {digit}
-              </button>
-            ))}
-
-            {/* Clear Button */}
-            <button
-              type="button"
-              onClick={handleClear}
-              className="h-14 rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] active:bg-white/[0.1] text-gray-400 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center active:scale-95 cursor-pointer select-none"
-            >
-              Clear
-            </button>
-
-            {/* 0 Button */}
-            <button
-              type="button"
-              onClick={() => handleKeyPress('0')}
-              className="h-14 rounded-2xl bg-[#1a1d29] hover:bg-[#242838] active:bg-[#baff55] active:text-black text-white text-xl font-bold font-mono transition-all flex items-center justify-center shadow-md active:scale-95 cursor-pointer select-none"
-            >
-              0
-            </button>
-
-            {/* Backspace Button */}
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="h-14 rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] active:bg-white/[0.1] text-gray-300 hover:text-white transition-all flex items-center justify-center active:scale-95 cursor-pointer select-none"
-              title="Delete last digit"
-            >
-              <Delete size={20} />
-            </button>
-          </div>
-
-          {/* Footer Note */}
-          <div className="mt-8 pt-6 border-t border-white/[0.04] w-full flex items-center justify-center gap-2 text-[11px] text-gray-500 font-medium">
-            <Lock size={12} className="text-gray-500" />
-            <span>Secure internal terminal</span>
           </div>
 
         </div>
