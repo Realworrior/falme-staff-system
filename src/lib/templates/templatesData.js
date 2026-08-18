@@ -158,64 +158,102 @@ export const TEMPLATES_DATA = [
     description: 'M-PESA only. Identify deposit type first. Check for mini-statements, Airtel, and Paybills.',
     subsections: [
       {
-        id: '2.1',
-        title: 'Failed Deposit - M-PESA Code Required',
-        triggers: 'deposit failed, not reflected, not showing, deposited, funds not showing',
+        id: '2.1A',
+        title: 'Failed Deposit - 10-Character M-PESA Code Required',
+        triggers: 'deposit failed, not reflected, not showing, deposited, funds not showing, mpesa code, 10 digit, 10 character',
         variants: [
           {
             label: 'Standard',
-            text: "We're sorry to hear your deposit hasn't reflected. We can sort this out quickly. Please send us your registered phone number, and the 10-character M-PESA transaction code from your SMS, for example UA58134GTJ. Please share the code as text only, not a screenshot, and note that mini-statement codes are not accepted.",
+            text: "We're sorry to hear your deposit hasn't reflected. We can sort this out quickly. Please send us your registered phone number, the amount deposited, and the 10-character M-PESA transaction code from your SMS, for example UC8U77YY7Q. Please share the code as text only, not a screenshot, and note that mini-statement codes are not accepted.",
           },
           {
             label: 'Alt A',
-            text: "No worries, we'll get this sorted. Kindly send your phone number, and the 10-character code from your M-PESA message, for example UA58134GTJ. Text only please, no screenshots. We'll verify and update your balance right away.",
+            text: "No worries, we'll get this sorted for you. Kindly share your registered phone number, the deposit amount, and the 10-character M-PESA code, for example UC8U77YY7Q. Please type it out as text rather than sending a screenshot. We'll verify and update your balance right away.",
           },
           {
             label: 'Alt B',
-            text: "To trace your deposit we need two things: your registered phone number, and the M-PESA transaction code from your SMS. It's a 10-character code, for example UA58134GTJ. Text only, no screenshots, no mini-statement codes.",
+            text: "To trace and credit your deposit, please send us three details: your registered phone number, the amount deposited, and the 10-character M-PESA transaction code from your SMS (e.g. UC8U77YY7Q). Please send as plain text, not a screenshot.",
           },
           {
             label: 'High Empathy',
-            text: "We understand how frustrating a missing deposit can be and we'll get this fixed for you. Please share your phone number, and the 10-character code from your M-PESA confirmation SMS, for example UA58134GTJ. Text only, no screenshots needed. We're on it.",
+            text: "We understand how frustrating a delayed deposit can be and we're here to help. Please send us the phone number used to deposit, the exact amount, and the 10-character M-PESA code from your SMS (for example UC8U77YY7Q). Text only please, no screenshots needed, and we'll check it immediately.",
+          },
+        ],
+      },
+      {
+        id: '2.1B',
+        title: 'Failed Deposit - Full M-PESA Message Required',
+        triggers: 'full message, full sms, mpesa confirmation message, complete sms, paste message, copy sms',
+        variants: [
+          {
+            label: 'Standard',
+            text: "To verify and credit your deposit immediately, please copy and paste the full M-PESA confirmation SMS you received, for example: 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0798534993 on 8/3/26 at 1:15 AM.' Please share it as text only, not a screenshot.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly copy and paste the complete M-PESA confirmation SMS here as text, for example: 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0798534993 on 8/3/26 at 1:15 AM.' Once you paste the full message, we will verify the details and update your balance right away.",
+          },
+          {
+            label: 'High Empathy',
+            text: "We want to get your funds updated as fast as possible. Please copy the entire M-PESA confirmation message from your SMS inbox and paste it here in the chat (e.g. 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0798534993 on 8/3/26 at 1:15 AM.'). Having the full message text allows us to confirm and credit your account immediately.",
           },
         ],
       },
       {
         id: '2.2',
-        title: 'Client Shares Mini-Statement Code',
-        triggers: 'mini statement, last 5 transactions, one code for all, combined code',
+        title: 'Why Screenshots Are Not Accepted (Text Only Rule)',
+        triggers: 'screenshot, why text only, why no screenshot, image of receipt, photo of message, cannot copy screenshot',
         variants: [
           {
             label: 'Standard',
-            text: "Thanks for sharing that. However, the code you've sent appears to be a mini-statement code, which covers multiple transactions and cannot be used for individual verification, We need the specific 10-character M-PESA code from the deposit SMS, for example UA58134GTJ. Kindly check your messages and send that code as text.",
+            text: "Please share the transaction details as text rather than a screenshot. Text from screenshots cannot be directly copied, which can easily cause errors when manually typing lookalike characters such as number 1 vs letter I, or number 0 vs letter O. Sending the message or code as text allows us to verify your deposit instantly without any typos.",
           },
           {
             label: 'Alt A',
-            text: "That looks like a mini-statement code covering several transactions at once and unfortunately our system can only verify individual codes, Please check your M-PESA SMS for the specific deposit message and send us the 10-character code from that message, for example UA58134GTJ.",
+            text: "We kindly request that you copy and paste the text from your SMS instead of sending a screenshot image. Screenshots cannot be copied into our system and manual typing often leads to confusion between characters like 1 and I or 0 and O. Sending text ensures quick and accurate verification.",
           },
           {
             label: 'High Empathy',
-            text: "No worries, this is a common mix-up and we're happy to clarify. The code you've sent is a mini-statement code covering multiple transactions. We need the individual 10-character code from the specific deposit SMS, for example UA58134GTJ. Please check your messages and send that one over.",
+            text: "We know sending a screenshot feels convenient, but we ask for text to protect your time. Image screenshots cannot be copied directly and can lead to errors when typing confusing characters like letter O vs zero 0, or uppercase I vs number 1. Copying and pasting the text allows us to verify and credit your account immediately.",
           },
         ],
       },
       {
         id: '2.3',
-        title: 'Deleted M-PESA Message',
-        triggers: "deleted mpesa, deleted message, can't find code, no sms",
+        title: 'Why Mini-Statements Are Not Accepted (Client Shares Mini-Statement)',
+        triggers: 'mini statement, last 5 transactions, why mini statement not accepted, statement code, combined code, mini-statement',
         variants: [
           {
             label: 'Standard',
-            text: "Not a problem. You can recover the transaction code in two ways, Open your M-PESA app and check your transaction history for the 10-character code, or contact Safaricom directly and request a full M-PESA statement. Please note that mini-statement codes are not accepted.",
+            text: "Please note that mini-statement codes cannot be used for deposit verification. When you request a mini-statement, M-PESA generates a single 10-digit batch code that summarizes your last 5 transactions combined, rather than the unique transaction code for this specific deposit. To credit your account, we need the individual 10-character code from the actual deposit confirmation SMS, for example UC8U77YY7Q.",
           },
           {
-            label: 'Alt',
-            text: "No worries. The transaction code can still be found, check your M-PESA app under transaction history, or reach out to Safaricom for a full statement. Just note that mini-statements won't work for verification.",
+            label: 'Alt A',
+            text: "The code you provided appears to be from a mini-statement. Safaricom assigns a 10-digit reference code to the entire mini-statement covering your last 5 transactions, which cannot be matched to individual deposits in our system. Please check your messages for the specific deposit SMS and send us the 10-character transaction code from that message (e.g. UC8U77YY7Q) as text.",
+          },
+          {
+            label: 'High Empathy',
+            text: "This is a very common mix-up. Mini-statement codes cover your last 5 transactions under one combined M-PESA batch code, so our system cannot verify an individual deposit with it. We need the unique 10-character code from the specific payment SMS you received when you made the deposit (for example UC8U77YY7Q). Please send that individual code and we'll credit your balance right away.",
           },
         ],
       },
       {
         id: '2.4',
+        title: 'Deleted M-PESA Message - How to Recover',
+        triggers: "deleted mpesa, deleted message, can't find code, no sms, lost message",
+        variants: [
+          {
+            label: 'Standard',
+            text: "Not a problem. You can recover your transaction code in two ways: Open your M-PESA app and check your transaction history for the specific 10-character code, or contact Safaricom directly on 100 and request a full official M-PESA statement. Please note that mini-statement codes covering the last 5 transactions cannot be accepted.",
+          },
+          {
+            label: 'Alt A',
+            text: "No worries. You can find the transaction code in your M-PESA app under transaction history, or by calling Safaricom on 100 for a full statement. Just note that mini-statement codes won't work for individual deposit verification.",
+          },
+        ],
+      },
+      {
+        id: '2.4B',
         title: 'Client Self-Check - Deposit Unsuccessful Option',
         triggers: 'how to check, deposit unsuccessful, verify code, footer',
         variants: [
