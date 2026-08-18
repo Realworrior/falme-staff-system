@@ -232,49 +232,53 @@ export const TEMPLATES_DATA = [
       {
         id: '2.5',
         title: 'Airtel or Other Network Deposit - Not Supported',
-        triggers: 'airtel, other network, not mpesa, different network',
+        triggers: 'airtel, other network, not mpesa, different network, airtel money',
         variants: [
           {
             label: 'Standard',
-            text: "We appreciate you reaching out. Unfortunately Betfalme currently supports M-PESA deposits only, For deposits made via Airtel or another network, please contact that provider to request a reversal. Once reversed, you can re-deposit using M-PESA and we'll be here to confirm.",
+            text: "We appreciate you reaching out. Betfalme supports direct M-PESA deposits only. If you deposited funds via Airtel Money or another unsupported provider, our system cannot credit your account. You will be required to initiate a reversal from your provider immediately: For Airtel Money, please call Airtel on 100 or email airtelmoney@airtel.com. Once reversed, you can re-deposit using your registered M-PESA number.",
           },
           {
             label: 'Alt A',
-            text: "We only accept M-PESA deposits at the moment, If you deposited via Airtel or another network, kindly reach out to them for a reversal and then re-deposit via M-PESA. We'll assist as soon as that's done.",
+            text: "We only accept M-PESA deposits at the moment. For deposits made through Airtel Money, our system cannot credit your account. Please initiate a reversal by calling Airtel on 100 or contacting airtelmoney@airtel.com, then deposit via M-PESA.",
           },
           {
             label: 'High Empathy',
-            text: "We understand the inconvenience and we're sorry for the friction this causes. Betfalme only supports M-PESA at this time. Please contact your network provider to request a reversal and then re-deposit using M-PESA. We'll be ready to confirm as soon as it comes through.",
+            text: "We understand this is inconvenient and we are here to guide you. Betfalme only supports M-PESA at this time. If you sent funds via Airtel Money, please contact Airtel customer care on 100 to request an official reversal. Once the funds are back in your account, you can deposit via M-PESA and start playing right away.",
           },
         ],
       },
       {
         id: '2.6',
         title: 'Bank Deposit - Not Supported',
-        triggers: 'bank deposit, bank transfer, transferred from bank',
+        triggers: 'bank deposit, bank transfer, transferred from bank, bonga points',
         variants: [
           {
             label: 'Standard',
-            text: "We appreciate you reaching out. Unfortunately Betfalme does not support bank deposits at this time, Please contact your bank to request a reversal, then re-deposit using M-PESA. Once done, feel free to reach out and we'll confirm right away.",
+            text: "We appreciate you reaching out. Betfalme does not support direct bank deposits or Bonga Points at this time. If you deposit funds using unsupported methods, our system cannot credit your account and you will be required to initiate a reversal from your provider immediately: For Bonga Points, call Safaricom on 100 or WhatsApp 0722000100. For bank transfers, contact your bank. Once reversed, please re-deposit directly via M-PESA.",
           },
           {
             label: 'High Empathy',
-            text: "We understand this may be frustrating and we're sorry for the inconvenience. We only support M-PESA deposits at the moment. Please reach out to your bank to have the transaction reversed and then deposit via M-PESA. We'll be here every step of the way.",
+            text: "We understand this may cause inconvenience and we apologize for the trouble. We only support M-PESA deposits. If you deposited from a bank account or via Bonga Points, our system cannot credit your balance. Please reach out to your provider or bank immediately to initiate a reversal, then deposit directly using M-PESA.",
           },
         ],
       },
       {
         id: '2.7',
-        title: 'Paybill / Merchant Transaction - Not Supported',
-        triggers: 'paybill, till number, merchant, business number, own paybill',
+        title: 'Paybill / Till / Wrong Deposit Reversal',
+        triggers: 'paybill, till number, merchant, wrong deposit, reversal, paid by mistake',
         variants: [
           {
             label: 'Standard',
-            text: "We appreciate you getting in touch. Unfortunately deposits via Paybill or merchant till numbers are not supported, Each account is exclusively linked to the registered phone number as a fraud prevention measure. If you deposited through a business or merchant number, please contact that enterprise to request a reversal and then deposit directly using your registered M-PESA number.",
+            text: "If you pay into our Till or Paybill by mistake or from an unregistered number, Betfalme cannot manually reverse the transaction. Please initiate an official Safaricom reversal immediately by forwarding your payment SMS to 457 or by calling Safaricom on 100. For Bonga Points, contact Safaricom on 100 or WhatsApp 0722000100. For Airtel Money, call 100.",
+          },
+          {
+            label: 'Alt A',
+            text: "Our system cannot credit or manually reverse payments made to our Till or Paybill by mistake. You will need to initiate a reversal with your provider immediately: For M-PESA, forward the SMS to 457 or use the MySafaricom App. For Airtel Money, call 100.",
           },
           {
             label: 'High Empathy',
-            text: "We understand this can be confusing and we're sorry for the trouble. Deposits through Paybill or merchant accounts cannot be credited to your profile since each account is strictly tied to its registered number. Please reach out to the business you transacted with for a reversal, then deposit using your registered M-PESA number and we'll get you sorted right away.",
+            text: "We completely understand your concern. Due to security protocols, Betfalme cannot manually reverse accidental deposits. Please initiate a reversal immediately with Safaricom by forwarding your payment confirmation SMS to 457 or calling 100. They will reverse the funds directly back to your line.",
           },
         ],
       },
@@ -577,6 +581,25 @@ export const TEMPLATES_DATA = [
           {
             label: 'High Empathy',
             text: "Congratulations on the win and let's make sure those funds land in your wallet. Please send your phone number, a screenshot from your Bet History with the winning round visible, the time, and the amount. We'll sort this out right away.",
+          },
+        ],
+      },
+      {
+        id: '4.6',
+        title: 'Transaction was completed',
+        triggers: 'transaction completed, settled correctly, already credited, check transactions, cashout settled, winnings updated',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Upon investigating your account and gameplay logs, we have confirmed that the cashout and winnings for that round were settled and credited correctly to your balance at the time of play. Please recheck keenly your transaction history and account balance logs around that exact timeframe.",
+          },
+          {
+            label: 'Alt A',
+            text: "We have thoroughly checked your gaming session logs. The transaction was successfully completed and your winnings were added directly to your wallet at that time. Kindly review your transaction history keenly to see the update.",
+          },
+          {
+            label: 'High Empathy',
+            text: "We understand why you wanted this checked and we have reviewed your full gaming logs carefully. We can confirm that your cashout was settled correctly and credited to your wallet in real time during your play. We kindly advise you to recheck your transactions around that time.",
           },
         ],
       },
@@ -1129,6 +1152,29 @@ export const TEMPLATES_DATA = [
       },
       {
         id: '10.2',
+        title: 'Reset Not Working / Password Reset Failed',
+        triggers: 'reset not working, password reset failed, otp not received, reset link broken, cannot reset password, reset error',
+        variants: [
+          {
+            label: 'Standard',
+            text: "We're sorry to hear the password reset is not working. Please share your registered phone number, and confirm if you are receiving the OTP or if you encounter an error message on the page. We will check your account status and assist you with resetting access immediately.",
+          },
+          {
+            label: 'Alt A',
+            text: "If the password reset link or OTP isn't coming through or is failing, please send us your registered phone number and a description or screenshot of the error you see so we can verify your account and trigger a manual reset for you.",
+          },
+          {
+            label: 'Troubleshooting / Clear Cache',
+            text: "If you are having trouble resetting your password, please try clearing your browser cache or opening the page in incognito mode. If the issue persists, kindly share your registered phone number and we will assist directly.",
+          },
+          {
+            label: 'High Empathy',
+            text: "We understand how frustrating it is when a password reset fails and you are locked out of your account. Please share your registered phone number with us. Our team will verify your account and ensure your login access is restored right away.",
+          },
+        ],
+      },
+      {
+        id: '10.3',
         title: 'Account Verification Request',
         triggers: 'verify, verification, registered phone, confirm name',
         variants: [
@@ -1147,7 +1193,7 @@ export const TEMPLATES_DATA = [
         ],
       },
       {
-        id: '10.3',
+        id: '10.4',
         title: 'Account Reactivation',
         triggers: 'reactivate, unblock, open account, active again',
         variants: [
@@ -1162,7 +1208,7 @@ export const TEMPLATES_DATA = [
         ],
       },
       {
-        id: '10.4',
+        id: '10.5',
         title: 'Phone Number Change Request',
         triggers: 'change number, update number, phone change, update contact',
         variants: [
@@ -1177,7 +1223,7 @@ export const TEMPLATES_DATA = [
         ],
       },
       {
-        id: '10.5',
+        id: '10.6',
         title: 'Referral Violation - Multiple Accounts Detected',
         triggers: 'multiple accounts, referral violation, bonus abuse, restriction, reset',
         variants: [
@@ -1196,7 +1242,7 @@ export const TEMPLATES_DATA = [
         ],
       },
       {
-        id: '10.6',
+        id: '10.7',
         title: 'Account Reset Confirmation',
         triggers: 'reset complete, account reset, successful reset, restored',
         variants: [
@@ -1207,6 +1253,25 @@ export const TEMPLATES_DATA = [
           {
             label: 'High Empathy',
             text: "Your account has been reset and is ready to go. Log in whenever you're ready. Please make sure future activity stays within our platform and referral rules to avoid any further restrictions. We're here if you need anything.",
+          },
+        ],
+      },
+      {
+        id: '10.8',
+        title: 'Account Reset Feature Offline / Not Working',
+        triggers: 'reset offline, reset not working, account reset error, reset button not working, reset feature down, cannot reset account',
+        variants: [
+          {
+            label: 'Standard',
+            text: "We apologize for the inconvenience. The account reset feature is currently offline for routine system maintenance and updates. Our technical team is actively working to restore it shortly. Please bear with us and try again in a little while, or keep your details with us and we will notify you once the reset function is fully back online.",
+          },
+          {
+            label: 'Alt A',
+            text: "The account reset tool is temporarily unavailable due to technical maintenance. We are working to have the reset feature restored as quickly as possible. Thank you for your patience while our technical team completes this update.",
+          },
+          {
+            label: 'High Empathy',
+            text: "We understand you want to reset your account and get your access sorted right away, and we're sorry for the delay. The account reset feature is undergoing a temporary technical update and is temporarily offline. We are monitoring this closely and it will be back up shortly. Thank you for bearing with us.",
           },
         ],
       },
