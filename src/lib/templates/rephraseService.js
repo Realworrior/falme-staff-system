@@ -13,12 +13,12 @@ const TONE_MAP = {
 };
 
 const GUARDRAILS_CORE = `MANDATORY FACTUAL & POLICY GUARDRAILS:
-1. FACTUAL INTEGRITY: Slots like {{AMOUNT_1}}, {{TIME_1}}, {{URL_1}} represent exact system facts. You MUST preserve all slot tokens verbatim in the rewrites. Do NOT add curly brackets {} or brackets [] around URLs (e.g. output https://blastchat.chat/chat/falmebet cleanly).
-2. NO INVENTED COMMITMENTS: Never promise refunds, compensation, bonuses, faster resolution times, or policy exemptions not in the source text.
+1. FACTUAL INTEGRITY: Output direct, ready-to-send English sentences with real facts, numbers, and full URLs intact (e.g. https://blastchat.chat/chat/falmebet). NEVER output variable placeholders or tokens such as TIME_1, URL_1, AMOUNT_1, [Company Name], or curly brackets {}.
+2. NO INVENTED COMMITMENTS: Never promise refunds, compensation, bonuses, faster resolution times, or specific restoration deadlines not present in the source text.
 3. INFORMATION PARITY: If the source asks the customer for specific details (registered phone number, M-PESA code, Bet ID, screenshot), the rewrite MUST request those exact same items.
 4. NO CUSTOMER IDENTIFIERS: Do not add fake customer names or invented IDs.
 5. NO GREETING CHAT LINKS: Do NOT add live support links to simple greetings (e.g. "Hello / Hi"), since the conversation is already taking place on live support.
-6. FORMAT REQUIREMENT: Output continuous single-line English prose without any curly brackets {}, placeholders, or em dashes.`;
+6. FORMAT REQUIREMENT: Output clean continuous single-line English prose ready for immediate copying and pasting without editing.`;
 
 const REPHRASING_DIRECTIVE = `CREATIVE REPHRASING & VOCABULARY DIVERSITY MANDATE:
 - Do NOT perform trivial word-for-word substitutions or copy the original sentence structure.

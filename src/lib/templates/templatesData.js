@@ -1263,15 +1263,15 @@ export const TEMPLATES_DATA = [
         variants: [
           {
             label: 'Standard',
-            text: "We apologize for the inconvenience. The account reset feature is currently offline for routine system maintenance and updates. Our technical team is actively working to restore it shortly. Please bear with us and try again in a little while, or keep your details with us and we will notify you once the reset function is fully back online.",
+            text: "We apologize for the inconvenience. The account reset feature is currently offline for system maintenance and updates. Our technical team is actively working on it and access will be restored once the update is completed. Please bear with us and feel free to check back later.",
           },
           {
             label: 'Alt A',
-            text: "The account reset tool is temporarily unavailable due to technical maintenance. We are working to have the reset feature restored as quickly as possible. Thank you for your patience while our technical team completes this update.",
+            text: "The account reset tool is temporarily unavailable due to ongoing technical maintenance. Our team is working to have the reset feature restored as soon as possible. Thank you for your patience while this is being worked on.",
           },
           {
             label: 'High Empathy',
-            text: "We understand you want to reset your account and get your access sorted right away, and we're sorry for the delay. The account reset feature is undergoing a temporary technical update and is temporarily offline. We are monitoring this closely and it will be back up shortly. Thank you for bearing with us.",
+            text: "We understand you want to reset your account and get your access sorted, and we apologize for the inconvenience. The account reset feature is currently undergoing technical maintenance and is temporarily offline. We appreciate your patience while our team works on restoring it.",
           },
         ],
       },

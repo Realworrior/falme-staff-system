@@ -1,81 +1,59 @@
 /**
- * Extracts all strict numbers, currencies (KSh 50, KSh 100k), timeframes (48h, 72 hours),
- * and URLs into deterministic slots so the LLM cannot hallucinate or mutate them.
+ * Clean and normalize text directly without creating placeholder slot tokens
+ * that could leak if an LLM hallucinates or alters placeholder naming.
+ *
  * @param {string} text
  * @returns {{ maskedText: string, slotMap: Record<string,string>, detectedEntitiesCount: number }}
  */
 export function maskEntities(text) {
-  const slotMap = {};
-  let slotIndex = 1;
-  let masked = text;
-
-  // 1. URLs and domains
-  const urlRegex =
-    /\b(?:https?:\/\/|www\.)[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/))|b[a-zA-Z0-9-]+\.ke(?:\/[^\s.,;)]*)?\b/gi;
-  masked = masked.replace(urlRegex, (match) => {
-    const slot = `{{URL_${slotIndex++}}}`;
-    slotMap[slot] = match;
-    return slot;
-  });
-
-  // 2. Currencies and specific amounts (KSh 50, KSh 100,000, KSh 100k, KES 500)
-  const currencyRegex = /\b(?:KSh|KES|sh)\s*[\d,]+(?:\.\d+)?(?:k|M|K)?\b/gi;
-  masked = masked.replace(currencyRegex, (match) => {
-    const slot = `{{AMOUNT_${slotIndex++}}}`;
-    slotMap[slot] = match;
-    return slot;
-  });
-
-  // 3. Time windows and timeframes
-  const timeRegex =
-    /\b\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)\b|\b\d+\s*(?:hours?|hrs?|mins?|minutes?|days?|business days?|seconds?|secs?)\b|\b\d+h\b|\b24\/7\b/gi;
-  masked = masked.replace(timeRegex, (match) => {
-    const slot = `{{TIME_${slotIndex++}}}`;
-    slotMap[slot] = match;
-    return slot;
-  });
-
+  // Pass text as clean plain text so the model never encounters raw placeholder tokens like TIME_1 or URL_1
   return {
-    maskedText: masked,
-    slotMap,
-    detectedEntitiesCount: Object.keys(slotMap).length,
+    maskedText: text,
+    slotMap: {},
+    detectedEntitiesCount: 0,
   };
 }
 
 /**
- * Re-injects original extracted entities back into the LLM output.
- * Strips all curly braces so no placeholders leak into output.
+ * Strips any residual placeholder tokens (e.g. {{TIME_1}}, TIME_1, URL_1, AMOUNT_1),
+ * curly brackets, brackets, or leftover slot tags.
+ *
  * @param {string} text
  * @param {Record<string,string>} slotMap
  * @returns {string}
  */
-export function unmaskEntities(text, slotMap) {
-  let result = text;
+export function unmaskEntities(text, slotMap = {}) {
+  let result = text || '';
 
-  for (const [slot, value] of Object.entries(slotMap)) {
-    // 1. Exact pattern match: {{URL_1}}
-    const exactPattern = new RegExp(slot.replace(/[{}]/g, '\\$&'), 'g');
-    result = result.replace(exactPattern, value);
-
-    // 2. Raw token match: URL_1
-    const rawSlot = slot.replace(/[{}]/g, '');
-    const rawPattern = new RegExp(`\\b${rawSlot}\\b`, 'g');
-    result = result.replace(rawPattern, value);
+  // 1. If any slotMap values exist, replace them
+  if (slotMap && typeof slotMap === 'object') {
+    for (const [slot, value] of Object.entries(slotMap)) {
+      const exactPattern = new RegExp(slot.replace(/[{}]/g, '\\$&'), 'g');
+      result = result.replace(exactPattern, value);
+      const rawSlot = slot.replace(/[{}]/g, '');
+      const rawPattern = new RegExp(`\\b${rawSlot}\\b`, 'g');
+      result = result.replace(rawPattern, value);
+    }
   }
 
-  // 3. Strip any residual curly brackets around URLs or tokens e.g. {https://...} or {{...}}
+  // 2. Cleanly strip any hallucinated or leaked placeholder tokens:
+  // e.g. {{URL_1}}, URL_1, {{TIME_1}}, TIME_1, {{AMOUNT_1}}, AMOUNT_1, {{SLOT_1}}, etc.
+  result = result.replace(/\{\{\s*(?:URL|TIME|AMOUNT|SLOT|DATE|NAME|CODE)_[0-9]+\s*\}\}/gi, '');
+  result = result.replace(/\b(?:URL|TIME|AMOUNT|SLOT|DATE|NAME|CODE)_[0-9]+\b/gi, '');
+
+  // 3. Strip any stray curly brackets or double curly brackets
   result = result.replace(/[{}]/g, '');
 
   return result;
 }
 
 /**
- * Validates and cleans output from LLM, unmasking entities cleanly.
+ * Validates and cleans output from LLM, guaranteeing zero placeholder leakage.
  * @param {string} text
  * @param {Record<string,string>} slotMap
  * @returns {string}
  */
-export function validateAndCleanOutput(text, slotMap) {
+export function validateAndCleanOutput(text, slotMap = {}) {
   let cleaned = unmaskEntities(text, slotMap);
   cleaned = cleaned
     .replace(/^["'`]|["'`]$/g, '')
@@ -83,7 +61,7 @@ export function validateAndCleanOutput(text, slotMap) {
     .replace(/[\r\n]+/g, ' ')
     .replace(/\s{2,}/g, ' ')
     .replace(/^\s*[-*•]\s+/g, '')
-    .replace(/[{}]/g, '') // Strict removal of all curly braces
+    .replace(/[{}]/g, '')
     .trim();
   return cleaned;
 }
