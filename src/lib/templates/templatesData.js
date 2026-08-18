@@ -351,6 +351,29 @@ export const TEMPLATES_DATA = [
           },
         ],
       },
+      {
+        id: '2.11',
+        title: 'Deposit Made from Unregistered Number (Register New Line Advice)',
+        triggers: 'unregistered number, deposited with different number, deposited from another line, wrong sim deposit, sent money from someone else phone',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Your Betfalme account is linked to one specific M-PESA number only. This is the number you registered with. Our system can only accept deposits sent directly from that exact number. Because the deposit was sent from an unregistered line, the funds cannot reflect automatically on your current account. To resolve this, kindly create a new Betfalme account using that specific phone number that made the deposit. Once registered, share the M-PESA confirmation message with us here and we will immediately verify and ensure the funds reflect in your account.",
+          },
+          {
+            label: 'Alt A',
+            text: "Our system is designed to only credit deposits made from the phone number registered to your Betfalme account. If you deposited using a different or unregistered number, the funds cannot be added to your current profile. We advise you to register a Betfalme account with the number that made the payment. Once registered, send us the full M-PESA SMS received from that transaction and our support team will verify and credit your balance right away.",
+          },
+          {
+            label: 'High Empathy',
+            text: "We completely understand your concern and we are here to help you get your funds credited smoothly. Each Betfalme account is tied to one specific M-PESA number, so payments coming from an unregistered number do not credit automatically. The easiest way to access your money is to register an account on Betfalme using the exact phone number the deposit came from. After completing the registration, please share the M-PESA payment SMS with us and we will promptly verify the transaction so you can enjoy your funds.",
+          },
+          {
+            label: 'Plain Language',
+            text: "Your Betfalme account only connects to the exact phone number you signed up with. If you sent money from another SIM card or someone else's number, our system cannot put it into your current account. Here is the simple fix: Go ahead and register a new Betfalme account using that phone number that made the payment. Once you have created the account, copy and paste the M-PESA message from that transaction to us here. We will check it immediately and confirm your funds.",
+          },
+        ],
+      },
     ],
   },
   {
