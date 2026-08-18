@@ -231,54 +231,70 @@ export const TEMPLATES_DATA = [
       },
       {
         id: '2.5',
-        title: 'Airtel or Other Network Deposit - Not Supported',
-        triggers: 'airtel, other network, not mpesa, different network, airtel money',
+        title: '❌ Bonga Points Deposit - Not Supported',
+        triggers: 'bonga points, bonga deposit, safaricom points, paid with bonga',
         variants: [
           {
             label: 'Standard',
-            text: "We appreciate you reaching out. Betfalme supports direct M-PESA deposits only. If you deposited funds via Airtel Money or another unsupported provider, our system cannot credit your account. You will be required to initiate a reversal from your provider immediately: For Airtel Money, please call Airtel on 100 or email airtelmoney@airtel.com. Once reversed, you can re-deposit using your registered M-PESA number.",
+            text: "Unfortunately our platform does not support Bonga Points deposits. Each account is only linked to one registered M-PESA number and our system cannot credit payments made via Bonga Points. You will need to contact Safaricom directly to initiate a reversal. Please call Safaricom on 100 or send a WhatsApp message to 0722000100 to request the reversal. Once the funds are back, you can deposit using your registered M-PESA number.",
           },
           {
             label: 'Alt A',
-            text: "We only accept M-PESA deposits at the moment. For deposits made through Airtel Money, our system cannot credit your account. Please initiate a reversal by calling Airtel on 100 or contacting airtelmoney@airtel.com, then deposit via M-PESA.",
+            text: "Bonga Points are not accepted as a deposit method on our platform. Because our system only recognises direct M-PESA transactions linked to your registered number, Bonga Point payments cannot be credited to your account. To get your funds back, please reach out to Safaricom on 100 or WhatsApp 0722000100 and request an official reversal.",
           },
           {
             label: 'High Empathy',
-            text: "We understand this is inconvenient and we are here to guide you. Betfalme only supports M-PESA at this time. If you sent funds via Airtel Money, please contact Airtel customer care on 100 to request an official reversal. Once the funds are back in your account, you can deposit via M-PESA and start playing right away.",
+            text: "We are sorry for the inconvenience. Unfortunately Bonga Points cannot be used to fund your account as we only support standard M-PESA deposits from your registered number. Please contact Safaricom immediately on 100 or WhatsApp 0722000100 to reverse the transaction. Once reversed, you are welcome to re-deposit using M-PESA and we will get you sorted right away.",
+          },
+          {
+            label: 'Plain Language',
+            text: "Bonga Points do not work for deposits here. Our system only reads regular M-PESA payments from the phone number you registered with. Please call Safaricom on 100 or WhatsApp 0722000100 to get your points back. After the reversal is done, deposit again using your normal M-PESA.",
           },
         ],
       },
       {
         id: '2.6',
-        title: 'Bank Deposit - Not Supported',
-        triggers: 'bank deposit, bank transfer, transferred from bank, bonga points',
+        title: '❌ Airtel Money Deposit - Not Supported',
+        triggers: 'airtel money, airtel deposit, airtel payment, airtel not working, paid with airtel',
         variants: [
           {
             label: 'Standard',
-            text: "We appreciate you reaching out. Betfalme does not support direct bank deposits or Bonga Points at this time. If you deposit funds using unsupported methods, our system cannot credit your account and you will be required to initiate a reversal from your provider immediately: For Bonga Points, call Safaricom on 100 or WhatsApp 0722000100. For bank transfers, contact your bank. Once reversed, please re-deposit directly via M-PESA.",
+            text: "Airtel Money is not a supported deposit method on our platform. Our system only accepts M-PESA payments linked to your registered number, so Airtel Money transactions cannot be credited to your account. Please contact Airtel immediately to initiate a reversal. Call Airtel customer care on 100 or send an email to airtelmoney@airtel.com. Once reversed, please deposit using your registered M-PESA number.",
+          },
+          {
+            label: 'Alt A',
+            text: "We are sorry but we do not accept Airtel Money deposits. Because our platform only supports M-PESA from your registered number, any Airtel Money payment sent to us cannot be credited. To recover your funds, call Airtel on 100 or email airtelmoney@airtel.com and request an official reversal. You can then re-deposit via M-PESA.",
           },
           {
             label: 'High Empathy',
-            text: "We understand this may cause inconvenience and we apologize for the trouble. We only support M-PESA deposits. If you deposited from a bank account or via Bonga Points, our system cannot credit your balance. Please reach out to your provider or bank immediately to initiate a reversal, then deposit directly using M-PESA.",
+            text: "We completely understand this is frustrating and we want to help you resolve it quickly. Airtel Money is not supported on our platform, which means the payment cannot be credited to your account. Please reach out to Airtel right away on 100 or email airtelmoney@airtel.com to request a reversal. Once your funds are back, you can deposit using M-PESA and we will assist you from there.",
+          },
+          {
+            label: 'Plain Language',
+            text: "Airtel Money does not work for deposits on our platform. We only accept M-PESA from the phone number linked to your account. Please call Airtel on 100 or email airtelmoney@airtel.com to get your money back. Once reversed, deposit again using M-PESA.",
           },
         ],
       },
       {
         id: '2.7',
-        title: 'Paybill / Till / Wrong Deposit Reversal',
-        triggers: 'paybill, till number, merchant, wrong deposit, reversal, paid by mistake',
+        title: '❌ Unsupported M-PESA Merchant Transaction (Paybill/Till by Mistake)',
+        triggers: 'paybill, till number, merchant, wrong deposit, reversal, paid by mistake, wrong number, unregistered number',
         variants: [
           {
             label: 'Standard',
-            text: "If you pay into our Till or Paybill by mistake or from an unregistered number, Betfalme cannot manually reverse the transaction. Please initiate an official Safaricom reversal immediately by forwarding your payment SMS to 457 or by calling Safaricom on 100. For Bonga Points, contact Safaricom on 100 or WhatsApp 0722000100. For Airtel Money, call 100.",
+            text: "If you paid into our Paybill or Till by mistake, or deposited from a number not registered to your account, Betfalme cannot manually reverse the transaction. Our system only credits M-PESA payments from the specific number registered to your account, so transactions from any other number or via merchant payment cannot be applied. Please initiate an official Safaricom reversal immediately by forwarding your payment SMS to 457 or by calling Safaricom on 100.",
           },
           {
             label: 'Alt A',
-            text: "Our system cannot credit or manually reverse payments made to our Till or Paybill by mistake. You will need to initiate a reversal with your provider immediately: For M-PESA, forward the SMS to 457 or use the MySafaricom App. For Airtel Money, call 100.",
+            text: "We are unable to manually reverse payments made to our Paybill or Till, or from an unregistered number. Your account is linked to a single M-PESA number and only payments from that specific number are accepted. Please contact Safaricom right away to initiate a reversal. You can forward the payment SMS to 457 or call 100. If you used the MySafaricom App, a reversal can also be requested there.",
           },
           {
             label: 'High Empathy',
-            text: "We completely understand your concern. Due to security protocols, Betfalme cannot manually reverse accidental deposits. Please initiate a reversal immediately with Safaricom by forwarding your payment confirmation SMS to 457 or calling 100. They will reverse the funds directly back to your line.",
+            text: "We understand this is stressful and we are genuinely sorry for the inconvenience. Unfortunately Betfalme cannot process or manually reverse payments made to our Paybill or Till from an unregistered number. Our system only accepts M-PESA from the exact number linked to your account. Please act quickly and contact Safaricom to request a reversal by forwarding your payment SMS to 457 or calling 100. We hope to have you sorted as soon as possible.",
+          },
+          {
+            label: 'Plain Language',
+            text: "Your deposit did not go through because the payment was made to our Paybill or Till using a number that is not linked to your account. Our system can only accept M-PESA deposits from the specific phone number you registered with. We cannot reverse this on our side. Please contact Safaricom immediately to get your money back. You can forward the M-PESA SMS you received to 457, call Safaricom on 100, or reverse it directly from the MySafaricom App.",
           },
         ],
       },
@@ -313,6 +329,25 @@ export const TEMPLATES_DATA = [
           {
             label: 'High Empathy',
             text: "Sorry about the wait and we completely understand your frustration. M-PESA is experiencing slight delays right now. Please send your phone number and the transaction code from your M-PESA SMS and we'll get your balance updated immediately.",
+          },
+        ],
+      },
+      {
+        id: '2.10',
+        title: 'Why Bonga, Airtel & Merchant Deposits Are Not Credited (Explainer)',
+        triggers: 'why not credited, how does deposit work, why failed deposit, account number linked, deposit not working bonga airtel paybill',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Your Betfalme account is linked to one specific M-PESA number only. This is the number you registered with. Our system can only accept deposits sent directly from that exact number. Payments made using Bonga Points, Airtel Money, or sent to our Paybill or Till from a different number are not recognised by our system and cannot be credited to your account. This is why we are unable to add the funds manually.",
+          },
+          {
+            label: 'Plain Language',
+            text: "Think of it like this: your Betfalme account is connected to only one M-PESA number, the one you signed up with. Our system checks every deposit and only accepts money that comes directly from that same number. Bonga Points, Airtel Money, or payments made to our Paybill or Till from a different number are like sending money to the wrong address. Our system does not see them and cannot add them to your balance. That is why you need to reverse the payment and send it again the right way, directly from your registered M-PESA number.",
+          },
+          {
+            label: 'Alt A',
+            text: "Each account on our platform is tied to a single registered M-PESA number. Our system only accepts deposits from that exact number. Bonga Points and Airtel Money are different payment systems that our platform does not recognise, so they cannot be credited. Similarly, payments made to our Paybill or Till from a number that is not registered to your account will not reflect. In all of these cases, you will need to contact your provider to reverse the funds and then re-deposit using your registered M-PESA number.",
           },
         ],
       },
