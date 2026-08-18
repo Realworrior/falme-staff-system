@@ -73,7 +73,8 @@ type Sport =
   | "combos"
   | "crash"
   | "virtual"
-  | "casino";
+  | "casino"
+  | "jackpot";
 type ManualSection =
   | "promotions"
   | "support"
@@ -671,6 +672,55 @@ const sportsData: Record<Sport, SportData> = {
                 name: "Team Corners",
                 description: "Home Team Total Corners O/U +5.5.",
               },
+            ],
+          },
+        ],
+      },
+      {
+        id: "early-payout",
+        label: "Early Payout",
+        tagline: "Win before the final whistle with 1UP and 2UP.",
+        icon: Zap,
+        colorKey: "lime",
+        isNew: true,
+        markets: [
+          {
+            id: "early-payout-overview",
+            isNew: true,
+            name: "Early Payout  -  Overview",
+            summary:
+              "A feature that automatically settles your Match Result single as a winner the moment your team hits the qualifying lead  -  no need to wait for the final whistle.",
+            complexity: "beginner",
+            rules: [
+              { text: "Applies to Match Result (Home/Away) singles on eligible football games only." },
+              { text: "Odds are slightly reduced compared to standard bets in exchange for the early-win safety net." },
+              { text: "Once the qualifying lead is reached, the win is locked in  -  later goals do not change the result." },
+            ],
+          },
+          {
+            id: "1up",
+            isNew: true,
+            name: "1UP",
+            summary:
+              "Your bet is settled as a WIN the instant your team goes 1 goal ahead  -  even if the match is later pegged back or lost.",
+            complexity: "beginner",
+            example: "Your team leads 1-0 in the 30th minute  →  bet is immediately paid as a win. Opponent equalises in the 85th minute  →  payout unchanged.",
+            rules: [
+              { text: "Match Result singles on eligible football games only." },
+              { text: "Win is locked the moment the 1-goal lead is registered." },
+            ],
+          },
+          {
+            id: "2up",
+            isNew: true,
+            name: "2UP",
+            summary:
+              "Your bet is settled as a WIN the moment your team goes 2 goals ahead  -  regardless of what the final score is.",
+            complexity: "beginner",
+            example: "Your team leads 2-0 at half-time  →  bet is immediately paid as a win. Opponent scores twice to draw 2-2  →  payout unchanged.",
+            rules: [
+              { text: "Match Result singles on eligible football games only." },
+              { text: "Win is locked the moment the 2-goal lead is registered." },
             ],
           },
         ],
@@ -1321,6 +1371,14 @@ const sportsData: Record<Sport, SportData> = {
     accent: "#f59e0b",
     accentLight: "rgba(245,158,11,0.15)",
     accentBorder: "rgba(245,158,11,0.4)",
+    categories: [],
+  },
+  jackpot: {
+    label: "Jackpots",
+    icon: Crown,
+    accent: "#baff55",
+    accentLight: "rgba(186,255,85,0.15)",
+    accentBorder: "rgba(186,255,85,0.4)",
     categories: [],
   },
 };
@@ -2374,6 +2432,204 @@ function CasinoView({ accent }: { accent: string }) {
   );
 }
 
+// ── Jackpot View ─────────────────────────────────────────────────────────────
+function JackpotView({ accent }: { accent: string }) {
+  const sportsJackpot = [
+    { label: "Prize", value: "KES 100,000" },
+    { label: "Win Condition", value: "5 qualifying bets in a row" },
+    { label: "Min Odds (Total)", value: "7.00 or higher" },
+    { label: "Min Stake", value: "KES 50 cash" },
+    { label: "Min Odds (Each Selection)", value: "1.30 or higher" },
+    { label: "Streak Window", value: "Same calendar day (resets midnight EAT)" },
+    { label: "Void/Cashout Bets", value: "Neutral  -  no effect on streak" },
+    { label: "Losing Qualifying Bet", value: "Resets streak to zero" },
+    { label: "Payout", value: "Manual review by team then credited to wallet" },
+    { label: "Repeatable", value: "Yes  -  new streak starts on next qualifying bet" },
+  ];
+
+  const bazookaJackpot = [
+    { label: "Prize Pool", value: "Live amount shown in-game" },
+    { label: "Win Condition", value: "7 consecutive qualifying rounds" },
+    { label: "Min Stake Per Round", value: "KES 20" },
+    { label: "Min Cashout", value: "2.50x or higher" },
+    { label: "Multi-Slot Rounds", value: "Only ONE slot needs to reach 2.50x" },
+    { label: "Non-Qualifying Round", value: "Resets streak to zero" },
+    { label: "Repeatable", value: "Yes  -  new streak starts immediately after win" },
+  ];
+
+  return (
+    <div className="space-y-10">
+      {/* Header Banner */}
+      <div className="rounded-2xl p-5 border" style={{ background: "rgba(186,255,85,0.06)", borderColor: "rgba(186,255,85,0.25)" }}>
+        <div className="flex items-center gap-3 mb-2">
+          <Crown size={24} style={{ color: accent }} />
+          <h3 className="text-white" style={{ fontSize: "1rem" }}>Jackpot Programmes</h3>
+        </div>
+        <p className="text-white/60 text-sm leading-relaxed">
+          Two separate jackpots run simultaneously on the platform. The <span className="text-white/80">Sports Jackpot</span> rewards streak betting on sports, while the <span className="text-white/80">Bazooka Jackpot</span> rewards consecutive qualifying cashouts on Bazooka crash rounds. Both are fully repeatable.
+        </p>
+      </div>
+
+      {/* Sports Jackpot */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl" style={{ background: "rgba(186,255,85,0.1)" }}>
+            <Trophy size={20} style={{ color: accent }} />
+          </div>
+          <div>
+            <div className="text-white font-bold text-base">Sports Jackpot</div>
+            <div className="text-white/40 text-xs">Win 5 bets in a row · Each at 7.00+ odds · Same day</div>
+          </div>
+          <div className="ml-auto text-right">
+            <div className="text-2xl font-bold" style={{ color: accent }}>KES 100,000</div>
+            <div className="text-white/30 text-xs">Fixed prize</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {sportsJackpot.map((row) => (
+            <div key={row.label} className="rounded-xl p-3.5 border border-white/[0.05]" style={{ background: "rgba(255,255,255,0.025)" }}>
+              <div className="text-[10px] uppercase tracking-wider text-white/35 mb-1">{row.label}</div>
+              <div className="text-white text-sm font-medium">{row.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Streak visual */}
+        <div className="rounded-xl p-4 border" style={{ background: "rgba(186,255,85,0.04)", borderColor: "rgba(186,255,85,0.15)" }}>
+          <div className="text-[10px] uppercase tracking-wider mb-3" style={{ color: accent }}>Streak Flow</div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {[1,2,3,4,5].map((n) => (
+              <div key={n} className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2" style={{ borderColor: accent, color: accent, background: "rgba(186,255,85,0.1)" }}>{n}</div>
+                {n < 5 && <div className="w-4 h-0.5 rounded-full" style={{ background: accent }} />}
+              </div>
+            ))}
+            <div className="ml-2 text-white/60 text-xs">= KES 100,000 🏆</div>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-center">
+            <div className="rounded-lg p-2" style={{ background: "rgba(255,255,255,0.03)" }}>
+              <div className="text-red-400 mb-0.5">❌ Losing bet</div>
+              <div className="text-white/40">Streak → 0</div>
+            </div>
+            <div className="rounded-lg p-2" style={{ background: "rgba(255,255,255,0.03)" }}>
+              <div className="text-yellow-400 mb-0.5">⏭ Void / Cashout</div>
+              <div className="text-white/40">Neutral, no change</div>
+            </div>
+            <div className="rounded-lg p-2" style={{ background: "rgba(255,255,255,0.03)" }}>
+              <div className="text-white/60 mb-0.5">🌙 Midnight EAT</div>
+              <div className="text-white/40">Daily reset</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-white/[0.05]" />
+
+      {/* Bazooka Jackpot */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl" style={{ background: "rgba(239,68,68,0.1)" }}>
+            <Rocket size={20} className="text-red-400" />
+          </div>
+          <div>
+            <div className="text-white font-bold text-base">Bazooka Jackpot</div>
+            <div className="text-white/40 text-xs">Cash out at 2.50x+ for 7 consecutive rounds · Min KES 20</div>
+          </div>
+          <div className="ml-auto text-right">
+            <div className="text-2xl font-bold text-red-400">Prize Pool</div>
+            <div className="text-white/30 text-xs">Live amount in-game</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {bazookaJackpot.map((row) => (
+            <div key={row.label} className="rounded-xl p-3.5 border border-white/[0.05]" style={{ background: "rgba(255,255,255,0.025)" }}>
+              <div className="text-[10px] uppercase tracking-wider text-white/35 mb-1">{row.label}</div>
+              <div className="text-white text-sm font-medium">{row.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Steps */}
+        <div className="rounded-xl p-4 border border-white/[0.05]" style={{ background: "rgba(255,255,255,0.025)" }}>
+          <div className="text-[10px] uppercase tracking-wider text-red-400 mb-3">How Each Round Qualifies</div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              ["1", "Bet", "KES 20+ per round"],
+              ["2", "Cash Out", "At 2.50x or higher"],
+              ["3", "7 in a Row", "Consecutive rounds"],
+            ].map(([n, title, sub]) => (
+              <div key={n} className="rounded-xl p-3 text-center" style={{ background: "rgba(239,68,68,0.07)" }}>
+                <div className="text-red-400 text-xs mb-1">Step {n}</div>
+                <div className="text-white text-sm">{title}</div>
+                <div className="text-white/40 text-xs mt-1">{sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-white/[0.05]" />
+
+      {/* Early Payout */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl" style={{ background: "rgba(186,255,85,0.1)" }}>
+            <Zap size={20} style={{ color: accent }} />
+          </div>
+          <div>
+            <div className="text-white font-bold text-base">Early Payout  -  1UP &amp; 2UP</div>
+            <div className="text-white/40 text-xs">Win before the match ends  ·  Match Result singles on eligible football games</div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl p-5 border" style={{ background: "rgba(186,255,85,0.04)", borderColor: "rgba(186,255,85,0.15)" }}>
+          <p className="text-white/60 text-sm leading-relaxed mb-4">
+            Early Payout settles your bet as a win the instant your team reaches the qualifying lead  -  no need to wait for full time. Odds are slightly lower than standard bets in exchange for this early-win guarantee.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-xl p-4 border" style={{ background: "rgba(186,255,85,0.06)", borderColor: "rgba(186,255,85,0.2)" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg font-black" style={{ color: accent }}>1UP</span>
+              </div>
+              <p className="text-white/70 text-sm leading-relaxed">Bet settled as a WIN the moment your team goes <strong className="text-white">1 goal ahead</strong>  -  even if they are later pegged back or lose.</p>
+              <div className="mt-3 rounded-lg p-2.5 text-xs font-mono text-white/50" style={{ background: "rgba(0,0,0,0.3)" }}>
+                Team leads 1-0 at 30' → WIN locked in.<br />
+                Opponent equalises 1-1 at 85' → Payout unchanged.
+              </div>
+            </div>
+            <div className="rounded-xl p-4 border" style={{ background: "rgba(186,255,85,0.06)", borderColor: "rgba(186,255,85,0.2)" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg font-black" style={{ color: accent }}>2UP</span>
+              </div>
+              <p className="text-white/70 text-sm leading-relaxed">Bet settled as a WIN the moment your team goes <strong className="text-white">2 goals ahead</strong>  -  regardless of the final score.</p>
+              <div className="mt-3 rounded-lg p-2.5 text-xs font-mono text-white/50" style={{ background: "rgba(0,0,0,0.3)" }}>
+                Team leads 2-0 at HT → WIN locked in.<br />
+                Match ends 2-2 → Payout unchanged.
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-col gap-2">
+            {[
+              "Applies to Match Result (Home/Away) singles on eligible football games only.",
+              "Odds are slightly reduced compared to standard bets.",
+              "Once the qualifying lead is hit, the win is permanently locked  -  later goals have no effect.",
+            ].map((rule, i) => (
+              <div key={i} className="flex gap-2 items-start">
+                <AlertTriangle size={12} className="text-yellow-400/60 shrink-0 mt-0.5" />
+                <span className="text-yellow-300/60 text-xs leading-relaxed">{rule}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MARKET GUIDE SHELL
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2453,6 +2709,8 @@ function MarketGuideView() {
           <VirtualGamesView accent={sport.accent} />
         ) : activeSport === "casino" ? (
           <CasinoView accent={sport.accent} />
+        ) : activeSport === "jackpot" ? (
+          <JackpotView accent={sport.accent} />
         ) : (
           <>
             {sport.categories.map((cat) => (

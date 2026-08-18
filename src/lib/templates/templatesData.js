@@ -1536,4 +1536,143 @@ export const TEMPLATES_DATA = [
       },
     ],
   },
+  {
+    id: 14,
+    title: 'JACKPOTS & EARLY PAYOUT',
+    description: 'Sports Jackpot, Bazooka Jackpot rules, and Early Payout (1UP/2UP) feature explanations.',
+    subsections: [
+      {
+        id: '14.1',
+        title: 'Sports Jackpot - General Inquiry',
+        triggers: 'sports jackpot, jackpot prize, win 5 bets, streak jackpot, jackpot how to win',
+        variants: [
+          {
+            label: 'Standard',
+            text: "The Sports Jackpot gives you a chance to win KES 100,000 by winning 5 qualifying bets in a row within the same day. Each bet must have total odds of 7.00 or higher, a minimum cash stake of KES 50, and every selection must be at 1.30 odds or higher. Bets below these thresholds are ignored and do not count. All 5 wins must land on the same calendar day as the streak resets at midnight EAT. A losing qualifying bet resets you to zero. Cashed-out and voided bets are neutral and neither advance nor reset your streak. Wins are checked by our team and credited to your wallet once confirmed.",
+          },
+          {
+            label: 'Alt A',
+            text: "The Sports Jackpot awards KES 100,000 to players who win 5 qualifying bets in a row on the same day. To qualify, each bet must have total odds of at least 7.00, a cash stake of at least KES 50, and all individual selections must be at 1.30 odds or higher. Your streak resets at midnight EAT, and any losing qualifying bet resets your streak to zero. Cashed-out or voided bets are neutral. Prizes are reviewed by our team and credited to your wallet.",
+          },
+          {
+            label: 'High Empathy',
+            text: "Great question about the Sports Jackpot. You have a shot at KES 100,000 by winning 5 qualifying bets consecutively within the same day. Each bet needs total odds of 7.00 or more, a minimum stake of KES 50, and every selection must be at least 1.30 odds. Bets below these thresholds simply do not count. All 5 wins must happen before midnight EAT when the streak resets. If a qualifying bet loses, the streak starts over. Cashed-out and voided bets do not affect your streak either way. Once you complete a winning streak, our team reviews and credits the prize to your wallet.",
+          },
+        ],
+      },
+      {
+        id: '14.2',
+        title: 'Sports Jackpot - Qualifying Bet Rules',
+        triggers: 'jackpot qualifying, jackpot odds requirement, jackpot stake, sports jackpot rules, jackpot selection',
+        variants: [
+          {
+            label: 'Standard',
+            text: "For the Sports Jackpot, each qualifying bet must meet three criteria: total odds of 7.00 or higher, a minimum cash stake of KES 50, and every individual selection within the bet must be at odds of 1.30 or higher. Any bet that falls below these thresholds is simply ignored and does not count toward or against your streak.",
+          },
+          {
+            label: 'Alt A',
+            text: "To qualify for the Sports Jackpot, your bet must have total odds of at least 7.00, a cash stake of at least KES 50, and all selections must individually be at 1.30 odds or higher. Bets that do not meet these requirements are ignored and have no effect on your streak.",
+          },
+        ],
+      },
+      {
+        id: '14.3',
+        title: 'Sports Jackpot - Streak & Void/Cashout Rules',
+        triggers: 'jackpot streak, jackpot void, jackpot cashout, jackpot reset, streak reset',
+        variants: [
+          {
+            label: 'Standard',
+            text: "All 5 Sports Jackpot wins must land on the same day. The streak resets at midnight EAT every day. A losing qualifying bet resets your streak to zero. Cashed-out and voided bets are neutral and will neither advance your streak nor reset it. Once you complete a winning streak, it is repeatable and a new streak begins on your next qualifying bet.",
+          },
+          {
+            label: 'Alt A',
+            text: "Your Sports Jackpot streak must be completed within a single day as it resets at midnight EAT. Losing a qualifying bet takes your streak back to zero. Voided or cashed-out bets do not count for or against you. After winning, the jackpot is repeatable and your next qualifying bet starts a fresh streak.",
+          },
+        ],
+      },
+      {
+        id: '14.4',
+        title: 'Bazooka Jackpot - General Inquiry',
+        triggers: 'bazooka jackpot, bazooka prize, win 7 rounds, bazooka cashout, crash jackpot',
+        variants: [
+          {
+            label: 'Standard',
+            text: "The Bazooka Jackpot rewards players who cash out at 2.50x or higher for 7 consecutive qualifying rounds. Each round requires a minimum bet of KES 20, and your cashout must be at 2.50x or higher to count. If a round has several slots, only one slot needs to reach 2.50x for it to count as a round win. Any round that does not qualify resets your streak. The jackpot is repeatable, so your streak starts again after each win. The prize pool stands at the current live amount shown in the game.",
+          },
+          {
+            label: 'Alt A',
+            text: "To win the Bazooka Jackpot, cash out at 2.50x or higher for 7 rounds in a row, with a minimum bet of KES 20 per round. In rounds with multiple slots, only one slot needs to reach 2.50x to qualify. Any round that does not qualify resets your streak back to zero. Once you win, the streak resets and starts again on your next round.",
+          },
+          {
+            label: 'High Empathy',
+            text: "The Bazooka Jackpot is an exciting ongoing prize pool. To win it, you need to cash out at 2.50x or higher for 7 consecutive rounds, staking at least KES 20 per round. For rounds with multiple slots, just one slot reaching 2.50x is enough for that round to count. Any missed round resets your streak. The good news is that it is fully repeatable, so every time you win, a new streak can begin right away.",
+          },
+        ],
+      },
+      {
+        id: '14.5',
+        title: 'Bazooka Jackpot - Rules & Streak',
+        triggers: 'bazooka rules, bazooka streak, bazooka qualifying, bazooka reset',
+        variants: [
+          {
+            label: 'Standard',
+            text: "For the Bazooka Jackpot, a qualifying round requires a minimum bet of KES 20 and a cashout at 2.50x or higher. In rounds with several slots, only one slot needs to reach 2.50x for the round to count. Any round that does not qualify resets your streak entirely. The jackpot is repeatable and a new streak begins immediately after each win.",
+          },
+          {
+            label: 'Alt A',
+            text: "Each Bazooka Jackpot round must have a stake of at least KES 20 and a cashout of 2.50x or higher. Multiple slots in one round count as a single round win, with only one slot needing to reach 2.50x. Missing the cashout threshold in any round resets the streak. Once completed, the jackpot can be won again starting from your very next round.",
+          },
+        ],
+      },
+      {
+        id: '14.6',
+        title: 'Early Payout - General (1UP / 2UP)',
+        triggers: 'early payout, 1UP, 2UP, win before final whistle, goal ahead payout, early win',
+        variants: [
+          {
+            label: 'Standard',
+            text: "The Early Payout feature lets you win before the match is over. With 1UP, your bet is paid out as a win the moment your selected team goes 1 goal ahead, even if the opposing team equalizes later. With 2UP, your bet is paid out the moment your team goes 2 goals ahead. This applies to Match Result singles on eligible football games. Odds are slightly lower in exchange for the early-win safety net, and once the lead is hit the win is locked regardless of what happens after.",
+          },
+          {
+            label: 'Alt A',
+            text: "Early Payout is a feature that settles your bet before the final whistle. If you select 1UP, your bet is marked as a win the instant your team takes a 1-goal lead. With 2UP it's settled when they go 2 goals ahead. It works on Match Result singles for eligible football matches. Please note that odds are slightly reduced compared to standard bets, but once the qualifying lead is achieved, the win is locked in permanently.",
+          },
+          {
+            label: 'High Empathy',
+            text: "Great question about Early Payout. This feature is designed to give you peace of mind during live matches. 1UP means your bet is cashed as a winner the moment your team goes 1 goal ahead, no matter what happens after. 2UP works the same way but triggers when your team leads by 2 goals. It is available on Match Result singles for eligible football games. The trade-off is slightly lower odds, but once your team hits that lead, your win is secured immediately.",
+          },
+        ],
+      },
+      {
+        id: '14.7',
+        title: 'Early Payout - 1UP Explained',
+        triggers: '1UP, one goal ahead, 1 goal payout, 1up feature',
+        variants: [
+          {
+            label: 'Standard',
+            text: "1UP means your bet is automatically settled as a win the moment your selected team goes 1 goal ahead in an eligible match, regardless of the final result. Even if the opposing team scores later and the match ends in a draw or a loss, your bet has already been paid out as a win. It applies to Match Result singles on eligible football games, with odds slightly reduced in exchange for this early-win guarantee.",
+          },
+          {
+            label: 'Alt A',
+            text: "With 1UP, the moment your team takes a 1-goal lead in an eligible football match, your bet is instantly settled as a winner. The final result does not matter once the lead is reached. This is only available for Match Result singles and carries slightly reduced odds compared to a standard bet.",
+          },
+        ],
+      },
+      {
+        id: '14.8',
+        title: 'Early Payout - 2UP Explained',
+        triggers: '2UP, two goals ahead, 2 goal payout, 2up feature',
+        variants: [
+          {
+            label: 'Standard',
+            text: "2UP works just like 1UP but triggers when your team goes 2 goals ahead. The moment that 2-goal lead is reached in an eligible football match, your Match Result single is immediately settled as a win. Whatever happens after that point does not affect your payout. Odds are slightly lower than standard to account for the early-win advantage.",
+          },
+          {
+            label: 'Alt A',
+            text: "With 2UP, your bet is paid out as a win the instant your team leads by 2 goals in an eligible football game. Once that lead is secured, your winnings are locked in regardless of the final score. Like 1UP, this is available only on Match Result singles with slightly reduced odds.",
+          },
+        ],
+      },
+    ],
+  },
 ];
