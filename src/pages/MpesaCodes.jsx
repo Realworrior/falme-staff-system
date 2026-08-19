@@ -693,27 +693,15 @@ export default function MpesaCodes() {
         </button>
 
         <button
-          onClick={() => { setActiveStep(4); setActiveTab('counter'); }}
+          onClick={() => { setActiveStep(4); setActiveTab('records'); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
-            activeStep === 4 && activeTab === 'counter'
+            activeStep === 4 || activeTab === 'records'
               ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
               : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
           }`}
         >
-          <span className={`font-mono text-xs font-semibold ${activeStep === 4 && activeTab === 'counter' ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>4</span>
-          <span>History</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveStep(5); setActiveTab('records'); }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
-            activeTab === 'records'
-              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
-              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
-          }`}
-        >
-          <span className={`font-mono text-xs font-semibold ${activeTab === 'records' ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>5</span>
-          <span>SMS Ledger</span>
+          <span className={`font-mono text-xs font-semibold ${activeStep === 4 || activeTab === 'records' ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>4</span>
+          <span>Records</span>
         </button>
       </div>
 
@@ -977,142 +965,6 @@ export default function MpesaCodes() {
           </div>
         )}
 
-        {/* ── TAB CONTENT: HISTORY LOG (Last 6 hours) ── */}
-        {activeTab === 'counter' && activeStep === 4 && (() => {
-          // Compute last 6 hours window boundaries
-          const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
-          const last6 = analyticsHistory
-            .filter(item => {
-              if (!item) return false;
-              const ts = item.copiedAt
-                ? new Date(item.copiedAt).getTime()
-                : item.id && typeof item.id === 'string' && item.id.startsWith('analytics_')
-                ? parseInt(item.id.replace('analytics_', ''), 10)
-                : null;
-              if (!ts || isNaN(ts)) return true;
-              return (Date.now() - ts) <= SIX_HOURS_MS;
-            })
-            .slice(0, 6);
-
-          return (
-            <div className="space-y-3">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-1">
-                <div className="flex items-center gap-2">
-                  <Clock size={14} className="text-[#8B8E97]" />
-                  <span className="text-sm font-semibold text-[#F4F5F1]">Last 6 Hours</span>
-                </div>
-                <span className="text-[11px] font-mono text-[#54565F] bg-[#232429] border border-white/[0.07] px-2.5 py-0.5 rounded-full">
-                  {last6.length} shifts
-                </span>
-              </div>
-
-              {last6.length === 0 ? (
-                <div className="py-12 flex flex-col items-center justify-center gap-3 text-center">
-                  <div className="w-10 h-10 rounded-full bg-[#0E0E12] border border-white/[0.07] flex items-center justify-center text-[#54565F]">
-                    <Clock size={18} />
-                  </div>
-                  <p className="text-xs text-[#54565F]">No archived hours yet.</p>
-                  <p className="text-[11px] text-[#54565F]/60 max-w-[200px] leading-relaxed">
-                    Counts from completed shift windows will appear here automatically.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {/* Current active hour at the top */}
-                  <div className="bg-[#0E0E12] border border-[#00D66B]/30 rounded-[16px] p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B] animate-pulse" />
-                          <span className="text-[11px] text-[#00D66B] font-medium">Active now</span>
-                        </div>
-                        <span className="font-mono text-[13px] text-[#F4F5F1] font-semibold">{activeRangeDisplay}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <span className="text-[10.5px] text-[#54565F] block">Dep / Wth</span>
-                        <span className="font-mono text-[15px] font-bold">
-                          <span className="text-[#00D66B]">{counterState.depositCount ?? 0}</span>
-                          <span className="text-[#54565F] mx-1">/</span>
-                          <span className="text-[#3ED3F2]">{counterState.withdrawalCount ?? 0}</span>
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleCopyCounterText()}
-                        className="w-8 h-8 rounded-full bg-[#232429] border border-white/[0.14] flex items-center justify-center text-[#8B8E97] hover:text-[#F4F5F1] transition-all cursor-pointer"
-                        title="Copy active report"
-                      >
-                        <Copy size={12} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Divider line */}
-                  <div className="flex items-center gap-2 py-1 px-1">
-                    <div className="flex-1 h-px bg-white/[0.04]" />
-                    <span className="text-[10px] text-[#54565F] font-mono">Archived</span>
-                    <div className="flex-1 h-px bg-white/[0.04]" />
-                  </div>
-
-                  {/* Archived windows */}
-                  {last6.map((item, idx) => {
-                    const dep = item.depositCount ?? 0;
-                    const wth = item.withdrawalCount ?? 0;
-                    const total = dep + wth;
-                    const depPct = total > 0 ? Math.round((dep / total) * 100) : 50;
-                    const isAutoArchived = !!item.autoArchived;
-                    return (
-                      <div
-                        key={item.id || idx}
-                        className="bg-[#0E0E12] border border-white/[0.07] rounded-[14px] p-3.5 flex items-center justify-between gap-3 hover:border-white/[0.12] transition-colors"
-                      >
-                        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[12.5px] text-[#F4F5F1] font-medium truncate">{item.timeRange}</span>
-                            {isAutoArchived && (
-                              <span className="text-[10px] text-[#54565F] bg-[#232429] px-1.5 py-0.5 rounded-full border border-white/[0.05] shrink-0">auto</span>
-                            )}
-                          </div>
-                          {/* Mini bar */}
-                          <div className="flex items-center gap-1.5">
-                            <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[#232429]">
-                              <div
-                                className="h-full rounded-full bg-gradient-to-r from-[#00D66B] to-[#3ED3F2] transition-all"
-                                style={{ width: `${depPct}%` }}
-                              />
-                            </div>
-                            <span className="text-[10px] font-mono text-[#54565F]">{dep}D · {wth}W</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="text-right">
-                            <span className="text-[10.5px] text-[#54565F] block">total</span>
-                            <span className="font-['Space_Grotesk'] text-[18px] font-semibold text-[#F4F5F1] leading-none">{total}</span>
-                          </div>
-                          <button
-                            onClick={() => handleCopyCounterText(item.timeRange, item.depositCount, item.withdrawalCount, item.id)}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all cursor-pointer border ${
-                              copiedId === item.id
-                                ? 'bg-[#00D66B]/20 text-[#00D66B] border-[#00D66B]/40'
-                                : 'bg-[#232429] border-white/[0.14] text-[#8B8E97] hover:text-[#F4F5F1]'
-                            }`}
-                            title="Copy report"
-                          >
-                            {copiedId === item.id ? <Check size={12} /> : <Copy size={12} />}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
         {/* ── TAB CONTENT: RECORDS VIEW (SMS LEDGER) ── */}
         {activeTab === 'records' && (
           <div className="space-y-4">
@@ -1268,63 +1120,84 @@ export default function MpesaCodes() {
           </button>
         </div>
 
-        {/* Card 2: Past 24 hours */}
-        <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col justify-between shadow-lg">
-          <div>
-            <div className="flex items-center justify-between mb-3.5">
-              <div className="flex items-center gap-2 text-sm font-medium text-[#F4F5F1]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-[#8B8E97]">
-                  <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-4 4"/>
-                </svg>
-                <span>Past 24 hours</span>
-              </div>
-              <span className="text-[10.5px] font-semibold text-[#54565F] bg-[#232429] px-2.5 py-1 rounded-full border border-white/[0.05]">
-                SMS: {filtered.length}
-              </span>
-            </div>
+        {/* Card 2: Last 6 hrs — History Log */}
+        {(() => {
+          const sixHrsAgo = Date.now() - 6 * 60 * 60 * 1000;
+          const last6hLog = analyticsHistory.filter((item) => {
+            const ts = item.copiedAt
+              ? new Date(item.copiedAt).getTime()
+              : item.id && item.id.startsWith('analytics_')
+              ? parseInt(item.id.replace('analytics_', ''), 10)
+              : null;
+            return ts && !isNaN(ts) && ts >= sixHrsAgo;
+          });
 
-            <div className="text-[13px] text-[#8B8E97] mb-4">
-              Total completed transactions
-            </div>
-
-            <div className="flex gap-2.5 mb-4">
-              <div className="flex-1 bg-[#0E0E12] border border-white/[0.07] rounded-[12px] p-3">
-                <div className="flex items-center gap-1.5 text-[11.5px] text-[#8B8E97] mb-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]"></span>
-                  <span>Deposits</span>
+          return (
+            <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col gap-3 shadow-lg">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-[#F4F5F1]">
+                  <Clock size={15} className="text-[#8B8E97]" />
+                  <span>Last 6 hrs</span>
                 </div>
-                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#00D66B]">
-                  {totalDepositsLogged}
-                </div>
+                <span className="text-[10.5px] font-mono text-[#54565F] bg-[#232429] px-2.5 py-1 rounded-full border border-white/[0.05]">
+                  {last6hLog.length} window{last6hLog.length !== 1 ? 's' : ''}
+                </span>
               </div>
 
-              <div className="flex-1 bg-[#0E0E12] border border-white/[0.07] rounded-[12px] p-3">
-                <div className="flex items-center gap-1.5 text-[11.5px] text-[#8B8E97] mb-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]"></span>
-                  <span>Withdrawals</span>
+              {/* Log Rows */}
+              {last6hLog.length === 0 ? (
+                <div className="py-6 text-center text-[12px] text-[#54565F]">
+                  No hourly logs in the last 6 hours yet.
                 </div>
-                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#3ED3F2]">
-                  {totalWithdrawalsLogged}
+              ) : (
+                <div className="space-y-1.5 max-h-[210px] overflow-y-auto no-scrollbar">
+                  {last6hLog.map((item, i) => (
+                    <div
+                      key={item.id || i}
+                      className="flex items-center justify-between bg-[#0E0E12] border border-white/[0.05] rounded-[12px] px-3 py-2.5"
+                    >
+                      {/* Time range */}
+                      <span className="font-mono text-[11.5px] text-[#8B8E97] truncate mr-2 max-w-[140px]">
+                        {item.timeRange || '—'}
+                      </span>
+
+                      {/* Dep + Wth counts */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="flex items-center gap-1 text-[11.5px] font-mono font-semibold text-[#00D66B]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" />
+                          {item.depositCount ?? 0}
+                        </span>
+                        <span className="text-[#54565F] text-xs">·</span>
+                        <span className="flex items-center gap-1 text-[11.5px] font-mono font-semibold text-[#3ED3F2]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]" />
+                          {item.withdrawalCount ?? 0}
+                        </span>
+                        <button
+                          onClick={() => handleCopyCounterText(item.timeRange, item.depositCount ?? 0, item.withdrawalCount ?? 0, `log_${i}`)}
+                          className="ml-1.5 p-1.5 rounded-lg bg-[#232429] hover:bg-white/10 border border-white/[0.07] text-[#54565F] hover:text-white transition-all"
+                          title="Copy this window's report"
+                        >
+                          {copiedId === `log_${i}` ? <Check size={10} className="text-[#00D66B]" /> : <Copy size={10} />}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              )}
+
+              {/* Legend */}
+              <div className="flex items-center gap-3 pt-1 border-t border-white/[0.05]">
+                <span className="flex items-center gap-1 text-[11px] text-[#54565F]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" /> Deposits
+                </span>
+                <span className="flex items-center gap-1 text-[11px] text-[#54565F]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]" /> Withdrawals
+                </span>
               </div>
             </div>
-          </div>
-
-          <div>
-            <button
-              onClick={() => { setActiveStep(4); setActiveTab('records'); }}
-              className="w-full flex items-center justify-center gap-2 bg-[#232429] hover:bg-[#0E0E12] border border-white/[0.14] text-[#F4F5F1] font-medium text-[13px] rounded-[12px] p-3 cursor-pointer transition-colors"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
-                <path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>
-              </svg>
-              <span>View history</span>
-            </button>
-            <p className="text-[11px] text-[#54565F] mt-3 leading-relaxed">
-              Tap a step above to switch between <b className="text-[#8B8E97] font-semibold">this hour</b>, <b className="text-[#8B8E97] font-semibold">last hour</b>, <b className="text-[#8B8E97] font-semibold">today</b>, and <b className="text-[#8B8E97] font-semibold">SMS records</b>.
-            </p>
-          </div>
-        </div>
+          );
+        })()}
 
       </div>
 
