@@ -654,57 +654,6 @@ export default function MpesaCodes() {
   return (
     <div className="min-h-[calc(100vh-80px)] py-8 px-4 flex flex-col items-center justify-start text-[#F4F5F1] font-sans selection:bg-[#00D66B]/20">
       
-      {/* ── STEP PILLS BAR ── */}
-      <div className="flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar max-w-full">
-        <button
-          onClick={() => { setActiveStep(1); setActiveTab('counter'); }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
-            activeStep === 1 && activeTab === 'counter'
-              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
-              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
-          }`}
-        >
-          <span className={`font-mono text-xs font-semibold ${activeStep === 1 ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>1</span>
-          <span>This hour</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveStep(2); setActiveTab('counter'); }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
-            activeStep === 2
-              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
-              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
-          }`}
-        >
-          <span className={`font-mono text-xs font-semibold ${activeStep === 2 ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>2</span>
-          <span>Last hour</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveStep(3); setActiveTab('counter'); }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
-            activeStep === 3
-              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
-              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
-          }`}
-        >
-          <span className={`font-mono text-xs font-semibold ${activeStep === 3 ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>3</span>
-          <span>Today</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveStep(4); setActiveTab('records'); }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
-            activeStep === 4 || activeTab === 'records'
-              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
-              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
-          }`}
-        >
-          <span className={`font-mono text-xs font-semibold ${activeStep === 4 || activeTab === 'records' ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>4</span>
-          <span>Records</span>
-        </button>
-      </div>
-
       {/* ── MAIN CARD: COUNTER / RECORDS ── */}
       <div className="w-full max-w-[760px] bg-[#1B1C22] border border-white/[0.07] rounded-[28px] p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         
