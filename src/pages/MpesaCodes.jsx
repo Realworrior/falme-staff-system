@@ -9,14 +9,12 @@ import {
   X, 
   Clock, 
   FileText, 
-  ChevronDown, 
-  ChevronUp, 
-  ChevronLeft, 
-  ChevronRight, 
   RotateCcw,
   CheckCircle2, 
   XCircle,
-  AlertCircle
+  SlidersHorizontal,
+  ChevronRight,
+  ChevronLeft
 } from "lucide-react";
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
@@ -29,6 +27,14 @@ function formatWindowHour(d) {
   h = h % 12;
   if (h === 0) h = 12;
   return `${h}:00 ${ampm}`;
+}
+
+function formatWindowHourShort(d) {
+  let h = d.getHours();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  if (h === 0) h = 12;
+  return `${h}:00`;
 }
 
 // Calculate shift windows (1:00 AM - 7:00 AM combined bracket, standard 1-hour brackets for the rest)
@@ -45,19 +51,24 @@ function getShiftWindow(dateInput) {
     return {
       startTime: start,
       endTime: end,
-      timeRange: `${formatWindowHour(start)} - ${formatWindowHour(end)}`,
+      timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
+      timeRangeShort: `1:00–7:00 AM`,
+      startTimeCap: formatWindowHour(start),
       isNightShift: true
     };
   } else {
-    // 1-hour standard window (e.g., 7:00 AM - 8:00 AM, 12:00 PM - 1:00 PM)
+    // 1-hour standard window (e.g., 7:00 AM – 8:00 AM, 12:00 PM – 1:00 PM)
     const start = new Date(date);
     start.setMinutes(0, 0, 0, 0);
     const end = new Date(start);
     end.setHours(end.getHours() + 1);
+    const endAmpm = end.getHours() >= 12 ? 'PM' : 'AM';
     return {
       startTime: start,
       endTime: end,
-      timeRange: `${formatWindowHour(start)} - ${formatWindowHour(end)}`,
+      timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
+      timeRangeShort: `${formatWindowHourShort(start)}–${formatWindowHourShort(end)} ${endAmpm}`,
+      startTimeCap: formatWindowHour(start),
       isNightShift: false
     };
   }
@@ -134,7 +145,7 @@ const DEFAULT_HOURLY_COUNTER = {
   depositCount: 0,
   withdrawalCount: 0,
   depositIcon: 'check',
-  depositLabel: 'Deposit Completed',
+  depositLabel: 'Deposit completed',
   withdrawalIcon: 'check',
   withdrawalLabel: 'Completed withdrawal',
   lastActiveHour: new Date().getHours()
@@ -144,16 +155,17 @@ export default function MpesaCodes() {
   const location = useLocation();
   const navigate = useNavigate();
   const queryView = new URLSearchParams(location.search).get('view');
-  const activeTab = queryView === 'ledger' ? 'ledger' : 'counter';
+  const activeTab = queryView === 'ledger' ? 'records' : 'counter';
   
   const setActiveTab = (tab) => {
     const params = new URLSearchParams(location.search);
     if (tab === 'counter') params.delete('view');
-    else params.set('view', tab);
+    else params.set('view', 'ledger');
     navigate({ search: params.toString() }, { replace: true });
   };
 
-  const [showAnalyticsDetails, setShowAnalyticsDetails] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [inputText, setInputText] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -178,8 +190,6 @@ export default function MpesaCodes() {
   const [copiedId, setCopiedId] = useState(null);
   const [copiedActiveCounter, setCopiedActiveCounter] = useState(false);
   const [shiftStepOffset, setShiftStepOffset] = useState(0);
-  const [isNearHourEnd, setIsNearHourEnd] = useState(false);
-  const [secondsRemaining, setSecondsRemaining] = useState(0);
 
   const textareaRef = useRef(null);
   const toast = useToast();
@@ -352,14 +362,6 @@ export default function MpesaCodes() {
       const now = new Date();
       const currentWindow = getShiftWindow(now);
 
-      // Exact ms remaining in current shift window
-      const msLeft = Math.max(0, currentWindow.endTime.getTime() - now.getTime());
-      const secsLeft = Math.floor(msLeft / 1000);
-      setSecondsRemaining(secsLeft);
-      
-      // Trigger alert strictly during the last 5 minutes (300 seconds)
-      setIsNearHourEnd(secsLeft > 0 && secsLeft <= 300);
-
       setCounterState((prev) => {
         // If current window is different from recorded active window, auto-archive the finished window
         if (prev.timeRange && prev.timeRange !== currentWindow.timeRange) {
@@ -396,7 +398,6 @@ export default function MpesaCodes() {
           };
 
           syncCounterToSupabase(newState);
-          addToast(`Shift updated to ${newRange}. Previous hour saved to history.`, "info");
           return newState;
         }
 
@@ -437,7 +438,7 @@ export default function MpesaCodes() {
       depositCount: 0,
       withdrawalCount: 0
     }));
-    addToast("Counters reset to 0", "info");
+    addToast("Hour reset", "info");
   };
 
   const handleStepShift = (step) => {
@@ -452,16 +453,12 @@ export default function MpesaCodes() {
 
   const getFormattedCounterText = (customRange, customDep, customWth) => {
     const range = customRange || counterState.timeRange || generateHourRange(0);
-    const iconToText = (key) => (key === 'x' ? '\u274c' : '\u2705');
-    const dIcon = iconToText(counterState.depositIcon);
-    const dLabel = counterState.depositLabel || 'Deposit Completed';
     const dCount = customDep ?? counterState.depositCount ?? 0;
-
-    const wIcon = iconToText(counterState.withdrawalIcon);
-    const wLabel = counterState.withdrawalLabel || 'Completed withdrawal';
     const wCount = customWth ?? counterState.withdrawalCount ?? 0;
+    const dLabel = counterState.depositLabel || 'Deposit completed';
+    const wLabel = counterState.withdrawalLabel || 'Completed withdrawal';
 
-    return `⏰ ${range}\n${dIcon} ${dLabel}: ${dCount}\n${wIcon} ${wLabel}: ${wCount}`;
+    return `⏰ *${range}*\n📥 *${dLabel}:* ${dCount}\n📤 *${wLabel}:* ${wCount}`;
   };
 
   const handleCopyCounterText = async (customRange, customDep, customWth, entryId = 'active') => {
@@ -501,15 +498,6 @@ export default function MpesaCodes() {
     } catch (err) {
       addToast("Failed to copy report", "error");
     }
-  };
-
-  const handleDeleteAnalyticsItem = async (id) => {
-    setAnalyticsHistory((prev) => {
-      const next = prev.filter(item => item.id !== id);
-      syncAnalyticsToSupabase(next);
-      return next;
-    });
-    addToast("History entry removed", "info");
   };
 
   // SMS Ledger Handlers
@@ -588,18 +576,6 @@ export default function MpesaCodes() {
     }
   };
 
-  const handleToggleAutoDelete = async (id) => {
-    const entry = entries.find((e) => e.id === id);
-    if (!entry) return;
-    const nextVal = !entry.autoDeleteAfterCopy;
-    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, autoDeleteAfterCopy: nextVal } : e)));
-    try {
-      await supabase.from('mpesa_codes').update({ autoDeleteAfterCopy: nextVal }).eq('id', id);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleVerify = async (id) => {
     const entry = entries.find((e) => e.id === id);
     if (!entry) return;
@@ -639,7 +615,7 @@ export default function MpesaCodes() {
       );
     });
 
-  const RECORDS_PER_PAGE = 100;
+  const RECORDS_PER_PAGE = 50;
   const totalPages = Math.ceil(filtered.length / RECORDS_PER_PAGE);
   const paginatedEntries = filtered.slice(
     (currentPage - 1) * RECORDS_PER_PAGE,
@@ -669,615 +645,540 @@ export default function MpesaCodes() {
   const prevDep = prevEntry ? (prevEntry.depositCount ?? 0) : 0;
   const prevWth = prevEntry ? (prevEntry.withdrawalCount ?? 0) : 0;
 
-  const formatCountdown = (totalSecs) => {
-    const mins = Math.floor(totalSecs / 60);
-    const secs = totalSecs % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
+  // Active shift time display calculations
+  const activeWindowObj = getShiftWindow(new Date());
+  const activeRangeDisplay = counterState.timeRange || activeWindowObj.timeRange;
+  const activeRangeShort = activeWindowObj.timeRangeShort;
+  const activeStartCap = activeWindowObj.startTimeCap;
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="min-h-[calc(100vh-80px)] py-8 px-4 flex flex-col items-center justify-start text-[#F4F5F1] font-sans selection:bg-[#00D66B]/20">
       
-      {/* ── HEADER ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">MPesa Tools</h1>
-          <p className="text-xs text-[#8e8e93] mt-0.5">Hourly counter, reporting, and SMS records</p>
-        </div>
-
-        {/* View Switcher Tabs */}
-        <div className="flex items-center bg-[#131520] p-1 rounded-2xl border border-white/5 self-start sm:self-auto">
-          <button
-            onClick={() => setActiveTab("counter")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === "counter"
-                ? "bg-[#baff55] text-black font-bold shadow-sm"
-                : "text-[#8e8e93] hover:text-white"
-            }`}
-          >
-            <Clock size={14} />
-            <span>Hourly Counter</span>
-          </button>
-          
-          <button
-            onClick={() => setActiveTab("ledger")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === "ledger"
-                ? "bg-[#baff55] text-black font-bold shadow-sm"
-                : "text-[#8e8e93] hover:text-white"
-            }`}
-          >
-            <FileText size={14} />
-            <span>SMS Records</span>
-            {filtered.length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                activeTab === "ledger" ? "bg-black/20 text-black font-bold" : "bg-white/10 text-[#8e8e93]"
-              }`}>
-                {filtered.length}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* ── 24-HOUR STATS STRIP ── */}
-      <div className="bg-[#131520] rounded-2xl p-4 border border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-[#191c2b] flex items-center justify-center text-[#8e8e93] shrink-0">
-            <Clock size={16} />
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-white">Past 24 Hours</div>
-            <div className="text-[11px] text-[#8e8e93]">Aggregated completed transactions</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 sm:gap-6 bg-[#191c2b] px-4 py-2 rounded-xl self-start sm:self-auto border border-white/5">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#8e8e93]">Deposits:</span>
-            <span className="text-sm font-mono font-bold text-[#baff55]">{totalDepositsLogged}</span>
-          </div>
-          <div className="w-px h-4 bg-white/10" />
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#8e8e93]">Withdrawals:</span>
-            <span className="text-sm font-mono font-bold text-sky-400">{totalWithdrawalsLogged}</span>
-          </div>
-        </div>
+      {/* ── STEP PILLS BAR ── */}
+      <div className="flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar max-w-full">
+        <button
+          onClick={() => { setActiveStep(1); setActiveTab('counter'); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
+            activeStep === 1 && activeTab === 'counter'
+              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
+              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
+          }`}
+        >
+          <span className={`font-mono text-xs font-semibold ${activeStep === 1 ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>1</span>
+          <span>This hour</span>
+        </button>
 
         <button
-          onClick={() => setShowAnalyticsDetails(!showAnalyticsDetails)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#191c2b] hover:bg-[#242838] text-xs font-semibold text-[#8e8e93] hover:text-white transition-all self-end sm:self-auto border border-white/5"
+          onClick={() => { setActiveStep(2); setActiveTab('counter'); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
+            activeStep === 2
+              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
+              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
+          }`}
         >
-          <span>{showAnalyticsDetails ? "Hide History" : "View History"}</span>
-          {showAnalyticsDetails ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          <span className={`font-mono text-xs font-semibold ${activeStep === 2 ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>2</span>
+          <span>Last hour</span>
+        </button>
+
+        <button
+          onClick={() => { setActiveStep(3); setActiveTab('counter'); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
+            activeStep === 3
+              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
+              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
+          }`}
+        >
+          <span className={`font-mono text-xs font-semibold ${activeStep === 3 ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>3</span>
+          <span>Today</span>
+        </button>
+
+        <button
+          onClick={() => { setActiveStep(4); setActiveTab('records'); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
+            activeStep === 4 || activeTab === 'records'
+              ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
+              : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
+          }`}
+        >
+          <span className={`font-mono text-xs font-semibold ${activeStep === 4 || activeTab === 'records' ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>4</span>
+          <span>Records</span>
         </button>
       </div>
 
-      {/* ── COLLAPSIBLE HISTORY TABLE ── */}
-      {showAnalyticsDetails && (
-        <div className="bg-[#131520] rounded-2xl p-5 border border-white/5 space-y-3 animate-in fade-in duration-150">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-white">Recorded Hour History</h4>
-            <span className="text-xs font-mono text-[#8e8e93]">{last24hAnalytics.length} shifts logged</span>
+      {/* ── MAIN CARD: COUNTER / RECORDS ── */}
+      <div className="w-full max-w-[760px] bg-[#1B1C22] border border-white/[0.07] rounded-[28px] p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        
+        {/* Card Header with Tabs & Action Buttons */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-5">
+            <button
+              onClick={() => setActiveTab('counter')}
+              className={`font-['Space_Grotesk'] text-xl font-semibold tracking-tight transition-colors cursor-pointer ${
+                activeTab === 'counter' ? 'text-[#F4F5F1]' : 'text-[#54565F] hover:text-[#8B8E97]'
+              }`}
+            >
+              Counter
+            </button>
+            <button
+              onClick={() => setActiveTab('records')}
+              className={`font-['Space_Grotesk'] text-xl font-semibold tracking-tight transition-colors cursor-pointer ${
+                activeTab === 'records' ? 'text-[#F4F5F1]' : 'text-[#54565F] hover:text-[#8B8E97]'
+              }`}
+            >
+              Records
+            </button>
           </div>
 
-          {last24hAnalytics.length === 0 ? (
-            <p className="text-xs text-[#8e8e93] italic py-6 text-center">
-              No previous hours logged yet. They will appear here automatically when hours complete or when you copy reports.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-white/5 text-[#8e8e93] font-semibold">
-                    <th className="pb-2.5">Time Window</th>
-                    <th className="pb-2.5">Date</th>
-                    <th className="pb-2.5 text-right">Deposits</th>
-                    <th className="pb-2.5 text-right">Withdrawals</th>
-                    <th className="pb-2.5 text-right">Total</th>
-                    <th className="pb-2.5 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 font-mono">
-                  {last24hAnalytics.map((item) => (
-                    <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="py-2.5 font-sans font-medium text-white">{item.timeRange}</td>
-                      <td className="py-2.5 text-[#8e8e93]">{item.date || 'Today'}</td>
-                      <td className="py-2.5 text-right font-bold text-[#baff55]">{item.depositCount ?? 0}</td>
-                      <td className="py-2.5 text-right font-bold text-sky-400">{item.withdrawalCount ?? 0}</td>
-                      <td className="py-2.5 text-right font-bold text-white">{(item.depositCount ?? 0) + (item.withdrawalCount ?? 0)}</td>
-                      <td className="py-2.5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => handleCopyCounterText(item.timeRange, item.depositCount, item.withdrawalCount, item.id)}
-                            className="px-2.5 py-1 rounded-lg bg-[#191c2b] hover:bg-[#242838] text-[11px] font-sans font-semibold text-[#8e8e93] hover:text-white transition-all flex items-center gap-1 border border-white/5"
-                            title="Copy this hour's report"
-                          >
-                            {copiedId === item.id ? <Check size={11} className="text-[#baff55]" /> : <Copy size={11} />}
-                            <span>{copiedId === item.id ? "Copied" : "Copy"}</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteAnalyticsItem(item.id)}
-                            className="p-1 rounded-lg hover:bg-red-500/10 text-[#8e8e93] hover:text-red-400 transition-colors"
-                            title="Delete entry"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleResetCounts}
+              className="w-9 h-9 rounded-full bg-[#232429] hover:bg-[#0E0E12] border border-white/[0.07] flex items-center justify-center text-[#8B8E97] hover:text-[#F4F5F1] transition-all cursor-pointer"
+              title="Reset hour counters"
+            >
+              <RotateCcw size={15} />
+            </button>
+            <button
+              onClick={() => setShowSettingsModal(!showSettingsModal)}
+              className={`w-9 h-9 rounded-full border transition-all flex items-center justify-center cursor-pointer ${
+                showSettingsModal 
+                  ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20' 
+                  : 'bg-[#232429] hover:bg-[#0E0E12] border-white/[0.07] text-[#8B8E97] hover:text-[#F4F5F1]'
+              }`}
+              title="Settings & Labels"
+            >
+              <SlidersHorizontal size={15} />
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* ── TAB 1: HOURLY COUNTER ── */}
-      {activeTab === "counter" && (
-        <div className="space-y-6">
-
-          {/* Near-End Alert Notice */}
-          {isNearHourEnd && (
-            <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2.5">
-                <AlertCircle size={16} className="text-amber-400 shrink-0" />
-                <span>Current hour window is ending ({formatCountdown(secondsRemaining)} left). Make sure to copy your report.</span>
+        {/* Settings Subpanel if toggled */}
+        {showSettingsModal && (
+          <div className="mb-5 p-4 rounded-2xl bg-[#0E0E12] border border-white/[0.07] space-y-3 animate-in fade-in duration-150 text-xs">
+            <div className="flex items-center justify-between text-[#8B8E97] font-medium border-b border-white/[0.05] pb-2">
+              <span>Counter Settings &amp; Custom Labels</span>
+              <button onClick={() => setShowSettingsModal(false)} className="hover:text-white p-0.5"><X size={13} /></button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-[#54565F] block mb-1">Deposit Label in Copied Report:</label>
+                <input
+                  type="text"
+                  value={counterState.depositLabel || 'Deposit completed'}
+                  onChange={(e) => updateCounterState({ depositLabel: e.target.value })}
+                  className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#00D66B]"
+                />
               </div>
+              <div>
+                <label className="text-[11px] text-[#54565F] block mb-1">Withdrawal Label in Copied Report:</label>
+                <input
+                  type="text"
+                  value={counterState.withdrawalLabel || 'Completed withdrawal'}
+                  onChange={(e) => updateCounterState({ withdrawalLabel: e.target.value })}
+                  className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#3ED3F2]"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB CONTENT: COUNTER VIEW ── */}
+        {activeTab === 'counter' && (
+          <div>
+            {/* Two Side-by-Side Boxes: Deposit & Withdrawal with Centered Time Divider */}
+            <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+              
+              {/* DEPOSIT BOX */}
+              <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-5 flex flex-col justify-between">
+                
+                {/* Top Row: Label & Time Pill */}
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className="text-[13px] text-[#8B8E97] font-medium">Deposits:</span>
+                  <div className="flex items-center gap-1.5 bg-[#232429] border border-white/[0.14] rounded-full px-3 py-1 font-mono text-[11.5px] text-[#8B8E97]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]"></span>
+                    <span>{activeRangeShort}</span>
+                  </div>
+                </div>
+
+                {/* Sub Row: Type & Status */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11px] text-[#54565F]">Type</span>
+                    <div className="flex items-center gap-2 text-[15px] font-medium text-[#F4F5F1]">
+                      <span className="w-5 h-5 rounded-full bg-[#00D66B]/15 text-[#00D66B] flex items-center justify-center shrink-0">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-2.5 h-2.5">
+                          <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                      </span>
+                      <span>Deposit</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1.5">
+                    <span className="text-[11px] text-[#54565F]">Status</span>
+                    <div className="flex items-center gap-1 text-[15px] font-medium text-[#F4F5F1]">
+                      <span>Completed</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3 text-[#54565F]">
+                        <path d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Value Row: Count, Unit & Controls */}
+                <div className="flex items-baseline justify-between pt-1">
+                  <div>
+                    <span className="text-[13px] text-[#8B8E97]">Deposit completed:</span>
+                    <div className="font-['Space_Grotesk'] text-[48px] font-semibold tracking-tight text-[#F4F5F1] leading-none mt-1.5 flex items-center gap-3">
+                      <span>{counterState.depositCount ?? 0}</span>
+                      <span className="text-xl text-[#54565F] font-normal">txns</span>
+                    </div>
+                    <div className="text-[12.5px] text-[#54565F] mt-1.5">
+                      Since <b className="text-[#00D66B] font-semibold">{activeStartCap}</b>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 self-end mb-1">
+                    <button
+                      onClick={() => handleAdjustCount('deposit', -1)}
+                      className="w-[30px] h-[30px] rounded-[9px] border border-white/[0.14] bg-[#232429] hover:bg-[#0E0E12] text-[#F4F5F1] text-base leading-none flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
+                      title="Minus 1"
+                    >
+                      –
+                    </button>
+                    <button
+                      onClick={() => handleAdjustCount('deposit', 1)}
+                      className="w-[30px] h-[30px] rounded-[9px] bg-[#00D66B] hover:brightness-105 text-[#04170D] font-bold text-base leading-none flex items-center justify-center cursor-pointer active:scale-90 transition-transform shadow-sm"
+                      title="Plus 1"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* WITHDRAWAL BOX */}
+              <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-5 flex flex-col justify-between">
+                
+                {/* Top Row: Label & Time Pill */}
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className="text-[13px] text-[#8B8E97] font-medium">Withdrawals:</span>
+                  <div className="flex items-center gap-1.5 bg-[#232429] border border-white/[0.14] rounded-full px-3 py-1 font-mono text-[11.5px] text-[#8B8E97]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]"></span>
+                    <span>{activeRangeShort}</span>
+                  </div>
+                </div>
+
+                {/* Sub Row: Type & Status */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11px] text-[#54565F]">Type</span>
+                    <div className="flex items-center gap-2 text-[15px] font-medium text-[#F4F5F1]">
+                      <span className="w-5 h-5 rounded-full bg-[#3ED3F2]/15 text-[#3ED3F2] flex items-center justify-center shrink-0">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-2.5 h-2.5">
+                          <path d="M12 19V5M5 12l7-7 7 7"/>
+                        </svg>
+                      </span>
+                      <span>Withdrawal</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1.5">
+                    <span className="text-[11px] text-[#54565F]">Status</span>
+                    <div className="flex items-center gap-1 text-[15px] font-medium text-[#F4F5F1]">
+                      <span>Completed</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3 text-[#54565F]">
+                        <path d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Value Row: Count, Unit & Controls */}
+                <div className="flex items-baseline justify-between pt-1">
+                  <div>
+                    <span className="text-[13px] text-[#8B8E97]">Completed withdrawal:</span>
+                    <div className="font-['Space_Grotesk'] text-[48px] font-semibold tracking-tight text-[#F4F5F1] leading-none mt-1.5 flex items-center gap-3">
+                      <span>{counterState.withdrawalCount ?? 0}</span>
+                      <span className="text-xl text-[#54565F] font-normal">txns</span>
+                    </div>
+                    <div className="text-[12.5px] text-[#54565F] mt-1.5">
+                      Since <b className="text-[#3ED3F2] font-semibold">{activeStartCap}</b>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 self-end mb-1">
+                    <button
+                      onClick={() => handleAdjustCount('withdrawal', -1)}
+                      className="w-[30px] h-[30px] rounded-[9px] border border-white/[0.14] bg-[#232429] hover:bg-[#0E0E12] text-[#F4F5F1] text-base leading-none flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
+                      title="Minus 1"
+                    >
+                      –
+                    </button>
+                    <button
+                      onClick={() => handleAdjustCount('withdrawal', 1)}
+                      className="w-[30px] h-[30px] rounded-[9px] bg-[#3ED3F2] hover:brightness-105 text-[#04232B] font-bold text-base leading-none flex items-center justify-center cursor-pointer active:scale-90 transition-transform shadow-sm"
+                      title="Plus 1"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Center Round Clock Divider Icon */}
+              <div 
+                onClick={() => handleStepShift(1)}
+                className="hidden sm:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[34px] h-[34px] rounded-full bg-[#232429] border border-white/[0.14] items-center justify-center text-[#8B8E97] hover:text-[#F4F5F1] hover:scale-105 transition-all cursor-pointer z-10 shadow-md"
+                title="Step shift window"
+              >
+                <Clock size={14} />
+              </div>
+
+            </div>
+
+            {/* Footer Row: Active Rate & Copy Button */}
+            <div className="flex items-center justify-between flex-wrap gap-4 pt-1">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 text-[13.5px]">
+                  <b className="font-semibold text-[#F4F5F1]">{activeRangeDisplay}</b>
+                  <span className="flex items-center gap-1 text-[#00D66B] text-xs font-semibold">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3">
+                      <path d="m18 15-6-6-6 6"/>
+                    </svg>
+                    Active now
+                  </span>
+                </div>
+                <span className="text-[11.5px] text-[#54565F]">Counters reset automatically on the hour boundary.</span>
+              </div>
+
               <button
                 onClick={() => handleCopyCounterText()}
-                className="bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
+                className="flex items-center gap-2 bg-[#F2E75A] hover:brightness-105 active:scale-[0.98] text-[#2A2705] font-semibold text-[14.5px] rounded-full px-6 py-3.5 transition-all cursor-pointer shadow-md"
               >
-                <Copy size={13} />
-                <span>Copy Report</span>
+                <span>Copy report</span>
+                <span className="font-mono text-xs font-bold leading-none">»</span>
               </button>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            {/* Main Active Counter (8 cols) */}
-            <div className="lg:col-span-8 bg-[#131520] rounded-[24px] p-5 sm:p-6 border border-white/5 space-y-5">
-              
-              {/* Header & Reset */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-base font-bold text-white">Active Hour</h2>
-                  <p className="text-xs text-[#8e8e93] mt-0.5">Track and copy hourly transaction counts</p>
-                </div>
-                <button
-                  onClick={handleResetCounts}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#191c2b] hover:bg-[#242838] text-xs font-semibold text-[#8e8e93] hover:text-white transition-all border border-white/5 cursor-pointer"
-                  title="Reset both counts to 0"
-                >
-                  <RotateCcw size={12} />
-                  <span>Reset</span>
-                </button>
-              </div>
-
-              {/* Time Window Bar */}
-              <div className="flex items-center justify-between gap-2 bg-[#191c2b] p-2 sm:p-2.5 rounded-2xl border border-white/5">
-                <button
-                  onClick={() => handleStepShift(-1)}
-                  className="p-2 rounded-xl hover:bg-white/5 text-[#8e8e93] hover:text-white transition-colors"
-                  title="Previous hour"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-
-                <div className="flex-1 flex items-center justify-center gap-2">
-                  <Clock size={14} className="text-[#baff55]" />
-                  <input
-                    type="text"
-                    value={counterState.timeRange || generateHourRange(0)}
-                    onChange={(e) => updateCounterState({ timeRange: e.target.value })}
-                    className="bg-transparent text-xs sm:text-sm font-mono font-bold text-white text-center outline-none w-48 sm:w-60 focus:text-[#baff55]"
-                    placeholder="e.g. 1:00 PM - 2:00 PM"
-                  />
-                  {shiftStepOffset !== 0 && (
-                    <button
-                      onClick={() => {
-                        setShiftStepOffset(0);
-                        updateCounterState({ timeRange: generateHourRange(0) });
-                      }}
-                      className="text-[10px] font-bold text-[#baff55] hover:underline px-1.5"
-                    >
-                      (Current)
-                    </button>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => handleStepShift(1)}
-                  className="p-2 rounded-xl hover:bg-white/5 text-[#8e8e93] hover:text-white transition-colors"
-                  title="Next hour"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-
-              {/* Counter Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                
-                {/* Deposit Counter */}
-                <div className="bg-[#191c2b] rounded-2xl p-4 sm:p-5 border border-white/5 flex flex-col justify-between space-y-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <button
-                        onClick={() => updateCounterState({ depositIcon: counterState.depositIcon === 'check' ? 'x' : 'check' })}
-                        className="p-1 rounded-lg hover:bg-white/5 text-[#8e8e93] shrink-0"
-                        title="Toggle status icon"
-                      >
-                        {counterState.depositIcon === 'x' ? <XCircle size={16} className="text-red-400" /> : <CheckCircle2 size={16} className="text-[#baff55]" />}
-                      </button>
-                      <input
-                        type="text"
-                        value={counterState.depositLabel || 'Deposit Completed'}
-                        onChange={(e) => updateCounterState({ depositLabel: e.target.value })}
-                        className="bg-transparent text-xs font-semibold text-white outline-none truncate"
-                      />
-                    </div>
-                    <span className="text-[10px] font-bold text-[#baff55] bg-[#baff55]/10 px-2 py-0.5 rounded-md shrink-0">
-                      DEPOSITS
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-4xl sm:text-5xl font-mono font-bold text-white">
-                      {counterState.depositCount ?? 0}
-                    </span>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => handleAdjustCount('deposit', -1)}
-                        className="w-9 h-9 rounded-xl bg-[#131520] hover:bg-white/10 text-white font-bold flex items-center justify-center transition-all border border-white/5 active:scale-95 cursor-pointer"
-                        title="Decrease"
-                      >
-                        <Minus size={15} />
-                      </button>
-                      <button
-                        onClick={() => handleAdjustCount('deposit', 1)}
-                        className="w-9 h-9 rounded-xl bg-[#baff55] hover:bg-[#a8f044] text-black font-bold flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-sm"
-                        title="Increase"
-                      >
-                        <Plus size={15} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Withdrawal Counter */}
-                <div className="bg-[#191c2b] rounded-2xl p-4 sm:p-5 border border-white/5 flex flex-col justify-between space-y-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <button
-                        onClick={() => updateCounterState({ withdrawalIcon: counterState.withdrawalIcon === 'check' ? 'x' : 'check' })}
-                        className="p-1 rounded-lg hover:bg-white/5 text-[#8e8e93] shrink-0"
-                        title="Toggle status icon"
-                      >
-                        {counterState.withdrawalIcon === 'x' ? <XCircle size={16} className="text-red-400" /> : <CheckCircle2 size={16} className="text-sky-400]" />}
-                      </button>
-                      <input
-                        type="text"
-                        value={counterState.withdrawalLabel || 'Completed withdrawal'}
-                        onChange={(e) => updateCounterState({ withdrawalLabel: e.target.value })}
-                        className="bg-transparent text-xs font-semibold text-white outline-none truncate"
-                      />
-                    </div>
-                    <span className="text-[10px] font-bold text-sky-400 bg-sky-400/10 px-2 py-0.5 rounded-md shrink-0">
-                      WITHDRAWALS
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-4xl sm:text-5xl font-mono font-bold text-white">
-                      {counterState.withdrawalCount ?? 0}
-                    </span>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => handleAdjustCount('withdrawal', -1)}
-                        className="w-9 h-9 rounded-xl bg-[#131520] hover:bg-white/10 text-white font-bold flex items-center justify-center transition-all border border-white/5 active:scale-95 cursor-pointer"
-                        title="Decrease"
-                      >
-                        <Minus size={15} />
-                      </button>
-                      <button
-                        onClick={() => handleAdjustCount('withdrawal', 1)}
-                        className="w-9 h-9 rounded-xl bg-sky-400 hover:bg-sky-300 text-black font-bold flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-sm"
-                        title="Increase"
-                      >
-                        <Plus size={15} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Formatted Report Preview & Copy Button */}
-              <div className="pt-2 space-y-3">
-                <div className="bg-[#191c2b] rounded-2xl p-3.5 sm:p-4 border border-white/5">
-                  <div className="text-[11px] font-semibold text-[#8e8e93] mb-2">Report Output Preview:</div>
-                  <pre className="text-xs sm:text-sm font-mono text-white whitespace-pre-wrap select-all leading-relaxed">
-                    {getFormattedCounterText()}
-                  </pre>
-                </div>
-
-                <button
-                  onClick={() => handleCopyCounterText()}
-                  className="w-full bg-[#baff55] hover:bg-[#a8f044] text-black font-bold text-sm py-3.5 px-6 rounded-full flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
-                >
-                  {copiedActiveCounter ? <Check size={16} /> : <Copy size={16} />}
-                  <span>{copiedActiveCounter ? "Copied to Clipboard!" : "Copy Active Hour Report"}</span>
-                </button>
-              </div>
-
-            </div>
-
-            {/* Previous Hour Quick Card (4 cols) */}
-            <div className="lg:col-span-4 bg-[#131520] rounded-[24px] p-5 sm:p-6 border border-white/5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-white">Previous Hour</h3>
-                <span className="text-[11px] text-[#8e8e93]">Auto-Saved</span>
-              </div>
-
-              <div className="bg-[#191c2b] rounded-2xl p-4 border border-white/5 space-y-3">
-                <div className="text-xs font-mono font-semibold text-white">
-                  ⏰ {prevRange}
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5 pt-1">
-                  <div className="bg-[#131520] p-3 rounded-xl border border-white/5">
-                    <span className="text-[11px] text-[#8e8e93] block">Deposits</span>
-                    <span className="text-xl font-mono font-bold text-[#baff55]">{prevDep}</span>
-                  </div>
-                  <div className="bg-[#131520] p-3 rounded-xl border border-white/5">
-                    <span className="text-[11px] text-[#8e8e93] block">Withdrawals</span>
-                    <span className="text-xl font-mono font-bold text-sky-400">{prevWth}</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleCopyCounterText(prevRange, prevDep, prevWth, 'prev_quick')}
-                  className="w-full mt-2 bg-[#131520] hover:bg-[#242838] border border-white/5 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  {copiedId === 'prev_quick' ? <Check size={13} className="text-[#baff55]" /> : <Copy size={13} />}
-                  <span>{copiedId === 'prev_quick' ? "Copied!" : "Copy Previous Hour"}</span>
-                </button>
-              </div>
-
-              <p className="text-[11px] text-[#8e8e93] leading-relaxed">
-                When the hour changes, current counts auto-archive here and in History.
-              </p>
             </div>
 
           </div>
+        )}
 
-        </div>
-      )}
-
-      {/* ── TAB 2: SMS RECORDS LEDGER ── */}
-      {activeTab === "ledger" && (
-        <div className="space-y-5">
-          
-          {/* Input Panel */}
-          <div className="bg-[#131520] rounded-[24px] p-4 sm:p-5 border border-white/5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white">Add SMS Transaction</span>
-              <span className="text-[11px] text-[#8e8e93]">Press Ctrl+Enter to submit</span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-              <textarea
-                ref={textareaRef}
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd(); }}
-                placeholder="Paste full MPESA SMS confirmation (e.g. UG2D2A2YF9 confirmed. Ksh1,000.00 from 0712345678...) or code"
-                rows={2}
-                className="flex-1 bg-[#191c2b] border border-white/5 rounded-2xl p-3.5 text-white text-xs sm:text-sm outline-none focus:border-[#baff55] font-mono resize-none placeholder-[#8e8e93]"
-              />
-              <button
-                type="button"
-                onClick={handleAdd}
-                disabled={!inputText.trim()}
-                className="bg-[#baff55] hover:bg-[#a8f044] text-black font-bold text-xs py-3 px-5 rounded-full flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none transition-all shrink-0 cursor-pointer"
-              >
-                <Plus size={14} />
-                <span>Add Record</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Ledger Table & Search */}
-          <div className="bg-[#131520] rounded-[24px] border border-white/5 overflow-hidden">
+        {/* ── TAB CONTENT: RECORDS VIEW (SMS LEDGER) ── */}
+        {activeTab === 'records' && (
+          <div className="space-y-4">
             
-            {/* Search Bar */}
-            <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-white/[0.01]">
-              <Search size={14} className="text-[#8e8e93] shrink-0" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                placeholder="Search transaction code, phone, merchant, amount..."
-                className="flex-1 bg-transparent text-xs sm:text-sm text-white placeholder-[#8e8e93] outline-none"
-              />
-              {search && (
-                <button onClick={() => setSearch("")} className="text-[#8e8e93] hover:text-white p-1">
-                  <X size={13} />
+            {/* Input Form */}
+            <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#8B8E97]">Add SMS Transaction</span>
+                <span className="text-[11px] text-[#54565F]">Press Ctrl+Enter to save</span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+                <textarea
+                  ref={textareaRef}
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd(); }}
+                  placeholder="Paste full MPESA SMS confirmation (e.g. UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0798534993 on 8/3/26 at 1:15 AM...)"
+                  rows={2}
+                  className="flex-1 bg-[#1B1C22] border border-white/10 rounded-xl p-3 text-white text-xs font-mono outline-none focus:border-[#00D66B] resize-none placeholder-[#54565F]"
+                />
+                <button
+                  type="button"
+                  onClick={handleAdd}
+                  disabled={!inputText.trim()}
+                  className="bg-[#00D66B] hover:brightness-105 text-[#04170D] font-bold text-xs py-3 px-5 rounded-full flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none transition-all shrink-0 cursor-pointer"
+                >
+                  <Plus size={14} />
+                  <span>Add Record</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Search and Table */}
+            <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.05]">
+                <Search size={14} className="text-[#54565F] shrink-0" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                  placeholder="Search transaction code, phone, amount..."
+                  className="flex-1 bg-transparent text-xs text-white placeholder-[#54565F] outline-none font-mono"
+                />
+                {search && (
+                  <button onClick={() => setSearch("")} className="text-[#54565F] hover:text-white p-1">
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+
+              {paginatedEntries.length === 0 ? (
+                <div className="text-center py-10 text-xs text-[#54565F]">
+                  {entries.length === 0 ? "No SMS records stored yet. Paste an SMS to record." : "No matching records found."}
+                </div>
+              ) : (
+                <div className="divide-y divide-white/[0.05]">
+                  {paginatedEntries.map((entry) => (
+                    <div key={entry.id} className="p-3 sm:px-4 flex items-center justify-between gap-3 text-xs font-mono hover:bg-white/[0.02] transition-colors">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <button
+                          onClick={() => handleVerify(entry.id)}
+                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                            entry.verified ? "bg-[#00D66B] border-[#00D66B] text-black" : "border-white/20 hover:border-white/40"
+                          }`}
+                        >
+                          {entry.verified && <Check size={10} strokeWidth={3} />}
+                        </button>
+                        <span className={`font-bold truncate ${entry.verified ? "text-[#54565F] line-through" : "text-[#F4F5F1]"}`}>
+                          {entry.transactionCode || "—"}
+                        </span>
+                        {entry.amount && <span className="text-[#00D66B] bg-[#00D66B]/10 px-1.5 py-0.5 rounded text-[11px] shrink-0">{entry.amount}</span>}
+                        {entry.phone && <span className="text-[#8B8E97] hidden sm:inline truncate">{entry.phone}</span>}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {entry.transactionCode && (
+                          <button
+                            onClick={() => handleCopy(entry.id)}
+                            className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 ${
+                              entry.copiedCode ? "bg-[#00D66B]/20 text-[#00D66B] border-[#00D66B]/40" : "bg-[#232429] text-[#8B8E97] border-white/5 hover:text-white"
+                            }`}
+                          >
+                            {entry.copiedCode ? <Check size={12} /> : <Copy size={12} />}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(entry.id)}
+                          className="p-1.5 text-[#54565F] hover:text-red-400"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Desktop Table Header */}
-            <div 
-              className="hidden lg:grid text-[11px] font-bold text-[#8e8e93] uppercase tracking-wider border-b border-white/5 bg-[#191c2b]/50 px-5 py-3 gap-3 items-center"
-              style={{ gridTemplateColumns: '28px 1fr 100px 120px 120px 90px 100px 32px' }}
-            >
-              <span />
-              <span>Transaction Code</span>
-              <span>Amount</span>
-              <span>Phone</span>
-              <span>Merchant</span>
-              <span>Time</span>
-              <span className="text-center">Flags</span>
-              <span />
+          </div>
+        )}
+
+      </div>
+
+      {/* ── SECONDARY 2-COLUMN CARDS ── */}
+      <div className="w-full max-w-[760px] mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        
+        {/* Card 1: Last hour stats */}
+        <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col justify-between shadow-lg">
+          <div>
+            <div className="flex items-center justify-between mb-3.5">
+              <div className="flex items-center gap-2 text-sm font-medium text-[#F4F5F1]">
+                <Clock size={15} className="text-[#8B8E97]" />
+                <span>Last hour stats</span>
+              </div>
+              <span className="text-[10.5px] font-semibold text-[#54565F] bg-[#232429] px-2.5 py-1 rounded-full border border-white/[0.05]">
+                Archived
+              </span>
             </div>
 
-            {/* Rows */}
-            {paginatedEntries.length === 0 ? (
-              <div className="text-center py-12 text-xs text-[#8e8e93]">
-                {entries.length === 0 ? "No records yet. Paste an SMS above to add." : "No records match your search."}
-              </div>
-            ) : (
-              paginatedEntries.map((entry) => (
-                <div key={entry.id}>
-                  {/* Mobile Row */}
-                  <div className={`lg:hidden p-4 border-b border-white/5 space-y-2.5 ${
-                    entry.wasCopied ? "bg-[#baff55]/[0.02]" : ""
-                  }`}>
-                    <div className="flex items-center gap-2.5">
-                      <button
-                        onClick={() => handleVerify(entry.id)}
-                        className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all ${
-                          entry.verified ? "bg-[#baff55] border-[#baff55] text-black" : "border-white/20 hover:border-white/40"
-                        }`}
-                      >
-                        {entry.verified && <Check size={11} strokeWidth={3} />}
-                      </button>
-                      <span className={`font-mono text-sm font-bold flex-1 truncate ${
-                        entry.verified ? "text-[#8e8e93] line-through" : "text-white"
-                      }`}>
-                        {entry.transactionCode || "No code detected"}
-                      </span>
-                      {entry.transactionCode && (
-                        <button
-                          onClick={() => handleCopy(entry.id)}
-                          className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 ${
-                            entry.copiedCode ? "bg-[#baff55]/20 text-[#baff55] border-[#baff55]/40" : "bg-[#191c2b] text-[#8e8e93] border-white/5"
-                          }`}
-                        >
-                          {entry.copiedCode ? <Check size={12} /> : <Copy size={12} />}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="p-1.5 rounded-lg text-[#8e8e93] hover:text-red-400"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
+            <div className="font-mono text-[13px] text-[#8B8E97] mb-4">
+              {prevRange}
+            </div>
 
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-                      {entry.amount && <span className="text-[#baff55] bg-white/5 px-2 py-0.5 rounded-md">{entry.amount}</span>}
-                      {entry.phone && <span className="text-white bg-white/5 px-2 py-0.5 rounded-md">{entry.phone}</span>}
-                      {entry.merchant && <span className="text-sky-400 bg-sky-400/10 px-2 py-0.5 rounded-md">{entry.merchant}</span>}
-                      <span className="text-[#8e8e93] text-[10px] ml-auto">
-                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Desktop Grid Row */}
-                  <div
-                    className={`hidden lg:grid items-center border-b border-white/5 px-5 py-3 gap-3 text-xs transition-colors ${
-                      entry.wasCopied ? "bg-[#baff55]/[0.02]" : "hover:bg-white/[0.01]"
-                    }`}
-                    style={{ gridTemplateColumns: '28px 1fr 100px 120px 120px 90px 100px 32px' }}
-                  >
-                    <button
-                      onClick={() => handleVerify(entry.id)}
-                      className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all ${
-                        entry.verified ? "bg-[#baff55] border-[#baff55] text-black" : "border-white/20 hover:border-white/40"
-                      }`}
-                    >
-                      {entry.verified && <Check size={11} strokeWidth={3} />}
-                    </button>
-
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className={`font-mono font-bold truncate ${entry.verified ? "text-[#8e8e93] line-through" : "text-white"}`}>
-                        {entry.transactionCode || "—"}
-                      </span>
-                      {entry.transactionCode && (
-                        <button
-                          onClick={() => handleCopy(entry.id)}
-                          className={`p-1.5 rounded-lg border text-xs transition-all ${
-                            entry.copiedCode ? "bg-[#baff55]/20 text-[#baff55] border-[#baff55]/40" : "bg-[#191c2b] text-[#8e8e93] border-white/5 hover:text-white"
-                          }`}
-                        >
-                          {entry.copiedCode ? <Check size={11} /> : <Copy size={11} />}
-                        </button>
-                      )}
-                    </div>
-
-                    <span className="font-mono font-bold text-[#baff55] truncate">
-                      {entry.amount || "—"}
-                    </span>
-
-                    <span className="font-mono text-white truncate">
-                      {entry.phone || "—"}
-                    </span>
-
-                    <span className="font-mono text-sky-400 truncate">
-                      {entry.merchant || "—"}
-                    </span>
-
-                    <span className="text-[11px] text-[#8e8e93] whitespace-nowrap">
-                      {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-
-                    <div className="flex items-center justify-center gap-2">
-                      <label className="flex items-center gap-1 cursor-pointer select-none text-[10px] text-[#8e8e93]" title="Auto-delete 1h after copy">
-                        <input type="checkbox" checked={entry.autoDeleteAfterCopy} onChange={() => handleToggleAutoDelete(entry.id)} className="w-3 h-3 accent-[#baff55]" />
-                        <span>1h</span>
-                      </label>
-                      <label className="flex items-center gap-1 cursor-pointer select-none text-[10px] text-[#baff55]" title="Keep entry">
-                        <input type="checkbox" checked={entry.keep} onChange={() => handleToggleKeep(entry.id)} className="w-3 h-3 accent-[#baff55]" />
-                        <span>Keep</span>
-                      </label>
-                    </div>
-
-                    <button
-                      onClick={() => handleDelete(entry.id)}
-                      className="p-1 rounded-lg text-[#8e8e93] hover:text-red-400 transition-colors"
-                      title="Delete record"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
+            <div className="flex gap-2.5 mb-4">
+              <div className="flex-1 bg-[#0E0E12] border border-white/[0.07] rounded-[12px] p-3">
+                <div className="flex items-center gap-1.5 text-[11.5px] text-[#8B8E97] mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]"></span>
+                  <span>Deposits</span>
                 </div>
-              ))
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-5 py-3 border-t border-white/5 text-xs text-[#8e8e93]">
-                <span>Page <strong className="text-white">{currentPage}</strong> of <strong className="text-white">{totalPages}</strong></span>
-                <div className="flex items-center gap-2">
-                  <button
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((p) => p - 1)}
-                    className="px-3 py-1 rounded-xl bg-[#191c2b] text-white hover:bg-[#242838] disabled:opacity-30"
-                  >
-                    Prev
-                  </button>
-                  <button
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                    className="px-3 py-1 rounded-xl bg-[#191c2b] text-white hover:bg-[#242838] disabled:opacity-30"
-                  >
-                    Next
-                  </button>
+                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#00D66B]">
+                  {prevDep}
                 </div>
               </div>
-            )}
 
+              <div className="flex-1 bg-[#0E0E12] border border-white/[0.07] rounded-[12px] p-3">
+                <div className="flex items-center gap-1.5 text-[11.5px] text-[#8B8E97] mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]"></span>
+                  <span>Withdrawals</span>
+                </div>
+                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#3ED3F2]">
+                  {prevWth}
+                </div>
+              </div>
+            </div>
           </div>
 
+          <button
+            onClick={() => handleCopyCounterText(prevRange, prevDep, prevWth, 'last_hour_card')}
+            className="w-full flex items-center justify-center gap-2 bg-[#232429] hover:bg-[#0E0E12] border border-white/[0.14] text-[#F4F5F1] font-medium text-[13px] rounded-[12px] p-3 cursor-pointer transition-colors"
+          >
+            <Copy size={13} />
+            <span>{copiedId === 'last_hour_card' ? "Copied to clipboard!" : "Copy last hour report"}</span>
+          </button>
         </div>
-      )}
+
+        {/* Card 2: Past 24 hours */}
+        <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col justify-between shadow-lg">
+          <div>
+            <div className="flex items-center justify-between mb-3.5">
+              <div className="flex items-center gap-2 text-sm font-medium text-[#F4F5F1]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-[#8B8E97]">
+                  <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-4 4"/>
+                </svg>
+                <span>Past 24 hours</span>
+              </div>
+              <span className="text-[10.5px] font-semibold text-[#54565F] bg-[#232429] px-2.5 py-1 rounded-full border border-white/[0.05]">
+                SMS: {filtered.length}
+              </span>
+            </div>
+
+            <div className="text-[13px] text-[#8B8E97] mb-4">
+              Total completed transactions
+            </div>
+
+            <div className="flex gap-2.5 mb-4">
+              <div className="flex-1 bg-[#0E0E12] border border-white/[0.07] rounded-[12px] p-3">
+                <div className="flex items-center gap-1.5 text-[11.5px] text-[#8B8E97] mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]"></span>
+                  <span>Deposits</span>
+                </div>
+                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#00D66B]">
+                  {totalDepositsLogged}
+                </div>
+              </div>
+
+              <div className="flex-1 bg-[#0E0E12] border border-white/[0.07] rounded-[12px] p-3">
+                <div className="flex items-center gap-1.5 text-[11.5px] text-[#8B8E97] mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]"></span>
+                  <span>Withdrawals</span>
+                </div>
+                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#3ED3F2]">
+                  {totalWithdrawalsLogged}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <button
+              onClick={() => { setActiveStep(4); setActiveTab('records'); }}
+              className="w-full flex items-center justify-center gap-2 bg-[#232429] hover:bg-[#0E0E12] border border-white/[0.14] text-[#F4F5F1] font-medium text-[13px] rounded-[12px] p-3 cursor-pointer transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                <path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>
+              </svg>
+              <span>View history</span>
+            </button>
+            <p className="text-[11px] text-[#54565F] mt-3 leading-relaxed">
+              Tap a step above to switch between <b className="text-[#8B8E97] font-semibold">this hour</b>, <b className="text-[#8B8E97] font-semibold">last hour</b>, <b className="text-[#8B8E97] font-semibold">today</b>, and <b className="text-[#8B8E97] font-semibold">SMS records</b>.
+            </p>
+          </div>
+        </div>
+
+      </div>
 
     </div>
   );

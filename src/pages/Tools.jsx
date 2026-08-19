@@ -64,102 +64,111 @@ function OddsCalculator() {
   const profit = (stake * odds - stake).toFixed(2);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Card */}
-        <div className="glass-card p-8 space-y-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl bg-accent/10 border border-accent/20 text-accent">
-              <Percent size={20} />
+    <div className="space-y-6 animate-in fade-in duration-300 max-w-[760px] mx-auto">
+      {/* Main Container Card */}
+      <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[28px] p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.5)] space-y-6">
+        
+        {/* Card Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#232429] border border-white/[0.07] flex items-center justify-center text-[#F2E75A]">
+              <Percent size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-black text-white uppercase tracking-widest">Live Odds Converter</h3>
-              <p className="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em] mt-1">Decimal Payout Analysis</p>
+              <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-[#F4F5F1] tracking-tight">Odds Converter</h3>
+              <p className="text-xs text-[#8B8E97]">Decimal payout and market probability analysis</p>
             </div>
           </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Stake Amount (KES)</label>
-              <input
-                type="number"
-                value={stake}
-                onChange={(e) => setStake(Math.max(0, parseFloat(e.target.value) || 0))}
-                className="w-full bg-[#1b1e2b] rounded-2xl px-6 py-4 text-white font-bold outline-none focus:ring-2 focus:ring-accent/40 transition-all"
-              />
-            </div>
-            <div>
-              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Decimal Odds</label>
-              <input
-                type="number"
-                step="0.01"
-                value={odds}
-                onChange={(e) => setOdds(Math.max(1, parseFloat(e.target.value) || 0))}
-                className="w-full bg-[#1b1e2b] rounded-2xl px-6 py-4 text-white font-bold outline-none focus:ring-2 focus:ring-accent/40 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="p-4 bg-accent/5 border border-accent/10 rounded-2xl">
-             <p className="text-[10px] text-accent/60 italic leading-relaxed font-medium text-center">
-               "Returns are calculated using the standard decimal formula: Stake × Odds = Total Return."
-             </p>
-          </div>
+          <span className="text-[11px] font-mono text-[#8B8E97] bg-[#232429] border border-white/[0.07] px-3 py-1 rounded-full">
+            Live Math
+          </span>
         </div>
 
-        {/* Results Card */}
-        <div className="glass-card p-8 flex flex-col justify-between">
-          <div className="space-y-8">
-            <div className="text-center lg:text-left">
-              <span className="text-[10px] font-black text-accent uppercase tracking-widest block mb-2">Potential Returns</span>
-              <div className="text-5xl font-black text-white tracking-tighter">
-                <span className="text-xl text-gray-600 mr-2">KES</span>
-                {Number(totalReturn).toLocaleString()}
+        {/* 2 Column Box Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          {/* Input Box */}
+          <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-5 space-y-4">
+            <span className="text-[13px] text-[#8B8E97] font-medium block">Bet Parameters</span>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] text-[#54565F] block mb-1">Stake Amount (KES)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={stake}
+                    onChange={(e) => setStake(Math.max(0, parseFloat(e.target.value) || 0))}
+                    className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-4 py-2.5 text-white font-mono text-sm font-bold outline-none focus:border-[#00D66B]"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-[#54565F]">KES</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] text-[#54565F] block mb-1">Decimal Odds</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={odds}
+                    onChange={(e) => setOdds(Math.max(1, parseFloat(e.target.value) || 0))}
+                    className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-4 py-2.5 text-white font-mono text-sm font-bold outline-none focus:border-[#3ED3F2]"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-[#54565F]">ODDS</span>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              <div className="p-6 rounded-3xl bg-emerald-500/5 border border-emerald-500/10">
-                <span className="text-[9px] font-black text-emerald-500/60 uppercase block mb-1">Pure Profit</span>
-                <span className="text-xl font-black text-emerald-500">KES {Number(profit).toLocaleString()}</span>
+            <div className="text-[11.5px] text-[#54565F] pt-1 leading-relaxed">
+              Formula: <span className="font-mono text-[#8B8E97]">Stake × Odds = Return</span>
+            </div>
+          </div>
+
+          {/* Result Box */}
+          <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-5 flex flex-col justify-between">
+            <div>
+              <span className="text-[13px] text-[#8B8E97] font-medium block mb-2">Total Potential Return:</span>
+              <div className="font-['Space_Grotesk'] text-[42px] font-semibold text-[#F4F5F1] tracking-tight leading-none flex items-baseline gap-2">
+                <span className="text-xl font-normal text-[#54565F]">KES</span>
+                <span>{Number(totalReturn).toLocaleString()}</span>
               </div>
-              <div className="p-6 rounded-3xl bg-blue-500/5 border border-blue-500/10">
-                <span className="text-[9px] font-black text-blue-500/60 uppercase block mb-1">Return Multiplier</span>
-                <span className="text-xl font-black text-blue-500">{odds}x</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-4 border-t border-white/[0.05] mt-4">
+              <div className="bg-[#1B1C22] rounded-xl p-3 border border-white/[0.05]">
+                <span className="text-[10.5px] text-[#8B8E97] block">Pure Profit</span>
+                <span className="text-base font-mono font-bold text-[#00D66B]">
+                  +{Number(profit).toLocaleString()}
+                </span>
+              </div>
+              <div className="bg-[#1B1C22] rounded-xl p-3 border border-white/[0.05]">
+                <span className="text-[10.5px] text-[#8B8E97] block">Multiplier</span>
+                <span className="text-base font-mono font-bold text-[#3ED3F2]">
+                  {odds}x
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingUp size={16} className="text-gray-700" />
-              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Market Advantage Active</span>
-            </div>
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          </div>
         </div>
+
       </div>
 
-      {/* Market Quick Reference */}
-      <div className="glass-card p-8">
-        <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-          <LayoutGrid size={14} className="text-accent" />
-          Market Quick Reference
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { code: "1X2", name: "Match Result", desc: "1 (Home), X (Draw), 2 (Away)" },
-            { code: "O/U", name: "Over / Under", desc: "Total goals above/below line" },
-            { code: "GG/NG", name: "BTTS", desc: "Both teams score (GG) or not (NG)" },
-            { code: "DC", name: "Double Chance", desc: "Covers two possible outcomes" }
-          ].map((m) => (
-            <div key={m.code} className="p-4 rounded-2xl bg-[#1b1e2b] hover:bg-[#222538] transition-all">
-              <span className="text-[10px] font-black text-accent uppercase tracking-widest block mb-1">{m.code}</span>
-              <span className="text-xs font-bold text-white block mb-1">{m.name}</span>
-              <p className="text-[10px] text-gray-500 leading-tight">{m.desc}</p>
-            </div>
-          ))}
-        </div>
+      {/* Quick Reference Mini Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { code: "1X2", name: "Match Result", desc: "1 (Home), X (Draw), 2 (Away)" },
+          { code: "O/U", name: "Over / Under", desc: "Goals above or below line" },
+          { code: "GG/NG", name: "Both Teams Score", desc: "Goal (GG) or No Goal (NG)" },
+          { code: "DC", name: "Double Chance", desc: "Covers 2 of 3 outcomes" }
+        ].map((m) => (
+          <div key={m.code} className="bg-[#1B1C22] border border-white/[0.07] rounded-[18px] p-3.5 space-y-1">
+            <span className="font-mono text-xs font-bold text-[#00D66B] block">{m.code}</span>
+            <span className="text-xs font-semibold text-[#F4F5F1] block truncate">{m.name}</span>
+            <p className="text-[10.5px] text-[#54565F] leading-snug">{m.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -366,77 +375,57 @@ function CashbackCalculator() {
   const dailyBreakdown = getDailyBreakdown();
 
   return (
-    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-
-      {/* ── PAGE HEADER — MpesaCodes style ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="p-2 rounded-xl bg-[#baff55]/10 text-[#baff55]">
-              <Calculator size={20} />
-            </div>
-            <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">Cashback Calculator</h1>
-          </div>
-          <p className="text-xs text-gray-400 font-medium">
-            Paste portal transactions to auto-calculate cashback per 24-hr cycle (8:30 PM – 8:30 PM)
-          </p>
-        </div>
-      </div>
+    <div className="space-y-5 animate-in fade-in duration-300">
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Main Interface: Left Column */}
-        <div className="lg:col-span-8 space-y-5">
+        <div className="lg:col-span-8 space-y-4">
 
-          <div className="bg-[#131520] rounded-2xl p-5 shadow-xl space-y-5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[24px] p-5 shadow-xl space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-[#baff55]/10 text-[#baff55]">
-                  <Zap size={18} />
+                <div className="w-8 h-8 rounded-full bg-[#0E0E12] border border-white/[0.07] flex items-center justify-center text-[#F2E75A]">
+                  <Zap size={15} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-tight">Smart Paste Analysis</h3>
-                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-0.5">Auto-parse portal transactions</p>
+                  <h3 className="text-sm font-semibold text-[#F4F5F1]">Smart Paste Analysis</h3>
+                  <p className="text-[11px] text-[#8B8E97]">Auto-parse portal transactions</p>
                 </div>
               </div>
 
-              <div className="flex items-center bg-[#1b1e2b] p-1 rounded-2xl self-start">
-                <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isSmartPasteMode ? 'bg-[#baff55] text-black shadow-lg shadow-[#baff55]/20' : 'text-gray-400 hover:text-white bg-transparent'}`}>Smart Paste</button>
-                <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isSmartPasteMode ? 'bg-[#baff55] text-black shadow-lg shadow-[#baff55]/20' : 'text-gray-400 hover:text-white bg-transparent'}`}>Manual</button>
+              <div className="flex items-center bg-[#0E0E12] border border-white/[0.07] p-1 rounded-full self-start">
+                <button onClick={() => setIsSmartPasteMode(true)} className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${isSmartPasteMode ? 'bg-[#F2E75A] text-[#2A2705] shadow' : 'text-[#54565F] hover:text-[#8B8E97]'}`}>Smart Paste</button>
+                <button onClick={() => setIsSmartPasteMode(false)} className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!isSmartPasteMode ? 'bg-[#F2E75A] text-[#2A2705] shadow' : 'text-[#54565F] hover:text-[#8B8E97]'}`}>Manual</button>
               </div>
             </div>
 
             {isSmartPasteMode ? (
-              <div className="space-y-6">
-                <div className="relative group">
-                  <textarea 
-                    value={pasteContent}
-                    onChange={(e) => setPasteContent(e.target.value)}
-                    placeholder="Paste portal transactions here...
-Example:
-20608273	withdraw	-KSH 4,555.00	KSH 200.00	—	5/11/2026, 9:39:06 PM
-20607525	Deposit	+KSH 90.00	KSH 189.00	—	5/11/2026, 9:27:14 PM"
-                    className="w-full h-48 bg-[#0d0f18] rounded-[24px] p-6 text-[#10b981] font-mono text-sm outline-none focus:border-[#ff7a59]/50 focus:ring-1 focus:ring-[#ff7a59]/50 transition-all placeholder:text-gray-700/50 resize-none shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
-                  />
-                  <div className="absolute top-4 right-6 flex items-center gap-2">
-                    <span className="text-[8px] font-black text-gray-700 uppercase tracking-widest">Auto-Analyzing</span>
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                  </div>
+              <div className="relative">
+                <textarea
+                  value={pasteContent}
+                  onChange={(e) => setPasteContent(e.target.value)}
+                  placeholder={`Paste portal transactions here...\nExample:\n20608273\twithdraw\t-KSH 4,555.00\tKSH 200.00\t—\t5/11/2026, 9:39:06 PM\n20607525\tDeposit\t+KSH 90.00\tKSH 189.00\t—\t5/11/2026, 9:27:14 PM`}
+                  className="w-full h-44 bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-4 text-[#00D66B] font-mono text-xs outline-none focus:border-[#00D66B]/40 transition-all placeholder:text-[#54565F] resize-none"
+                />
+                <div className="absolute top-3 right-4 flex items-center gap-1.5">
+                  <span className="text-[10px] text-[#54565F]">Auto-Analyzing</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#00D66B] animate-pulse" />
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3 block">Total Deposits</label>
+                  <label className="text-[11px] text-[#54565F] mb-1.5 block">Total Deposits (KES)</label>
                   <div className="relative">
-                    <input type="number" value={deposits} onChange={(e) => setDeposits(e.target.value)} className="premium-input w-full px-6 py-4 text-sm font-bold" placeholder="0.00" />
-                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-600">KES</span>
+                    <input type="number" value={deposits} onChange={(e) => setDeposits(e.target.value)} className="w-full bg-[#0E0E12] border border-white/[0.07] rounded-xl px-4 py-2.5 text-white font-mono text-sm font-bold outline-none focus:border-[#00D66B]" placeholder="0.00" />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-[#54565F]">DEP</span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3 block">Total Withdrawals</label>
+                  <label className="text-[11px] text-[#54565F] mb-1.5 block">Total Withdrawals (KES)</label>
                   <div className="relative">
-                    <input type="number" value={withdrawals} onChange={(e) => setWithdrawals(e.target.value)} className="premium-input w-full px-6 py-4 text-sm font-bold" placeholder="0.00" />
-                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-600">KES</span>
+                    <input type="number" value={withdrawals} onChange={(e) => setWithdrawals(e.target.value)} className="w-full bg-[#0E0E12] border border-white/[0.07] rounded-xl px-4 py-2.5 text-white font-mono text-sm font-bold outline-none focus:border-[#3ED3F2]" placeholder="0.00" />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-[#54565F]">WTH</span>
                   </div>
                 </div>
               </div>
@@ -445,15 +434,15 @@ Example:
 
           {/* Audit Table (if data exists) */}
           {parsedTx.length > 0 && (
-            <div className="bg-[#131520] rounded-2xl shadow-xl overflow-hidden">
-              <div className="px-5 py-4 flex items-center justify-between">
+            <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] overflow-hidden">
+              <div className="px-5 py-3.5 flex items-center justify-between border-b border-white/[0.05]">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-[#baff55]/10 text-[#baff55]">
-                    <History size={15} />
+                  <div className="w-7 h-7 rounded-full bg-[#0E0E12] border border-white/[0.07] flex items-center justify-center text-[#00D66B]">
+                    <History size={13} />
                   </div>
-                  <h4 className="text-xs font-black text-white uppercase tracking-widest">Parsed Transaction Log</h4>
+                  <h4 className="text-xs font-semibold text-[#F4F5F1]">Parsed Transaction Log</h4>
                 </div>
-                <span className="text-[10px] font-black text-[#baff55] bg-[#baff55]/10 px-3 py-1 rounded-full uppercase tracking-widest">{parsedTx.length} Records</span>
+                <span className="text-[11px] font-mono text-[#8B8E97] bg-[#0E0E12] border border-white/[0.07] px-3 py-0.5 rounded-full">{parsedTx.length} Records</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
@@ -467,13 +456,13 @@ Example:
                   <tbody>
                     {parsedTx.map((tx, idx) => (
                       <tr key={idx} className="border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors">
-                        <td className="px-5 py-3">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${tx.type === 'deposit' ? 'bg-emerald-500/10 text-emerald-500' : tx.type === 'withdrawal' ? 'bg-red-500/10 text-red-500' : 'bg-gray-500/10 text-gray-500'}`}>
+                        <td className="px-5 py-2.5">
+                          <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${tx.type === 'deposit' ? 'bg-[#00D66B]/10 text-[#00D66B]' : tx.type === 'withdrawal' ? 'bg-[#3ED3F2]/10 text-[#3ED3F2]' : 'bg-white/5 text-[#54565F]'}`}>
                             {tx.rawType}
                           </span>
                         </td>
-                        <td className="px-5 py-3 font-bold text-white text-xs">KSh {tx.amount.toLocaleString()}</td>
-                        <td className="px-5 py-3 text-right text-[10px] font-medium text-gray-500">
+                        <td className="px-5 py-2.5 font-mono font-bold text-[#F4F5F1] text-xs">KSh {tx.amount.toLocaleString()}</td>
+                        <td className="px-5 py-2.5 text-right text-[11px] font-mono text-[#8B8E97]">
                           {tx.date ? format(tx.date, 'eee, MMM d • HH:mm') : tx.dateStr}
                         </td>
                       </tr>
@@ -486,18 +475,18 @@ Example:
         </div>
 
         {/* Sidebar: Right Column */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="bg-[#131520] rounded-2xl p-4 shadow-xl flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#baff55]/10 text-[#baff55]">
-              <LayoutGrid size={15} />
+        <div className="lg:col-span-4 space-y-3">
+          <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-4 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#0E0E12] border border-white/[0.07] flex items-center justify-center text-[#F2E75A]">
+              <LayoutGrid size={14} />
             </div>
             <div>
-              <h3 className="text-xs font-black text-white uppercase tracking-wider">Daily Cycle Breakdown</h3>
-              <p className="text-[10px] text-gray-500">Click any copy button to send the full message</p>
+              <h3 className="text-xs font-semibold text-[#F4F5F1]">Daily Cycle Breakdown</h3>
+              <p className="text-[11px] text-[#54565F]">Click copy to share the full message</p>
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {dailyBreakdown.length > 0 ? dailyBreakdown.map((day, i) => {
               const netLoss = Math.max(0, day.deposits - day.withdrawals);
               const cb = netLoss * 0.1;
@@ -505,102 +494,68 @@ Example:
               return (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08 }}
-                  className="bg-[#131520] rounded-2xl p-4 shadow-xl space-y-3"
+                  transition={{ delay: i * 0.06 }}
+                  className="bg-[#1B1C22] border border-white/[0.07] rounded-[20px] p-4 space-y-3"
                 >
-                  {/* Card Header */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-[#baff55] uppercase tracking-widest">{day.label} Cycle</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-medium text-[#F2E75A]">{day.label} Cycle</span>
                         {day.label === 'Current' && (
-                          <motion.span
-                            animate={{ opacity: [1, 0.4, 1] }}
-                            transition={{ repeat: Infinity, duration: 1.5 }}
-                            className="w-1.5 h-1.5 rounded-full bg-[#baff55]"
-                          />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#F2E75A] animate-pulse" />
                         )}
                       </div>
-                      <p className="text-xs font-black text-white mt-0.5 uppercase tracking-tight">
-                        {format(day.end, 'eeee, MMM d')}
-                      </p>
+                      <p className="text-xs font-semibold text-[#F4F5F1] mt-0.5">{format(day.end, 'eeee, MMM d')}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[8px] font-black text-gray-500 uppercase block tracking-widest">Cashback</span>
-                      <span className={`text-base font-black ${cb > 0 ? 'text-emerald-400' : 'text-gray-500'}`}>
-                        KSh {cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                      <span className="text-[10px] text-[#54565F] block">Cashback</span>
+                      <span className={`text-base font-mono font-bold ${cb > 0 ? 'text-[#00D66B]' : 'text-[#54565F]'}`}>
+                        {cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
 
-                  {/* Copy Lines */}
-                  <div className="space-y-2 pt-3 border-t border-white/[0.06]">
-                    {/* Line 1 — Deposits */}
-                    <div className="flex items-center justify-between bg-[#1b1e2b] rounded-xl px-3 py-2.5">
-                      <div>
-                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Sum of Deposits</span>
-                        <span className="text-xs font-bold text-white">KSh {day.deposits.toLocaleString()}</span>
+                  <div className="space-y-1.5 pt-2.5 border-t border-white/[0.05]">
+                    {[
+                      { label: 'Sum of Deposits', value: `KSh ${day.deposits.toLocaleString()}`, line: 1 },
+                      { label: 'Sum of Withdrawals', value: `KSh ${day.withdrawals.toLocaleString()}`, line: 2 },
+                      { label: 'Cashback Verdict', value: cb > 0 ? `KSh ${cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} due` : 'Not Eligible', line: 3 }
+                    ].map(({ label, value, line }) => (
+                      <div key={line} className="flex items-center justify-between bg-[#0E0E12] border border-white/[0.05] rounded-xl px-3 py-2">
+                        <div className="min-w-0 pr-2">
+                          <span className="text-[10px] text-[#54565F] block">{label}</span>
+                          <span className={`text-xs font-mono font-bold truncate block ${
+                            line === 1 ? 'text-[#00D66B]' : line === 2 ? 'text-[#3ED3F2]' : cb > 0 ? 'text-[#F2E75A]' : 'text-[#8B8E97]'
+                          }`}>{value}</span>
+                        </div>
+                        <button
+                          onClick={() => handleCopySummary(day, line)}
+                          className="flex items-center gap-1 px-2 py-1 bg-[#232429] hover:bg-white/10 border border-white/[0.07] rounded-lg text-[#8B8E97] hover:text-white text-[10px] transition-all shrink-0"
+                        >
+                          <Copy size={10} />
+                          Copy
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleCopySummary(day, 1)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg text-[#baff55] text-[9px] font-black uppercase tracking-widest transition-all"
-                      >
-                        <Copy size={10} />
-                        Copy
-                      </button>
-                    </div>
-
-                    {/* Line 2 — Withdrawals */}
-                    <div className="flex items-center justify-between bg-[#1b1e2b] rounded-xl px-3 py-2.5">
-                      <div>
-                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Sum of Withdrawals</span>
-                        <span className="text-xs font-bold text-white">KSh {day.withdrawals.toLocaleString()}</span>
-                      </div>
-                      <button
-                        onClick={() => handleCopySummary(day, 2)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg text-[#baff55] text-[9px] font-black uppercase tracking-widest transition-all"
-                      >
-                        <Copy size={10} />
-                        Copy
-                      </button>
-                    </div>
-
-                    {/* Line 3 — Cashback Verdict */}
-                    <div className="flex items-center justify-between bg-[#1b1e2b] rounded-xl px-3 py-2.5">
-                      <div className="flex-1 pr-2 min-w-0">
-                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Cashback Verdict</span>
-                        <span className={`text-xs font-bold block truncate ${cb > 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                          {cb > 0 ? `KSh ${cb.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} due` : `Not Eligible — Withdrawals (KSh ${day.withdrawals.toLocaleString()}) ≥ Deposits (KSh ${day.deposits.toLocaleString()})`}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleCopySummary(day, 3)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#baff55]/10 hover:bg-[#baff55]/20 rounded-lg text-[#baff55] text-[9px] font-black uppercase tracking-widest transition-all shrink-0"
-                      >
-                        <Copy size={10} />
-                        Copy
-                      </button>
-                    </div>
+                    ))}
                   </div>
                 </motion.div>
               );
             }) : (
-              <div className="bg-[#131520] rounded-2xl p-10 text-center shadow-xl">
-                <Calculator size={36} className="mx-auto text-gray-700 mb-3" />
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Paste portal data to see breakdown</p>
+              <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[20px] py-10 text-center">
+                <Calculator size={30} className="mx-auto text-[#54565F] mb-2" />
+                <p className="text-xs text-[#54565F]">Paste portal data to see breakdown</p>
               </div>
             )}
           </div>
 
-          {/* Rules card */}
-          <div className="bg-[#131520] rounded-2xl p-4 shadow-xl space-y-2">
+          <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[20px] p-4 space-y-2">
             <div className="flex items-center gap-2">
-              <ShieldCheck size={14} className="text-[#baff55]" />
-              <span className="text-[10px] font-bold text-white uppercase tracking-wider">Calculation Rules</span>
+              <ShieldCheck size={13} className="text-[#00D66B]" />
+              <span className="text-xs font-semibold text-[#F4F5F1]">Calculation Rules</span>
             </div>
-            <p className="text-[10px] text-gray-400 leading-relaxed">Calculated daily from 8:30 PM to 8:30 PM. The 8:30 PM to 8:40 PM window is a reset gap; deposits during this time are not counted.</p>
+            <p className="text-[11px] text-[#8B8E97] leading-relaxed">Calculated daily 8:30 PM → 8:30 PM. The 8:30–8:40 PM window is a reset gap and is excluded.</p>
           </div>
         </div>
       </div>
@@ -744,54 +699,45 @@ function CashbackRules() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Header */}
-      <div className="bg-[#131520] rounded-2xl p-6 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-[#baff55]/10 flex items-center justify-center">
-          <ShieldCheck size={22} className="text-[#baff55]" />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-white">Cashback Rules</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Official eligibility criteria and calculation logic — 6 rules</p>
-        </div>
-      </div>
+    <div className="space-y-5 animate-in fade-in duration-300 max-w-4xl mx-auto">
 
       {/* Rules Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {rules.map((rule) => (
-          <div key={rule.id} className="bg-[#131520] rounded-2xl p-6 space-y-3 hover:bg-[#161824] transition-all">
+          <div key={rule.id} className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 space-y-3 hover:border-white/[0.12] transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">Rule {rule.id}</span>
-              <span 
-                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                style={{ background: `${rule.color}18`, color: rule.color }}
+              <span className="text-[11px] font-mono text-[#54565F]">Rule {rule.id}</span>
+              <span
+                className="text-[11px] font-medium px-2.5 py-0.5 rounded-full"
+                style={{ background: `${rule.color}1A`, color: rule.color }}
               >
                 {rule.title}
               </span>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">{rule.desc}</p>
-            <div className="bg-[#0e1017] rounded-xl p-3 flex gap-2">
-              <span className="text-[#baff55] text-[10px] font-black shrink-0 uppercase tracking-wider mt-0.5">eg.</span>
-              <span className="text-[11px] text-gray-300 leading-relaxed font-mono">{rule.example}</span>
+            <p className="text-xs text-[#8B8E97] leading-relaxed">{rule.desc}</p>
+            <div className="bg-[#0E0E12] border border-white/[0.05] rounded-xl p-3 flex gap-2">
+              <span className="text-[#F2E75A] text-[10px] font-mono shrink-0 mt-0.5">eg.</span>
+              <span className="text-[11px] text-[#8B8E97] leading-relaxed font-mono">{rule.example}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Quick Reference Formula */}
-      <div className="bg-[#131520] rounded-2xl p-6 space-y-4">
-        <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-          <Calculator size={14} className="text-[#baff55]" /> Quick Formula Reference
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Calculator size={14} className="text-[#00D66B]" />
+          <h3 className="text-xs font-semibold text-[#F4F5F1]">Quick Formula Reference</h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { label: "Net Loss", formula: "Deposits − Withdrawals", color: "#3b82f6" },
-            { label: "Cashback", formula: "Net Loss × 10%", color: "#baff55" },
-            { label: "Minimum", formula: "Net Loss ≥ KES 100", color: "#10b981" }
+            { label: "Net Loss", formula: "Deposits − Withdrawals", color: "#3ED3F2" },
+            { label: "Cashback", formula: "Net Loss × 10%", color: "#00D66B" },
+            { label: "Minimum", formula: "Net Loss ≥ KES 100", color: "#F2E75A" }
           ].map((f) => (
-            <div key={f.label} className="bg-[#0e1017] rounded-2xl p-4 text-center space-y-1">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">{f.label}</span>
-              <span className="text-sm font-black font-mono" style={{ color: f.color }}>{f.formula}</span>
+            <div key={f.label} className="bg-[#0E0E12] border border-white/[0.05] rounded-[16px] p-4 text-center space-y-1">
+              <span className="text-[10px] text-[#54565F] uppercase tracking-wider block">{f.label}</span>
+              <span className="text-sm font-semibold font-mono" style={{ color: f.color }}>{f.formula}</span>
             </div>
           ))}
         </div>
@@ -821,39 +767,37 @@ export default function Tools() {
   };
 
   const tabs = [
-    { id: 'cashback', label: 'Calculator' },
-    { id: 'odds', label: 'Odds Converter' },
-    { id: 'rules', label: 'Cashback Rules' },
+    { id: 'cashback', num: '1', label: 'Cashback Calculator' },
+    { id: 'odds', num: '2', label: 'Odds Converter' },
+    { id: 'rules', num: '3', label: 'Cashback Rules' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0e1017] pt-8 pb-32 px-4 md:px-8 max-w-7xl mx-auto space-y-8">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Cashback & Tools</h1>
-          <p className="text-gray-500 text-sm mt-2 max-w-md">Calculators, converters, and the rules that govern them.</p>
-        </div>
+    <div className="min-h-[calc(100vh-80px)] py-8 px-4 flex flex-col items-center justify-start text-[#F4F5F1] font-sans selection:bg-[#00D66B]/20">
+      
+      {/* ── STEP PILLS HEADER ── */}
+      <div className="flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar max-w-full">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
+              activeTab === t.id
+                ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20 shadow-sm'
+                : 'bg-[#232429] text-[#54565F] border-white/[0.07] hover:text-[#8B8E97]'
+            }`}
+          >
+            <span className={`font-mono text-xs font-semibold ${activeTab === t.id ? 'text-[#F2E75A]' : 'text-[#54565F]'}`}>{t.num}</span>
+            <span>{t.label}</span>
+          </button>
+        ))}
+      </div>
 
-        <div className="flex bg-[#131520] p-1.5 rounded-2xl shadow-lg">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id)}
-              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
-                activeTab === t.id ? 'bg-[#baff55] text-black shadow-lg' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+      <div className="w-full max-w-6xl space-y-6">
         {activeTab === 'cashback' && <CashbackCalculator />}
         {activeTab === 'odds' && <OddsCalculator />}
         {activeTab === 'rules' && <CashbackRules />}
-      </motion.div>
+      </div>
     </div>
   );
 }

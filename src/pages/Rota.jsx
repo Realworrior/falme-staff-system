@@ -365,38 +365,36 @@ export default function RotaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-accent/30">
-      <div className="max-w-[1600px] mx-auto flex flex-col min-h-screen relative">
+    <div className="min-h-[calc(100vh-80px)] text-[#F4F5F1] font-sans selection:bg-[#00D66B]/20">
+      <div className="max-w-[1600px] mx-auto flex flex-col min-h-full relative">
         
         {/* ── Top Command Bar ── */}
-        <div className="sticky top-0 z-30 bg-background/90 backdrop-blur-xl px-4 py-6 md:px-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="sticky top-0 z-30 bg-[#0A0A0D]/90 backdrop-blur-xl px-4 py-5 md:px-8 border-b border-white/[0.05]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <div className="w-8 h-8 rounded-xl bg-accent flex items-center justify-center">
-                  <CalendarIcon size={18} className="text-white" />
+                <div className="w-8 h-8 rounded-full bg-[#1B1C22] border border-white/[0.07] flex items-center justify-center text-[#F2E75A]">
+                  <CalendarIcon size={16} />
                 </div>
-                <h1 className="text-2xl md:text-3xl font-black tracking-tighter uppercase font-heading">
+                <h1 className="font-['Space_Grotesk'] text-2xl md:text-3xl font-semibold tracking-tight text-[#F4F5F1]">
                   Shift Rota
                 </h1>
               </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                Monthly team schedule
-              </p>
+              <p className="text-xs text-[#8B8E97] ml-11">Monthly team schedule</p>
             </div>
 
             <div className="flex items-center gap-3">
               {isManagerMode && (
-                <div className="flex bg-panel p-1.5 rounded-2xl mr-2">
+                <div className="flex bg-[#0E0E12] border border-white/[0.07] p-1 rounded-full mr-1">
                   <button
                     onClick={() => {
                       setActiveBranch('betfalme');
                       showToast('Switched to Betfalme branch', 'info');
                     }}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                      activeBranch === 'betfalme' 
-                        ? 'premium-button shadow-lg shadow-white/10' 
-                        : 'text-gray-500 hover:text-gray-300'
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      activeBranch === 'betfalme'
+                        ? 'bg-[#1B1C22] text-[#F4F5F1] shadow border border-white/10'
+                        : 'text-[#54565F] hover:text-[#8B8E97]'
                     }`}
                   >
                     Betfalme
@@ -406,10 +404,10 @@ export default function RotaPage() {
                       setActiveBranch('sofasafi');
                       showToast('Switched to SofaSafi branch', 'info');
                     }}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                      activeBranch === 'sofasafi' 
-                        ? 'premium-button shadow-lg shadow-amber-500/20' 
-                        : 'text-gray-500 hover:text-gray-300'
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      activeBranch === 'sofasafi'
+                        ? 'bg-[#1B1C22] text-[#F4F5F1] shadow border border-white/10'
+                        : 'text-[#54565F] hover:text-[#8B8E97]'
                     }`}
                   >
                     SofaSafi
@@ -417,35 +415,35 @@ export default function RotaPage() {
                 </div>
               )}
 
-              <div className="flex bg-panel p-1.5 rounded-2xl">
-                <button 
+              <div className="flex bg-[#0E0E12] border border-white/[0.07] p-1 rounded-full">
+                <button
                   onClick={handlePrevMonth}
-                  className="p-2.5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-white"
+                  className="p-2 hover:bg-white/5 rounded-full transition-all text-[#8B8E97] hover:text-white"
                 >
-                  <ChevronLeft size={20} />
+                  <ChevronLeft size={18} />
                 </button>
-                <div className="px-6 flex flex-col items-center justify-center min-w-[140px]">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-accent leading-none mb-1">
+                <div className="px-5 flex flex-col items-center justify-center min-w-[130px]">
+                  <span className="text-[11px] font-mono text-[#F2E75A] leading-none mb-0.5">
                     {format(currentDate, 'yyyy')}
                   </span>
-                  <span className="text-lg font-black tracking-tighter uppercase leading-none">
+                  <span className="text-base font-['Space_Grotesk'] font-semibold tracking-tight text-[#F4F5F1] leading-none">
                     {format(currentDate, 'MMMM')}
                   </span>
                 </div>
-                <button 
+                <button
                   onClick={handleNextMonth}
-                  className="p-2.5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-white"
+                  className="p-2 hover:bg-white/5 rounded-full transition-all text-[#8B8E97] hover:text-white"
                 >
-                  <ChevronRight size={20} />
+                  <ChevronRight size={18} />
                 </button>
               </div>
 
               {!isManagerMode && (
-                <button 
+                <button
                   onClick={() => setIsManagerLoginOpen(true)}
-                  className="p-3 rounded-2xl bg-[#1b1e2b] hover:bg-blue-500/10 transition-all text-gray-400 hover:text-blue-400 group"
+                  className="p-2.5 rounded-full bg-[#1B1C22] border border-white/[0.07] hover:border-[#3ED3F2]/40 transition-all text-[#54565F] hover:text-[#3ED3F2] group"
                 >
-                  <ShieldAlert size={20} className="group-hover:scale-110 transition-transform" />
+                  <ShieldAlert size={18} className="group-hover:scale-110 transition-transform" />
                 </button>
               )}
             </div>
