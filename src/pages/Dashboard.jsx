@@ -620,41 +620,41 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8 space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-[#0e1017]">
+    <div className="p-4 md:p-8 space-y-8 w-full max-w-[1600px] mx-auto min-h-screen bg-[#0A0A0D] text-[#F4F5F1] font-sans">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+          <h1 className="font-['Space_Grotesk'] text-3xl md:text-4xl font-semibold tracking-tight text-[#F4F5F1]">
             Overview
           </h1>
-          <p className="text-sm text-[#8e8e93] font-medium mt-1">Falme Staff Portal</p>
+          <p className="text-sm text-[#8B8E97] mt-1">Falme Staff Portal & Operations</p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
            <div className="flex flex-col items-end">
-             <span className="text-xs font-medium text-[#8e8e93] mb-1">Current Shift</span>
-             <span className="text-sm font-semibold text-white bg-[#181a26] px-4 py-2 rounded-full">{onDutyInfo.current} Shift</span>
+             <span className="text-[11px] font-mono text-[#54565F] mb-0.5">Current Shift</span>
+             <span className="text-xs font-semibold text-[#F4F5F1] bg-[#1B1C22] border border-white/[0.07] px-3.5 py-1.5 rounded-full">{onDutyInfo.current} Shift</span>
            </div>
-           <div className="bg-[#181a26] rounded-full flex items-center gap-3 px-5 py-2.5">
-              <Clock size={15} className="text-[#baff55]" />
-              <span className="text-sm font-semibold text-white">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+           <div className="bg-[#1B1C22] border border-white/[0.07] rounded-full flex items-center gap-2.5 px-4 py-2">
+              <Clock size={14} className="text-[#00D66B]" />
+              <span className="text-xs font-mono font-semibold text-[#F4F5F1]">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
            </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Main Section */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-6">
           
           <AviatorPulseCard logs={logs} chartData={chartData} />
 
           {/* Quick Access Grid — Premium Card Design */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider">Quick Actions & Workflows</h2>
-              <span className="text-xs text-[#8e8e93]">6 direct access modules</span>
+              <h2 className="text-xs font-semibold text-[#8B8E97] uppercase tracking-wider">Quick Actions &amp; Workflows</h2>
+              <span className="text-xs font-mono text-[#54565F]">6 direct modules</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -664,39 +664,38 @@ const Dashboard = () => {
                   <button 
                     key={res.name} 
                     onClick={() => navigate(res.path + (res.params || ''))}
-                    className="bg-[#131520] hover:bg-[#181b29] border border-white/[0.04] hover:border-white/[0.12] rounded-2xl p-5 transition-all duration-200 group relative flex flex-col justify-between text-left shadow-lg hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 cursor-pointer min-h-[140px]"
+                    className="bg-[#1B1C22] hover:bg-[#232429] border border-white/[0.07] hover:border-white/[0.14] rounded-[22px] p-5 transition-all duration-200 group relative flex flex-col justify-between text-left shadow-lg hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 cursor-pointer min-h-[140px]"
                   >
                     {/* Top Row: Icon + Badge + Arrow */}
                     <div className="flex items-center justify-between w-full mb-3">
                       <div 
-                        className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
-                        style={{ background: res.accentBg }}
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 bg-[#0E0E12] border border-white/[0.05]"
                       >
-                        <Icon size={20} style={{ color: res.color }} />
+                        <Icon size={18} style={{ color: res.color }} />
                       </div>
 
                       <div className="flex items-center gap-2">
                         <span 
-                          className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                          className="text-[10px] font-medium font-mono px-2.5 py-0.5 rounded-full"
                           style={{ 
-                            background: res.accentBg, 
+                            background: `${res.color}15`, 
                             color: res.color 
                           }}
                         >
                           {res.tag}
                         </span>
-                        <div className="w-7 h-7 rounded-full bg-white/5 group-hover:bg-white/10 flex items-center justify-center text-[#8e8e93] group-hover:text-white transition-colors">
-                          <ArrowUpRight size={14} />
+                        <div className="w-6 h-6 rounded-full bg-white/5 group-hover:bg-white/10 flex items-center justify-center text-[#8B8E97] group-hover:text-white transition-colors">
+                          <ArrowUpRight size={13} />
                         </div>
                       </div>
                     </div>
 
                     {/* Bottom Row: Name + Description */}
                     <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-[#baff55] transition-colors leading-snug">
+                      <h3 className="text-sm font-semibold text-[#F4F5F1] group-hover:text-[#00D66B] transition-colors leading-snug">
                         {res.name}
                       </h3>
-                      <p className="text-xs text-[#8e8e93] mt-1 leading-normal line-clamp-1">
+                      <p className="text-xs text-[#8B8E97] mt-1 leading-normal line-clamp-1">
                         {res.desc}
                       </p>
                     </div>
@@ -708,75 +707,75 @@ const Dashboard = () => {
         </div>
 
         {/* Side Deployment Column */}
-        <div className="lg:col-span-4 space-y-8">
+        <div className="lg:col-span-4 space-y-6">
           
           {/* Shift Rota Card */}
-          <div className="bg-[#131520] rounded-[28px] p-6 md:p-8 h-full flex flex-col relative group cursor-pointer shadow-2xl" onClick={() => navigate('/rota')}>
-            <div className="absolute top-4 right-4 w-10 h-10 bg-[#1b1e2b] rounded-full flex items-center justify-center transition-all">
-              <ArrowUpRight size={18} className="text-white" />
+          <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[28px] p-6 md:p-7 flex flex-col relative group cursor-pointer shadow-xl" onClick={() => navigate('/rota')}>
+            <div className="absolute top-5 right-5 w-8 h-8 bg-[#232429] border border-white/[0.07] rounded-full flex items-center justify-center transition-all group-hover:bg-[#00D66B] group-hover:text-black">
+              <ArrowUpRight size={14} className="text-[#8B8E97] group-hover:text-black transition-colors" />
             </div>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-white">Staff on Duty</h3>
-                <p className="text-sm text-[#8e8e93] mt-1">Shift schedule</p>
+                <h3 className="font-['Space_Grotesk'] text-lg font-semibold text-[#F4F5F1]">Staff on Duty</h3>
+                <p className="text-xs text-[#8B8E97] mt-0.5">Today's active shifts</p>
               </div>
-              <Calendar size={20} className="text-[#8e8e93]" />
             </div>
 
-            <div className="space-y-4 flex-1">
+            <div className="space-y-3 flex-1">
               {[
-                { id: 'AM', label: 'Morning', time: '07:30 - 15:30', names: onDutyInfo.AM, color: '#ffa64d' },
-                { id: 'PM', label: 'Afternoon', time: '15:30 - 22:30', names: onDutyInfo.PM, color: '#baff55' },
-                { id: 'NT', label: 'Night', time: '22:30 - 07:30', names: onDutyInfo.NT, color: '#3b82f6' },
+                { id: 'AM', label: 'Morning', time: '07:30 - 15:30', names: onDutyInfo.AM, color: '#3ED3F2' },
+                { id: 'PM', label: 'Afternoon', time: '15:30 - 22:30', names: onDutyInfo.PM, color: '#00D66B' },
+                { id: 'NT', label: 'Night', time: '22:30 - 07:30', names: onDutyInfo.NT, color: '#F2E75A' },
               ].map(shift => {
                 const isCurrent = onDutyInfo.current === shift.id;
                 
                 return (
                   <div 
                     key={shift.id} 
-                    className={`relative p-5 rounded-2xl transition-all ${
+                    className={`relative p-4 rounded-[18px] transition-all border ${
                       isCurrent 
-                        ? 'bg-[#1b221a]' 
-                        : 'bg-[#181a24] opacity-50'
+                        ? 'bg-[#0E0E12] border-[#00D66B]/30 shadow-md' 
+                        : 'bg-[#0E0E12]/60 border-white/[0.04] opacity-60'
                     }`}
                   >
                     {isCurrent && (
-                      <div className="absolute top-4 right-5 flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-[#baff55]" />
-                        <span className="text-xs font-semibold text-[#baff55]">Active</span>
+                      <div className="absolute top-3.5 right-4 flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#00D66B] animate-pulse" />
+                        <span className="text-[11px] font-medium text-[#00D66B]">Active</span>
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#0d0e15]">
-                        <Clock size={16} style={{ color: shift.color }} />
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#1B1C22] border border-white/[0.05]">
+                        <Clock size={14} style={{ color: shift.color }} />
                       </div>
                       <div>
-                        <span className="block text-sm font-semibold text-white">{shift.label}</span>
-                        <span className="text-xs text-[#8e8e93] mt-0.5 block">{shift.time}</span>
+                        <span className="block text-xs font-semibold text-[#F4F5F1]">{shift.label}</span>
+                        <span className="text-[11px] font-mono text-[#54565F] block">{shift.time}</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {shift.names.map(name => (
-                        <div key={name} className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-[#0d0e15]">
-                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: STAFF_COLORS[name] || '#3a3b3f' }} />
-                           <span className="text-xs font-medium text-white">{name}</span>
+                        <div key={name} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1C22] border border-white/[0.05]">
+                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STAFF_COLORS[name] || '#54565F' }} />
+                           <span className="text-[11px] font-medium text-[#F4F5F1]">{name}</span>
                         </div>
                       ))}
-                      {shift.names.length === 0 && <span className="text-xs text-[#8e8e93] italic">No Deployment</span>}
+                      {shift.names.length === 0 && <span className="text-xs text-[#54565F] italic">No Deployment</span>}
                     </div>
                   </div>
                 );
               })}
             </div>
             
-            <div className="mt-8 pt-6 space-y-3">
+            <div className="mt-6 pt-4 border-t border-white/[0.05]">
               <button 
                 onClick={(e) => { e.stopPropagation(); navigate('/templates'); }}
-                className="w-full bg-[#1b1e2b] hover:bg-[#242838] text-white font-medium py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all"
+                className="w-full bg-[#232429] hover:bg-white/10 border border-white/[0.07] text-[#F4F5F1] font-medium py-2.5 px-5 rounded-full flex items-center justify-center gap-2 text-xs transition-all cursor-pointer"
               >
-                Admin Templates <ArrowUpRight size={14} />
+                <span>Open Templates</span>
+                <ArrowUpRight size={13} />
               </button>
             </div>
           </div>

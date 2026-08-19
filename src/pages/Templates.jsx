@@ -607,6 +607,38 @@ export default function Templates() {
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+  // Manual Resizable Category Sidebar Width (Desktop)
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('betfalme_templates_sidebar_width');
+    return saved ? parseInt(saved, 10) : 320;
+  });
+  const isResizingRef = useRef(false);
+
+  const handleMouseDownResize = useCallback((e) => {
+    e.preventDefault();
+    isResizingRef.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handleMouseMove = (event) => {
+      if (!isResizingRef.current) return;
+      const newWidth = Math.min(500, Math.max(220, event.clientX - 16));
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      localStorage.setItem('betfalme_templates_sidebar_width', sidebarWidth.toString());
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }, [sidebarWidth]);
+
   const [outputs, setOutputs] = useState({
     standard: 'Greetings from the Betfalme support desk, how can I assist you today? Please provide details regarding your inquiry so I can look into this for you immediately.',
     lively: 'Hi there! Welcome to Betfalme support. I am ready to assist you right away, so please share the details of your request below so we can get started.',
@@ -619,14 +651,14 @@ export default function Templates() {
   const [copiedType, setCopiedType] = useState(null);
   const [toast, setToast] = useState(null);
 
-  const historyRef = useRef({});
   const activeRequestIdRef = useRef(0);
+  const historyRef = useRef({});
   const searchInputRef = useRef(null);
 
   const showToast = useCallback((message, type = 'success') => {
-    const id = Date.now().toString();
+    const id = Date.now();
     setToast({ id, message, type });
-    setTimeout(() => setToast(prev => prev?.id === id ? null : prev), 2200);
+    setTimeout(() => setToast(prev => prev?.id === id ? null : prev), 3000);
   }, []);
 
   useEffect(() => {
@@ -634,18 +666,19 @@ export default function Templates() {
     setApiKey(getStoredApiKey());
   }, []);
 
-  const handleSaveApiKey = useCallback((newKey) => {
-    setStoredApiKey(newKey);
-    setApiKey(getStoredApiKey());
-    showToast(newKey ? 'API Key saved' : 'API Key removed', 'info');
+  const handleSaveApiKey = useCallback((key) => {
+    setStoredApiKey(key);
+    setApiKey(key);
+    showToast(key ? 'API Key saved' : 'API Key removed', 'info');
   }, [showToast]);
 
-  const generateResponses = useCallback(async ({ baseText, catTitle, subId, subTitle, toneId, bypassCache = true }) => {
-    if (!baseText || !baseText.trim()) return;
+  const generateResponses = useCallback(async ({ baseText, catTitle, subId, subTitle, toneId, bypassCache }) => {
+    if (!baseText.trim()) return;
     const currentRequestId = ++activeRequestIdRef.current;
-    setErrorMessage(null);
     setIsGeneratingAll(true);
     setLoadingStates({ standard: true, lively: true, short: true });
+    setErrorMessage(null);
+
     const subKey = subId || 'custom';
     const subHistory = historyRef.current[subKey] || { standard: [], lively: [], short: [] };
 
@@ -721,13 +754,22 @@ export default function Templates() {
   }, [customText, selectedSub, selectedVariantLabel]);
 
   const handleGenerateAll = useCallback((bypassCache = true) => {
-    const textToUse = currentBaseText || selectedSub?.variants[0]?.text || '';
-    if (!textToUse.trim()) { setErrorMessage('Please select a template or enter custom text.'); return; }
-    generateResponses({ baseText: textToUse, catTitle: selectedCat?.title, subId: selectedSub?.id, subTitle: selectedSub?.title, toneId: selectedToneId, bypassCache: true });
-  }, [currentBaseText, selectedToneId, selectedCat, selectedSub, generateResponses]);
+    if (!currentBaseText.trim()) {
+      showToast('Please enter text to generate variations', 'error');
+      return;
+    }
+    generateResponses({
+      baseText: currentBaseText,
+      catTitle: selectedCat?.title,
+      subId: selectedSub?.id,
+      subTitle: selectedSub?.title,
+      toneId: selectedToneId,
+      bypassCache
+    });
+  }, [currentBaseText, selectedCat, selectedSub, selectedToneId, generateResponses, showToast]);
 
   const handleRegenerateSingle = useCallback(async (type) => {
-    const textToUse = currentBaseText || selectedSub?.variants[0]?.text || '';
+    const textToUse = currentBaseText;
     if (!textToUse.trim()) return;
     setLoadingStates(prev => ({ ...prev, [type]: true }));
     const subKey = selectedSub?.id || 'custom';
@@ -781,21 +823,21 @@ export default function Templates() {
   const totalSubsections = categories.reduce((acc, cat) => acc + cat.subsections.length, 0);
 
   return (
-    <div className="min-h-screen bg-[#0e1017] text-white flex flex-col selection:bg-[#baff55]/30 selection:text-[#baff55]">
+    <div className="min-h-screen bg-[#0A0A0D] text-[#F4F5F1] flex flex-col selection:bg-[#00D66B]/30 selection:text-[#00D66B] font-sans">
       {/* ── Top Header Bar ── */}
-      <header className="sticky top-0 z-30 bg-[#0e1017] border-b border-white/5 px-4 sm:px-6 md:px-8 py-3.5 select-none">
+      <header className="sticky top-0 z-30 bg-[#0A0A0D]/95 backdrop-blur-xl border-b border-white/[0.07] px-4 sm:px-6 md:px-8 py-3.5 select-none">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:gap-4">
           {/* Left branding */}
           <div className="flex items-center justify-between md:justify-start gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-2xl bg-[#baff55] text-black font-bold flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-2xl bg-[#00D66B] text-[#04170D] font-bold flex items-center justify-center shrink-0 shadow-sm">
                 <Zap className="w-5 h-5 fill-current" />
               </div>
               <div>
-                <h1 className="text-base font-bold tracking-tight text-white leading-none">
+                <h1 className="font-['Space_Grotesk'] text-base font-semibold tracking-tight text-[#F4F5F1] leading-none">
                   Templates
                 </h1>
-                <span className="text-xs text-[#8e8e93] block mt-1">
+                <span className="text-xs text-[#8B8E97] block mt-1">
                   Response Library
                 </span>
               </div>
@@ -806,14 +848,14 @@ export default function Templates() {
               <button
                 onClick={() => setShowOnlyFavorites(prev => !prev)}
                 className={`p-2 text-xs rounded-full flex items-center gap-1 border ${
-                  showOnlyFavorites ? 'bg-amber-400/20 text-amber-400 border-amber-400/30' : 'bg-[#131520] border-white/5 text-[#8e8e93]'
+                  showOnlyFavorites ? 'bg-amber-400/20 text-amber-400 border-amber-400/30' : 'bg-[#1B1C22] border-white/5 text-[#8B8E97]'
                 }`}
               >
                 <Star className={`w-4 h-4 ${showOnlyFavorites ? 'fill-current' : ''}`} />
               </button>
               <button
                 onClick={() => setIsKeyModalOpen(true)}
-                className="w-8 h-8 rounded-full bg-[#131520] border border-white/5 text-[#8e8e93] flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-[#1B1C22] border border-white/5 text-[#8B8E97] flex items-center justify-center"
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -822,7 +864,7 @@ export default function Templates() {
 
           {/* Center Search Input */}
           <div className="relative w-full md:w-80 lg:w-[460px]">
-            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-[#8e8e93]" />
+            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-[#54565F]" />
             <input
               ref={searchInputRef}
               id="templates-search-input"
@@ -830,13 +872,13 @@ export default function Templates() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search templates, triggers, or codes (e.g. 2.1)..."
-              className="w-full bg-[#131520] hover:bg-[#191c2b] focus:bg-[#191c2b] border border-white/5 focus:border-[#baff55] rounded-full pl-11 pr-12 py-2.5 sm:py-3 text-xs text-white placeholder-[#8e8e93] focus:outline-none transition-all"
+              className="w-full bg-[#1B1C22] hover:bg-[#232429] focus:bg-[#232429] border border-white/[0.07] focus:border-[#00D66B] rounded-full pl-11 pr-12 py-2.5 sm:py-3 text-xs text-[#F4F5F1] placeholder-[#54565F] focus:outline-none transition-all font-mono"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {searchQuery ? (
-                <button onClick={() => setSearchQuery('')} className="text-[10px] text-[#8e8e93] hover:text-white px-2 py-0.5 rounded-full bg-[#191c2b]"><X className="w-3 h-3" /></button>
+                <button onClick={() => setSearchQuery('')} className="text-[10px] text-[#8B8E97] hover:text-white px-2 py-0.5 rounded-full bg-[#0E0E12]"><X className="w-3 h-3" /></button>
               ) : (
-                <kbd className="hidden sm:inline-flex items-center text-[10px] font-mono font-bold text-[#8e8e93] bg-[#191c2b] border border-white/5 px-2 py-0.5 rounded-full">
+                <kbd className="hidden sm:inline-flex items-center text-[10px] font-mono font-bold text-[#54565F] bg-[#0E0E12] border border-white/5 px-2 py-0.5 rounded-full">
                   ⌘K
                 </kbd>
               )}
@@ -847,11 +889,11 @@ export default function Templates() {
           <div className="hidden md:flex items-center gap-4">
             <button
               onClick={() => setShowOnlyFavorites(prev => !prev)}
-              className={`flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full transition-all cursor-pointer border ${
-                showOnlyFavorites ? 'bg-amber-400/10 text-amber-400 border-amber-400/30' : 'bg-[#131520] border-white/5 text-[#8e8e93] hover:text-white hover:bg-[#191c2b]'
+              className={`flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-full transition-all cursor-pointer border ${
+                showOnlyFavorites ? 'bg-amber-400/10 text-amber-400 border-amber-400/30' : 'bg-[#1B1C22] border-white/[0.07] text-[#8B8E97] hover:text-white hover:bg-[#232429]'
               }`}
             >
-              <Star className={`w-3.5 h-3.5 ${showOnlyFavorites ? 'fill-current text-amber-400' : 'text-[#8e8e93]'}`} />
+              <Star className={`w-3.5 h-3.5 ${showOnlyFavorites ? 'fill-current text-amber-400' : 'text-[#8B8E97]'}`} />
               <span>Starred</span>
               {favoriteIds.length > 0 && (
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 font-bold">
@@ -860,17 +902,17 @@ export default function Templates() {
               )}
             </button>
 
-            <div className="text-xs text-[#8e8e93] flex items-center gap-1.5">
-              <span className="text-white font-bold">{categories.length}</span>
+            <div className="text-xs text-[#54565F] flex items-center gap-1.5 font-mono">
+              <span className="text-[#F4F5F1] font-bold">{categories.length}</span>
               <span>categories</span>
               <span>·</span>
-              <span className="text-white font-bold">{totalSubsections}</span>
+              <span className="text-[#F4F5F1] font-bold">{totalSubsections}</span>
               <span>templates</span>
             </div>
 
             <button
               onClick={() => setIsKeyModalOpen(true)}
-              className="w-9 h-9 rounded-full bg-[#131520] border border-white/5 hover:border-white/20 text-[#8e8e93] hover:text-white flex items-center justify-center cursor-pointer transition-all"
+              className="w-9 h-9 rounded-full bg-[#1B1C22] border border-white/[0.07] hover:border-white/20 text-[#8B8E97] hover:text-white flex items-center justify-center cursor-pointer transition-all"
               title="API Key Settings"
             >
               <Settings className="w-4 h-4" />
@@ -879,10 +921,14 @@ export default function Templates() {
         </div>
       </header>
 
-      {/* ── Main 3-Column Zonal Grid ── */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-start">
-        {/* Column 1: Category Sidebar (3 cols) */}
-        <section className="lg:col-span-3 lg:sticky lg:top-[84px]">
+      {/* ── Main Resizable Layout ── */}
+      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 md:p-8 flex flex-col lg:flex-row gap-5 md:gap-6 items-start">
+        
+        {/* Column 1: Category Sidebar (Manual Resizable on Desktop) */}
+        <section 
+          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${sidebarWidth}px` : '100%' }}
+          className="shrink-0 lg:sticky lg:top-[84px] relative"
+        >
           <CategoryList
             categories={categories}
             selectedSub={selectedSub}
@@ -896,42 +942,54 @@ export default function Templates() {
           />
         </section>
 
-        {/* Column 2: Template Workspace (5 cols) */}
-        <section className="lg:col-span-5">
-          <WorkspacePanel
-            currentCat={selectedCat}
-            currentSub={selectedSub}
-            selectedVariantLabel={selectedVariantLabel}
-            onSelectVariant={handleSelectVariant}
-            useCustom={useCustom}
-            onToggleCustom={handleToggleCustom}
-            customText={customText}
-            onCustomTextChange={setCustomText}
-            currentBaseText={currentBaseText}
-            tones={TONES}
-            selectedToneId={selectedToneId}
-            onSelectTone={handleSelectTone}
-            isGenerating={isGeneratingAll}
-            onGenerate={() => handleGenerateAll(true)}
-            errorMessage={errorMessage}
-            isFavorite={selectedSub ? favoriteIds.includes(selectedSub.id) : false}
-            onToggleFavorite={selectedSub ? () => handleToggleFavorite(selectedSub.id) : undefined}
-            onOpenKeyModal={() => setIsKeyModalOpen(true)}
-            hasApiKey={!!apiKey}
-          />
-        </section>
+        {/* Resizer Drag Handle (Desktop only) */}
+        <div
+          onMouseDown={handleMouseDownResize}
+          className="hidden lg:flex flex-col justify-center items-center w-2 -mx-3 self-stretch cursor-col-resize z-20 group hover:w-3 transition-all select-none"
+          title="Drag to resize Category column"
+        >
+          <div className="w-[3px] h-12 rounded-full bg-white/10 group-hover:bg-[#00D66B] transition-colors" />
+        </div>
 
-        {/* Column 3: AI Variations Rail (4 cols) */}
-        <section className="lg:col-span-4">
-          <AlternativesPanel
-            outputs={outputs}
-            loadingStates={loadingStates}
-            copiedType={copiedType}
-            onCopy={handleCopy}
-            onUseAsBase={handleUseAsBase}
-            onRegenerateSingle={handleRegenerateSingle}
-          />
-        </section>
+        {/* Column 2 & 3: Template Workspace & AI Variations Rail (Flex-1) */}
+        <div className="flex-1 min-w-0 w-full grid grid-cols-1 xl:grid-cols-12 gap-5 md:gap-6">
+          {/* Workspace (7 cols) */}
+          <section className="xl:col-span-7">
+            <WorkspacePanel
+              currentCat={selectedCat}
+              currentSub={selectedSub}
+              selectedVariantLabel={selectedVariantLabel}
+              onSelectVariant={handleSelectVariant}
+              useCustom={useCustom}
+              onToggleCustom={handleToggleCustom}
+              customText={customText}
+              onCustomTextChange={setCustomText}
+              currentBaseText={currentBaseText}
+              tones={TONES}
+              selectedToneId={selectedToneId}
+              onSelectTone={handleSelectTone}
+              isGenerating={isGeneratingAll}
+              onGenerate={() => handleGenerateAll(true)}
+              errorMessage={errorMessage}
+              isFavorite={selectedSub ? favoriteIds.includes(selectedSub.id) : false}
+              onToggleFavorite={selectedSub ? () => handleToggleFavorite(selectedSub.id) : undefined}
+              onOpenKeyModal={() => setIsKeyModalOpen(true)}
+              hasApiKey={!!apiKey}
+            />
+          </section>
+
+          {/* AI Variations Rail (5 cols) */}
+          <section className="xl:col-span-5">
+            <AlternativesPanel
+              outputs={outputs}
+              loadingStates={loadingStates}
+              copiedType={copiedType}
+              onCopy={handleCopy}
+              onUseAsBase={handleUseAsBase}
+              onRegenerateSingle={handleRegenerateSingle}
+            />
+          </section>
+        </div>
       </main>
 
       <ApiKeyModal

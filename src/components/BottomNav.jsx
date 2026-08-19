@@ -119,14 +119,14 @@ const BottomNav = ({ className }) => {
                 className="no-underline flex-1 min-w-0 flex justify-center"
               >
                 <div className={`relative flex flex-col items-center justify-center gap-1 px-1.5 py-2 rounded-2xl transition-all w-full max-w-[54px] ${
-                  isActive ? 'bg-[#baff55] shadow-lg scale-105' : 'bg-transparent text-gray-400 hover:text-white'
+                  isActive ? 'bg-[#00D66B] shadow-lg scale-105' : 'bg-transparent text-gray-400 hover:text-white'
                 }`}>
                   <Icon 
                     size={17} 
-                    className={isActive ? 'text-black' : 'text-gray-400'} 
+                    className={isActive ? 'text-[#04170D]' : 'text-gray-400'} 
                   />
                   <span className={`text-[8px] font-semibold truncate w-full text-center leading-tight ${
-                    isActive ? 'text-black font-bold' : 'text-gray-400'
+                    isActive ? 'text-[#04170D] font-bold' : 'text-gray-400'
                   }`}>
                     {item.label.split(' ')[0]}
                   </span>
@@ -153,19 +153,12 @@ const BottomNav = ({ className }) => {
           {isCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
         </button>
 
-        {/* Top Window Controls + Brand Squircle */}
+        {/* Top Window Header + Brand Squircle */}
         <div className={`px-5 mb-6 flex flex-col gap-4 ${isCollapsed ? 'items-center px-2' : ''}`}>
-          {/* macOS window dots */}
-          <div className="flex items-center gap-1.5 opacity-60">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-          </div>
-
           {/* Squircle Brand Badge */}
-          <NavLink to="/" className="no-underline flex items-center gap-3 group mt-1">
-            <div className="w-10 h-10 rounded-[14px] bg-white text-black flex items-center justify-center shadow-lg font-black text-xl tracking-tighter shrink-0 transition-transform group-hover:scale-105">
-              <span className="w-4 h-4 rounded-full border-[3.5px] border-black inline-block" />
+          <NavLink to="/" className="no-underline flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-[14px] bg-[#00D66B] text-[#04170D] flex items-center justify-center shadow-lg font-black text-xl tracking-tighter shrink-0 transition-transform group-hover:scale-105">
+              <span className="w-4 h-4 rounded-full border-[3.5px] border-[#04170D] inline-block" />
             </div>
             {!isCollapsed && (
               <motion.div
@@ -199,9 +192,9 @@ const BottomNav = ({ className }) => {
                 onMouseLeave={() => isCollapsed && setHoveredItem(null)}
               >
                 <div
-                  onClick={() => {
+                  onClick={(e) => {
                     if (hasSub && !isCollapsed) {
-                      setOpenSubMenus(prev => ({ ...prev, [item.path]: !prev[item.path] }));
+                      toggleSubMenu(item.path, e);
                     } else {
                       navigate(item.path);
                     }
@@ -210,14 +203,14 @@ const BottomNav = ({ className }) => {
                     isActive && !isCollapsed
                       ? 'bg-[#1a1c24] text-white font-bold'
                       : isActive && isCollapsed
-                      ? 'bg-[#baff55] text-black shadow-md'
+                      ? 'bg-[#00D66B] text-[#04170D] shadow-md'
                       : 'text-gray-400 hover:text-white hover:bg-white/[0.03]'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <Icon 
                       size={18} 
-                      className={`shrink-0 ${isActive && isCollapsed ? 'text-black' : isActive ? 'text-[#baff55]' : 'text-gray-400'}`} 
+                      className={`shrink-0 ${isActive && isCollapsed ? 'text-[#04170D]' : isActive ? 'text-[#00D66B]' : 'text-gray-400'}`} 
                     />
                     {!isCollapsed && (
                       <span className="text-xs tracking-tight truncate">

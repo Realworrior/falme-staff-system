@@ -3163,25 +3163,25 @@ export default function Resources() {
   }, []);
 
   return (
-    <div className="p-4 md:p-8 space-y-6 w-full max-w-[1600px] mx-auto min-h-screen bg-[#0e1017] text-white">
+    <div className="p-4 md:p-8 space-y-6 w-full max-w-[1600px] mx-auto min-h-screen bg-[#0A0A0D] text-[#F4F5F1] font-sans">
       {/* ── Page Header & Section Switcher ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-2xl bg-[#1b1e2b] flex items-center justify-center text-[#8b5cf6]">
-              <BookOpen size={20} />
+            <div className="w-9 h-9 rounded-2xl bg-[#00D66B] text-[#04170D] font-bold flex items-center justify-center shadow-sm">
+              <BookOpen size={18} />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-              Knowledge & Guidelines
+            <h1 className="font-['Space_Grotesk'] text-2xl md:text-3xl font-semibold tracking-tight text-[#F4F5F1]">
+              Knowledge &amp; Guidelines
             </h1>
           </div>
-          <p className="text-sm text-[#8e8e93] font-medium mt-1">
+          <p className="text-xs text-[#8B8E97] mt-0.5">
             Betting markets reference and agent operational procedures
           </p>
         </div>
 
         {/* Section switcher tabs */}
-        <div className="flex items-center bg-[#131520] p-1.5 rounded-2xl border border-white/[0.06] self-start md:self-auto shadow-lg">
+        <div className="flex items-center bg-[#1B1C22] p-1 rounded-full border border-white/[0.07] self-start md:self-auto shadow-md">
           {(
             [
               {
@@ -3205,13 +3205,13 @@ export default function Resources() {
               <button
                 key={s.id}
                 onClick={() => setSection(s.id)}
-                className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-medium transition-all cursor-pointer ${
                   isActive
-                    ? "bg-[#baff55] text-black shadow-md font-bold"
-                    : "text-[#8e8e93] hover:text-white bg-transparent"
+                    ? "bg-[#00D66B] text-[#04170D] font-semibold shadow"
+                    : "text-[#54565F] hover:text-[#8B8E97] bg-transparent"
                 }`}
               >
-                <RenderIcon icon={s.icon} size={15} />
+                <RenderIcon icon={s.icon} size={14} />
                 <span>{s.label}</span>
               </button>
             );

@@ -267,12 +267,26 @@ const SlotTracker = () => {
               {/* Center Round Dots Divider Icon */}
               <div 
                 onClick={() => logFailure('Both')}
-                className="hidden sm:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[34px] h-[34px] rounded-full bg-[#232429] border border-white/[0.14] items-center justify-center text-[#8B8E97] hover:text-[#F4F5F1] hover:scale-105 transition-all cursor-pointer z-10 shadow-md"
+                className="hidden sm:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[36px] h-[36px] rounded-full bg-[#232429] border border-white/[0.14] items-center justify-center text-[#8B8E97] hover:text-[#00D66B] hover:scale-110 active:scale-95 transition-all cursor-pointer z-10 shadow-md group"
                 title="Log failure on Both Slots"
               >
-                <MoreVertical size={14} />
+                <MoreVertical size={15} className="group-hover:text-[#00D66B] transition-colors" />
               </div>
 
+            </div>
+
+            {/* Both Slots Action Bar */}
+            <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-3.5 sm:px-5 flex flex-col sm:flex-row items-center justify-between gap-3 mb-5">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+                <span className="text-xs font-medium text-[#8B8E97]">Both slots experiencing failure simultaneously?</span>
+              </div>
+              <button
+                onClick={() => logFailure('Both')}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#232429] hover:bg-red-500/20 border border-white/[0.1] hover:border-red-500/40 text-[#F4F5F1] hover:text-red-300 font-semibold text-xs rounded-full px-5 py-2.5 transition-all cursor-pointer active:scale-95 shadow-sm"
+              >
+                <span>Log Both Slots »</span>
+              </button>
             </div>
 
             {/* Bottom Help Text */}
