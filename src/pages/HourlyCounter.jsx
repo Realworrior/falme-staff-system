@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { 
   Copy, 
   Check, 
@@ -12,7 +12,8 @@ import {
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
 
-// Format time string consistently across all environments (e.g. "7:00 AM", "12:00 PM")
+// ─── Time Helpers ──────────────────────────────────────────────────────────────
+
 function formatWindowHour(d) {
   let h = d.getHours();
   const ampm = h >= 12 ? 'PM' : 'AM';
@@ -29,345 +30,323 @@ function formatWindowHourShort(d) {
   return `${h}:00`;
 }
 
-// Calculate shift windows (1:00 AM - 7:00 AM combined bracket, standard 1-hour brackets for the rest)
 function getShiftWindow(dateInput) {
   const date = new Date(dateInput);
   const hour = date.getHours();
 
-  // 1:00 AM to 7:00 AM night window (hours 1, 2, 3, 4, 5, 6)
   if (hour >= 1 && hour < 7) {
-    const start = new Date(date);
-    start.setHours(1, 0, 0, 0);
-    const end = new Date(date);
-    end.setHours(7, 0, 0, 0);
+    const start = new Date(date); start.setHours(1, 0, 0, 0);
+    const end   = new Date(date); end.setHours(7, 0, 0, 0);
     return {
-      startTime: start,
-      endTime: end,
+      startTime: start, endTime: end,
       timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
       timeRangeShort: `1:00–7:00 AM`,
       startTimeCap: formatWindowHour(start),
       isNightShift: true
     };
-  } else {
-    // 1-hour standard window (e.g., 7:00 AM – 8:00 AM, 12:00 PM – 1:00 PM)
-    const start = new Date(date);
-    start.setMinutes(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setHours(end.getHours() + 1);
-    const endAmpm = end.getHours() >= 12 ? 'PM' : 'AM';
-    return {
-      startTime: start,
-      endTime: end,
-      timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
-      timeRangeShort: `${formatWindowHourShort(start)}–${formatWindowHourShort(end)} ${endAmpm}`,
-      startTimeCap: formatWindowHour(start),
-      isNightShift: false
-    };
   }
+
+  const start = new Date(date); start.setMinutes(0, 0, 0, 0);
+  const end   = new Date(start); end.setHours(end.getHours() + 1);
+  return {
+    startTime: start, endTime: end,
+    timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
+    timeRangeShort: `${formatWindowHourShort(start)}–${formatWindowHourShort(end)} ${end.getHours() >= 12 ? 'PM' : 'AM'}`,
+    startTimeCap: formatWindowHour(start),
+    isNightShift: false
+  };
 }
 
-// Generate time window string with forward/backward step support
 function generateHourRange(shiftStep = 0) {
   let date = new Date();
-  
   if (shiftStep !== 0) {
     let steps = Math.abs(shiftStep);
-    let direction = shiftStep > 0 ? 1 : -1;
-    
+    const direction = shiftStep > 0 ? 1 : -1;
     while (steps > 0) {
       const window = getShiftWindow(date);
-      if (direction > 0) {
-        date = new Date(window.endTime.getTime() + 1000);
-      } else {
-        date = new Date(window.startTime.getTime() - 1000);
-      }
+      date = direction > 0
+        ? new Date(window.endTime.getTime() + 1000)
+        : new Date(window.startTime.getTime() - 1000);
       steps--;
     }
   }
-
   return getShiftWindow(date).timeRange;
 }
 
-const DEFAULT_HOURLY_COUNTER = {
-  id: 'hourly_counter_global',
-  transactionCode: '__HOURLY_COUNTER__',
-  timeRange: generateHourRange(0),
-  depositCount: 0,
-  withdrawalCount: 0,
-  depositIcon: 'check',
-  depositLabel: 'Deposit completed',
-  withdrawalIcon: 'check',
-  withdrawalLabel: 'Completed withdrawal',
-  lastActiveHour: new Date().getHours()
-};
+// ─── Default State ─────────────────────────────────────────────────────────────
+
+function buildDefaultCounter() {
+  return {
+    id: 'hourly_counter_global',
+    transactionCode: '__HOURLY_COUNTER__',
+    timeRange: generateHourRange(0),
+    depositCount: 0,
+    withdrawalCount: 0,
+    depositLabel: 'Deposit completed',
+    withdrawalLabel: 'Completed withdrawal',
+    lastActiveHour: new Date().getHours()
+  };
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────────
 
 export default function HourlyCounter() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [copiedActiveCounter, setCopiedActiveCounter] = useState(false);
-  const [shiftStepOffset, setShiftStepOffset] = useState(0);
 
   const toast = useToast();
   const addToast = toast?.addToast || toast?.showToast || (() => {});
 
-  // Hourly Counter State
+  // ── State ─────────────────────────────────────────────────────────────────
   const [counterState, setCounterState] = useState(() => {
-    const saved = localStorage.getItem("betfalme_mpesa_hourly_counter");
-    return saved ? JSON.parse(saved) : DEFAULT_HOURLY_COUNTER;
+    try {
+      const saved = localStorage.getItem("betfalme_mpesa_hourly_counter");
+      return saved ? { ...buildDefaultCounter(), ...JSON.parse(saved) } : buildDefaultCounter();
+    } catch { return buildDefaultCounter(); }
   });
 
-  // Analytics History State
   const [analyticsHistory, setAnalyticsHistory] = useState(() => {
-    const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
   });
 
-  // Save counter state to localStorage
+  // Flag to prevent realtime echo from overwriting our own optimistic writes
+  const suppressRealtimeUntil = useRef(0);
+
+  // ── Persist to localStorage ───────────────────────────────────────────────
   useEffect(() => {
     localStorage.setItem("betfalme_mpesa_hourly_counter", JSON.stringify(counterState));
   }, [counterState]);
 
-  // Save analytics history to localStorage
   useEffect(() => {
     localStorage.setItem("betfalme_mpesa_analytics_history", JSON.stringify(analyticsHistory));
   }, [analyticsHistory]);
 
-  // Sync Analytics to Supabase
-  const syncAnalyticsToSupabase = async (updatedHistory) => {
+  // ── Supabase Sync (write-only from our side) ──────────────────────────────
+  const syncCounterToSupabase = useCallback(async (state) => {
     try {
-      const record = {
-        id: 'hourly_analytics_history',
-        transactionCode: '__HOURLY_ANALYTICS__',
-        raw: JSON.stringify(updatedHistory),
-        timestamp: new Date().toISOString()
-      };
-      await supabase.from('mpesa_codes').upsert([record]);
-    } catch (err) {
-      console.warn("Failed to sync analytics to Supabase:", err);
-    }
-  };
-
-  // Sync Counter State to Supabase
-  const syncCounterToSupabase = async (updatedState) => {
-    try {
-      const record = {
+      await supabase.from('mpesa_codes').upsert([{
         id: 'hourly_counter_global',
         transactionCode: '__HOURLY_COUNTER__',
-        raw: JSON.stringify(updatedState),
+        raw: JSON.stringify(state),
         timestamp: new Date().toISOString()
-      };
-      await supabase.from('mpesa_codes').upsert([record]);
+      }]);
     } catch (err) {
-      console.warn("Failed to sync counter to Supabase:", err);
+      console.warn("[Counter] Supabase counter sync failed:", err);
     }
-  };
+  }, []);
 
-  // Fetch initial data from Supabase and subscribe to realtime updates
+  const syncAnalyticsToSupabase = useCallback(async (history) => {
+    try {
+      await supabase.from('mpesa_codes').upsert([{
+        id: 'hourly_analytics_history',
+        transactionCode: '__HOURLY_ANALYTICS__',
+        raw: JSON.stringify(history),
+        timestamp: new Date().toISOString()
+      }]);
+    } catch (err) {
+      console.warn("[Counter] Supabase analytics sync failed:", err);
+    }
+  }, []);
+
+  // ── Initial Supabase Fetch + Realtime ─────────────────────────────────────
   useEffect(() => {
-    const fetchEntries = async () => {
+    const fetchInitial = async () => {
       try {
         const { data, error } = await supabase
           .from('mpesa_codes')
           .select('*')
           .in('id', ['hourly_counter_global', 'hourly_analytics_history']);
 
-        if (error) {
-          console.warn("Supabase fetch failed (falling back to local storage):", error.message);
-          return;
+        if (error) { console.warn("[Counter] Supabase fetch error:", error.message); return; }
+        if (!data) return;
+
+        const counterRecord = data.find(r => r.id === 'hourly_counter_global');
+        if (counterRecord?.raw) {
+          try {
+            const parsed = JSON.parse(counterRecord.raw);
+            setCounterState(prev => ({ ...buildDefaultCounter(), ...parsed, id: 'hourly_counter_global', transactionCode: '__HOURLY_COUNTER__' }));
+          } catch (e) { console.error("[Counter] Counter parse error:", e); }
         }
 
-        if (data) {
-          // Counter Record
-          const counterRecord = data.find(item => item.id === 'hourly_counter_global' || item.transactionCode === '__HOURLY_COUNTER__');
-          if (counterRecord && counterRecord.raw) {
-            try {
-              const parsedCounter = JSON.parse(counterRecord.raw);
-              setCounterState((prev) => ({
-                ...prev,
-                ...parsedCounter,
-                id: 'hourly_counter_global',
-                transactionCode: '__HOURLY_COUNTER__'
-              }));
-            } catch (e) {
-              console.error("Error parsing counter record raw data", e);
-            }
-          }
-
-          // Analytics Record
-          const analyticsRecord = data.find(item => item.id === 'hourly_analytics_history' || item.transactionCode === '__HOURLY_ANALYTICS__');
-          if (analyticsRecord && analyticsRecord.raw) {
-            try {
-              const parsedAnalytics = JSON.parse(analyticsRecord.raw);
-              if (Array.isArray(parsedAnalytics)) {
-                setAnalyticsHistory(parsedAnalytics);
-              }
-            } catch (e) {
-              console.error("Error parsing analytics history raw data", e);
-            }
-          }
+        const analyticsRecord = data.find(r => r.id === 'hourly_analytics_history');
+        if (analyticsRecord?.raw) {
+          try {
+            const parsed = JSON.parse(analyticsRecord.raw);
+            if (Array.isArray(parsed)) setAnalyticsHistory(parsed);
+          } catch (e) { console.error("[Counter] Analytics parse error:", e); }
         }
       } catch (err) {
-        console.warn("Supabase connection error:", err);
+        console.warn("[Counter] Supabase connection error:", err);
       }
     };
 
-    fetchEntries();
+    fetchInitial();
 
-    // Subscribe to realtime database changes
+    // Realtime — only apply remote updates if not suppressed (i.e., from another browser/tab)
     const channel = supabase
       .channel('mpesa-hourly-counter-realtime')
       .on('postgres_changes', { event: '*', table: 'mpesa_codes', schema: 'public' }, (payload) => {
-        const newRecord = payload.new;
-        const oldRecord = payload.old;
+        // Ignore echoes from our own writes for 3 seconds
+        if (Date.now() < suppressRealtimeUntil.current) return;
 
-        // Counter Record Realtime
-        if ((newRecord && (newRecord.id === 'hourly_counter_global' || newRecord.transactionCode === '__HOURLY_COUNTER__')) ||
-            (oldRecord && (oldRecord.id === 'hourly_counter_global' || oldRecord.transactionCode === '__HOURLY_COUNTER__'))) {
-          if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && newRecord?.raw) {
-            try {
-              const parsed = JSON.parse(newRecord.raw);
-              setCounterState((prev) => ({ ...prev, ...parsed }));
-            } catch (e) {
-              console.error("Realtime counter parse error", e);
-            }
-          }
-          return;
+        const rec = payload.new;
+        if (!rec?.raw) return;
+
+        if (rec.id === 'hourly_counter_global') {
+          try {
+            const parsed = JSON.parse(rec.raw);
+            setCounterState(prev => ({ ...prev, ...parsed }));
+          } catch (e) { console.error("[Realtime] Counter parse error:", e); }
         }
 
-        // Analytics Record Realtime
-        if ((newRecord && (newRecord.id === 'hourly_analytics_history' || newRecord.transactionCode === '__HOURLY_ANALYTICS__')) ||
-            (oldRecord && (oldRecord.id === 'hourly_analytics_history' || oldRecord.transactionCode === '__HOURLY_ANALYTICS__'))) {
-          if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && newRecord?.raw) {
-            try {
-              const parsed = JSON.parse(newRecord.raw);
-              if (Array.isArray(parsed)) setAnalyticsHistory(parsed);
-            } catch (e) {
-              console.error("Realtime analytics parse error", e);
-            }
-          }
-          return;
+        if (rec.id === 'hourly_analytics_history') {
+          try {
+            const parsed = JSON.parse(rec.raw);
+            if (Array.isArray(parsed)) setAnalyticsHistory(parsed);
+          } catch (e) { console.error("[Realtime] Analytics parse error:", e); }
         }
       })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Auto-Hour Detection & Shift Window Rollover Logic
+  // ── Auto Hour Rollover ────────────────────────────────────────────────────
+  // Uses a ref to access latest state without re-subscribing the interval
+  const counterStateRef = useRef(counterState);
+  const analyticsHistoryRef = useRef(analyticsHistory);
+  useEffect(() => { counterStateRef.current = counterState; }, [counterState]);
+  useEffect(() => { analyticsHistoryRef.current = analyticsHistory; }, [analyticsHistory]);
+
   useEffect(() => {
-    const checkHourRollover = () => {
+    const checkRollover = () => {
       const now = new Date();
       const currentWindow = getShiftWindow(now);
+      const prev = counterStateRef.current;
 
-      setCounterState((prev) => {
-        if (prev.timeRange && prev.timeRange !== currentWindow.timeRange) {
-          const finishedRange = prev.timeRange;
-          const depCount = prev.depositCount || 0;
-          const wthCount = prev.withdrawalCount || 0;
+      // Only trigger rollover if the time window has actually changed
+      if (!prev.timeRange || prev.timeRange === currentWindow.timeRange) return;
 
-          // Auto-archive completed shift to Analytics
-          const archiveEntry = {
-            id: `analytics_${Date.now()}`,
-            timeRange: finishedRange,
-            depositCount: depCount,
-            withdrawalCount: wthCount,
-            copiedAt: new Date().toISOString(),
-            autoArchived: true,
-            date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
-          };
+      const archiveEntry = {
+        id: `analytics_${Date.now()}`,
+        timeRange: prev.timeRange,
+        depositCount: prev.depositCount || 0,
+        withdrawalCount: prev.withdrawalCount || 0,
+        copiedAt: new Date().toISOString(),
+        autoArchived: true,
+        date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
+      };
 
-          setAnalyticsHistory((prevHistory) => {
-            const filtered = prevHistory.filter(h => h.timeRange !== finishedRange);
-            const nextHistory = [archiveEntry, ...filtered];
-            syncAnalyticsToSupabase(nextHistory);
-            return nextHistory;
-          });
+      const nextHistory = [archiveEntry, ...analyticsHistoryRef.current.filter(h => h.timeRange !== prev.timeRange)];
+      setAnalyticsHistory(nextHistory);
+      syncAnalyticsToSupabase(nextHistory);
 
-          // Auto-advance to new shift window and reset active counts
-          const newRange = currentWindow.timeRange;
-          const newState = {
-            ...prev,
-            timeRange: newRange,
-            depositCount: 0,
-            withdrawalCount: 0,
-            lastActiveHour: now.getHours()
-          };
-
-          syncCounterToSupabase(newState);
-          return newState;
-        }
-
-        return prev;
-      });
+      const newState = {
+        ...prev,
+        timeRange: currentWindow.timeRange,
+        depositCount: 0,
+        withdrawalCount: 0,
+        lastActiveHour: now.getHours()
+      };
+      setCounterState(newState);
+      suppressRealtimeUntil.current = Date.now() + 3000;
+      syncCounterToSupabase(newState);
     };
 
-    checkHourRollover();
-    const interval = setInterval(checkHourRollover, 1000);
+    checkRollover();
+    const interval = setInterval(checkRollover, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [syncCounterToSupabase, syncAnalyticsToSupabase]);
 
-  // Counter State Updater
-  const updateCounterState = (updater) => {
-    setCounterState((prev) => {
+  // ── Counter Updater — optimistic + deferred Supabase write ───────────────
+  const updateCounterState = useCallback((updater) => {
+    setCounterState(prev => {
       const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      syncCounterToSupabase(next);
+      // Suppress realtime echo for 3s after our own write
+      suppressRealtimeUntil.current = Date.now() + 3000;
+      // Defer Supabase sync outside the setState call to avoid stale closure
+      setTimeout(() => syncCounterToSupabase(next), 0);
       return next;
     });
-  };
+  }, [syncCounterToSupabase]);
 
-  const handleAdjustCount = (type, delta) => {
-    updateCounterState((prev) => {
+  // ── Increment / Decrement ─────────────────────────────────────────────────
+  const handleAdjustCount = useCallback((type, delta) => {
+    updateCounterState(prev => {
       if (type === 'deposit') {
-        const nextVal = Math.max(0, (prev.depositCount || 0) + delta);
-        return { ...prev, depositCount: nextVal };
-      } else if (type === 'withdrawal') {
-        const nextVal = Math.max(0, (prev.withdrawalCount || 0) + delta);
-        return { ...prev, withdrawalCount: nextVal };
+        return { ...prev, depositCount: Math.max(0, (prev.depositCount || 0) + delta) };
+      }
+      if (type === 'withdrawal') {
+        return { ...prev, withdrawalCount: Math.max(0, (prev.withdrawalCount || 0) + delta) };
       }
       return prev;
     });
-  };
+  }, [updateCounterState]);
 
-  const handleResetCounts = () => {
-    updateCounterState((prev) => ({
-      ...prev,
-      depositCount: 0,
-      withdrawalCount: 0
-    }));
-    addToast("Hour reset", "info");
-  };
+  const handleResetCounts = useCallback(() => {
+    updateCounterState(prev => ({ ...prev, depositCount: 0, withdrawalCount: 0 }));
+    addToast("Hour counters reset", "info");
+  }, [updateCounterState, addToast]);
 
-  const handleStepShift = (step) => {
-    const nextOffset = shiftStepOffset + step;
-    setShiftStepOffset(nextOffset);
-    const newRange = generateHourRange(nextOffset);
-    updateCounterState((prev) => ({
-      ...prev,
-      timeRange: newRange
-    }));
-  };
+  const handleStepShift = useCallback((step) => {
+    setCounterState(prev => {
+      // Compute the new range by stepping from the current stored range's anchor
+      const currentWindowAnchor = (() => {
+        // Walk step direction from current window
+        let date = new Date();
+        // Find the date that matches our current timeRange by comparing
+        // Then step forward/backward from there
+        return null; // fallback to live calculation below
+      })();
 
-  const getFormattedCounterText = (customRange, customDep, customWth) => {
-    const range = customRange || counterState.timeRange || generateHourRange(0);
-    const dCount = customDep ?? counterState.depositCount ?? 0;
-    const wCount = customWth ?? counterState.withdrawalCount ?? 0;
+      // Simpler: just step from "now" using the stored timeRange as reference
+      // Walk N steps in direction from now
+      let date = new Date();
+      const now = getShiftWindow(date);
+      
+      // Figure out how many steps we are from current window
+      // by parsing the stored timeRange and comparing hours
+      // Simplest correct approach: step from NOW
+      let steps = Math.abs(step);
+      const dir = step > 0 ? 1 : -1;
+      // Start from the boundary of the current window in prev state
+      // We'll just use the current real window as origin
+      date = new Date();
+      while (steps > 0) {
+        const w = getShiftWindow(date);
+        date = dir > 0
+          ? new Date(w.endTime.getTime() + 1000)
+          : new Date(w.startTime.getTime() - 1000);
+        steps--;
+      }
+      const newRange = getShiftWindow(date).timeRange;
+      const next = { ...prev, timeRange: newRange };
+      suppressRealtimeUntil.current = Date.now() + 3000;
+      setTimeout(() => syncCounterToSupabase(next), 0);
+      return next;
+    });
+  }, [syncCounterToSupabase]);
+
+  // ── Copy Report ───────────────────────────────────────────────────────────
+  const getFormattedCounterText = (range, dep, wth) => {
     const dLabel = counterState.depositLabel || 'Deposit completed';
     const wLabel = counterState.withdrawalLabel || 'Completed withdrawal';
-
-    return `⏰ *${range}*\n📥 *${dLabel}:* ${dCount}\n📤 *${wLabel}:* ${wCount}`;
+    return `⏰ *${range}*\n📥 *${dLabel}:* ${dep}\n📤 *${wLabel}:* ${wth}`;
   };
 
-  const handleCopyCounterText = async (customRange, customDep, customWth, entryId = 'active') => {
-    const targetRange = customRange || counterState.timeRange || generateHourRange(0);
-    const depVal = customDep !== undefined ? customDep : (counterState.depositCount ?? 0);
-    const wthVal = customWth !== undefined ? customWth : (counterState.withdrawalCount ?? 0);
-    const textToCopy = getFormattedCounterText(targetRange, depVal, wthVal);
+  const handleCopyCounterText = useCallback(async (customRange, customDep, customWth, entryId = 'active') => {
+    const range  = customRange ?? counterState.timeRange ?? generateHourRange(0);
+    const dep    = customDep  !== undefined ? customDep  : (counterState.depositCount    ?? 0);
+    const wth    = customWth  !== undefined ? customWth  : (counterState.withdrawalCount ?? 0);
+    const text   = getFormattedCounterText(range, dep, wth);
 
     try {
-      await navigator.clipboard.writeText(textToCopy);
-      
+      await navigator.clipboard.writeText(text);
+
       if (entryId === 'active') {
         setCopiedActiveCounter(true);
         setTimeout(() => setCopiedActiveCounter(false), 2000);
@@ -376,45 +355,46 @@ export default function HourlyCounter() {
         setTimeout(() => setCopiedId(null), 2000);
       }
 
-      const newAnalyticsEntry = {
+      // Archive to history on copy (deduped by timeRange)
+      const entry = {
         id: entryId !== 'active' && entryId ? entryId : `analytics_${Date.now()}`,
-        timeRange: targetRange,
-        depositCount: depVal,
-        withdrawalCount: wthVal,
+        timeRange: range,
+        depositCount: dep,
+        withdrawalCount: wth,
         copiedAt: new Date().toISOString(),
         date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
       };
 
-      setAnalyticsHistory((prevHistory) => {
-        const filtered = prevHistory.filter(h => h.timeRange !== targetRange);
-        const updated = [newAnalyticsEntry, ...filtered];
-        syncAnalyticsToSupabase(updated);
-        return updated;
+      setAnalyticsHistory(prev => {
+        const next = [entry, ...prev.filter(h => h.timeRange !== range)];
+        syncAnalyticsToSupabase(next);
+        return next;
       });
 
       addToast("Report copied to clipboard", "success");
-    } catch (err) {
+    } catch {
       addToast("Failed to copy report", "error");
     }
-  };
+  }, [counterState, syncAnalyticsToSupabase, addToast]);
 
-  const prevEntry = analyticsHistory.length > 0 ? analyticsHistory[0] : null;
-  const prevRange = prevEntry ? prevEntry.timeRange : generateHourRange(-1);
-  const prevDep = prevEntry ? (prevEntry.depositCount ?? 0) : 0;
-  const prevWth = prevEntry ? (prevEntry.withdrawalCount ?? 0) : 0;
+  // ── Derived Display Values ────────────────────────────────────────────────
+  const prevEntry          = analyticsHistory[0] ?? null;
+  const prevRange          = prevEntry?.timeRange  ?? generateHourRange(-1);
+  const prevDep            = prevEntry?.depositCount    ?? 0;
+  const prevWth            = prevEntry?.withdrawalCount ?? 0;
 
-  // Active shift time display calculations
-  const activeWindowObj = getShiftWindow(new Date());
+  const activeWindowObj    = getShiftWindow(new Date());
   const activeRangeDisplay = counterState.timeRange || activeWindowObj.timeRange;
-  const activeRangeShort = activeWindowObj.timeRangeShort;
+  const activeRangeShort   = activeWindowObj.timeRangeShort;
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-[calc(100vh-80px)] py-8 px-4 flex flex-col items-center justify-start text-[#F4F5F1] font-sans selection:bg-[#00D66B]/20">
-      
-      {/* ── MAIN CARD: HOURLY COUNTER ── */}
+
+      {/* ── MAIN CARD ── */}
       <div className="w-full max-w-[760px] bg-[#1B1C22] border border-white/[0.07] rounded-[28px] p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-        
-        {/* Card Header */}
+
+        {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div>
             <h1 className="font-['Space_Grotesk'] text-2xl font-semibold tracking-tight text-[#F4F5F1]">
@@ -432,10 +412,10 @@ export default function HourlyCounter() {
               <RotateCcw size={15} />
             </button>
             <button
-              onClick={() => setShowSettingsModal(!showSettingsModal)}
+              onClick={() => setShowSettingsModal(v => !v)}
               className={`w-9 h-9 rounded-full border transition-all flex items-center justify-center cursor-pointer ${
-                showSettingsModal 
-                  ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20' 
+                showSettingsModal
+                  ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20'
                   : 'bg-[#232429] hover:bg-[#0E0E12] border-white/[0.07] text-[#8B8E97] hover:text-[#F4F5F1]'
               }`}
               title="Settings & Labels"
@@ -445,7 +425,7 @@ export default function HourlyCounter() {
           </div>
         </div>
 
-        {/* Settings Subpanel if toggled */}
+        {/* Settings Panel */}
         {showSettingsModal && (
           <div className="mb-5 p-4 rounded-2xl bg-[#0E0E12] border border-white/[0.07] space-y-3 animate-in fade-in duration-150 text-xs">
             <div className="flex items-center justify-between text-[#8B8E97] font-medium border-b border-white/[0.05] pb-2">
@@ -475,15 +455,12 @@ export default function HourlyCounter() {
           </div>
         )}
 
-        {/* ── COUNTER VIEW ── */}
+        {/* ── COUNTER BOXES ── */}
         <div>
-          {/* Two Side-by-Side Boxes: Deposit & Withdrawal with Centered Time Divider */}
           <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-            
+
             {/* DEPOSIT BOX */}
             <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-5 flex flex-col justify-between">
-              
-              {/* Top Row: Label & Time Pill */}
               <div className="flex items-center justify-between mb-3.5">
                 <span className="text-[13px] text-[#8B8E97] font-medium">Deposits:</span>
                 <div className="flex items-center gap-1.5 bg-[#232429] border border-white/[0.14] rounded-full px-3 py-1 font-mono text-[11.5px] text-[#8B8E97]">
@@ -492,7 +469,6 @@ export default function HourlyCounter() {
                 </div>
               </div>
 
-              {/* Sub Row: Type & Status */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[11px] text-[#54565F]">Type</span>
@@ -505,7 +481,6 @@ export default function HourlyCounter() {
                     <span>Deposit</span>
                   </div>
                 </div>
-
                 <div className="flex flex-col items-end gap-1.5">
                   <span className="text-[11px] text-[#54565F]">Status</span>
                   <div className="flex items-center gap-1 text-[15px] font-medium text-[#F4F5F1]">
@@ -517,23 +492,20 @@ export default function HourlyCounter() {
                 </div>
               </div>
 
-              {/* Value Row: Count, Unit & Controls */}
               <div className="flex items-baseline justify-between pt-1">
                 <div>
-                  <span className="text-[13px] text-[#8B8E97]">Deposit completed:</span>
+                  <span className="text-[13px] text-[#8B8E97]">{counterState.depositLabel || 'Deposit completed'}:</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="font-['Space_Grotesk'] text-[38px] sm:text-[44px] font-semibold tracking-tight text-[#00D66B] leading-none">
-                      {counterState.depositCount || 0}
+                      {counterState.depositCount ?? 0}
                     </span>
                     <span className="text-[13px] text-[#54565F] font-medium">times</span>
                   </div>
                 </div>
-
-                {/* Stepper Buttons (- and +) */}
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleAdjustCount('deposit', -1)}
-                    disabled={(counterState.depositCount || 0) <= 0}
+                    disabled={(counterState.depositCount ?? 0) <= 0}
                     className="w-10 h-10 rounded-full bg-[#232429] hover:bg-[#2c2e35] active:bg-[#0E0E12] border border-white/[0.07] text-[#8B8E97] hover:text-[#F4F5F1] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all cursor-pointer select-none"
                   >
                     <Minus size={15} />
@@ -546,13 +518,10 @@ export default function HourlyCounter() {
                   </button>
                 </div>
               </div>
-
             </div>
 
             {/* WITHDRAWAL BOX */}
             <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-5 flex flex-col justify-between">
-              
-              {/* Top Row: Label & Time Pill */}
               <div className="flex items-center justify-between mb-3.5">
                 <span className="text-[13px] text-[#8B8E97] font-medium">Withdrawals:</span>
                 <div className="flex items-center gap-1.5 bg-[#232429] border border-white/[0.14] rounded-full px-3 py-1 font-mono text-[11.5px] text-[#8B8E97]">
@@ -561,7 +530,6 @@ export default function HourlyCounter() {
                 </div>
               </div>
 
-              {/* Sub Row: Type & Status */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[11px] text-[#54565F]">Type</span>
@@ -574,7 +542,6 @@ export default function HourlyCounter() {
                     <span>Withdrawal</span>
                   </div>
                 </div>
-
                 <div className="flex flex-col items-end gap-1.5">
                   <span className="text-[11px] text-[#54565F]">Status</span>
                   <div className="flex items-center gap-1 text-[15px] font-medium text-[#F4F5F1]">
@@ -586,23 +553,20 @@ export default function HourlyCounter() {
                 </div>
               </div>
 
-              {/* Value Row: Count, Unit & Controls */}
               <div className="flex items-baseline justify-between pt-1">
                 <div>
-                  <span className="text-[13px] text-[#8B8E97]">Completed withdrawal:</span>
+                  <span className="text-[13px] text-[#8B8E97]">{counterState.withdrawalLabel || 'Completed withdrawal'}:</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="font-['Space_Grotesk'] text-[38px] sm:text-[44px] font-semibold tracking-tight text-[#3ED3F2] leading-none">
-                      {counterState.withdrawalCount || 0}
+                      {counterState.withdrawalCount ?? 0}
                     </span>
                     <span className="text-[13px] text-[#54565F] font-medium">times</span>
                   </div>
                 </div>
-
-                {/* Stepper Buttons (- and +) */}
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleAdjustCount('withdrawal', -1)}
-                    disabled={(counterState.withdrawalCount || 0) <= 0}
+                    disabled={(counterState.withdrawalCount ?? 0) <= 0}
                     className="w-10 h-10 rounded-full bg-[#232429] hover:bg-[#2c2e35] active:bg-[#0E0E12] border border-white/[0.07] text-[#8B8E97] hover:text-[#F4F5F1] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all cursor-pointer select-none"
                   >
                     <Minus size={15} />
@@ -615,17 +579,15 @@ export default function HourlyCounter() {
                   </button>
                 </div>
               </div>
-
             </div>
 
-            {/* Central Stepper Shift Clock Button between boxes */}
+            {/* Central Clock Divider */}
             <div className="hidden sm:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[34px] h-[34px] rounded-full bg-[#232429] border border-white/[0.14] items-center justify-center text-[#8B8E97] z-10 shadow-md">
               <Clock size={14} />
             </div>
-
           </div>
 
-          {/* Footer Row: Active Rate & Copy Button */}
+          {/* Footer: Active Range + Copy Button */}
           <div className="flex items-center justify-between flex-wrap gap-4 pt-1">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-[13.5px]">
@@ -644,19 +606,17 @@ export default function HourlyCounter() {
               onClick={() => handleCopyCounterText()}
               className="flex items-center gap-2 bg-[#F2E75A] hover:brightness-105 active:scale-[0.98] text-[#2A2705] font-semibold text-[14.5px] rounded-full px-6 py-3.5 transition-all cursor-pointer shadow-md"
             >
-              <span>{copiedActiveCounter ? "Copied report!" : "Copy report"}</span>
+              <span>{copiedActiveCounter ? "Copied!" : "Copy report"}</span>
               <span className="font-mono text-xs font-bold leading-none">»</span>
             </button>
           </div>
-
         </div>
-
       </div>
 
-      {/* ── SECONDARY 2-COLUMN CARDS: LAST HOUR & LAST 6 HRS ── */}
+      {/* ── SECONDARY CARDS: LAST HOUR + LAST 6 HRS ── */}
       <div className="w-full max-w-[760px] mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        
-        {/* Card 1: Last hour stats */}
+
+        {/* Card 1: Last Hour */}
         <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col justify-between shadow-lg">
           <div>
             <div className="flex items-center justify-between mb-3.5">
@@ -669,9 +629,7 @@ export default function HourlyCounter() {
               </span>
             </div>
 
-            <div className="font-mono text-[13px] text-[#8B8E97] mb-4">
-              {prevRange}
-            </div>
+            <div className="font-mono text-[13px] text-[#8B8E97] mb-4">{prevRange}</div>
 
             <div className="flex gap-2.5 mb-4">
               <div className="flex-1 bg-[#0E0E12] border border-white/[0.07] rounded-[12px] p-3">
@@ -679,19 +637,14 @@ export default function HourlyCounter() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]"></span>
                   <span>Deposits</span>
                 </div>
-                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#00D66B]">
-                  {prevDep}
-                </div>
+                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#00D66B]">{prevDep}</div>
               </div>
-
               <div className="flex-1 bg-[#0E0E12] border border-white/[0.07] rounded-[12px] p-3">
                 <div className="flex items-center gap-1.5 text-[11.5px] text-[#8B8E97] mb-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]"></span>
                   <span>Withdrawals</span>
                 </div>
-                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#3ED3F2]">
-                  {prevWth}
-                </div>
+                <div className="font-['Space_Grotesk'] text-[22px] font-semibold text-[#3ED3F2]">{prevWth}</div>
               </div>
             </div>
           </div>
@@ -701,17 +654,17 @@ export default function HourlyCounter() {
             className="w-full flex items-center justify-center gap-2 bg-[#232429] hover:bg-[#0E0E12] border border-white/[0.14] text-[#F4F5F1] font-medium text-[13px] rounded-[12px] p-3 cursor-pointer transition-colors"
           >
             <Copy size={13} />
-            <span>{copiedId === 'last_hour_card' ? "Copied to clipboard!" : "Copy last hour report"}</span>
+            <span>{copiedId === 'last_hour_card' ? "Copied!" : "Copy last hour report"}</span>
           </button>
         </div>
 
-        {/* Card 2: Last 6 hrs — History Log */}
+        {/* Card 2: Last 6 hrs log */}
         {(() => {
           const sixHrsAgo = Date.now() - 6 * 60 * 60 * 1000;
-          const last6hLog = analyticsHistory.filter((item) => {
+          const last6hLog = analyticsHistory.filter(item => {
             const ts = item.copiedAt
               ? new Date(item.copiedAt).getTime()
-              : item.id && item.id.startsWith('analytics_')
+              : item.id?.startsWith('analytics_')
               ? parseInt(item.id.replace('analytics_', ''), 10)
               : null;
             return ts && !isNaN(ts) && ts >= sixHrsAgo;
@@ -719,7 +672,6 @@ export default function HourlyCounter() {
 
           return (
             <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col gap-3 shadow-lg">
-              {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-medium text-[#F4F5F1]">
                   <Clock size={15} className="text-[#8B8E97]" />
@@ -730,7 +682,6 @@ export default function HourlyCounter() {
                 </span>
               </div>
 
-              {/* Log Rows */}
               {last6hLog.length === 0 ? (
                 <div className="py-6 text-center text-[12px] text-[#54565F]">
                   No hourly logs in the last 6 hours yet.
@@ -742,12 +693,9 @@ export default function HourlyCounter() {
                       key={item.id || i}
                       className="flex items-center justify-between bg-[#0E0E12] border border-white/[0.05] rounded-[12px] px-3 py-2.5"
                     >
-                      {/* Time range */}
                       <span className="font-mono text-[11.5px] text-[#8B8E97] truncate mr-2 max-w-[140px]">
                         {item.timeRange || '—'}
                       </span>
-
-                      {/* Dep + Wth counts */}
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="flex items-center gap-1 text-[11.5px] font-mono font-semibold text-[#00D66B]">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" />
@@ -771,7 +719,6 @@ export default function HourlyCounter() {
                 </div>
               )}
 
-              {/* Legend */}
               <div className="flex items-center gap-3 pt-1 border-t border-white/[0.05]">
                 <span className="flex items-center gap-1 text-[11px] text-[#54565F]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" /> Deposits
@@ -785,7 +732,6 @@ export default function HourlyCounter() {
         })()}
 
       </div>
-
     </div>
   );
 }
