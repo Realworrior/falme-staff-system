@@ -102,7 +102,25 @@ export default function HourlyCounter() {
   const [counterState, setCounterState] = useState(() => {
     try {
       const saved = localStorage.getItem("betfalme_mpesa_hourly_counter");
-      return saved ? { ...buildDefaultCounter(), ...JSON.parse(saved) } : buildDefaultCounter();
+      if (!saved) return buildDefaultCounter();
+      const parsed = JSON.parse(saved);
+      const currentWindow = getShiftWindow(new Date()).timeRange;
+      // If the saved record is from the current active window, restore its counts.
+      // If it's from a previous hour, start fresh so the rollover interval
+      // doesn't see a mismatch and needlessly archive + reset mid-session.
+      if (parsed.timeRange && parsed.timeRange === currentWindow) {
+        return { ...buildDefaultCounter(), ...parsed };
+      } else {
+        // Previous hour's data: keep labels/settings but reset counts
+        return {
+          ...buildDefaultCounter(),
+          depositLabel:    parsed.depositLabel    || 'Deposit completed',
+          withdrawalLabel: parsed.withdrawalLabel || 'Completed withdrawal',
+          timeRange:       currentWindow,
+          depositCount:    0,
+          withdrawalCount: 0,
+        };
+      }
     } catch { return buildDefaultCounter(); }
   });
 
@@ -164,11 +182,30 @@ export default function HourlyCounter() {
         if (error) { console.warn("[Counter] Supabase fetch error:", error.message); return; }
         if (!data) return;
 
+        const currentActiveWindow = getShiftWindow(new Date()).timeRange;
+
         const counterRecord = data.find(r => r.id === 'hourly_counter_global');
         if (counterRecord?.raw) {
           try {
             const parsed = JSON.parse(counterRecord.raw);
-            setCounterState(prev => ({ ...buildDefaultCounter(), ...parsed, id: 'hourly_counter_global', transactionCode: '__HOURLY_COUNTER__' }));
+            // CRITICAL: Only apply Supabase counter data if it belongs to the CURRENT
+            // active time window. If it's from a previous hour, skip it — the rollover
+            // will have already reset counts and we must NOT overwrite current counts.
+            if (parsed.timeRange && parsed.timeRange === currentActiveWindow) {
+              setCounterState(prev => ({
+                ...prev,
+                // Take the MAX of localStorage vs Supabase for each count
+                // so neither source loses increments from a brief sync delay
+                depositCount:    Math.max(prev.depositCount    ?? 0, parsed.depositCount    ?? 0),
+                withdrawalCount: Math.max(prev.withdrawalCount ?? 0, parsed.withdrawalCount ?? 0),
+                // Non-count fields are safe to merge
+                depositLabel:    parsed.depositLabel    || prev.depositLabel,
+                withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
+                timeRange:       currentActiveWindow,
+              }));
+            } else if (parsed.timeRange && parsed.timeRange !== currentActiveWindow) {
+              console.log("[Counter] Supabase record is from a different window — skipping count merge to prevent reset.");
+            }
           } catch (e) { console.error("[Counter] Counter parse error:", e); }
         }
 
@@ -199,7 +236,18 @@ export default function HourlyCounter() {
         if (rec.id === 'hourly_counter_global') {
           try {
             const parsed = JSON.parse(rec.raw);
-            setCounterState(prev => ({ ...prev, ...parsed }));
+            const currentWindow = getShiftWindow(new Date()).timeRange;
+            // Same window guard for realtime updates — never apply stale-hour data
+            if (parsed.timeRange && parsed.timeRange === currentWindow) {
+              setCounterState(prev => ({
+                ...prev,
+                depositCount:    Math.max(prev.depositCount    ?? 0, parsed.depositCount    ?? 0),
+                withdrawalCount: Math.max(prev.withdrawalCount ?? 0, parsed.withdrawalCount ?? 0),
+                depositLabel:    parsed.depositLabel    || prev.depositLabel,
+                withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
+                timeRange:       currentWindow,
+              }));
+            }
           } catch (e) { console.error("[Realtime] Counter parse error:", e); }
         }
 
