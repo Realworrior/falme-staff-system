@@ -426,14 +426,17 @@ export default function HourlyCounter() {
   }, [counterState, syncAnalyticsToSupabase, addToast]);
 
   // ── Derived Display Values ────────────────────────────────────────────────
-  const prevEntry          = analyticsHistory[0] ?? null;
-  const prevRange          = prevEntry?.timeRange  ?? generateHourRange(-1);
-  const prevDep            = prevEntry?.depositCount    ?? 0;
-  const prevWth            = prevEntry?.withdrawalCount ?? 0;
-
   const activeWindowObj    = getShiftWindow(new Date());
   const activeRangeDisplay = counterState.timeRange || activeWindowObj.timeRange;
   const activeRangeShort   = activeWindowObj.timeRangeShort;
+  const currentActiveRange = activeWindowObj.timeRange;
+
+  // "Last hour" must never show the current active window —
+  // filter it out so we always display the most recently COMPLETED hour.
+  const prevEntry = analyticsHistory.find(h => h.timeRange !== currentActiveRange) ?? null;
+  const prevRange = prevEntry?.timeRange  ?? generateHourRange(-1);
+  const prevDep   = prevEntry?.depositCount    ?? 0;
+  const prevWth   = prevEntry?.withdrawalCount ?? 0;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
