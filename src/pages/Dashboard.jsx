@@ -563,9 +563,9 @@ const Dashboard = () => {
 
   const shortcuts = [
     { 
-      name: "Hourly Counter", 
-      desc: "Live transaction counting & shift reports", 
-      icon: Clock, 
+      name: "MPesa Tools", 
+      desc: "Hourly counts & SMS ledger records", 
+      icon: ClipboardList, 
       path: "/counter", 
       color: "#00D66B",
       accentBg: "rgba(0, 214, 107, 0.12)",
@@ -664,7 +664,7 @@ const Dashboard = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-semibold text-[#8B8E97] uppercase tracking-wider">Quick Actions &amp; Workflows</h2>
-              <span className="text-xs font-mono text-[#54565F]">6 direct modules</span>
+              <span className="text-xs font-mono text-[#54565F]">{shortcuts.length} direct modules</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
