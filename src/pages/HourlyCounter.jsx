@@ -131,8 +131,9 @@ export default function HourlyCounter() {
     } catch { return []; }
   });
 
-  // Flag to prevent realtime echo from overwriting our own optimistic writes
-  const suppressRealtimeUntil = useRef(0);
+  // Unique tab/session ID to reliably ignore our own realtime echoes without blocking remote sessions
+  const sessionIdRef = useRef(`tab_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
+  const broadcastChannelRef = useRef(null);
 
   // ── Persist to localStorage ───────────────────────────────────────────────
   useEffect(() => {
@@ -143,13 +144,32 @@ export default function HourlyCounter() {
     localStorage.setItem("betfalme_mpesa_analytics_history", JSON.stringify(analyticsHistory));
   }, [analyticsHistory]);
 
-  // ── Supabase Sync (write-only from our side) ──────────────────────────────
+  // ── Supabase Sync ─────────────────────────────────────────────────────────
   const syncCounterToSupabase = useCallback(async (state) => {
     try {
+      const payload = {
+        ...state,
+        _updatedBySessionId: sessionIdRef.current,
+        _updatedAt: Date.now()
+      };
+
+      // 1. Broadcast immediately to any other active tabs/browsers for sub-millisecond sync
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.send({
+          type: 'broadcast',
+          event: 'COUNTER_UPDATE',
+          payload: {
+            state: payload,
+            senderSessionId: sessionIdRef.current
+          }
+        }).catch(() => {});
+      }
+
+      // 2. Persist to Supabase Database
       await supabase.from('mpesa_codes').upsert([{
         id: 'hourly_counter_global',
         transactionCode: '__HOURLY_COUNTER__',
-        raw: JSON.stringify(state),
+        raw: JSON.stringify(payload),
         timestamp: new Date().toISOString()
       }]);
     } catch (err) {
@@ -159,6 +179,23 @@ export default function HourlyCounter() {
 
   const syncAnalyticsToSupabase = useCallback(async (history) => {
     try {
+      const payload = {
+        history,
+        _updatedBySessionId: sessionIdRef.current,
+        _updatedAt: Date.now()
+      };
+
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.send({
+          type: 'broadcast',
+          event: 'ANALYTICS_UPDATE',
+          payload: {
+            history,
+            senderSessionId: sessionIdRef.current
+          }
+        }).catch(() => {});
+      }
+
       await supabase.from('mpesa_codes').upsert([{
         id: 'hourly_analytics_history',
         transactionCode: '__HOURLY_ANALYTICS__',
@@ -170,7 +207,7 @@ export default function HourlyCounter() {
     }
   }, []);
 
-  // ── Initial Supabase Fetch + Realtime ─────────────────────────────────────
+  // ── Initial Supabase Fetch + Realtime Subscription ────────────────────────
   useEffect(() => {
     const fetchInitial = async () => {
       try {
@@ -184,32 +221,24 @@ export default function HourlyCounter() {
 
         const currentActiveWindow = getShiftWindow(new Date()).timeRange;
 
-        const counterRecord = data.find(r => r.id === 'hourly_counter_global');
+        const counterRecord = data.find(r => r.id === 'hourly_counter_global' || r.transactionCode === '__HOURLY_COUNTER__');
         if (counterRecord?.raw) {
           try {
             const parsed = JSON.parse(counterRecord.raw);
-            // CRITICAL: Only apply Supabase counter data if it belongs to the CURRENT
-            // active time window. If it's from a previous hour, skip it — the rollover
-            // will have already reset counts and we must NOT overwrite current counts.
             if (parsed.timeRange && parsed.timeRange === currentActiveWindow) {
               setCounterState(prev => ({
                 ...prev,
-                // Take the MAX of localStorage vs Supabase for each count
-                // so neither source loses increments from a brief sync delay
-                depositCount:    Math.max(prev.depositCount    ?? 0, parsed.depositCount    ?? 0),
-                withdrawalCount: Math.max(prev.withdrawalCount ?? 0, parsed.withdrawalCount ?? 0),
-                // Non-count fields are safe to merge
-                depositLabel:    parsed.depositLabel    || prev.depositLabel,
+                depositCount: typeof parsed.depositCount === 'number' ? parsed.depositCount : prev.depositCount,
+                withdrawalCount: typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : prev.withdrawalCount,
+                depositLabel: parsed.depositLabel || prev.depositLabel,
                 withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
-                timeRange:       currentActiveWindow,
+                timeRange: currentActiveWindow,
               }));
-            } else if (parsed.timeRange && parsed.timeRange !== currentActiveWindow) {
-              console.log("[Counter] Supabase record is from a different window — skipping count merge to prevent reset.");
             }
           } catch (e) { console.error("[Counter] Counter parse error:", e); }
         }
 
-        const analyticsRecord = data.find(r => r.id === 'hourly_analytics_history');
+        const analyticsRecord = data.find(r => r.id === 'hourly_analytics_history' || r.transactionCode === '__HOURLY_ANALYTICS__');
         if (analyticsRecord?.raw) {
           try {
             const parsed = JSON.parse(analyticsRecord.raw);
@@ -223,44 +252,82 @@ export default function HourlyCounter() {
 
     fetchInitial();
 
-    // Realtime — only apply remote updates if not suppressed (i.e., from another browser/tab)
-    const channel = supabase
-      .channel('mpesa-hourly-counter-realtime')
-      .on('postgres_changes', { event: '*', table: 'mpesa_codes', schema: 'public' }, (payload) => {
-        // Ignore echoes from our own writes for 3 seconds
-        if (Date.now() < suppressRealtimeUntil.current) return;
+    // Setup Dual Realtime: Postgres CDC Changes + Instant Broadcast Channel
+    const channel = supabase.channel('mpesa-hourly-counter-realtime', {
+      config: { broadcast: { self: false } }
+    });
 
-        const rec = payload.new;
-        if (!rec?.raw) return;
+    // 1. Instant WebSocket Broadcast from other sessions
+    channel.on('broadcast', { event: 'COUNTER_UPDATE' }, ({ payload }) => {
+      if (!payload || payload.senderSessionId === sessionIdRef.current) return;
+      const parsed = payload.state;
+      const currentWindow = getShiftWindow(new Date()).timeRange;
+      if (parsed && (!parsed.timeRange || parsed.timeRange === currentWindow)) {
+        setCounterState(prev => ({
+          ...prev,
+          depositCount: typeof parsed.depositCount === 'number' ? parsed.depositCount : prev.depositCount,
+          withdrawalCount: typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : prev.withdrawalCount,
+          depositLabel: parsed.depositLabel || prev.depositLabel,
+          withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
+          timeRange: currentWindow,
+        }));
+      }
+    });
 
-        if (rec.id === 'hourly_counter_global') {
-          try {
-            const parsed = JSON.parse(rec.raw);
-            const currentWindow = getShiftWindow(new Date()).timeRange;
-            // Same window guard for realtime updates — never apply stale-hour data
-            if (parsed.timeRange && parsed.timeRange === currentWindow) {
-              setCounterState(prev => ({
-                ...prev,
-                depositCount:    Math.max(prev.depositCount    ?? 0, parsed.depositCount    ?? 0),
-                withdrawalCount: Math.max(prev.withdrawalCount ?? 0, parsed.withdrawalCount ?? 0),
-                depositLabel:    parsed.depositLabel    || prev.depositLabel,
-                withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
-                timeRange:       currentWindow,
-              }));
-            }
-          } catch (e) { console.error("[Realtime] Counter parse error:", e); }
-        }
+    channel.on('broadcast', { event: 'ANALYTICS_UPDATE' }, ({ payload }) => {
+      if (!payload || payload.senderSessionId === sessionIdRef.current) return;
+      if (Array.isArray(payload.history)) {
+        setAnalyticsHistory(payload.history);
+      }
+    });
 
-        if (rec.id === 'hourly_analytics_history') {
-          try {
-            const parsed = JSON.parse(rec.raw);
-            if (Array.isArray(parsed)) setAnalyticsHistory(parsed);
-          } catch (e) { console.error("[Realtime] Analytics parse error:", e); }
-        }
-      })
-      .subscribe();
+    // 2. Postgres Changes (Database Realtime from other browsers / reloads)
+    channel.on('postgres_changes', { event: '*', table: 'mpesa_codes', schema: 'public' }, (payload) => {
+      const rec = payload.new;
+      if (!rec?.raw) return;
 
-    return () => { supabase.removeChannel(channel); };
+      if (rec.id === 'hourly_counter_global' || rec.transactionCode === '__HOURLY_COUNTER__') {
+        try {
+          const parsed = JSON.parse(rec.raw);
+          // If this update originated from our own session, ignore it
+          if (parsed._updatedBySessionId && parsed._updatedBySessionId === sessionIdRef.current) {
+            return;
+          }
+
+          const currentWindow = getShiftWindow(new Date()).timeRange;
+          if (!parsed.timeRange || parsed.timeRange === currentWindow) {
+            setCounterState(prev => ({
+              ...prev,
+              depositCount: typeof parsed.depositCount === 'number' ? parsed.depositCount : prev.depositCount,
+              withdrawalCount: typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : prev.withdrawalCount,
+              depositLabel: parsed.depositLabel || prev.depositLabel,
+              withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
+              timeRange: currentWindow,
+            }));
+          }
+        } catch (e) { console.error("[Realtime] Counter parse error:", e); }
+      }
+
+      if (rec.id === 'hourly_analytics_history' || rec.transactionCode === '__HOURLY_ANALYTICS__') {
+        try {
+          const parsed = JSON.parse(rec.raw);
+          if (Array.isArray(parsed)) {
+            setAnalyticsHistory(parsed);
+          }
+        } catch (e) { console.error("[Realtime] Analytics parse error:", e); }
+      }
+    });
+
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        broadcastChannelRef.current = channel;
+      }
+    });
+
+    return () => {
+      broadcastChannelRef.current = null;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // ── Auto Hour Rollover ────────────────────────────────────────────────────
@@ -301,7 +368,6 @@ export default function HourlyCounter() {
         lastActiveHour: now.getHours()
       };
       setCounterState(newState);
-      suppressRealtimeUntil.current = Date.now() + 3000;
       syncCounterToSupabase(newState);
     };
 
@@ -314,9 +380,7 @@ export default function HourlyCounter() {
   const updateCounterState = useCallback((updater) => {
     setCounterState(prev => {
       const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      // Suppress realtime echo for 3s after our own write
-      suppressRealtimeUntil.current = Date.now() + 3000;
-      // Defer Supabase sync outside the setState call to avoid stale closure
+      // Sync immediately via Broadcast + Supabase DB
       setTimeout(() => syncCounterToSupabase(next), 0);
       return next;
     });
