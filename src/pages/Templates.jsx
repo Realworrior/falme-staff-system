@@ -664,6 +664,20 @@ export default function Templates() {
   useEffect(() => {
     setFavoriteIds(getFavoriteTemplateIds());
     setApiKey(getStoredApiKey());
+
+    // Auto-generate variations for initial default template on load
+    const initialSub = TEMPLATES_DATA[0]?.subsections[0];
+    const initialText = initialSub?.variants[0]?.text;
+    if (initialText) {
+      generateResponses({
+        baseText: initialText,
+        catTitle: TEMPLATES_DATA[0]?.title,
+        subId: initialSub.id,
+        subTitle: initialSub.title,
+        toneId: 'standard',
+        bypassCache: true
+      });
+    }
   }, []);
 
   const handleSaveApiKey = useCallback((key) => {

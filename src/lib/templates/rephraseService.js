@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { maskEntities, validateAndCleanOutput } from './entityMasker';
+import { clientCache } from './cache';
 
 const TONE_MAP = {
   standard:     { label: 'Standard',     desc: 'Neutral, clear, and professional.' },
@@ -11,11 +12,14 @@ const TONE_MAP = {
   direct:       { label: 'Direct',       desc: 'Punchy, concise, action-first, and to-the-point.' },
 };
 
-// Fast production models — ordered by speed preference
+// (Guardrails are now embedded directly in SYSTEM_INSTRUCTION below)
+
+// Officially supported & active Gemini API model identifiers (fastest first)
 const CANDIDATE_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-2.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.5-flash',
+  'gemini-3.6-flash',
+  'gemini-flash-latest',
 ];
 
 function cleanErrorMessage(err) {
@@ -24,97 +28,78 @@ function cleanErrorMessage(err) {
   try {
     const parsed = JSON.parse(msg);
     if (parsed?.error?.message) return parsed.error.message;
-  } catch { /* not JSON */ }
+  } catch { /* Not JSON */ }
   return msg;
 }
 
 /**
- * Extracts a JSON object from model output that may include markdown fences,
- * prose before/after the object, or other noise.
- */
-function extractJSON(raw) {
-  if (!raw) return null;
-
-  // Try direct parse first
-  try { return JSON.parse(raw.trim()); } catch { /* continue */ }
-
-  // Strip markdown code fences
-  const stripped = raw
-    .replace(/^```(?:json)?\s*/im, '')
-    .replace(/\s*```\s*$/m, '')
-    .trim();
-  try { return JSON.parse(stripped); } catch { /* continue */ }
-
-  // Extract first {...} block from the response
-  const match = raw.match(/\{[\s\S]*\}/);
-  if (match) {
-    try { return JSON.parse(match[0]); } catch { /* continue */ }
-  }
-
-  return null;
-}
-
-/**
- * Offline fallback — fires only when ALL Gemini API calls fail.
- * Produces three genuinely distinct styles.
+ * Emergency offline fallback — only fires when ALL Gemini API calls fail.
+ * Matches the Short [Base Response] → [Compressed] contract.
  */
 function generateInstantFallback(baseText) {
   const clean = baseText.trim();
 
-  // Standard: paraphrase with common phrase-level rewriting
+  // Standard: minimal phrase-level rewrite to avoid returning raw source
   const standard = clean
-    .replace(/please note that\s*/gi, '')
-    .replace(/kindly\s+/gi, '')
-    .replace(/we are sorry to hear that\s*/gi, 'We understand ')
-    .replace(/we would like to inform you that\s*/gi, '')
-    .replace(/feel free to/gi, 'you can')
-    .replace(/we are pleased to inform you that\s*/gi, '')
-    .replace(/at this (point|time)\s*/gi, '')
-    .replace(/\s{2,}/g, ' ')
+    .replace(/please note that/gi, 'Be advised —')
+    .replace(/kindly/gi, 'Please')
+    .replace(/we are sorry/gi, 'We apologise')
+    .replace(/feel free to/gi, 'do not hesitate to')
+    .replace(/we would like to inform you/gi, 'We want you to know')
     .trim();
 
-  // Lively: inject context-specific emojis inline where words naturally sit
+  // Lively: minimal context enrichment (full Gemini version is much richer)
   const lively = clean
-    .replace(/\b(deposit(?:s|ed)?)\b/gi, '💳 $1')
-    .replace(/\b(withdraw(?:al|als|n)?)\b/gi, '💸 $1')
-    .replace(/\b(m-?pesa)\b/gi, '📲 $1')
-    .replace(/\b(account)\b/gi, '🔐 $1')
-    .replace(/\b(bet|bets|betting)\b/gi, '🎯 $1')
-    .replace(/\b(review(?:ed)?|confirm(?:ed)?|verified)\b/gi, '🔍 $1')
-    .replace(/\b(transaction(?:s)?)\b/gi, '🧾 $1')
-    .replace(/\b(team)\b/gi, '👥 $1')
-    .replace(/\b(check|verify)\b/gi, '✔️ $1')
+    .replace(/deposit/gi, '💳 deposit')
+    .replace(/withdraw/gi, '💸 withdraw')
+    .replace(/mpesa|m-pesa/gi, '📲 M-PESA')
+    .replace(/bet/gi, '🎯 bet')
+    .replace(/account/gi, '🔐 account')
+    .replace(/send|share/gi, '📤 send')
     .trim();
 
-  // Short: strip all filler, compress to arrow-chained core steps ONLY
-  const fillerRx = /\b(please note that|kindly note that|we would like to inform you that|we are pleased to inform you that?|as per our records,?|for your information,?|we are sorry to hear (that|about)|we understand your concern,?|feel free to contact us)\b/gi;
+  // Short: [Base Response] → [Compressed] — strip all filler, arrow-chain steps
+  const fillerRx = /\b(please note that|kindly note that|we would like to inform you that|we are pleased to inform you|as per our records|for your information|we are sorry to hear that|we understand your concern|feel free to contact us)\b/gi;
   const compressed = clean
     .replace(fillerRx, '')
+    .replace(/we are sorry to hear (that|about)\s*/gi, '')
+    .replace(/we understand (your concern|that you|how)\s*/gi, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
 
-  // Split into sentences and join with arrows — do NOT prepend the original
-  const sentences = compressed
+  const parts = compressed
     .split(/(?<=[.!?])\s+/)
     .map(s => s.replace(/[.!?]+$/, '').trim())
     .filter(Boolean);
 
-  const short = sentences.length > 1
-    ? sentences.join(' → ')
-    : compressed.replace(/[.!?]+$/, '').trim();
+  const short = parts.length > 1 ? `${clean} → ${parts.join(' → ')}` : `${clean} → ${compressed}`;
 
   return { standard, lively, short };
 }
 
-function withTimeout(promise, ms) {
+/**
+ * Executes a promise with a timeout. 15 seconds is generous enough for
+ * Gemini Flash to respond without hanging the UI indefinitely.
+ */
+function withTimeout(promise, ms = 15000) {
   return new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms);
-    promise.then(r => { clearTimeout(t); resolve(r); }).catch(e => { clearTimeout(t); reject(e); });
+    const timer = setTimeout(
+      () => reject(new Error(`Request timed out after ${ms}ms`)),
+      ms
+    );
+    promise
+      .then(res => { clearTimeout(timer); resolve(res); })
+      .catch(err => { clearTimeout(timer); reject(err); });
   });
 }
 
-// ─── API Key Management ────────────────────────────────────────────────────────
-
+/**
+ * Returns ordered list of API keys:
+ * 1. User localStorage override
+ * 2. Primary env key
+ * 3. Secondary env key (Fallback)
+ * 4. Legacy env key
+ */
 export function getApiKeys() {
   const keys = [];
   const primary      = import.meta.env.VITE_GEMINI_API_KEY_PRIMARY;
@@ -122,10 +107,11 @@ export function getApiKeys() {
   const userOverride = localStorage.getItem('betfalme_gemini_api_key');
   const legacyKey    = import.meta.env.VITE_GEMINI_API_KEY;
 
-  if (userOverride && userOverride.trim()) keys.push({ name: 'Custom',    key: userOverride.trim() });
-  if (primary     && primary.trim())       keys.push({ name: 'Primary',   key: primary.trim() });
-  if (secondary   && secondary.trim())     keys.push({ name: 'Secondary', key: secondary.trim() });
-  if (legacyKey   && legacyKey.trim())     keys.push({ name: 'Default',   key: legacyKey.trim() });
+  if (userOverride && userOverride.trim()) keys.push({ name: 'Custom Override', key: userOverride.trim() });
+  if (primary     && primary.trim())       keys.push({ name: 'Primary',         key: primary.trim() });
+  if (secondary   && secondary.trim())     keys.push({ name: 'Secondary',       key: secondary.trim() });
+  if (legacyKey   && legacyKey.trim())     keys.push({ name: 'Default',         key: legacyKey.trim() });
+
   return keys;
 }
 
@@ -135,130 +121,212 @@ export function getStoredApiKey() {
 }
 
 export function setStoredApiKey(key) {
-  if (key) localStorage.setItem('betfalme_gemini_api_key', key.trim());
-  else     localStorage.removeItem('betfalme_gemini_api_key');
+  if (key) {
+    localStorage.setItem('betfalme_gemini_api_key', key.trim());
+  } else {
+    localStorage.removeItem('betfalme_gemini_api_key');
+  }
 }
 
-// ─── Prompt Builder ────────────────────────────────────────────────────────────
+const SYSTEM_INSTRUCTION = `[System Role]
+You are a high-speed, zero-hallucination linguistic transformation engine built exclusively for the Betfalme betting platform customer support layer. You operate with absolute, flawless fidelity to the provided source text.
+
+[Core Operations & Safety Guardrails]
+- Absolute Data Fidelity: You are strictly forbidden from inventing, altering, adding, or removing any numeric thresholds, currencies, timeframes, examples (like M-PESA codes), phone numbers, or platform URLs. All factual data points present in the source MUST appear verbatim in every output variant.
+- Format Restrictions: All generated outputs must be continuous English prose. Do not include line breaks, bullet points, numbered lists, or em dashes within any generated variant.
+- Category Isolation: Do not extrapolate or bleed logic across customer domains. Treat the provided text as a closed context loop. Do not inject customer names, transaction IDs, or speculative placeholders.
+- No Filler Additions: Do not append generic sign-off phrases, live support links, or filler contact invitations unless they are already present in the source text.
+
+[Variant Generation Rules]
+You must process the provided input text into exactly three distinct output fields:
+
+1. Standard:
+- Provide a fluid, direct, and completely natural human paraphrase of the source.
+- Fully restructure the sentence architecture to make it sound like a sharp human editor rewriting a draft, avoiding robotic synonym-swapping or corporate clichés.
+- Strictly adhere to the format restriction of continuous prose with no line breaks, emojis, or symbols.
+
+2. Lively:
+- Infuse the message with high conversational energy and authentic enthusiasm that matches the underlying context.
+- Dynamically integrate context-specific emojis directly tied to the unique subject matter, nouns, or actions present in the text (e.g. 💳 for deposits, 📲 for M-PESA, 🎯 for bets, 📤 for sharing, 🔐 for accounts, 💸 for withdrawals, ⏱️ for time, 📸 for screenshots).
+- Strictly ban generic, rigid default emojis (such as 👋 or ✅) unless they are explicitly literal to the topic. Emojis must serve as natural visual anchors for the words they accompany.
+- Maintain the strict continuous prose formatting lock (no lists, no breaks).
+
+3. Short:
+- Compress the text to its absolute minimum operational weight while retaining 100% of the foundational utility and message.
+- You must strictly output using this exact syntax mapping: [Base Response] → [Your Summarized Output]
+  Where [Base Response] is a 2–5 word label summarising the original intent (e.g. "Deposit delay query" or "Password reset steps"), and [Your Summarized Output] is the compressed, filler-free, arrow-chained action guide.
+- Strip ALL pleasantries and filler: "Please note that", "Kindly be informed", "We would like to inform you", "We understand your concern", "We are sorry to hear", "Feel free to", etc.
+- Separate distinct action steps with → instead of line breaks (chat box does not support lists or new lines).
+- Must be noticeably shorter than both Standard and Lively versions.
+- Maintain the strict continuous prose formatting lock.
+
+You MUST respond strictly with a valid JSON object matching this schema (no markdown code fences, no extra text outside the JSON):
+{
+  "standard": "string",
+  "lively": "string",
+  "short": "string"
+}`;
 
 function buildPrompt({ baseText, toneId, categoryTitle, subsectionTitle, avoidHistory = [] }) {
   const tone = TONE_MAP[toneId] || TONE_MAP.standard;
+  let prompt = '';
+  if (categoryTitle)   prompt += `Support Category: ${categoryTitle}\n`;
+  if (subsectionTitle) prompt += `Topic / Sub-section: ${subsectionTitle}\n`;
+  prompt += `Selected Agent Tone: ${tone.label} — ${tone.desc}\n`;
+  prompt += `\n[Source Text — Agent Base Message]\n"""\n${baseText.trim()}\n"""\n`;
 
-  let p = `You are a customer support writing assistant for Betfalme, a Kenyan sports betting platform.\n\n`;
-  p += `TASK: Rewrite the agent message below into exactly THREE distinct versions.\n\n`;
-
-  if (categoryTitle)   p += `Category: ${categoryTitle}\n`;
-  if (subsectionTitle) p += `Topic: ${subsectionTitle}\n`;
-  p += `Tone: ${tone.label} — ${tone.desc}\n\n`;
-
-  p += `SOURCE MESSAGE:\n"""\n${baseText.trim()}\n"""\n\n`;
-
-  p += `RULES (apply strictly):\n`;
-  p += `- ABSOLUTE DATA FIDELITY: Never change, add, or remove any numbers, URLs, phone numbers, M-PESA codes, amounts, or time values. They must appear verbatim.\n`;
-  p += `- No invented names, IDs, or commitments not in the source.\n`;
-  p += `- All outputs: single continuous line, no line breaks, no bullet points.\n\n`;
-
-  p += `VERSION RULES:\n`;
-  p += `1. "standard" — A natural human paraphrase. Completely rewrite sentence structure and vocabulary. Sound like a sharp editor, not a synonym-swapper. NO emojis, NO symbols.\n`;
-  p += `2. "lively" — High-energy version. Integrate emojis that are contextually specific to the NOUNS and ACTIONS in this exact message (e.g. 💳 near deposit, 📲 near M-PESA, 🎯 near bet, 🔐 near account, 💸 near withdrawal, 🧾 near transaction, ⏱️ near time). Emojis must sit next to their matching word. NO generic filler emojis. Single unbroken line.\n`;
-  p += `3. "short" — Strip ALL pleasantries ("Please note that", "We would like to inform you", "We are sorry", "Feel free to", etc.). Keep ONLY the core facts and actions. Use → to separate distinct steps (no line breaks). Must be noticeably shorter than standard.\n\n`;
-
-  if (avoidHistory.length > 0) {
-    p += `FRESHNESS: Do NOT reuse phrasing from these previous outputs:\n`;
-    avoidHistory.slice(0, 3).forEach((t, i) => { p += `  Previous ${i + 1}: "${t}"\n`; });
-    p += `\n`;
+  if (avoidHistory && avoidHistory.length > 0) {
+    prompt += `\n[Freshness Constraint — Avoid These Previously Generated Variants]\n`;
+    avoidHistory.forEach((t, i) => { prompt += `Variant ${i + 1}: """${t}"""\n`; });
+    prompt += `All three new outputs must have distinct vocabulary, structure, and phrasing from the above.\n`;
   }
 
-  p += `Respond ONLY with a raw JSON object (no markdown, no explanation, no code fences):\n`;
-  p += `{"standard": "...", "lively": "...", "short": "..."}\n`;
-
-  return p;
+  prompt += `\nApply all System Role rules and generate the JSON object now:`;
+  return prompt;
 }
 
-// ─── Core Execution ────────────────────────────────────────────────────────────
-
-async function callGemini({ key, model, prompt, timeoutMs }) {
-  const ai = new GoogleGenAI({ apiKey: key });
-
-  const apiCall = ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      // No responseMimeType — we parse JSON manually for maximum compatibility
-      // across all model versions. Temperature 0.7 = creative but reliable JSON.
-      temperature: 0.7,
-      topP: 0.9,
-    },
-  });
-
-  const response = await withTimeout(apiCall, timeoutMs);
-  return response.text || '';
-}
+// ─── Main Execute Functions ─────────────────────────────────────────────────
 
 /**
  * Generates all three rephrase variants (standard, lively, short) via Gemini.
+ * Automatically cycles through API keys then models on failure.
+ * Falls back to heuristic variants only when ALL Gemini calls fail.
  */
 export async function executeRephrase(options) {
-  const { baseText, toneId, categoryTitle, subsectionTitle, avoidHistory = [] } = options;
+  const {
+    baseText,
+    toneId,
+    categoryTitle,
+    subsectionTitle,
+    avoidHistory = [],
+  } = options;
+
   const { maskedText, slotMap } = maskEntities(baseText);
 
-  const prompt = buildPrompt({ baseText: maskedText, toneId, categoryTitle, subsectionTitle, avoidHistory });
+  const prompt = buildPrompt({
+    baseText: maskedText,
+    toneId,
+    categoryTitle,
+    subsectionTitle,
+    avoidHistory,
+  });
+
   const availableKeys = getApiKeys();
 
-  for (const { name: keyName, key } of availableKeys) {
-    for (const model of CANDIDATE_MODELS) {
-      try {
-        console.log(`[Gemini] ${keyName} / ${model}...`);
-        const rawText = await callGemini({ key, model, prompt, timeoutMs: 20000 });
-        console.log(`[Gemini] Raw response:`, rawText?.slice(0, 200));
+  if (availableKeys.length > 0) {
+    for (const { name: keyName, key } of availableKeys) {
+      const ai = new GoogleGenAI({ apiKey: key });
 
-        const parsed = extractJSON(rawText);
-        if (!parsed) {
-          console.warn(`[Gemini] ${model}: could not extract JSON from response`);
-          continue;
+      for (const model of CANDIDATE_MODELS) {
+        try {
+          console.log(`[Gemini] Trying key "${keyName}" with model "${model}"...`);
+
+          const apiCall = ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+              systemInstruction: SYSTEM_INSTRUCTION,
+              responseMimeType: 'application/json',
+              // High temperature ensures each call produces noticeably different outputs
+              temperature: 1.0,
+              topP: 0.97,
+              topK: 40,
+            },
+          });
+
+          // 15-second timeout — enough time for Gemini Flash to respond
+          const response = await withTimeout(apiCall, 15000);
+          const rawText  = (response.text || '{}').trim();
+
+          let parsed;
+          try {
+            parsed = JSON.parse(rawText);
+          } catch {
+            // Sometimes Gemini wraps output in ```json ... ``` — strip it
+            const stripped = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+            parsed = JSON.parse(stripped);
+          }
+
+          const standardClean = validateAndCleanOutput(parsed.standard || '', slotMap);
+          const livelyClean   = validateAndCleanOutput(parsed.lively   || '', slotMap);
+          const shortClean    = validateAndCleanOutput(parsed.short    || '', slotMap);
+
+          if (standardClean && livelyClean && shortClean) {
+            console.log(`[Gemini] ✅ Success — key "${keyName}", model "${model}"`);
+            return {
+              standard: standardClean,
+              lively:   livelyClean,
+              short:    shortClean,
+              fromCache: false,
+              keyUsed:  keyName,
+            };
+          } else {
+            console.warn(`[Gemini] Model "${model}" returned incomplete fields — trying next.`);
+          }
+        } catch (err) {
+          console.warn(`[Gemini] Key "${keyName}" / model "${model}" failed:`, cleanErrorMessage(err));
         }
-
-        const standardClean = validateAndCleanOutput(parsed.standard || '', slotMap);
-        const livelyClean   = validateAndCleanOutput(parsed.lively   || '', slotMap);
-        const shortClean    = validateAndCleanOutput(parsed.short    || '', slotMap);
-
-        if (standardClean && livelyClean && shortClean) {
-          console.log(`[Gemini] ✅ Success — ${keyName} / ${model}`);
-          return { standard: standardClean, lively: livelyClean, short: shortClean, fromCache: false, keyUsed: keyName };
-        }
-        console.warn(`[Gemini] ${model}: fields missing after validation`, { standardClean, livelyClean, shortClean });
-      } catch (err) {
-        console.warn(`[Gemini] ${keyName} / ${model} failed:`, cleanErrorMessage(err));
       }
     }
   }
 
-  console.warn('[Gemini] All routes failed — using heuristic fallback');
-  return { ...generateInstantFallback(baseText), fromCache: false, keyUsed: 'Offline' };
+  // All Gemini routes failed → return styled offline variations
+  console.warn('[Gemini] All API routes failed. Using heuristic fallback.');
+  const fallback = generateInstantFallback(baseText, toneId);
+  return {
+    ...fallback,
+    fromCache: false,
+    keyUsed: 'Offline Heuristic',
+  };
 }
 
 /**
- * Regenerates a single variant type via Gemini.
+ * Regenerates a single variant (standard | lively | short) via Gemini.
  */
 export async function executeSingleRephrase(type, options) {
   const { baseText, toneId, categoryTitle, subsectionTitle, avoidHistory = [] } = options;
   const { maskedText, slotMap } = maskEntities(baseText);
   const prompt = buildPrompt({ baseText: maskedText, toneId, categoryTitle, subsectionTitle, avoidHistory });
-  const availableKeys = getApiKeys();
 
-  for (const { name: keyName, key } of availableKeys) {
-    for (const model of CANDIDATE_MODELS) {
-      try {
-        const rawText = await callGemini({ key, model, prompt, timeoutMs: 20000 });
-        const parsed  = extractJSON(rawText);
-        if (!parsed) continue;
-        const cleaned = validateAndCleanOutput(parsed[type] || '', slotMap);
-        if (cleaned) return cleaned;
-      } catch (err) {
-        console.warn(`[Gemini Single] ${keyName} / ${model}:`, cleanErrorMessage(err));
+  const availableKeys = getApiKeys();
+  if (availableKeys.length > 0) {
+    for (const { name: keyName, key } of availableKeys) {
+      const ai = new GoogleGenAI({ apiKey: key });
+
+      for (const model of CANDIDATE_MODELS) {
+        try {
+          const apiCall = ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+              systemInstruction: SYSTEM_INSTRUCTION,
+              responseMimeType: 'application/json',
+              temperature: 1.0,
+              topP: 0.97,
+              topK: 40,
+            },
+          });
+
+          const response = await withTimeout(apiCall, 15000);
+          const rawText  = (response.text || '{}').trim();
+
+          let parsed;
+          try {
+            parsed = JSON.parse(rawText);
+          } catch {
+            const stripped = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+            parsed = JSON.parse(stripped);
+          }
+
+          const cleaned = validateAndCleanOutput(parsed[type] || '', slotMap);
+          if (cleaned) return cleaned;
+        } catch (err) {
+          console.warn(`[Gemini Single] Key "${keyName}" / model "${model}" failed:`, cleanErrorMessage(err));
+        }
       }
     }
   }
 
-  return generateInstantFallback(baseText)[type] || baseText;
+  const fallback = generateInstantFallback(baseText, toneId);
+  return fallback[type] || baseText;
 }
