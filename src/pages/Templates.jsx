@@ -99,37 +99,37 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
       {/* Mobile Toggle Drawer Button (< lg screens) */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-[#131520] border border-white/5 rounded-2xl text-xs font-semibold text-white cursor-pointer active:scale-[0.99] transition-all"
+        className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-[#1B1C22] border border-white/[0.07] rounded-2xl text-xs font-semibold text-[#F4F5F1] cursor-pointer active:scale-[0.99] transition-all shadow-md"
       >
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-[#baff55]" />
+          <Filter className="w-4 h-4 text-[#00D66B]" />
           <span>Category Menu ({filteredCategories.length})</span>
         </div>
-        <ChevronDown className={`w-4 h-4 text-[#8e8e93] transition-transform ${isMobileOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-[#8B8E97] transition-transform ${isMobileOpen ? 'rotate-180 text-white' : ''}`} />
       </button>
 
       {/* Main Categories Content */}
       <div className={`space-y-3 ${isMobileOpen ? 'block' : 'hidden lg:block'}`}>
         {/* Sidebar Header */}
         <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#8e8e93] uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#8B8E97] uppercase tracking-wider">
             <span>Categories</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#191c2b] text-[#baff55] border border-white/5">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#232429] text-[#00D66B] border border-white/5 font-semibold">
               {filteredCategories.length}
             </span>
           </div>
           <button
             onClick={handleToggleAll}
-            className="text-xs text-[#8e8e93] hover:text-white transition-colors cursor-pointer"
+            className="text-xs text-[#8B8E97] hover:text-[#F4F5F1] transition-colors cursor-pointer"
           >
             {allExpanded ? 'Collapse all' : 'Expand all'}
           </button>
         </div>
 
         {/* Categories Accordion */}
-        <div className="overflow-y-auto space-y-2 flex-1 pr-1 scrollbar-thin max-h-[50vh] lg:max-h-[calc(100vh-170px)]">
+        <div className="overflow-y-auto space-y-1.5 flex-1 pr-1 scrollbar-thin max-h-[60vh] lg:max-h-[calc(100vh-170px)]">
           {filteredCategories.length === 0 ? (
-            <div className="text-center py-10 text-xs text-[#8e8e93] px-3">
+            <div className="text-center py-10 text-xs text-[#8B8E97] px-3">
               {showOnlyFavorites ? 'No starred templates.' : `No results for "${searchQuery}"`}
             </div>
           ) : filteredCategories.map(cat => {
@@ -145,21 +145,21 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
                   onClick={() => handleCategoryClick(cat.id)}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-left transition-all cursor-pointer touch-manipulation ${
                     containsSelected || isExpanded
-                      ? 'bg-[#131520] text-white border border-white/10'
-                      : 'text-[#8e8e93] hover:text-white hover:bg-[#131520]/60 border border-transparent'
+                      ? 'bg-[#232429] text-[#F4F5F1] border border-white/10'
+                      : 'text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#232429]/60 border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 pr-2">
                     {getCategoryIcon(cat.id, isExpanded || !!containsSelected)}
-                    <span className={`truncate text-xs font-semibold ${isExpanded || containsSelected ? 'text-white' : 'text-[#8e8e93]'}`}>
+                    <span className={`truncate text-xs font-semibold ${isExpanded || containsSelected ? 'text-[#F4F5F1]' : 'text-[#8B8E97]'}`}>
                       {cleanTitle}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full transition-colors ${isExpanded || containsSelected ? 'bg-[#191c2b] text-[#baff55] font-bold' : 'text-[#8e8e93]'}`}>
+                    <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full transition-colors ${isExpanded || containsSelected ? 'bg-[#0E0E12] text-[#00D66B] font-bold' : 'text-[#8B8E97]'}`}>
                       {cat.subsections.length}
                     </span>
-                    <motion.div animate={{ rotate: isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }} className="text-[#8e8e93]">
+                    <motion.div animate={{ rotate: isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }} className="text-[#8B8E97]">
                       <ChevronRight className="w-3.5 h-3.5" />
                     </motion.div>
                   </div>
@@ -187,19 +187,19 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
                               }}
                               className={`group relative flex items-center justify-between w-full pl-3 pr-2.5 py-2.5 rounded-xl cursor-pointer text-xs transition-all touch-manipulation ${
                                 isActive
-                                  ? 'bg-[#191c2b] text-[#baff55] font-bold border border-[#baff55]/20 shadow-sm'
-                                  : 'text-[#8e8e93] hover:text-white hover:bg-[#131520]'
+                                  ? 'bg-[#232429] text-[#00D66B] font-bold border border-[#00D66B]/30 shadow-sm'
+                                  : 'text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#1B1C22]'
                               }`}
                             >
-                              {isActive && <div className="absolute left-0 inset-y-2 w-1 bg-[#baff55] rounded-r" />}
+                              {isActive && <div className="absolute left-0 inset-y-2 w-1 bg-[#00D66B] rounded-r" />}
                               <div className="flex items-center gap-2 min-w-0 pr-1 pl-0.5">
-                                <span className={`text-[11px] font-mono shrink-0 ${isActive ? 'text-[#baff55]' : 'text-[#8e8e93]'}`}>{sub.id}</span>
-                                <span className={`truncate text-xs ${isActive ? 'text-[#baff55]' : 'text-[#8e8e93] group-hover:text-white'}`}>{sub.title}</span>
+                                <span className={`text-[11px] font-mono shrink-0 ${isActive ? 'text-[#00D66B]' : 'text-[#54565F]'}`}>{sub.id}</span>
+                                <span className={`truncate text-xs ${isActive ? 'text-[#00D66B]' : 'text-[#8B8E97] group-hover:text-white'}`}>{sub.title}</span>
                               </div>
                               <button
                                 type="button"
                                 onClick={e => { e.stopPropagation(); onToggleFavorite(sub.id); }}
-                                className={`p-1.5 rounded transition-colors ${isFav ? 'text-amber-400 opacity-100' : 'text-[#8e8e93] opacity-0 group-hover:opacity-100 hover:text-white'}`}
+                                className={`p-1.5 rounded transition-colors ${isFav ? 'text-amber-400 opacity-100' : 'text-[#54565F] opacity-0 group-hover:opacity-100 hover:text-white'}`}
                                 title={isFav ? 'Remove from starred' : 'Star this template'}
                               >
                                 <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-current' : ''}`} />
@@ -309,16 +309,16 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
       )}
 
       {/* Base Response Card */}
-      <div className="bg-[#131520] rounded-[24px] border border-white/5 p-4 sm:p-5 space-y-3.5 shadow-lg">
+      <div className="bg-[#1B1C22] rounded-[24px] border border-white/[0.07] p-4 sm:p-5 space-y-3.5 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#8e8e93]" />
-            <span className="text-xs font-bold text-white">Template Message</span>
+            <FileText className="w-4 h-4 text-[#8B8E97]" />
+            <span className="text-xs font-bold text-[#F4F5F1]">Template Message</span>
           </div>
 
           <button
             onClick={useCustom ? () => onToggleCustom(false) : handlePasteFromClipboard}
-            className="text-xs text-[#8e8e93] hover:text-white flex items-center gap-1.5 font-medium transition-colors cursor-pointer bg-[#191c2b] px-3 py-1.5 rounded-full border border-white/5 touch-manipulation"
+            className="text-xs text-[#8B8E97] hover:text-[#F4F5F1] flex items-center gap-1.5 font-medium transition-colors cursor-pointer bg-[#0E0E12] px-3 py-1.5 rounded-full border border-white/[0.07] touch-manipulation"
           >
             <ClipboardPaste className="w-3.5 h-3.5" />
             <span>{useCustom ? 'Reset' : 'Edit text'}</span>
@@ -326,7 +326,7 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
         </div>
 
         {!useCustom && currentSub.variants.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 bg-[#191c2b] p-1.5 rounded-2xl border border-white/5">
+          <div className="flex flex-wrap gap-1.5 bg-[#0E0E12] p-1.5 rounded-2xl border border-white/[0.05]">
             {currentSub.variants.map(v => {
               const isSelected = v.label === selectedVariantLabel;
               return (
@@ -335,8 +335,8 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
                   onClick={() => onSelectVariant(v)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
                     isSelected
-                      ? 'bg-[#baff55] text-black shadow-sm'
-                      : 'text-[#8e8e93] hover:text-white hover:bg-white/5'
+                      ? 'bg-[#00D66B] text-[#04170D] shadow-sm font-bold'
+                      : 'text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-white/5'
                   }`}
                 >
                   {v.label}
@@ -352,32 +352,32 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
             onChange={e => onCustomTextChange(e.target.value)}
             placeholder="Type or paste custom message..."
             rows={4}
-            className="w-full bg-[#191c2b] border border-white/5 rounded-2xl p-3.5 sm:p-4 text-sm text-white leading-relaxed focus:outline-none focus:border-[#baff55] resize-none min-h-[100px] placeholder-[#8e8e93]"
+            className="w-full bg-[#0E0E12] border border-white/10 rounded-2xl p-3.5 sm:p-4 text-sm text-[#F4F5F1] leading-relaxed focus:outline-none focus:border-[#00D66B] resize-none min-h-[100px] placeholder-[#54565F]"
           />
         ) : (
-          <div className="text-sm leading-relaxed text-white py-1 select-text">
-            {currentBaseText || <span className="text-[#8e8e93] italic">No template text</span>}
+          <div className="text-sm leading-relaxed text-[#F4F5F1] py-1 select-text">
+            {currentBaseText || <span className="text-[#54565F] italic">No template text</span>}
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-3 border-t border-white/5 text-xs text-[#8e8e93] flex-wrap gap-2">
-          <span>{wordCount} words · {charCount} chars</span>
+        <div className="flex items-center justify-between pt-3 border-t border-white/5 text-xs text-[#8B8E97] flex-wrap gap-2">
+          <span className="font-mono text-[#54565F]">{wordCount} words · {charCount} chars</span>
           <button
             onClick={handleCopyBase}
-            className="bg-[#191c2b] hover:bg-[#242838] border border-white/5 text-white px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer touch-manipulation ml-auto"
+            className="bg-[#232429] hover:bg-[#2c2e35] border border-white/10 text-[#F4F5F1] px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer touch-manipulation ml-auto"
           >
             {copiedBase ? (
-              <><Check className="w-3.5 h-3.5 text-[#baff55]" /><span className="text-[#baff55]">Copied</span></>
+              <><Check className="w-3.5 h-3.5 text-[#00D66B] stroke-[3]" /><span className="text-[#00D66B]">Copied</span></>
             ) : (
-              <><Copy className="w-3.5 h-3.5 text-[#8e8e93]" /><span>Copy</span></>
+              <><Copy className="w-3.5 h-3.5 text-[#8B8E97]" /><span>Copy</span></>
             )}
           </button>
         </div>
       </div>
 
       {/* Tone Selection Card */}
-      <div className="bg-[#131520] rounded-[24px] border border-white/5 p-4 sm:p-5 space-y-3 shadow-lg">
-        <span className="text-xs font-bold text-white block">Tone</span>
+      <div className="bg-[#1B1C22] rounded-[24px] border border-white/[0.07] p-4 sm:p-5 space-y-3 shadow-lg">
+        <span className="text-xs font-bold text-[#F4F5F1] block">Tone</span>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
           {tones.map(t => {
@@ -388,14 +388,14 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
                 onClick={() => onSelectTone(t.id)}
                 className={`p-2.5 sm:p-3 rounded-2xl text-left transition-all cursor-pointer border touch-manipulation ${
                   isSelected
-                    ? 'bg-[#baff55]/10 border-[#baff55]'
-                    : 'bg-[#191c2b] border-white/5 hover:border-white/20 hover:bg-[#242838]'
+                    ? 'bg-[#00D66B]/15 border-[#00D66B]'
+                    : 'bg-[#0E0E12] border-white/5 hover:border-white/20 hover:bg-[#232429]'
                 }`}
               >
-                <div className={`text-xs font-bold ${isSelected ? 'text-[#baff55]' : 'text-white'}`}>
+                <div className={`text-xs font-bold ${isSelected ? 'text-[#00D66B]' : 'text-[#F4F5F1]'}`}>
                   {t.label}
                 </div>
-                <div className="text-[11px] text-[#8e8e93] mt-0.5 line-clamp-1">
+                <div className="text-[11px] text-[#8B8E97] mt-0.5 line-clamp-1">
                   {t.desc}
                 </div>
               </button>
@@ -415,10 +415,10 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
       <button
         onClick={onGenerate}
         disabled={isGenerating || !currentBaseText.trim()}
-        className="w-full bg-[#baff55] hover:bg-[#a8f044] text-black font-bold text-sm py-3.5 px-5 rounded-full shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all touch-manipulation min-h-[48px]"
+        className="w-full bg-[#00D66B] hover:brightness-105 active:scale-[0.99] text-[#04170D] font-bold text-sm py-3.5 px-5 rounded-full shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all touch-manipulation min-h-[48px]"
       >
         {isGenerating ? (
-          <><div className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin" /><span>Generating...</span></>
+          <><div className="w-4 h-4 rounded-full border-2 border-[#04170D]/30 border-t-[#04170D] animate-spin" /><span>Generating variations...</span></>
         ) : (
           <>
             <span>Rewrite Message</span>
@@ -443,7 +443,7 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
   return (
     <div className="flex flex-col space-y-4 h-full select-none">
       <div className="flex items-center justify-between px-2">
-        <span className="text-xs font-bold text-[#8e8e93] uppercase tracking-wider">Variations</span>
+        <span className="text-xs font-semibold text-[#8B8E97] uppercase tracking-wider">Variations</span>
       </div>
 
       <div className="space-y-4">
@@ -456,48 +456,48 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
           const charCount = hasText ? text.length : 0;
 
           return (
-            <div key={type} className="bg-[#131520] rounded-[24px] border border-white/5 p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg">
+            <div key={type} className="bg-[#1B1C22] rounded-[24px] border border-white/[0.07] p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-bold text-white">{title}</span>
+                <span className="text-sm font-bold text-[#F4F5F1]">{title}</span>
 
                 <div className="flex items-center gap-1">
                   {hasText && (
-                    <button onClick={() => onRegenerateSingle(type)} disabled={isLoading} title={`Regenerate ${title}`} className="p-2 text-[#8e8e93] hover:text-white hover:bg-[#191c2b] rounded-full transition-colors cursor-pointer touch-manipulation">
-                      <RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#baff55]' : ''}`} />
+                    <button onClick={() => onRegenerateSingle(type)} disabled={isLoading} title={`Regenerate ${title}`} className="p-2 text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#232429] rounded-full transition-colors cursor-pointer touch-manipulation">
+                      <RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#00D66B]' : ''}`} />
                     </button>
                   )}
-                  <button onClick={() => hasText && onCopy(type, text)} disabled={!hasText || isLoading} className="p-2 rounded-full text-[#8e8e93] hover:text-white hover:bg-[#191c2b] transition-colors cursor-pointer disabled:opacity-30 touch-manipulation">
+                  <button onClick={() => hasText && onCopy(type, text)} disabled={!hasText || isLoading} className="p-2 rounded-full text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#232429] transition-colors cursor-pointer disabled:opacity-30 touch-manipulation">
                     <Copy className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
-              <div className="text-sm leading-relaxed text-white select-text min-h-[48px]">
+              <div className="text-sm leading-relaxed text-[#F4F5F1] select-text min-h-[48px]">
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-xs text-[#8e8e93] py-2">
-                    <span className="w-3.5 h-3.5 rounded-full border-2 border-[#baff55]/30 border-t-[#baff55] animate-spin inline-block" />
+                  <div className="flex items-center gap-2 text-xs text-[#8B8E97] py-2">
+                    <span className="w-3.5 h-3.5 rounded-full border-2 border-[#00D66B]/30 border-t-[#00D66B] animate-spin inline-block" />
                     <span>Generating {title.toLowerCase()} variation...</span>
                   </div>
                 ) : hasText ? text : (
-                  <span className="text-[#8e8e93] text-xs italic">Click Rewrite Message to generate variations.</span>
+                  <span className="text-[#54565F] text-xs italic">Click Rewrite Message to generate variations.</span>
                 )}
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-white/5 text-xs flex-wrap gap-2">
-                <span className="font-mono text-[#8e8e93]">{hasText ? `${wordCount} words · ${charCount} chars` : '—'}</span>
+                <span className="font-mono text-[#54565F]">{hasText ? `${wordCount} words · ${charCount} chars` : '—'}</span>
                 <div className="flex items-center gap-2 ml-auto">
                   <button
                     onClick={() => hasText && onCopy(type, text)}
                     disabled={!hasText || isLoading}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer touch-manipulation ${
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
                       isCopied
-                        ? 'bg-[#baff55] text-black'
-                        : 'bg-[#191c2b] hover:bg-[#242838] border border-white/5 text-white'
+                        ? 'bg-[#00D66B] text-[#04170D] font-bold'
+                        : 'bg-[#232429] hover:bg-[#2c2e35] border border-white/5 text-[#F4F5F1]'
                     }`}
                   >
-                    {isCopied ? <><Check className="w-3 h-3 text-black inline mr-1" /><span>Copied</span></> : <span>Copy</span>}
+                    {isCopied ? <><Check className="w-3 h-3 text-[#04170D] inline mr-1 stroke-[3]" /><span>Copied</span></> : <span>Copy</span>}
                   </button>
-                  <button onClick={() => hasText && onUseAsBase(text)} disabled={!hasText || isLoading} className="text-xs text-[#8e8e93] hover:text-white px-2 py-1 font-semibold transition-colors cursor-pointer disabled:opacity-30 touch-manipulation">
+                  <button onClick={() => hasText && onUseAsBase(text)} disabled={!hasText || isLoading} className="text-xs text-[#8B8E97] hover:text-[#F4F5F1] px-2 py-1 font-medium transition-colors cursor-pointer disabled:opacity-30 touch-manipulation">
                     Use as base
                   </button>
                 </div>
@@ -514,7 +514,7 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
 function Toast({ toast }) {
   if (!toast) return null;
   const colorMap = {
-    success: 'bg-[#baff55]/15 border-[#baff55]/40 text-[#baff55]',
+    success: 'bg-[#00D66B]/15 border-[#00D66B]/40 text-[#00D66B]',
     error: 'bg-red-500/15 border-red-500/40 text-red-300',
     info: 'bg-blue-500/15 border-blue-500/40 text-blue-300',
   };

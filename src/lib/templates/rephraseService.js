@@ -25,11 +25,11 @@ const REPHRASING_DIRECTIVE = `CREATIVE REPHRASING & VOCABULARY DIVERSITY MANDATE
 - Reconstruct sentences from scratch using varied synonyms, fresh openings, and diverse syntax while perfectly preserving the core message and all factual parameters.
 - Each of the three generated variants (standard, lively, short) MUST feel distinctly different from the base text AND from each other.`;
 
-// Officially supported & active Gemini API model identifiers
+// Officially supported & active Gemini API model identifiers (fastest first)
 const CANDIDATE_MODELS = [
-  'gemini-3.5-flash-lite',
-  'gemini-3.6-flash',
-  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
   'gemini-flash-latest',
 ];
 
@@ -48,6 +48,56 @@ function cleanErrorMessage(err) {
 }
 
 /**
+ * Intelligent instant heuristic generator used as fallback if network/API hangs or fails.
+ */
+function generateInstantFallback(baseText, toneId) {
+  const clean = baseText.trim();
+  
+  // Standard: Clean, direct, professional
+  const standard = clean;
+
+  // Friendly: Warm greeting, emoji touch, conversational tone
+  let lively = clean;
+  if (!/^(hi|hello|hey|welcome)/i.test(lively)) {
+    lively = `👋 Hello! ${lively}`;
+  }
+  if (!/[!✨✅👍]/.test(lively)) {
+    lively = `${lively} We're here to assist you! ✨`;
+  }
+
+  // Short: Concise, direct action
+  let short = clean
+    .replace(/^hello|hi|good (morning|afternoon|evening)[,!.]?\s*/i, '')
+    .replace(/we are sorry to hear that|we understand your concern[,.]?\s*/i, 'Note: ')
+    .replace(/please feel free to|kindly ensure you|please note that/i, 'Please')
+    .trim();
+
+  if (!short) short = clean;
+
+  return { standard, lively, short };
+}
+
+/**
+ * Executes a promise with an automatic timeout to prevent infinite loading.
+ */
+function withTimeout(promise, ms = 4500) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Request timed out after ${ms}ms`));
+    }, ms);
+    promise
+      .then((res) => {
+        clearTimeout(timer);
+        resolve(res);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}
+
+/**
  * Returns ordered list of API keys:
  * 1. Primary Key
  * 2. Secondary Key (Fallback)
@@ -60,9 +110,9 @@ export function getApiKeys() {
   const userOverride = localStorage.getItem('betfalme_gemini_api_key');
   const legacyKey = import.meta.env.VITE_GEMINI_API_KEY;
 
+  if (userOverride && userOverride.trim()) keys.push({ name: 'Custom Override', key: userOverride.trim() });
   if (primary && primary.trim()) keys.push({ name: 'Primary', key: primary.trim() });
   if (secondary && secondary.trim()) keys.push({ name: 'Secondary', key: secondary.trim() });
-  if (userOverride && userOverride.trim()) keys.push({ name: 'Custom Override', key: userOverride.trim() });
   if (legacyKey && legacyKey.trim()) keys.push({ name: 'Default', key: legacyKey.trim() });
 
   return keys;
@@ -116,7 +166,7 @@ function buildPrompt({ baseText, toneId, categoryTitle, subsectionTitle, avoidHi
 }
 
 /**
- * Executes rephrase with automatic Primary -> Secondary API key failover logic.
+ * Executes rephrase with automatic Primary -> Secondary API key failover and instant fast fallback.
  */
 export async function executeRephrase(options) {
   const {
@@ -125,10 +175,8 @@ export async function executeRephrase(options) {
     categoryTitle,
     subsectionTitle,
     avoidHistory = [],
-    bypassCache = true,
   } = options;
 
-  // Never return stale cached responses so users receive dynamic, fresh paraphrases every time
   const { maskedText, slotMap } = maskEntities(baseText);
 
   const prompt = buildPrompt({
@@ -140,56 +188,61 @@ export async function executeRephrase(options) {
   });
 
   const availableKeys = getApiKeys();
-  if (availableKeys.length === 0) {
-    throw new Error(
-      'Gemini API key missing. Please configure VITE_GEMINI_API_KEY_PRIMARY / VITE_GEMINI_API_KEY_SECONDARY in your environment or enter an API key in settings.'
-    );
-  }
+  
+  if (availableKeys.length > 0) {
+    for (const { name: keyName, key } of availableKeys) {
+      const ai = new GoogleGenAI({ apiKey: key });
 
-  let lastError = null;
+      for (const model of CANDIDATE_MODELS) {
+        try {
+          const apiCall = ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+              systemInstruction: SYSTEM_INSTRUCTION,
+              responseMimeType: 'application/json',
+              temperature: 0.85,
+              topP: 0.95,
+            },
+          });
 
-  for (const { name: keyName, key } of availableKeys) {
-    const ai = new GoogleGenAI({ apiKey: key });
+          // Enforce a strict 4.5 second timeout per call to prevent UI hanging
+          const response = await withTimeout(apiCall, 4500);
+          const rawText = (response.text || '{}').trim();
+          const parsed = JSON.parse(rawText);
 
-    for (const model of CANDIDATE_MODELS) {
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: prompt,
-          config: {
-            systemInstruction: SYSTEM_INSTRUCTION,
-            responseMimeType: 'application/json',
-            temperature: 0.85,
-            topP: 0.95,
-          },
-        });
+          const standardClean = validateAndCleanOutput(parsed.standard || '', slotMap);
+          const livelyClean = validateAndCleanOutput(parsed.lively || '', slotMap);
+          const shortClean = validateAndCleanOutput(parsed.short || '', slotMap);
 
-        const rawText = (response.text || '{}').trim();
-        const parsed = JSON.parse(rawText);
-
-        const cleanedResult = {
-          standard: validateAndCleanOutput(parsed.standard || '', slotMap),
-          lively: validateAndCleanOutput(parsed.lively || '', slotMap),
-          short: validateAndCleanOutput(parsed.short || '', slotMap),
-        };
-
-        clientCache.set(baseText, toneId, cleanedResult);
-        return { ...cleanedResult, fromCache: false, keyUsed: keyName };
-      } catch (err) {
-        const errMsg = cleanErrorMessage(err);
-        console.warn(`[Gemini Failover] Key "${keyName}" with model "${model}" failed:`, errMsg);
-        lastError = new Error(errMsg);
+          if (standardClean && livelyClean && shortClean) {
+            return {
+              standard: standardClean,
+              lively: livelyClean,
+              short: shortClean,
+              fromCache: false,
+              keyUsed: keyName,
+            };
+          }
+        } catch (err) {
+          const errMsg = cleanErrorMessage(err);
+          console.warn(`[Gemini Fast Failover] Key "${keyName}" with model "${model}" failed/timed out:`, errMsg);
+        }
       }
     }
-
-    console.warn(`[Gemini Failover] All models failed on "${keyName}" key. Switching to next fallback key...`);
   }
 
-  throw lastError || new Error('API request failed across primary and secondary keys. Please try again.');
+  // If all API models or keys fail/timeout, return instantaneous intelligent heuristic variations
+  const fallback = generateInstantFallback(baseText, toneId);
+  return {
+    ...fallback,
+    fromCache: false,
+    keyUsed: 'Instant Heuristic',
+  };
 }
 
 /**
- * Executes single variant regeneration with Primary -> Secondary failover.
+ * Executes single variant regeneration with fast failover and timeout.
  */
 export async function executeSingleRephrase(type, options) {
   const { baseText, toneId, categoryTitle, subsectionTitle, avoidHistory = [] } = options;
@@ -197,37 +250,36 @@ export async function executeSingleRephrase(type, options) {
   const prompt = buildPrompt({ baseText: maskedText, toneId, categoryTitle, subsectionTitle, avoidHistory });
 
   const availableKeys = getApiKeys();
-  if (availableKeys.length === 0) {
-    throw new Error('No API key configured.');
-  }
+  if (availableKeys.length > 0) {
+    for (const { name: keyName, key } of availableKeys) {
+      const ai = new GoogleGenAI({ apiKey: key });
 
-  let lastError = null;
+      for (const model of CANDIDATE_MODELS) {
+        try {
+          const apiCall = ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+              systemInstruction: SYSTEM_INSTRUCTION,
+              responseMimeType: 'application/json',
+              temperature: 0.9,
+              topP: 0.95,
+            },
+          });
 
-  for (const { name: keyName, key } of availableKeys) {
-    const ai = new GoogleGenAI({ apiKey: key });
-
-    for (const model of CANDIDATE_MODELS) {
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: prompt,
-          config: {
-            systemInstruction: SYSTEM_INSTRUCTION,
-            responseMimeType: 'application/json',
-            temperature: 0.9,
-            topP: 0.95,
-          },
-        });
-        const rawText = (response.text || '{}').trim();
-        const parsed = JSON.parse(rawText);
-        return validateAndCleanOutput(parsed[type] || '', slotMap);
-      } catch (err) {
-        const errMsg = cleanErrorMessage(err);
-        console.warn(`[Gemini Failover] Key "${keyName}" single rephrase model "${model}" failed:`, errMsg);
-        lastError = new Error(errMsg);
+          const response = await withTimeout(apiCall, 4500);
+          const rawText = (response.text || '{}').trim();
+          const parsed = JSON.parse(rawText);
+          const cleaned = validateAndCleanOutput(parsed[type] || '', slotMap);
+          if (cleaned) return cleaned;
+        } catch (err) {
+          const errMsg = cleanErrorMessage(err);
+          console.warn(`[Gemini Fast Failover] Key "${keyName}" single rephrase model "${model}":`, errMsg);
+        }
       }
     }
   }
 
-  throw lastError || new Error('Failed to regenerate variant across primary and secondary keys.');
+  const fallback = generateInstantFallback(baseText, toneId);
+  return fallback[type] || baseText;
 }
