@@ -21,7 +21,8 @@ import {
   TrendingUp,
   Radio,
   Plane,
-  ClipboardList
+  ClipboardList,
+  Receipt
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -562,13 +563,22 @@ const Dashboard = () => {
 
   const shortcuts = [
     { 
-      name: "MPesa Tracker", 
-      desc: "Hourly counts & SMS records", 
-      icon: ClipboardList, 
-      path: "/mpesa", 
-      color: "#baff55",
-      accentBg: "rgba(186, 255, 85, 0.12)",
+      name: "Hourly Counter", 
+      desc: "Live transaction counting & shift reports", 
+      icon: Clock, 
+      path: "/counter", 
+      color: "#00D66B",
+      accentBg: "rgba(0, 214, 107, 0.12)",
       tag: "Live Sync"
+    },
+    { 
+      name: "SMS Ledger", 
+      desc: "Parse, search & verify MPESA transactions", 
+      icon: Receipt, 
+      path: "/sms-ledger", 
+      color: "#3ED3F2",
+      accentBg: "rgba(62, 211, 242, 0.12)",
+      tag: "Database"
     },
     { 
       name: "Cashback Calculator", 

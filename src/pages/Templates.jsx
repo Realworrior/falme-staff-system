@@ -725,7 +725,7 @@ export default function Templates() {
     setErrorMessage(null);
     const baseText = firstVariant?.text || '';
     if (baseText) {
-      generateResponses({ baseText, catTitle: cat.title, subId: sub.id, subTitle: sub.title, toneId: selectedToneId, bypassCache: false });
+      generateResponses({ baseText, catTitle: cat.title, subId: sub.id, subTitle: sub.title, toneId: selectedToneId, bypassCache: true });
     }
   }, [selectedToneId, generateResponses]);
 
@@ -734,7 +734,7 @@ export default function Templates() {
     setSelectedVariantLabel(variant.label);
     setErrorMessage(null);
     if (variant.text) {
-      generateResponses({ baseText: variant.text, catTitle: selectedCat?.title, subId: selectedSub?.id, subTitle: selectedSub?.title, toneId: selectedToneId, bypassCache: false });
+      generateResponses({ baseText: variant.text, catTitle: selectedCat?.title, subId: selectedSub?.id, subTitle: selectedSub?.title, toneId: selectedToneId, bypassCache: true });
     }
   }, [selectedCat, selectedSub, selectedToneId, generateResponses]);
 

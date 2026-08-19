@@ -8,6 +8,8 @@ import {
   BookOpen,
   Calculator,
   ClipboardList,
+  Clock,
+  Receipt,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -30,15 +32,17 @@ const navItems = [
     badge: null
   },
   { 
-    path: '/mpesa', 
-    label: 'MPesa Counts', 
-    icon: ClipboardList,
+    path: '/counter', 
+    label: 'Hourly Counter', 
+    icon: Clock,
     badge: 'Live',
-    badgeColor: 'bg-[#baff55] text-black',
-    subItems: [
-      { label: 'Hourly Counter', path: '/mpesa' },
-      { label: 'SMS Ledger', path: '/mpesa?view=ledger' }
-    ]
+    badgeColor: 'bg-[#00D66B] text-[#04170D]'
+  },
+  { 
+    path: '/sms-ledger', 
+    label: 'SMS Ledger', 
+    icon: Receipt,
+    badge: null
   },
   { 
     path: '/slots', 

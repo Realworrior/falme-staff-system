@@ -125,14 +125,10 @@ export async function executeRephrase(options) {
     categoryTitle,
     subsectionTitle,
     avoidHistory = [],
-    bypassCache = false,
+    bypassCache = true,
   } = options;
 
-  if (!bypassCache) {
-    const cached = clientCache.get(baseText, toneId);
-    if (cached) return { ...cached, fromCache: true };
-  }
-
+  // Never return stale cached responses so users receive dynamic, fresh paraphrases every time
   const { maskedText, slotMap } = maskEntities(baseText);
 
   const prompt = buildPrompt({

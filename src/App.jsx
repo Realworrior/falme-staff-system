@@ -8,7 +8,8 @@ import SlotTracker from './pages/SlotTracker';
 import Rota from './pages/Rota';
 import Resources from './pages/Resources';
 import Tools from './pages/Tools';
-import MpesaCodes from './pages/MpesaCodes';
+import HourlyCounter from './pages/HourlyCounter';
+import SmsLedger from './pages/SmsLedger';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -86,7 +87,10 @@ function AppContent() {
         <Route path="/rota" element={<Rota />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/tools" element={<Tools />} />
-        <Route path="/mpesa" element={<MpesaCodes />} />
+        <Route path="/counter" element={<HourlyCounter />} />
+        <Route path="/sms-ledger" element={<SmsLedger />} />
+        {/* Backward compatible route redirect */}
+        <Route path="/mpesa" element={<Navigate to="/counter" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
