@@ -32,17 +32,15 @@ const navItems = [
     badge: null
   },
   { 
-    path: '/counter', 
-    label: 'Hourly Counter', 
-    icon: Clock,
+    path: '/mpesa', 
+    label: 'MPesa', 
+    icon: ClipboardList,
     badge: 'Live',
-    badgeColor: 'bg-[#00D66B] text-[#04170D]'
-  },
-  { 
-    path: '/sms-ledger', 
-    label: 'SMS Ledger', 
-    icon: Receipt,
-    badge: null
+    badgeColor: 'bg-[#00D66B] text-[#04170D]',
+    subItems: [
+      { label: 'Hourly Counter', path: '/counter' },
+      { label: 'SMS Ledger', path: '/sms-ledger' }
+    ]
   },
   { 
     path: '/slots', 
@@ -91,7 +89,7 @@ const BottomNav = ({ className }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openSubMenus, setOpenSubMenus] = useState({ '/resources': true, '/tools': false });
+  const [openSubMenus, setOpenSubMenus] = useState({ '/mpesa': true, '/resources': true, '/tools': false });
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const toggleSubMenu = (path, e) => {
@@ -114,7 +112,9 @@ const BottomNav = ({ className }) => {
             const Icon = item.icon;
             const isActive = item.path === '/' 
               ? location.pathname === '/' 
-              : location.pathname.startsWith(item.path);
+              : (item.path === '/mpesa' 
+                  ? (location.pathname === '/mpesa' || location.pathname === '/counter' || location.pathname === '/sms-ledger')
+                  : location.pathname.startsWith(item.path));
 
             return (
               <NavLink
@@ -182,10 +182,12 @@ const BottomNav = ({ className }) => {
         <div className="flex flex-col gap-1 flex-1 overflow-y-auto px-3 no-scrollbar">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const hasSub = item.subItems && item.subItems.length > 0;
             const isActive = item.path === '/' 
               ? location.pathname === '/' 
-              : location.pathname.startsWith(item.path);
-            const hasSub = item.subItems && item.subItems.length > 0;
+              : (item.path === '/mpesa' 
+                  ? (location.pathname === '/mpesa' || location.pathname === '/counter' || location.pathname === '/sms-ledger')
+                  : location.pathname.startsWith(item.path));
             const isSubOpen = openSubMenus[item.path] ?? false;
 
             return (
