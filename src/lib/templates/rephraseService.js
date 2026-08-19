@@ -12,13 +12,7 @@ const TONE_MAP = {
   direct:       { label: 'Direct',       desc: 'Punchy, concise, action-first, and to-the-point.' },
 };
 
-const GUARDRAILS_CORE = `MANDATORY FACTUAL & POLICY GUARDRAILS:
-1. FACTUAL INTEGRITY: Output direct, ready-to-send English sentences with real facts, numbers, and full URLs intact (e.g. https://blastchat.chat/chat/falmebet). NEVER output variable placeholders or tokens such as TIME_1, URL_1, AMOUNT_1, [Company Name], or curly brackets {}.
-2. NO INVENTED COMMITMENTS: Never promise refunds, compensation, bonuses, faster resolution times, or specific restoration deadlines not present in the source text.
-3. INFORMATION PARITY: If the source asks the customer for specific details (registered phone number, M-PESA code, Bet ID, screenshot), the rewrite MUST request those exact same items.
-4. NO CUSTOMER IDENTIFIERS: Do not add fake customer names or invented IDs.
-5. NO GREETING CHAT LINKS: Do NOT add live support links to simple greetings (e.g. "Hello / Hi"), since the conversation is already taking place on live support.
-6. FORMAT REQUIREMENT: Output clean continuous single-line English prose ready for immediate copying and pasting without editing.`;
+// (Guardrails are now embedded directly in SYSTEM_INSTRUCTION below)
 
 // Officially supported & active Gemini API model identifiers (fastest first)
 const CANDIDATE_MODELS = [
@@ -39,49 +33,45 @@ function cleanErrorMessage(err) {
 
 /**
  * Emergency offline fallback — only fires when ALL Gemini API calls fail.
- * Produces three genuinely distinct styles from the base text.
+ * Matches the Short [Base Response] → [Compressed] contract.
  */
-function generateInstantFallback(baseText, toneId) {
+function generateInstantFallback(baseText) {
   const clean = baseText.trim();
-  const sentences = clean.split(/(?<=[.!?])\s+/).filter(Boolean);
 
-  // ── Standard: professional clean rewrite ──────────────────────────────────
-  // Reorders phrasing slightly and keeps a neutral, clear tone
+  // Standard: minimal phrase-level rewrite to avoid returning raw source
   const standard = clean
-    .replace(/please note that/gi, 'Kindly be advised that')
+    .replace(/please note that/gi, 'Be advised —')
     .replace(/kindly/gi, 'Please')
     .replace(/we are sorry/gi, 'We apologise')
     .replace(/feel free to/gi, 'do not hesitate to')
+    .replace(/we would like to inform you/gi, 'We want you to know')
     .trim();
 
-  // ── Lively: emoji-enhanced, energetic, step-oriented ────────────────────
-  // Uses numbered emoji markers and warm openers
-  let livelyParts = sentences.map((s, i) => {
-    const marker = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'][i] || '👉';
-    return `${marker} ${s.trim()}`;
-  });
-  let lively = `👋 ` + livelyParts.join(' ');
-  if (!/[✅✨🎉]$/.test(lively)) lively += ' ✅';
+  // Lively: minimal context enrichment (full Gemini version is much richer)
+  const lively = clean
+    .replace(/deposit/gi, '💳 deposit')
+    .replace(/withdraw/gi, '💸 withdraw')
+    .replace(/mpesa|m-pesa/gi, '📲 M-PESA')
+    .replace(/bet/gi, '🎯 bet')
+    .replace(/account/gi, '🔐 account')
+    .replace(/send|share/gi, '📤 send')
+    .trim();
 
-  // ── Short: stripped, step-arrows, no filler words ────────────────────────
-  // Uses → or › to separate key action points compactly
-  const fillerRx = /\b(please note that|kindly note that|we would like to inform you that|we are pleased to inform you|as per our records|for your information)\b/gi;
-  let shortened = clean
+  // Short: [Base Response] → [Compressed] — strip all filler, arrow-chain steps
+  const fillerRx = /\b(please note that|kindly note that|we would like to inform you that|we are pleased to inform you|as per our records|for your information|we are sorry to hear that|we understand your concern|feel free to contact us)\b/gi;
+  const compressed = clean
     .replace(fillerRx, '')
     .replace(/we are sorry to hear (that|about)\s*/gi, '')
     .replace(/we understand (your concern|that you|how)\s*/gi, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
 
-  // Split on punctuation boundaries then join with arrows
-  const shortParts = shortened
+  const parts = compressed
     .split(/(?<=[.!?])\s+/)
-    .map(s => s.replace(/[.!]+$/, '').trim())
+    .map(s => s.replace(/[.!?]+$/, '').trim())
     .filter(Boolean);
 
-  const short = shortParts.length > 1
-    ? shortParts.join(' → ')
-    : shortened;
+  const short = parts.length > 1 ? `${clean} → ${parts.join(' → ')}` : `${clean} → ${compressed}`;
 
   return { standard, lively, short };
 }
@@ -137,42 +127,39 @@ export function setStoredApiKey(key) {
   }
 }
 
-// ─── Gemini System Instructions ────────────────────────────────────────────────
+const SYSTEM_INSTRUCTION = `[System Role]
+You are a high-speed, zero-hallucination linguistic transformation engine built exclusively for the Betfalme betting platform customer support layer. You operate with absolute, flawless fidelity to the provided source text.
 
-const SYSTEM_INSTRUCTION = `You are an expert AI customer support writer for Betfalme (betfalme.ke), Kenya's leading online betting platform operating in a live WhatsApp/chat environment.
+[Core Operations & Safety Guardrails]
+- Absolute Data Fidelity: You are strictly forbidden from inventing, altering, adding, or removing any numeric thresholds, currencies, timeframes, examples (like M-PESA codes), phone numbers, or platform URLs. All factual data points present in the source MUST appear verbatim in every output variant.
+- Format Restrictions: All generated outputs must be continuous English prose. Do not include line breaks, bullet points, numbered lists, or em dashes within any generated variant.
+- Category Isolation: Do not extrapolate or bleed logic across customer domains. Treat the provided text as a closed context loop. Do not inject customer names, transaction IDs, or speculative placeholders.
+- No Filler Additions: Do not append generic sign-off phrases, live support links, or filler contact invitations unless they are already present in the source text.
 
-${GUARDRAILS_CORE}
+[Variant Generation Rules]
+You must process the provided input text into exactly three distinct output fields:
 
-CRITICAL TASK — Generate exactly THREE (3) response versions from the base message supplied by the agent. The three versions MUST be clearly and noticeably different from each other AND from the original. DO NOT copy-paste the original.
+1. Standard:
+- Provide a fluid, direct, and completely natural human paraphrase of the source.
+- Fully restructure the sentence architecture to make it sound like a sharp human editor rewriting a draft, avoiding robotic synonym-swapping or corporate clichés.
+- Strictly adhere to the format restriction of continuous prose with no line breaks, emojis, or symbols.
 
-════════════════════════════════════════════════════════════════════
-VERSION 1 — "standard"
-Purpose: A professional, neutral rewrite matching the selected tone.
-Rules:
-- Completely restructure sentence order and vocabulary — no phrase duplication from the source.
-- Fluent continuous prose. No emojis. No bullet points. No em dashes. No step markers.
-- Must still convey every factual item (amounts, codes, URLs, steps) from the original.
-════════════════════════════════════════════════════════════════════
-VERSION 2 — "lively"
-Purpose: Warm, energetic, emoji-rich live-chat version. High engagement.
-Rules:
-- Open with a friendly emoji (e.g. 👋 Hi there! or ✨ Great news! depending on context).
-- Use inline step/direction symbols to guide the customer through actions: 1️⃣ 2️⃣ 3️⃣, ✅, 👉, 📲, 💬, 🎉 etc.
-- ONLY use these types of symbols inline — do NOT use newlines or bullet characters (•, -, *).
-- End with a warm closing such as "Let us know if you need anything else! 😊" or "We've got you covered! ✅".
-- Single unbroken line of text. No em dashes. No line breaks.
-════════════════════════════════════════════════════════════════════
-VERSION 3 — "short"
-Purpose: Ultra-concise, direct action guide. Strips all pleasantries.
-Rules:
-- Remove ALL filler: "Please note that", "Kindly be informed", "We would like to inform you", "We understand your concern", "We are sorry to hear", "Feel free to" etc.
-- Keep ONLY the core action steps and required data points.
-- Use arrow/step symbols to separate steps instead of newlines: → or › or >> (since the chat box does not support lists or line breaks).
+2. Lively:
+- Infuse the message with high conversational energy and authentic enthusiasm that matches the underlying context.
+- Dynamically integrate context-specific emojis directly tied to the unique subject matter, nouns, or actions present in the text (e.g. 💳 for deposits, 📲 for M-PESA, 🎯 for bets, 📤 for sharing, 🔐 for accounts, 💸 for withdrawals, ⏱️ for time, 📸 for screenshots).
+- Strictly ban generic, rigid default emojis (such as 👋 or ✅) unless they are explicitly literal to the topic. Emojis must serve as natural visual anchors for the words they accompany.
+- Maintain the strict continuous prose formatting lock (no lists, no breaks).
+
+3. Short:
+- Compress the text to its absolute minimum operational weight while retaining 100% of the foundational utility and message.
+- You must strictly output using this exact syntax mapping: [Base Response] → [Your Summarized Output]
+  Where [Base Response] is a 2–5 word label summarising the original intent (e.g. "Deposit delay query" or "Password reset steps"), and [Your Summarized Output] is the compressed, filler-free, arrow-chained action guide.
+- Strip ALL pleasantries and filler: "Please note that", "Kindly be informed", "We would like to inform you", "We understand your concern", "We are sorry to hear", "Feel free to", etc.
+- Separate distinct action steps with → instead of line breaks (chat box does not support lists or new lines).
 - Must be noticeably shorter than both Standard and Lively versions.
-- Single concise line. No em dashes. No line breaks.
-════════════════════════════════════════════════════════════════════
+- Maintain the strict continuous prose formatting lock.
 
-You MUST respond strictly with a valid JSON object matching this schema (no markdown code fences, no extra text):
+You MUST respond strictly with a valid JSON object matching this schema (no markdown code fences, no extra text outside the JSON):
 {
   "standard": "string",
   "lively": "string",
@@ -182,17 +169,18 @@ You MUST respond strictly with a valid JSON object matching this schema (no mark
 function buildPrompt({ baseText, toneId, categoryTitle, subsectionTitle, avoidHistory = [] }) {
   const tone = TONE_MAP[toneId] || TONE_MAP.standard;
   let prompt = '';
-  if (categoryTitle)   prompt += `Category: ${categoryTitle}\n`;
-  if (subsectionTitle) prompt += `Topic: ${subsectionTitle}\n`;
-  prompt += `\nAgent Base Message:\n"""${baseText.trim()}"""\n\nTarget Tone: ${tone.label} — ${tone.desc}\n`;
+  if (categoryTitle)   prompt += `Support Category: ${categoryTitle}\n`;
+  if (subsectionTitle) prompt += `Topic / Sub-section: ${subsectionTitle}\n`;
+  prompt += `Selected Agent Tone: ${tone.label} — ${tone.desc}\n`;
+  prompt += `\n[Source Text — Agent Base Message]\n"""\n${baseText.trim()}\n"""\n`;
 
   if (avoidHistory && avoidHistory.length > 0) {
-    prompt += `\nAVOID recycling vocabulary or structure from these previously generated versions:\n`;
-    avoidHistory.forEach(t => { prompt += `- """${t}"""\n`; });
-    prompt += `\nThe new versions must feel fresh and distinct from the above.\n`;
+    prompt += `\n[Freshness Constraint — Avoid These Previously Generated Variants]\n`;
+    avoidHistory.forEach((t, i) => { prompt += `Variant ${i + 1}: """${t}"""\n`; });
+    prompt += `All three new outputs must have distinct vocabulary, structure, and phrasing from the above.\n`;
   }
 
-  prompt += `\nGenerate the JSON object with the three uniquely styled versions now:`;
+  prompt += `\nApply all System Role rules and generate the JSON object now:`;
   return prompt;
 }
 
