@@ -99,19 +99,44 @@ export default function HourlyCounter() {
   const addToast = toast?.addToast || toast?.showToast || (() => {});
 
   // ── State ─────────────────────────────────────────────────────────────────
+  const [analyticsHistory, setAnalyticsHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
+      const list = saved ? JSON.parse(saved) : [];
+      // Also check if localStorage counter had unarchived data from a completed hour
+      const counterSaved = localStorage.getItem("betfalme_mpesa_hourly_counter");
+      if (counterSaved) {
+        const parsedCounter = JSON.parse(counterSaved);
+        const currentWindow = getShiftWindow(new Date()).timeRange;
+        if (parsedCounter.timeRange && parsedCounter.timeRange !== currentWindow) {
+          const hasCount = (parsedCounter.depositCount || 0) > 0 || (parsedCounter.withdrawalCount || 0) > 0;
+          const alreadyInHistory = list.some(h => h.timeRange === parsedCounter.timeRange);
+          if (hasCount && !alreadyInHistory) {
+            list.unshift({
+              id: `analytics_${Date.now()}`,
+              timeRange: parsedCounter.timeRange,
+              depositCount: parsedCounter.depositCount || 0,
+              withdrawalCount: parsedCounter.withdrawalCount || 0,
+              copiedAt: new Date().toISOString(),
+              autoArchived: true,
+              date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
+            });
+          }
+        }
+      }
+      return list;
+    } catch { return []; }
+  });
+
   const [counterState, setCounterState] = useState(() => {
     try {
       const saved = localStorage.getItem("betfalme_mpesa_hourly_counter");
       if (!saved) return buildDefaultCounter();
       const parsed = JSON.parse(saved);
       const currentWindow = getShiftWindow(new Date()).timeRange;
-      // If the saved record is from the current active window, restore its counts.
-      // If it's from a previous hour, start fresh so the rollover interval
-      // doesn't see a mismatch and needlessly archive + reset mid-session.
       if (parsed.timeRange && parsed.timeRange === currentWindow) {
         return { ...buildDefaultCounter(), ...parsed };
       } else {
-        // Previous hour's data: keep labels/settings but reset counts
         return {
           ...buildDefaultCounter(),
           depositLabel:    parsed.depositLabel    || 'Deposit completed',
@@ -122,13 +147,6 @@ export default function HourlyCounter() {
         };
       }
     } catch { return buildDefaultCounter(); }
-  });
-
-  const [analyticsHistory, setAnalyticsHistory] = useState(() => {
-    try {
-      const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
   });
 
   // Unique tab/session ID to reliably ignore our own realtime echoes without blocking remote sessions
@@ -221,6 +239,17 @@ export default function HourlyCounter() {
 
         const currentActiveWindow = getShiftWindow(new Date()).timeRange;
 
+        // 1. First process analytics history from DB
+        let historyList = [];
+        const analyticsRecord = data.find(r => r.id === 'hourly_analytics_history' || r.transactionCode === '__HOURLY_ANALYTICS__');
+        if (analyticsRecord?.raw) {
+          try {
+            const parsed = JSON.parse(analyticsRecord.raw);
+            if (Array.isArray(parsed)) historyList = parsed;
+          } catch (e) { console.error("[Counter] Analytics parse error:", e); }
+        }
+
+        // 2. Process counter record from DB
         const counterRecord = data.find(r => r.id === 'hourly_counter_global' || r.transactionCode === '__HOURLY_COUNTER__');
         if (counterRecord?.raw) {
           try {
@@ -234,16 +263,28 @@ export default function HourlyCounter() {
                 withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
                 timeRange: currentActiveWindow,
               }));
+            } else if (parsed.timeRange && parsed.timeRange !== currentActiveWindow) {
+              // If the DB counter is from a previous hour and has counts, ensure it's archived in history
+              const hasCount = (parsed.depositCount || 0) > 0 || (parsed.withdrawalCount || 0) > 0;
+              const alreadyArchived = historyList.some(h => h.timeRange === parsed.timeRange);
+              if (hasCount && !alreadyArchived) {
+                historyList = [{
+                  id: `analytics_${Date.now()}`,
+                  timeRange: parsed.timeRange,
+                  depositCount: parsed.depositCount || 0,
+                  withdrawalCount: parsed.withdrawalCount || 0,
+                  copiedAt: new Date().toISOString(),
+                  autoArchived: true,
+                  date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
+                }, ...historyList];
+                syncAnalyticsToSupabase(historyList);
+              }
             }
           } catch (e) { console.error("[Counter] Counter parse error:", e); }
         }
 
-        const analyticsRecord = data.find(r => r.id === 'hourly_analytics_history' || r.transactionCode === '__HOURLY_ANALYTICS__');
-        if (analyticsRecord?.raw) {
-          try {
-            const parsed = JSON.parse(analyticsRecord.raw);
-            if (Array.isArray(parsed)) setAnalyticsHistory(parsed);
-          } catch (e) { console.error("[Counter] Analytics parse error:", e); }
+        if (historyList.length > 0) {
+          setAnalyticsHistory(historyList);
         }
       } catch (err) {
         console.warn("[Counter] Supabase connection error:", err);
@@ -437,7 +478,6 @@ export default function HourlyCounter() {
       }
       const newRange = getShiftWindow(date).timeRange;
       const next = { ...prev, timeRange: newRange };
-      suppressRealtimeUntil.current = Date.now() + 3000;
       setTimeout(() => syncCounterToSupabase(next), 0);
       return next;
     });
