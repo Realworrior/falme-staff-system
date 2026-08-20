@@ -276,7 +276,7 @@ export default function SmsLedger() {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd(); }}
-                placeholder="Paste full MPESA SMS confirmation (e.g. UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0798534993 on 8/3/26 at 1:15 AM...)"
+                placeholder="Paste full MPESA SMS confirmation (e.g. UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0712345678 on 8/3/26 at 1:15 AM...)"
                 rows={2}
                 className="flex-1 bg-[#1B1C22] border border-white/10 rounded-xl p-3 text-white text-xs font-mono outline-none focus:border-[#00D66B] resize-none placeholder-[#54565F]"
               />

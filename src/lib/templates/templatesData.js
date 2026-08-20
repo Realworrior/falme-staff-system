@@ -187,15 +187,15 @@ export const TEMPLATES_DATA = [
         variants: [
           {
             label: 'Standard',
-            text: "To verify and credit your deposit immediately, please copy and paste the full M-PESA confirmation SMS you received, for example: 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0798534993 on 8/3/26 at 1:15 AM.' Please share it as text only, not a screenshot.",
+            text: "To verify and credit your deposit immediately, please copy and paste the full M-PESA confirmation SMS you received, for example: 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0712345678 on 8/3/26 at 1:15 AM.' Please share it as text only, not a screenshot.",
           },
           {
             label: 'Alt A',
-            text: "Kindly copy and paste the complete M-PESA confirmation SMS here as text, for example: 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0798534993 on 8/3/26 at 1:15 AM.' Once you paste the full message, we will verify the details and update your balance right away.",
+            text: "Kindly copy and paste the complete M-PESA confirmation SMS here as text, for example: 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0712345678 on 8/3/26 at 1:15 AM.' Once you paste the full message, we will verify the details and update your balance right away.",
           },
           {
             label: 'High Empathy',
-            text: "We want to get your funds updated as fast as possible. Please copy the entire M-PESA confirmation message from your SMS inbox and paste it here in the chat (e.g. 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0798534993 on 8/3/26 at 1:15 AM.'). Having the full message text allows us to confirm and credit your account immediately.",
+            text: "We want to get your funds updated as fast as possible. Please copy the entire M-PESA confirmation message from your SMS inbox and paste it here in the chat (e.g. 'UC8U77YY7Q Confirmed. Ksh276.00 transferred to FALMEBET LIMITED for account 0712345678 on 8/3/26 at 1:15 AM.'). Having the full message text allows us to confirm and credit your account immediately.",
           },
         ],
       },
