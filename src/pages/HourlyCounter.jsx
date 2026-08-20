@@ -283,8 +283,28 @@ export default function HourlyCounter() {
           } catch (e) { console.error("[Counter] Counter parse error:", e); }
         }
 
+        // 3. Merge DB history with locally-initialized history.
+        //    The local history already auto-archived any unarchived previous-hour
+        //    counts at startup. Simply overwriting with Supabase data would erase that.
+        //    Strategy: keep all unique timeRange entries from BOTH sources,
+        //    preferring the DB entry when there's a conflict (it's more authoritative).
         if (historyList.length > 0) {
-          setAnalyticsHistory(historyList);
+          setAnalyticsHistory(prev => {
+            const merged = [...historyList];
+            // Add any local entries that aren't already in the DB list
+            for (const localEntry of prev) {
+              if (!merged.some(h => h.timeRange === localEntry.timeRange)) {
+                merged.push(localEntry);
+              }
+            }
+            // Sort most-recent first by copiedAt timestamp
+            merged.sort((a, b) => new Date(b.copiedAt || 0) - new Date(a.copiedAt || 0));
+            // If we added local entries that weren't in DB, push merged list to Supabase
+            if (merged.length > historyList.length) {
+              syncAnalyticsToSupabase(merged);
+            }
+            return merged;
+          });
         }
       } catch (err) {
         console.warn("[Counter] Supabase connection error:", err);
