@@ -1771,4 +1771,335 @@ export const TEMPLATES_DATA = [
       },
     ],
   },
+  {
+    id: 9,
+    title: 'HARD CASES',
+    description: 'Sensitive, escalated, or policy-bound scenarios requiring firm but professional responses.',
+    subsections: [
+      {
+        id: '9.1',
+        title: 'Aviator Hacks, Tips & Hash Seeds',
+        triggers: 'aviator hack, seed, hash, tips, trick, cheat, rain trigger, multiplier',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Kindly note that server seed hashes and related configurations are part of our internal security protocols and cannot be shared upon request. The fairness system is independently managed and monitored in accordance with our platform policies and terms of service. Unfortunately, we are unable to provide confidential cryptographic details for upcoming rounds.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that we cannot provide any hacks, tips, or guarantees on how to trigger Aviator rains, nor can we disclose any specific account balance required for the same. Outcomes are determined by the game's mechanics, and there is no guaranteed method to influence or predict them. We encourage you to engage in our Aviator game and claim the rain once it pops up to enjoy the free bets.",
+          },
+          {
+            label: 'Alt B',
+            text: "Please note that Aviator game outcomes are generated automatically by the game's system and are not manually controlled or selected by the company. The frequency of particular multipliers can vary from one game round to another, and previous outcomes do not determine the next one. We always encourage you to bet responsibly. Regards.",
+          },
+        ],
+      },
+      {
+        id: '9.2',
+        title: 'Relentless / Aggressive / Insults',
+        triggers: 'rude, insult, aggressive, abusive, threatening, swearing',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note that if you are unsatisfied with the information provided, you may choose to self-exclude from our site in accordance with our responsible gaming policy. We kindly ask that all communication remains respectful.",
+          },
+          {
+            label: 'Alt A',
+            text: "We are here to assist you, but we kindly ask that all interactions remain respectful and professional. Should you continue to be dissatisfied, you are welcome to self-exclude in line with our responsible gaming policy. Warm regards.",
+          },
+        ],
+      },
+      {
+        id: '9.3',
+        title: 'Account Closure Yet Still Active',
+        triggers: 'account not closed, still active, not deleted, deactivation pending',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Kindly note your account remains active due to recent activity; consequently, the account has not been deleted. Please be guided that permanent account deactivation takes up to 72 hours to process after self-exclusion. During this period, you are required to exercise discipline by refraining from making deposits or requesting OTPs, as any account activity may affect the deactivation process.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that before registration is completed, all customers are required to review and accept the applicable terms and conditions. As advised earlier, your request for account deletion has been received and is currently in the queue for processing. We kindly ask that you adhere to the provided guidelines and exercise patience to ensure a smooth account deactivation process. Please remember to engage in betting responsibly at all times. Kind regards.",
+          },
+        ],
+      },
+      {
+        id: '9.4',
+        title: 'Withdrawal Eligibility & Minimums',
+        triggers: 'withdrawal minimum, first withdrawal, referral withdrawal, withdraw ksh 250, withdraw ksh 50',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Kindly note that as long as you comply with the company's terms and policies, you will be able to make withdrawals without any issues. For your first withdrawal, your referral earnings must be at least Ksh 250. After you have made several deposits, the minimum amount for subsequent withdrawals is reduced to Ksh 50.",
+          },
+          {
+            label: 'Alt A',
+            text: "Please note that the minimum amount for your first withdrawal using referral earnings is Ksh 250. Once you have made several deposits, the minimum withdrawal threshold is lowered to Ksh 50, provided you remain compliant with our terms and policies.",
+          },
+        ],
+      },
+      {
+        id: '9.5',
+        title: 'Account Reset — Funds Cleared',
+        triggers: 'account reset, funds cleared, balance zero after reset, reset request',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note that an account reset is not reversible. You previously requested an account reset after violating our terms and conditions; in accordance with the company's policies and regulations, all funds in your account were cleared once the reset was completed. Therefore, no funds remained on the account following the reset.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that as per our policies, an account reset results in the clearing of all account funds. Since the reset was initiated following a terms violation, the balance was cleared in line with standard procedures. We are unable to reinstate those funds. Warm regards.",
+          },
+        ],
+      },
+      {
+        id: '9.6',
+        title: 'Bribe Attempt',
+        triggers: 'bribe, offer money, pay you, deal, under the table',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note that this is against the company's policies and regulations and is considered fraudulent activity. Any further suspicious activity on your account may result in its suspension. We kindly ask that you adhere to our policies to avoid any disruptions to your account.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that offers of this nature are in direct violation of our terms of service and constitute fraudulent conduct. We are obligated to flag this interaction. We strongly advise you to refrain from such communications to avoid account suspension. Regards.",
+          },
+        ],
+      },
+      {
+        id: '9.7',
+        title: 'Flagged Account',
+        triggers: 'flagged, account suspended, irregular, withdrawal suspended, under investigation',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Kindly note that your account was flagged for irregularities, and as a result the necessary action was taken, including the reversal of funds. Please be assured that this action was not taken maliciously and was not intended to defraud you in any way. It was carried out in accordance with our account review procedures.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that your account has been flagged for irregularities. As a result, certain account privileges including withdrawals have been suspended. Your account is still under active investigation; once concluded, you will be duly informed of the outcome.",
+          },
+          {
+            label: 'Alt B',
+            text: "Please note that the funds in your account cannot be withdrawn at this time, as the account was flagged for irregularities. To rule out any fraudulent activity and safeguard the integrity of the account, the necessary measures were taken, including suspending the account and revoking withdrawal privileges. No specific timeline has been stipulated; once the review is concluded, you will be duly informed. We appreciate your patience.",
+          },
+        ],
+      },
+      {
+        id: '9.8',
+        title: 'Lost / Failed Bets',
+        triggers: 'failed bet, lost bet, bet not recorded, missing bet, bet disappeared',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Kindly note that you are advised to monitor your transactions carefully, as we record all failed bets. Upon reviewing your account, we can confirm that no failed bets have been recorded today. Kind regards.",
+          },
+          {
+            label: 'Alt A',
+            text: "Please note that our system records all bet activity. After reviewing your account, we can confirm there are no failed or unrecorded bets on our end. If you have further evidence or a specific transaction reference, please share it so we can investigate further.",
+          },
+        ],
+      },
+      {
+        id: '9.9',
+        title: 'Completed Transactions — No Pending Funds',
+        triggers: 'no funds, transaction complete, already sent, disbursed, no pending',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note that we are not withholding your funds, as they were already disbursed from our end. There are no pending transactions on our side. We are here to assist you and are committed to providing the best possible service to all our clients.",
+          },
+          {
+            label: 'Alt A',
+            text: "Hello. Please note we have shared all our findings regarding your account. Our review confirms that all your transactions were completed successfully, and there are no pending transactions or funds on our end. Warm regards.",
+          },
+        ],
+      },
+      {
+        id: '9.10',
+        title: 'Data / Account Closure Processing',
+        triggers: 'data removal, close account, delete data, account closure delay',
+        variants: [
+          {
+            label: 'Standard',
+            text: "We sincerely apologise for the delay in processing your account closure. Please be assured that we are actively working to ensure your data is completely removed from our servers. We appreciate your patience and understanding during this process.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that account deactivation is a procedural process, and the clearance of account data cannot be completed within one day. We kindly request that you exercise patience and allow the process to be completed in accordance with our Terms and Conditions. Once complete, you will be duly informed.",
+          },
+        ],
+      },
+      {
+        id: '9.11',
+        title: 'Aviator / M-PESA Global Delays',
+        triggers: 'aviator down, mpesa delay, global issue, system down, no timeline',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note this is a global issue; hence no stipulated timeline has been accorded. We are working as fast as possible to resolve the matter. Kindly bear with us.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that the delay you are experiencing is due to a system-wide issue currently being addressed. We do not have a confirmed resolution timeline at this stage but our team is working urgently to restore full service. We appreciate your patience.",
+          },
+        ],
+      },
+      {
+        id: '9.12',
+        title: 'How to Bet / Play',
+        triggers: 'how to bet, how to play, how to deposit, cant play, not participating',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Kindly note that you are required to make a deposit before you can participate in any games. Depositing enables you to place bets and have a chance to win, subject to the outcome of the games.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that your account is still under review, as it has been flagged for irregularities. Additionally, your ticket has not been attended to yet. We appreciate your patience and will provide an update once the review is complete.",
+          },
+        ],
+      },
+      {
+        id: '9.13',
+        title: 'Review Before Withdrawals (Referral)',
+        triggers: 'referral review, referral withdrawal hold, verification before withdrawal',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Kindly note that once you make a referral, your account may be subject to review before any withdrawals are processed. This is a standard verification measure to prevent discrepancies and fraudulent activities. Warm regards.",
+          },
+          {
+            label: 'Alt A',
+            text: "Please note that referral-related withdrawals are subject to a standard account review before processing. This is a routine step to ensure compliance and prevent fraudulent activity. We will notify you once the review is complete.",
+          },
+        ],
+      },
+      {
+        id: '9.14',
+        title: 'Resolved Case',
+        triggers: 'resolved, case closed, issue fixed, problem solved',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Your case has been successfully resolved. Thank you for your patience and cooperation throughout the process. Should you require any further assistance, please do not hesitate to contact us.",
+          },
+          {
+            label: 'Alt A',
+            text: "We are pleased to inform you that your case has been fully resolved. We appreciate your patience. Should any further concerns arise, our team is always available to assist. Kind regards.",
+          },
+        ],
+      },
+      {
+        id: '9.15',
+        title: 'Account Manipulation Claim',
+        triggers: 'manipulation, edited, changed, altered account, tampered',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note that we do not have access to your account and are therefore unable to manipulate or alter any account data. If you have a screenshot of the winning bets, we would gladly review it and, where applicable, credit your account accordingly. Warm regards.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that our support agents do not have the ability to modify, edit, or alter account data in any way. If you believe there has been an error, please share the relevant evidence and we will escalate for investigation. Regards.",
+          },
+        ],
+      },
+      {
+        id: '9.16',
+        title: 'Fake / Fraudulent Transactions',
+        triggers: 'fake transaction, fake mpesa, edited screenshot, fraudulent payment, false transaction',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note that the transaction shown above is not genuine and does not match our records. Kindly refrain from sharing altered or fraudulent transaction details. If you believe there has been an error, please provide the correct transaction details so that we can investigate further.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that after cross-referencing your submission against our records, the transaction provided does not appear to be authentic. We strongly advise against sharing falsified information. Should you have a legitimate query, please provide accurate transaction details for review.",
+          },
+        ],
+      },
+      {
+        id: '9.17',
+        title: 'First Withdrawal — Ksh 250 Minimum (Referral)',
+        triggers: 'first withdrawal, ksh 250, referral earnings minimum, can i withdraw 250',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Yes, Ksh 250 is the minimum amount required for your first withdrawal when using referral earnings. Kindly ensure your referral earnings meet the minimum before initiating a withdrawal.",
+          },
+          {
+            label: 'Alt A',
+            text: "Please note that for first-time withdrawals via referral earnings, the minimum threshold is Ksh 250. Once this is met and your account is in good standing, you may proceed to request your withdrawal.",
+          },
+        ],
+      },
+      {
+        id: '9.18',
+        title: 'Transaction History Request',
+        triggers: 'transaction history, account history, betting history, statement, mpesa statement',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Hello. For an accurate transaction history, kindly request a full M-PESA statement directly from Safaricom and also check your bet history on your account. Please note that we are unable to provide this information from our end, as we do not have access to your personal account details. Additionally, as per our policies and security procedures, it is unethical and against policy for us to request or have access to your account password. Thank you for your understanding and cooperation.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that your full transaction history is accessible directly through your account dashboard. For M-PESA records, please request a statement from Safaricom. We are unable to provide personal account statements from our end in line with our data protection policy.",
+          },
+        ],
+      },
+      {
+        id: '9.19',
+        title: 'Cashback Queries',
+        triggers: 'cashback, no cashback, cashback not received, cashback follow up',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note that there is no need to follow up regarding cashback, as it is credited automatically by the system. If you were not eligible for cashback yesterday, this was not a clerical error. As previously explained, you will receive your cashback today at 8:35 AM, since the deposit in question was made after the reset window. Kindly review your transaction history to confirm the timing of your deposit before making further claims. We are more than happy to assist with any genuine concerns. Warm regards.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that even if the amount you deposited equals the amount you withdrew, this does not automatically qualify you for cashback. Cashback is only applicable when you are on a net loss, in accordance with the cashback terms and conditions.",
+          },
+        ],
+      },
+      {
+        id: '9.20',
+        title: 'Bet Settlement — Penalties Not Counted',
+        triggers: 'penalty, penalties, penalty goal, extra time, bet not settled correctly, wrong result',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Please note that penalties are not counted as winnings because the game itself would have already concluded at the end of regular play. Penalties are part of the additional time and procedure and therefore do not form part of the winning outcome for settlement purposes. Warm regards.",
+          },
+          {
+            label: 'Alt A',
+            text: "Kindly note that for settlement purposes, the outcome of a match is determined at the end of regular time, unless the market specifically includes extra time or penalties. Penalty shoot-outs are considered a separate procedure and are not included in standard match result settlements.",
+          },
+        ],
+      },
+      {
+        id: '9.21',
+        title: 'Security & Data Protection',
+        triggers: 'data breach, hacked, security, data leaked, account compromised',
+        variants: [
+          {
+            label: 'Standard',
+            text: "Kindly note that we have not experienced any security breaches. If you have any evidence indicating otherwise, please feel free to share it with us for further review. We take the security and protection of our clients' data seriously and have measures in place to safeguard their information. Regards.",
+          },
+          {
+            label: 'Alt A',
+            text: "Please be assured that the security and confidentiality of our clients' data is a top priority. We have not identified any breach on our end. Should you have specific evidence or concerns, we encourage you to share them so we can review and respond accordingly.",
+          },
+        ],
+      },
+    ],
+  },
 ];
+
