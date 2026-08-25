@@ -12,9 +12,9 @@ import {
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
 
-// ─── Time Helpers ──────────────────────────────────────────────────────────────
+// ─── Deterministic Time Window Engine ──────────────────────────────────────────
 
-function formatWindowHour(d) {
+export function formatWindowHour(d) {
   let h = d.getHours();
   const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12;
@@ -22,64 +22,102 @@ function formatWindowHour(d) {
   return `${h}:00 ${ampm}`;
 }
 
-function formatWindowHourShort(d) {
+export function formatWindowHourShort(d) {
   let h = d.getHours();
-  const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12;
   if (h === 0) h = 12;
   return `${h}:00`;
 }
 
-function getShiftWindow(dateInput) {
+/**
+ * Returns shift window metadata:
+ * - 1:00 AM to 7:00 AM is grouped as a single combined night block
+ * - All other hours (7 AM - 1 AM) are 1-hour brackets
+ */
+export function getShiftWindow(dateInput = new Date()) {
   const date = new Date(dateInput);
   const hour = date.getHours();
 
   if (hour >= 1 && hour < 7) {
-    const start = new Date(date); start.setHours(1, 0, 0, 0);
-    const end   = new Date(date); end.setHours(7, 0, 0, 0);
+    const start = new Date(date);
+    start.setHours(1, 0, 0, 0);
+    const end = new Date(date);
+    end.setHours(7, 0, 0, 0);
     return {
-      startTime: start, endTime: end,
-      timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
-      timeRangeShort: `1:00–7:00 AM`,
-      startTimeCap: formatWindowHour(start),
+      windowKey: '01-07',
+      startTime: start,
+      endTime: end,
+      timeRange: '1:00 AM – 7:00 AM',
+      timeRangeShort: '1:00–7:00 AM',
+      startTimeCap: '1:00 AM',
       isNightShift: true
     };
   }
 
-  const start = new Date(date); start.setMinutes(0, 0, 0, 0);
-  const end   = new Date(start); end.setHours(end.getHours() + 1);
+  const start = new Date(date);
+  start.setMinutes(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setHours(end.getHours() + 1);
+
+  const startAmpm = start.getHours() >= 12 ? 'PM' : 'AM';
+  const endAmpm = end.getHours() >= 12 ? 'PM' : 'AM';
+  const startH = start.getHours() % 12 || 12;
+  const endH = end.getHours() % 12 || 12;
+
+  const timeRangeShort = startAmpm === endAmpm
+    ? `${startH}:00–${endH}:00 ${endAmpm}`
+    : `${startH}:00 ${startAmpm}–${endH}:00 ${endAmpm}`;
+
   return {
-    startTime: start, endTime: end,
+    windowKey: `${String(start.getHours()).padStart(2, '0')}-${String(end.getHours()).padStart(2, '0')}`,
+    startTime: start,
+    endTime: end,
     timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
-    timeRangeShort: `${formatWindowHourShort(start)}–${formatWindowHourShort(end)} ${end.getHours() >= 12 ? 'PM' : 'AM'}`,
+    timeRangeShort,
     startTimeCap: formatWindowHour(start),
     isNightShift: false
   };
 }
 
-function generateHourRange(shiftStep = 0) {
-  let date = new Date();
-  if (shiftStep !== 0) {
-    let steps = Math.abs(shiftStep);
-    const direction = shiftStep > 0 ? 1 : -1;
-    while (steps > 0) {
-      const window = getShiftWindow(date);
-      date = direction > 0
-        ? new Date(window.endTime.getTime() + 1000)
-        : new Date(window.startTime.getTime() - 1000);
-      steps--;
-    }
-  }
+/**
+ * Returns the exact completed window immediately preceding the given date.
+ * E.g., at 9:15 AM -> 8:00 AM – 9:00 AM
+ * E.g., at 7:15 AM -> 1:00 AM – 7:00 AM
+ * E.g., at 1:15 AM -> 12:00 AM – 1:00 AM
+ */
+export function getPreviousShiftWindow(dateInput = new Date()) {
+  const current = getShiftWindow(dateInput);
+  const prevDate = new Date(current.startTime.getTime() - 60000);
+  return getShiftWindow(prevDate);
+}
+
+export function generateHourRange(shiftStep = 0) {
+  if (shiftStep === 0) return getShiftWindow(new Date()).timeRange;
+  if (shiftStep === -1) return getPreviousShiftWindow(new Date()).timeRange;
+  const date = new Date();
+  date.setHours(date.getHours() + shiftStep);
   return getShiftWindow(date).timeRange;
 }
 
-// ─── Default State ─────────────────────────────────────────────────────────────
+/**
+ * Normalizes timeRange strings across hyphens, en-dashes, em-dashes and spaces
+ * to eliminate lookup mismatches.
+ */
+export function normalizeTimeRange(str) {
+  if (!str) return '';
+  return str
+    .replace(/[\u2013\u2014–—]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
 
 function buildDefaultCounter() {
+  const windowObj = getShiftWindow(new Date());
   return {
     id: 'hourly_counter_global',
     transactionCode: '__HOURLY_COUNTER__',
-    timeRange: generateHourRange(0),
+    timeRange: windowObj.timeRange,
     depositCount: 0,
     withdrawalCount: 0,
     depositLabel: 'Deposit completed',
@@ -88,7 +126,7 @@ function buildDefaultCounter() {
   };
 }
 
-// ─── Component ─────────────────────────────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function HourlyCounter() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -98,71 +136,55 @@ export default function HourlyCounter() {
   const toast = useToast();
   const addToast = toast?.addToast || toast?.showToast || (() => {});
 
-  // ── State ─────────────────────────────────────────────────────────────────
+  const sessionIdRef = useRef(`tab_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
+  const broadcastChannelRef = useRef(null);
+  const isInitializedRef = useRef(false);
+
+  // ── 1. Local State Initializers ──────────────────────────────────────────
   const [analyticsHistory, setAnalyticsHistory] = useState(() => {
     try {
       const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
-      const list = saved ? JSON.parse(saved) : [];
-      // Also check if localStorage counter had unarchived data from a completed hour
-      const counterSaved = localStorage.getItem("betfalme_mpesa_hourly_counter");
-      if (counterSaved) {
-        const parsedCounter = JSON.parse(counterSaved);
-        const currentWindow = getShiftWindow(new Date()).timeRange;
-        if (parsedCounter.timeRange && parsedCounter.timeRange !== currentWindow) {
-          const hasCount = (parsedCounter.depositCount || 0) > 0 || (parsedCounter.withdrawalCount || 0) > 0;
-          const alreadyInHistory = list.some(h => h.timeRange === parsedCounter.timeRange);
-          if (hasCount && !alreadyInHistory) {
-            list.unshift({
-              id: `analytics_${Date.now()}`,
-              timeRange: parsedCounter.timeRange,
-              depositCount: parsedCounter.depositCount || 0,
-              withdrawalCount: parsedCounter.withdrawalCount || 0,
-              copiedAt: new Date().toISOString(),
-              autoArchived: true,
-              date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
-            });
-          }
-        }
-      }
-      return list;
-    } catch { return []; }
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
 
   const [counterState, setCounterState] = useState(() => {
     try {
       const saved = localStorage.getItem("betfalme_mpesa_hourly_counter");
-      if (!saved) return buildDefaultCounter();
-      const parsed = JSON.parse(saved);
-      const currentWindow = getShiftWindow(new Date()).timeRange;
-      if (parsed.timeRange && parsed.timeRange === currentWindow) {
-        return { ...buildDefaultCounter(), ...parsed };
-      } else {
-        return {
-          ...buildDefaultCounter(),
-          depositLabel:    parsed.depositLabel    || 'Deposit completed',
-          withdrawalLabel: parsed.withdrawalLabel || 'Completed withdrawal',
-          timeRange:       currentWindow,
-          depositCount:    0,
-          withdrawalCount: 0,
-        };
+      const currentWindow = getShiftWindow(new Date());
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.timeRange && normalizeTimeRange(parsed.timeRange) === normalizeTimeRange(currentWindow.timeRange)) {
+          return { ...buildDefaultCounter(), ...parsed, timeRange: currentWindow.timeRange };
+        }
       }
-    } catch { return buildDefaultCounter(); }
+      return buildDefaultCounter();
+    } catch {
+      return buildDefaultCounter();
+    }
   });
 
-  // Unique tab/session ID to reliably ignore our own realtime echoes without blocking remote sessions
-  const sessionIdRef = useRef(`tab_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
-  const broadcastChannelRef = useRef(null);
+  const counterStateRef = useRef(counterState);
+  const analyticsHistoryRef = useRef(analyticsHistory);
+  useEffect(() => { counterStateRef.current = counterState; }, [counterState]);
+  useEffect(() => { analyticsHistoryRef.current = analyticsHistory; }, [analyticsHistory]);
 
-  // ── Persist to localStorage ───────────────────────────────────────────────
+  // ── 2. LocalStorage Persistence ──────────────────────────────────────────
   useEffect(() => {
-    localStorage.setItem("betfalme_mpesa_hourly_counter", JSON.stringify(counterState));
+    try {
+      localStorage.setItem("betfalme_mpesa_hourly_counter", JSON.stringify(counterState));
+    } catch {}
   }, [counterState]);
 
   useEffect(() => {
-    localStorage.setItem("betfalme_mpesa_analytics_history", JSON.stringify(analyticsHistory));
+    try {
+      localStorage.setItem("betfalme_mpesa_analytics_history", JSON.stringify(analyticsHistory));
+    } catch {}
   }, [analyticsHistory]);
 
-  // ── Supabase Sync ─────────────────────────────────────────────────────────
+  // ── 3. Supabase Sync Functions ───────────────────────────────────────────
   const syncCounterToSupabase = useCallback(async (state) => {
     try {
       const payload = {
@@ -171,19 +193,16 @@ export default function HourlyCounter() {
         _updatedAt: Date.now()
       };
 
-      // 1. Broadcast immediately to any other active tabs/browsers for sub-millisecond sync
+      // 1. Instant tab-to-tab broadcast
       if (broadcastChannelRef.current) {
         broadcastChannelRef.current.send({
           type: 'broadcast',
           event: 'COUNTER_UPDATE',
-          payload: {
-            state: payload,
-            senderSessionId: sessionIdRef.current
-          }
+          payload: { state: payload, senderSessionId: sessionIdRef.current }
         }).catch(() => {});
       }
 
-      // 2. Persist to Supabase Database
+      // 2. Active Counter Row
       await supabase.from('mpesa_codes').upsert([{
         id: 'hourly_counter_global',
         transactionCode: '__HOURLY_COUNTER__',
@@ -191,7 +210,7 @@ export default function HourlyCounter() {
         timestamp: new Date().toISOString()
       }]);
     } catch (err) {
-      console.warn("[Counter] Supabase counter sync failed:", err);
+      console.warn("[Counter] Supabase counter sync error:", err);
     }
   }, []);
 
@@ -207,10 +226,7 @@ export default function HourlyCounter() {
         broadcastChannelRef.current.send({
           type: 'broadcast',
           event: 'ANALYTICS_UPDATE',
-          payload: {
-            history,
-            senderSessionId: sessionIdRef.current
-          }
+          payload: { history, senderSessionId: sessionIdRef.current }
         }).catch(() => {});
       }
 
@@ -221,11 +237,11 @@ export default function HourlyCounter() {
         timestamp: new Date().toISOString()
       }]);
     } catch (err) {
-      console.warn("[Counter] Supabase analytics sync failed:", err);
+      console.warn("[Counter] Supabase analytics sync error:", err);
     }
   }, []);
 
-  // ── Initial Supabase Fetch + Realtime Subscription ────────────────────────
+  // ── 4. Initial Fetch & Realtime Subscription ─────────────────────────────
   useEffect(() => {
     const fetchInitial = async () => {
       try {
@@ -234,41 +250,51 @@ export default function HourlyCounter() {
           .select('*')
           .in('id', ['hourly_counter_global', 'hourly_analytics_history']);
 
-        if (error) { console.warn("[Counter] Supabase fetch error:", error.message); return; }
-        if (!data) return;
-
-        const currentActiveWindow = getShiftWindow(new Date()).timeRange;
-
-        // 1. First process analytics history from DB
-        let historyList = [];
-        const analyticsRecord = data.find(r => r.id === 'hourly_analytics_history' || r.transactionCode === '__HOURLY_ANALYTICS__');
-        if (analyticsRecord?.raw) {
-          try {
-            const parsed = JSON.parse(analyticsRecord.raw);
-            if (Array.isArray(parsed)) historyList = parsed;
-          } catch (e) { console.error("[Counter] Analytics parse error:", e); }
+        if (error) {
+          console.warn("[Counter] Supabase fetch error:", error.message);
+          isInitializedRef.current = true;
+          return;
         }
 
-        // 2. Process counter record from DB
-        const counterRecord = data.find(r => r.id === 'hourly_counter_global' || r.transactionCode === '__HOURLY_COUNTER__');
-        if (counterRecord?.raw) {
+        const currentWindow = getShiftWindow(new Date());
+        let dbHistory = [];
+
+        // Parse DB history
+        const analyticsRec = data?.find(r => r.id === 'hourly_analytics_history' || r.transactionCode === '__HOURLY_ANALYTICS__');
+        if (analyticsRec?.raw) {
           try {
-            const parsed = JSON.parse(counterRecord.raw);
-            if (parsed.timeRange && parsed.timeRange === currentActiveWindow) {
+            const parsed = JSON.parse(analyticsRec.raw);
+            if (Array.isArray(parsed)) dbHistory = parsed;
+          } catch {}
+        }
+
+        // Parse active counter from DB
+        const counterRec = data?.find(r => r.id === 'hourly_counter_global' || r.transactionCode === '__HOURLY_COUNTER__');
+        if (counterRec?.raw) {
+          try {
+            const parsed = JSON.parse(counterRec.raw);
+            const isSameActive = parsed.timeRange && normalizeTimeRange(parsed.timeRange) === normalizeTimeRange(currentWindow.timeRange);
+
+            if (isSameActive) {
               setCounterState(prev => ({
                 ...prev,
-                depositCount: typeof parsed.depositCount === 'number' ? parsed.depositCount : prev.depositCount,
-                withdrawalCount: typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : prev.withdrawalCount,
+                depositCount: Math.max(typeof parsed.depositCount === 'number' ? parsed.depositCount : 0, prev.depositCount || 0),
+                withdrawalCount: Math.max(typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : 0, prev.withdrawalCount || 0),
                 depositLabel: parsed.depositLabel || prev.depositLabel,
                 withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
-                timeRange: currentActiveWindow,
+                timeRange: currentWindow.timeRange,
               }));
-            } else if (parsed.timeRange && parsed.timeRange !== currentActiveWindow) {
-              // If the DB counter is from a previous hour and has counts, ensure it's archived in history
-              const hasCount = (parsed.depositCount || 0) > 0 || (parsed.withdrawalCount || 0) > 0;
-              const alreadyArchived = historyList.some(h => h.timeRange === parsed.timeRange);
-              if (hasCount && !alreadyArchived) {
-                historyList = [{
+            } else if (parsed.timeRange && !isSameActive) {
+              // DB counter was from a previous hour -> merge into history immediately
+              const existingIdx = dbHistory.findIndex(h => normalizeTimeRange(h.timeRange) === normalizeTimeRange(parsed.timeRange));
+              if (existingIdx >= 0) {
+                dbHistory[existingIdx] = {
+                  ...dbHistory[existingIdx],
+                  depositCount: Math.max(dbHistory[existingIdx].depositCount || 0, parsed.depositCount || 0),
+                  withdrawalCount: Math.max(dbHistory[existingIdx].withdrawalCount || 0, parsed.withdrawalCount || 0),
+                };
+              } else {
+                dbHistory.unshift({
                   id: `analytics_${Date.now()}`,
                   timeRange: parsed.timeRange,
                   depositCount: parsed.depositCount || 0,
@@ -276,61 +302,64 @@ export default function HourlyCounter() {
                   copiedAt: new Date().toISOString(),
                   autoArchived: true,
                   date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
-                }, ...historyList];
-                syncAnalyticsToSupabase(historyList);
+                });
               }
             }
-          } catch (e) { console.error("[Counter] Counter parse error:", e); }
+          } catch {}
         }
 
-        // 3. Merge DB history with locally-initialized history.
-        //    The local history already auto-archived any unarchived previous-hour
-        //    counts at startup. Simply overwriting with Supabase data would erase that.
-        //    Strategy: keep all unique timeRange entries from BOTH sources,
-        //    preferring the DB entry when there's a conflict (it's more authoritative).
-        if (historyList.length > 0) {
-          setAnalyticsHistory(prev => {
-            const merged = [...historyList];
-            // Add any local entries that aren't already in the DB list
-            for (const localEntry of prev) {
-              if (!merged.some(h => h.timeRange === localEntry.timeRange)) {
-                merged.push(localEntry);
-              }
+        // Merge DB History + Local History with normalize deduplication
+        setAnalyticsHistory(prev => {
+          const map = new Map();
+          for (const item of [...dbHistory, ...prev]) {
+            if (!item?.timeRange) continue;
+            const normKey = normalizeTimeRange(item.timeRange);
+            const existing = map.get(normKey);
+            if (!existing) {
+              map.set(normKey, item);
+            } else {
+              map.set(normKey, {
+                ...existing,
+                ...item,
+                depositCount: Math.max(existing.depositCount || 0, item.depositCount || 0),
+                withdrawalCount: Math.max(existing.withdrawalCount || 0, item.withdrawalCount || 0),
+                copiedAt: (new Date(item.copiedAt || 0) > new Date(existing.copiedAt || 0)) ? item.copiedAt : existing.copiedAt
+              });
             }
-            // Sort most-recent first by copiedAt timestamp
-            merged.sort((a, b) => new Date(b.copiedAt || 0) - new Date(a.copiedAt || 0));
-            // If we added local entries that weren't in DB, push merged list to Supabase
-            if (merged.length > historyList.length) {
-              syncAnalyticsToSupabase(merged);
-            }
-            return merged;
-          });
-        }
+          }
+          const merged = Array.from(map.values()).sort((a, b) => new Date(b.copiedAt || 0) - new Date(a.copiedAt || 0));
+          if (merged.length > dbHistory.length) {
+            syncAnalyticsToSupabase(merged);
+          }
+          return merged;
+        });
+
+        isInitializedRef.current = true;
       } catch (err) {
-        console.warn("[Counter] Supabase connection error:", err);
+        console.warn("[Counter] Supabase initialization failed:", err);
+        isInitializedRef.current = true;
       }
     };
 
     fetchInitial();
 
-    // Setup Dual Realtime: Postgres CDC Changes + Instant Broadcast Channel
+    // Setup Realtime Broadcast and Postgres CDC
     const channel = supabase.channel('mpesa-hourly-counter-realtime', {
       config: { broadcast: { self: false } }
     });
 
-    // 1. Instant WebSocket Broadcast from other sessions
     channel.on('broadcast', { event: 'COUNTER_UPDATE' }, ({ payload }) => {
       if (!payload || payload.senderSessionId === sessionIdRef.current) return;
       const parsed = payload.state;
-      const currentWindow = getShiftWindow(new Date()).timeRange;
-      if (parsed && (!parsed.timeRange || parsed.timeRange === currentWindow)) {
+      const currentWindow = getShiftWindow(new Date());
+      if (parsed && (!parsed.timeRange || normalizeTimeRange(parsed.timeRange) === normalizeTimeRange(currentWindow.timeRange))) {
         setCounterState(prev => ({
           ...prev,
           depositCount: typeof parsed.depositCount === 'number' ? parsed.depositCount : prev.depositCount,
           withdrawalCount: typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : prev.withdrawalCount,
           depositLabel: parsed.depositLabel || prev.depositLabel,
           withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
-          timeRange: currentWindow,
+          timeRange: currentWindow.timeRange,
         }));
       }
     });
@@ -338,11 +367,28 @@ export default function HourlyCounter() {
     channel.on('broadcast', { event: 'ANALYTICS_UPDATE' }, ({ payload }) => {
       if (!payload || payload.senderSessionId === sessionIdRef.current) return;
       if (Array.isArray(payload.history)) {
-        setAnalyticsHistory(payload.history);
+        setAnalyticsHistory(prev => {
+          const map = new Map();
+          for (const item of [...payload.history, ...prev]) {
+            if (!item?.timeRange) continue;
+            const normKey = normalizeTimeRange(item.timeRange);
+            const existing = map.get(normKey);
+            if (!existing) {
+              map.set(normKey, item);
+            } else {
+              map.set(normKey, {
+                ...existing,
+                ...item,
+                depositCount: Math.max(existing.depositCount || 0, item.depositCount || 0),
+                withdrawalCount: Math.max(existing.withdrawalCount || 0, item.withdrawalCount || 0),
+              });
+            }
+          }
+          return Array.from(map.values()).sort((a, b) => new Date(b.copiedAt || 0) - new Date(a.copiedAt || 0));
+        });
       }
     });
 
-    // 2. Postgres Changes (Database Realtime from other browsers / reloads)
     channel.on('postgres_changes', { event: '*', table: 'mpesa_codes', schema: 'public' }, (payload) => {
       const rec = payload.new;
       if (!rec?.raw) return;
@@ -350,32 +396,47 @@ export default function HourlyCounter() {
       if (rec.id === 'hourly_counter_global' || rec.transactionCode === '__HOURLY_COUNTER__') {
         try {
           const parsed = JSON.parse(rec.raw);
-          // If this update originated from our own session, ignore it
-          if (parsed._updatedBySessionId && parsed._updatedBySessionId === sessionIdRef.current) {
-            return;
-          }
+          if (parsed._updatedBySessionId === sessionIdRef.current) return;
 
-          const currentWindow = getShiftWindow(new Date()).timeRange;
-          if (!parsed.timeRange || parsed.timeRange === currentWindow) {
+          const currentWindow = getShiftWindow(new Date());
+          if (!parsed.timeRange || normalizeTimeRange(parsed.timeRange) === normalizeTimeRange(currentWindow.timeRange)) {
             setCounterState(prev => ({
               ...prev,
               depositCount: typeof parsed.depositCount === 'number' ? parsed.depositCount : prev.depositCount,
               withdrawalCount: typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : prev.withdrawalCount,
               depositLabel: parsed.depositLabel || prev.depositLabel,
               withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
-              timeRange: currentWindow,
+              timeRange: currentWindow.timeRange,
             }));
           }
-        } catch (e) { console.error("[Realtime] Counter parse error:", e); }
+        } catch {}
       }
 
       if (rec.id === 'hourly_analytics_history' || rec.transactionCode === '__HOURLY_ANALYTICS__') {
         try {
           const parsed = JSON.parse(rec.raw);
           if (Array.isArray(parsed)) {
-            setAnalyticsHistory(parsed);
+            setAnalyticsHistory(prev => {
+              const map = new Map();
+              for (const item of [...parsed, ...prev]) {
+                if (!item?.timeRange) continue;
+                const normKey = normalizeTimeRange(item.timeRange);
+                const existing = map.get(normKey);
+                if (!existing) {
+                  map.set(normKey, item);
+                } else {
+                  map.set(normKey, {
+                    ...existing,
+                    ...item,
+                    depositCount: Math.max(existing.depositCount || 0, item.depositCount || 0),
+                    withdrawalCount: Math.max(existing.withdrawalCount || 0, item.withdrawalCount || 0),
+                  });
+                }
+              }
+              return Array.from(map.values()).sort((a, b) => new Date(b.copiedAt || 0) - new Date(a.copiedAt || 0));
+            });
           }
-        } catch (e) { console.error("[Realtime] Analytics parse error:", e); }
+        } catch {}
       }
     });
 
@@ -389,24 +450,20 @@ export default function HourlyCounter() {
       broadcastChannelRef.current = null;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [syncAnalyticsToSupabase]);
 
-  // ── Auto Hour Rollover ────────────────────────────────────────────────────
-  // Uses a ref to access latest state without re-subscribing the interval
-  const counterStateRef = useRef(counterState);
-  const analyticsHistoryRef = useRef(analyticsHistory);
-  useEffect(() => { counterStateRef.current = counterState; }, [counterState]);
-  useEffect(() => { analyticsHistoryRef.current = analyticsHistory; }, [analyticsHistory]);
-
+  // ── 5. Auto Hour Rollover Engine ──────────────────────────────────────────
   useEffect(() => {
     const checkRollover = () => {
       const now = new Date();
       const currentWindow = getShiftWindow(now);
       const prev = counterStateRef.current;
 
-      // Only trigger rollover if the time window has actually changed
-      if (!prev.timeRange || prev.timeRange === currentWindow.timeRange) return;
+      if (!prev.timeRange) return;
+      if (normalizeTimeRange(prev.timeRange) === normalizeTimeRange(currentWindow.timeRange)) return;
+      if (!isInitializedRef.current) return;
 
+      // Completed window archive entry
       const archiveEntry = {
         id: `analytics_${Date.now()}`,
         timeRange: prev.timeRange,
@@ -417,7 +474,21 @@ export default function HourlyCounter() {
         date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
       };
 
-      const nextHistory = [archiveEntry, ...analyticsHistoryRef.current.filter(h => h.timeRange !== prev.timeRange)];
+      const existingHistory = analyticsHistoryRef.current || [];
+      const existingIdx = existingHistory.findIndex(h => normalizeTimeRange(h.timeRange) === normalizeTimeRange(prev.timeRange));
+      let nextHistory;
+      if (existingIdx >= 0) {
+        nextHistory = [...existingHistory];
+        nextHistory[existingIdx] = {
+          ...nextHistory[existingIdx],
+          depositCount: Math.max(nextHistory[existingIdx].depositCount || 0, prev.depositCount || 0),
+          withdrawalCount: Math.max(nextHistory[existingIdx].withdrawalCount || 0, prev.withdrawalCount || 0),
+          copiedAt: new Date().toISOString()
+        };
+      } else {
+        nextHistory = [archiveEntry, ...existingHistory];
+      }
+
       setAnalyticsHistory(nextHistory);
       syncAnalyticsToSupabase(nextHistory);
 
@@ -433,21 +504,19 @@ export default function HourlyCounter() {
     };
 
     checkRollover();
-    const interval = setInterval(checkRollover, 5000);
+    const interval = setInterval(checkRollover, 2000);
     return () => clearInterval(interval);
   }, [syncCounterToSupabase, syncAnalyticsToSupabase]);
 
-  // ── Counter Updater — optimistic + deferred Supabase write ───────────────
+  // ── 6. Counter Modifiers ─────────────────────────────────────────────────
   const updateCounterState = useCallback((updater) => {
     setCounterState(prev => {
       const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      // Sync immediately via Broadcast + Supabase DB
       setTimeout(() => syncCounterToSupabase(next), 0);
       return next;
     });
   }, [syncCounterToSupabase]);
 
-  // ── Increment / Decrement ─────────────────────────────────────────────────
   const handleAdjustCount = useCallback((type, delta) => {
     updateCounterState(prev => {
       if (type === 'deposit') {
@@ -465,45 +534,7 @@ export default function HourlyCounter() {
     addToast("Hour counters reset", "info");
   }, [updateCounterState, addToast]);
 
-  const handleStepShift = useCallback((step) => {
-    setCounterState(prev => {
-      // Compute the new range by stepping from the current stored range's anchor
-      const currentWindowAnchor = (() => {
-        // Walk step direction from current window
-        let date = new Date();
-        // Find the date that matches our current timeRange by comparing
-        // Then step forward/backward from there
-        return null; // fallback to live calculation below
-      })();
-
-      // Simpler: just step from "now" using the stored timeRange as reference
-      // Walk N steps in direction from now
-      let date = new Date();
-      const now = getShiftWindow(date);
-      
-      // Figure out how many steps we are from current window
-      // by parsing the stored timeRange and comparing hours
-      // Simplest correct approach: step from NOW
-      let steps = Math.abs(step);
-      const dir = step > 0 ? 1 : -1;
-      // Start from the boundary of the current window in prev state
-      // We'll just use the current real window as origin
-      date = new Date();
-      while (steps > 0) {
-        const w = getShiftWindow(date);
-        date = dir > 0
-          ? new Date(w.endTime.getTime() + 1000)
-          : new Date(w.startTime.getTime() - 1000);
-        steps--;
-      }
-      const newRange = getShiftWindow(date).timeRange;
-      const next = { ...prev, timeRange: newRange };
-      setTimeout(() => syncCounterToSupabase(next), 0);
-      return next;
-    });
-  }, [syncCounterToSupabase]);
-
-  // ── Copy Report ───────────────────────────────────────────────────────────
+  // ── 7. Formatting and Copying ─────────────────────────────────────────────
   const getFormattedCounterText = (range, dep, wth) => {
     const dLabel = counterState.depositLabel || 'Deposit completed';
     const wLabel = counterState.withdrawalLabel || 'Completed withdrawal';
@@ -511,10 +542,11 @@ export default function HourlyCounter() {
   };
 
   const handleCopyCounterText = useCallback(async (customRange, customDep, customWth, entryId = 'active') => {
-    const range  = customRange ?? counterState.timeRange ?? generateHourRange(0);
-    const dep    = customDep  !== undefined ? customDep  : (counterState.depositCount    ?? 0);
-    const wth    = customWth  !== undefined ? customWth  : (counterState.withdrawalCount ?? 0);
-    const text   = getFormattedCounterText(range, dep, wth);
+    const activeWin = getShiftWindow(new Date());
+    const range = customRange ?? counterState.timeRange ?? activeWin.timeRange;
+    const dep   = customDep  !== undefined ? customDep  : (counterState.depositCount    ?? 0);
+    const wth   = customWth  !== undefined ? customWth  : (counterState.withdrawalCount ?? 0);
+    const text  = getFormattedCounterText(range, dep, wth);
 
     try {
       await navigator.clipboard.writeText(text);
@@ -527,7 +559,7 @@ export default function HourlyCounter() {
         setTimeout(() => setCopiedId(null), 2000);
       }
 
-      // Archive to history on copy (deduped by timeRange)
+      // Save/merge to history
       const entry = {
         id: entryId !== 'active' && entryId ? entryId : `analytics_${Date.now()}`,
         timeRange: range,
@@ -538,7 +570,9 @@ export default function HourlyCounter() {
       };
 
       setAnalyticsHistory(prev => {
-        const next = [entry, ...prev.filter(h => h.timeRange !== range)];
+        const norm = normalizeTimeRange(range);
+        const filtered = prev.filter(h => normalizeTimeRange(h.timeRange) !== norm);
+        const next = [entry, ...filtered];
         syncAnalyticsToSupabase(next);
         return next;
       });
@@ -549,22 +583,25 @@ export default function HourlyCounter() {
     }
   }, [counterState, syncAnalyticsToSupabase, addToast]);
 
-  // ── Derived Display Values ────────────────────────────────────────────────
-  const activeWindowObj    = getShiftWindow(new Date());
+  // ── 8. Derived Display Values ────────────────────────────────────────────
+  const activeWindowObj = getShiftWindow(new Date());
   const activeRangeDisplay = counterState.timeRange || activeWindowObj.timeRange;
-  const activeRangeShort   = activeWindowObj.timeRangeShort;
-  const currentActiveRange = activeWindowObj.timeRange;
+  const activeRangeShort = activeWindowObj.timeRangeShort;
 
-  // "Last hour" must never show the current active window —
-  // filter it out so we always display the most recently COMPLETED hour.
-  const prevEntry = analyticsHistory.find(h => h.timeRange !== currentActiveRange) ?? null;
-  const prevRange = prevEntry?.timeRange  ?? generateHourRange(-1);
-  const prevDep   = prevEntry?.depositCount    ?? 0;
-  const prevWth   = prevEntry?.withdrawalCount ?? 0;
+  // The last completed hour window (e.g. 11:00 AM – 12:00 PM at 12:05 PM, or 1:00 AM – 7:00 AM at 7:05 AM)
+  const expectedPrevWindow = getPreviousShiftWindow(new Date());
+  const expectedPrevRange = expectedPrevWindow.timeRange;
+  const prevEntry = analyticsHistory.find(h => 
+    normalizeTimeRange(h.timeRange) === normalizeTimeRange(expectedPrevRange)
+  ) || null;
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  const prevRange = expectedPrevRange;
+  const prevDep = prevEntry?.depositCount ?? 0;
+  const prevWth = prevEntry?.withdrawalCount ?? 0;
+
+  // ── 9. Render ────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-[calc(100vh-80px)] py-8 px-4 flex flex-col items-center justify-start text-[#F4F5F1] font-sans selection:bg-[#00D66B]/20">
+    <div className="min-h-[calc(100vh-80px)] py-8 px-4 flex flex-col items-center justify-start text-[#F4F5F1] font-sans selection:bg-[#00D66B]/20 select-none">
 
       {/* ── MAIN CARD ── */}
       <div className="w-full max-w-[760px] bg-[#1B1C22] border border-white/[0.07] rounded-[28px] p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
@@ -605,7 +642,7 @@ export default function HourlyCounter() {
           <div className="mb-5 p-4 rounded-2xl bg-[#0E0E12] border border-white/[0.07] space-y-3 animate-in fade-in duration-150 text-xs">
             <div className="flex items-center justify-between text-[#8B8E97] font-medium border-b border-white/[0.05] pb-2">
               <span>Counter Settings &amp; Custom Labels</span>
-              <button onClick={() => setShowSettingsModal(false)} className="hover:text-white p-0.5"><X size={13} /></button>
+              <button onClick={() => setShowSettingsModal(false)} className="hover:text-white p-0.5 cursor-pointer"><X size={13} /></button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -835,15 +872,16 @@ export default function HourlyCounter() {
 
         {/* Card 2: Last 6 hrs log */}
         {(() => {
-          const sixHrsAgo = Date.now() - 6 * 60 * 60 * 1000;
+          const eightHrsAgo = Date.now() - 8 * 60 * 60 * 1000;
           const last6hLog = analyticsHistory.filter(item => {
+            if (!item?.timeRange) return false;
             const ts = item.copiedAt
               ? new Date(item.copiedAt).getTime()
               : item.id?.startsWith('analytics_')
               ? parseInt(item.id.replace('analytics_', ''), 10)
               : null;
-            return ts && !isNaN(ts) && ts >= sixHrsAgo;
-          });
+            return !ts || isNaN(ts) || ts >= eightHrsAgo;
+          }).slice(0, 8);
 
           return (
             <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col gap-3 shadow-lg">
@@ -883,7 +921,7 @@ export default function HourlyCounter() {
                         </span>
                         <button
                           onClick={() => handleCopyCounterText(item.timeRange, item.depositCount ?? 0, item.withdrawalCount ?? 0, `log_${i}`)}
-                          className="ml-1.5 p-1.5 rounded-lg bg-[#232429] hover:bg-white/10 border border-white/[0.07] text-[#54565F] hover:text-white transition-all"
+                          className="ml-1.5 p-1.5 rounded-lg bg-[#232429] hover:bg-white/10 border border-white/[0.07] text-[#54565F] hover:text-white transition-all cursor-pointer"
                           title="Copy this window's report"
                         >
                           {copiedId === `log_${i}` ? <Check size={10} className="text-[#00D66B]" /> : <Copy size={10} />}

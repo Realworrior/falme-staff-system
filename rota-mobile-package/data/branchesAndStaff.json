@@ -1,0 +1,38 @@
+{
+  "branches": [
+    {
+      "id": "betfalme",
+      "name": "Betfalme",
+      "staff": [
+        { "name": "Ascar", "type": "NT_ROTATION", "cycleOffset": 0, "transportRate": 350, "color": { "bg": "#3d7ee6", "text": "#ffffff", "bar": "#2f68cc" } },
+        { "name": "Chris", "type": "NT_ROTATION", "cycleOffset": 2, "transportRate": 400, "color": { "bg": "#c88428", "text": "#ffffff", "bar": "#a86e1e" } },
+        { "name": "Faye", "type": "NT_ROTATION", "cycleOffset": 4, "transportRate": 300, "color": { "bg": "#c84a76", "text": "#ffffff", "bar": "#aa3860" } },
+        { "name": "Joyce", "type": "NT_ROTATION", "cycleOffset": 6, "transportRate": 450, "color": { "bg": "#28a87c", "text": "#ffffff", "bar": "#1e8e66" } },
+        { "name": "Linda", "type": "AM_ROTATION", "cycleOffset": 8, "transportRate": 350, "color": { "bg": "#c8a020", "text": "#ffffff", "bar": "#a88218" } },
+        { "name": "Nickson", "type": "AM_ROTATION", "cycleOffset": 10, "transportRate": 400, "color": { "bg": "#7a56d4", "text": "#ffffff", "bar": "#6244b8" } },
+        { "name": "Pauline", "type": "NT_ROTATION", "cycleOffset": 12, "transportRate": 300, "color": { "bg": "#cc4040", "text": "#ffffff", "bar": "#aa3030" } },
+        { "name": "Sylvia", "type": "NT_ROTATION", "cycleOffset": 14, "transportRate": 450, "color": { "bg": "#1ea8cc", "text": "#ffffff", "bar": "#168caa" } },
+        { "name": "Terry", "type": "NT_ROTATION", "cycleOffset": 16, "transportRate": 400, "color": { "bg": "#cc6424", "text": "#ffffff", "bar": "#aa5018" } }
+      ]
+    },
+    {
+      "id": "sofasafi",
+      "name": "SofaSafi",
+      "staff": [
+        { "name": "Mary", "type": "NT_ROTATION", "cycleOffset": 0, "transportRate": 350, "color": { "bg": "#3d7ee6", "text": "#ffffff", "bar": "#2f68cc" } },
+        { "name": "Joan", "type": "NT_ROTATION", "cycleOffset": 2, "transportRate": 400, "color": { "bg": "#c88428", "text": "#ffffff", "bar": "#a86e1e" } },
+        { "name": "Ian K", "type": "NT_ROTATION", "cycleOffset": 4, "transportRate": 300, "color": { "bg": "#c84a76", "text": "#ffffff", "bar": "#aa3860" } },
+        { "name": "Jonathan", "type": "NT_ROTATION", "cycleOffset": 6, "transportRate": 450, "color": { "bg": "#28a87c", "text": "#ffffff", "bar": "#1e8e66" } },
+        { "name": "Fabrice", "type": "AM_ROTATION", "cycleOffset": 8, "transportRate": 350, "color": { "bg": "#c8a020", "text": "#ffffff", "bar": "#a88218" } },
+        { "name": "Ian R", "type": "AM_ROTATION", "cycleOffset": 10, "transportRate": 400, "color": { "bg": "#7a56d4", "text": "#ffffff", "bar": "#6244b8" } },
+        { "name": "Kelvin", "type": "NT_ROTATION", "cycleOffset": 12, "transportRate": 300, "color": { "bg": "#cc4040", "text": "#ffffff", "bar": "#aa3030" } },
+        { "name": "Shellah", "type": "NT_ROTATION", "cycleOffset": 14, "transportRate": 450, "color": { "bg": "#1ea8cc", "text": "#ffffff", "bar": "#168caa" } },
+        { "name": "Colins", "type": "NT_ROTATION", "cycleOffset": 16, "transportRate": 400, "color": { "bg": "#cc6424", "text": "#ffffff", "bar": "#aa5018" } }
+      ]
+    }
+  ],
+  "cycle18Pattern": [
+    "AM", "AM", "PM", "PM", "NT", "OFF", "OFF", "AM", "OFF",
+    "AM", "AM", "PM", "PM", "NT", "OFF", "OFF", "PM", "OFF"
+  ]
+}

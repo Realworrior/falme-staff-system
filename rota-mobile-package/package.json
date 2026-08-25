@@ -1,0 +1,21 @@
+{
+  "name": "@falme/rota-mobile-package",
+  "version": "1.0.0",
+  "description": "Portable, fully self-contained Rota & Shift Management system for mobile and web applications",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "types": "src/types/rotaTypes.ts",
+  "dependencies": {
+    "date-fns": "^3.0.0 || ^4.0.0",
+    "framer-motion": "^11.0.0 || ^12.0.0",
+    "lucide-react": "^0.300.0 || ^0.400.0",
+    "papaparse": "^5.4.0",
+    "recharts": "^2.10.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "author": "Falme Team",
+  "license": "MIT"
+}

@@ -32,21 +32,16 @@ function formatCategoryTitle(title) {
 
 // ─── CategoryList Sidebar & Mobile Responsive Accordion ───────────────────────
 function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favoriteIds, onToggleFavorite, showOnlyFavorites, isMobileOpen, setIsMobileOpen }) {
-  const [expandedCatIds, setExpandedCatIds] = useState([categories[0]?.id || 1]);
-  const [multiExpandMode, setMultiExpandMode] = useState(false);
+  const [expandedCatIds, setExpandedCatIds] = useState(() => [categories[0]?.id || 1]);
 
   useEffect(() => {
     if (selectedSub) {
       const parentCat = categories.find(cat => cat.subsections.some(sub => sub.id === selectedSub.id));
       if (parentCat) {
-        if (multiExpandMode) {
-          setExpandedCatIds(prev => prev.includes(parentCat.id) ? prev : [...prev, parentCat.id]);
-        } else {
-          setExpandedCatIds([parentCat.id]);
-        }
+        setExpandedCatIds(prev => prev.includes(parentCat.id) ? prev : [...prev, parentCat.id]);
       }
     }
-  }, [selectedSub, categories, multiExpandMode]);
+  }, [selectedSub, categories]);
 
   useEffect(() => {
     if (searchQuery.trim() || showOnlyFavorites) {
@@ -55,21 +50,16 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
   }, [searchQuery, showOnlyFavorites, categories]);
 
   const handleCategoryClick = (catId) => {
-    const isCurrentlyExpanded = expandedCatIds.includes(catId);
-    if (multiExpandMode) {
-      setExpandedCatIds(prev => isCurrentlyExpanded ? prev.filter(id => id !== catId) : [...prev, catId]);
-    } else {
-      setExpandedCatIds(isCurrentlyExpanded ? [] : [catId]);
-    }
+    setExpandedCatIds(prev =>
+      prev.includes(catId) ? prev.filter(id => id !== catId) : [...prev, catId]
+    );
   };
 
   const handleToggleAll = () => {
     if (expandedCatIds.length === categories.length) {
       setExpandedCatIds([]);
-      setMultiExpandMode(false);
     } else {
       setExpandedCatIds(categories.map(c => c.id));
-      setMultiExpandMode(true);
     }
   };
 
@@ -105,7 +95,7 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
           <Filter className="w-4 h-4 text-[#00D66B]" />
           <span>Category Menu ({filteredCategories.length})</span>
         </div>
-        <ChevronDown className={`w-4 h-4 text-[#8B8E97] transition-transform ${isMobileOpen ? 'rotate-180 text-white' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-[#8B8E97] transition-transform duration-200 ${isMobileOpen ? 'rotate-180 text-white' : ''}`} />
       </button>
 
       {/* Main Categories Content */}
@@ -159,9 +149,7 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
                     <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full transition-colors ${isExpanded || containsSelected ? 'bg-[#0E0E12] text-[#00D66B] font-bold' : 'text-[#8B8E97]'}`}>
                       {cat.subsections.length}
                     </span>
-                    <motion.div animate={{ rotate: isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }} className="text-[#8B8E97]">
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </motion.div>
+                    <ChevronRight className={`w-3.5 h-3.5 text-[#8B8E97] transition-transform duration-200 ${isExpanded ? 'rotate-90 text-white' : ''}`} />
                   </div>
                 </button>
 
@@ -170,11 +158,12 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
                     <motion.div
                       key={`sub-${cat.id}`}
                       initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1, transition: { height: { duration: 0.2 }, opacity: { duration: 0.15 } } }}
-                      exit={{ height: 0, opacity: 0, transition: { height: { duration: 0.15 }, opacity: { duration: 0.1 } } }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.18, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                      <div className="pl-3 pr-1 py-1 space-y-1 border-l border-white/10 ml-4">
+                      <div className="ml-5 pl-2.5 my-1 space-y-1 border-l border-white/10">
                         {cat.subsections.map(sub => {
                           const isActive = selectedSub?.id === sub.id;
                           const isFav = favoriteIds.includes(sub.id);

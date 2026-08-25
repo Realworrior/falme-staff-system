@@ -31,71 +31,77 @@ function formatWindowHour(d) {
 
 function formatWindowHourShort(d) {
   let h = d.getHours();
-  const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12;
   if (h === 0) h = 12;
   return `${h}:00`;
 }
 
-// Calculate shift windows (1:00 AM - 7:00 AM combined bracket, standard 1-hour brackets for the rest)
-function getShiftWindow(dateInput) {
+function getShiftWindow(dateInput = new Date()) {
   const date = new Date(dateInput);
   const hour = date.getHours();
 
-  // 1:00 AM to 7:00 AM night window (hours 1, 2, 3, 4, 5, 6)
   if (hour >= 1 && hour < 7) {
     const start = new Date(date);
     start.setHours(1, 0, 0, 0);
     const end = new Date(date);
     end.setHours(7, 0, 0, 0);
     return {
+      windowKey: '01-07',
       startTime: start,
       endTime: end,
-      timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
-      timeRangeShort: `1:00–7:00 AM`,
-      startTimeCap: formatWindowHour(start),
+      timeRange: '1:00 AM – 7:00 AM',
+      timeRangeShort: '1:00–7:00 AM',
+      startTimeCap: '1:00 AM',
       isNightShift: true
     };
-  } else {
-    // 1-hour standard window (e.g., 7:00 AM – 8:00 AM, 12:00 PM – 1:00 PM)
-    const start = new Date(date);
-    start.setMinutes(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setHours(end.getHours() + 1);
-    const endAmpm = end.getHours() >= 12 ? 'PM' : 'AM';
-    return {
-      startTime: start,
-      endTime: end,
-      timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
-      timeRangeShort: `${formatWindowHourShort(start)}–${formatWindowHourShort(end)} ${endAmpm}`,
-      startTimeCap: formatWindowHour(start),
-      isNightShift: false
-    };
   }
+
+  const start = new Date(date);
+  start.setMinutes(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setHours(end.getHours() + 1);
+
+  const startAmpm = start.getHours() >= 12 ? 'PM' : 'AM';
+  const endAmpm = end.getHours() >= 12 ? 'PM' : 'AM';
+  const startH = start.getHours() % 12 || 12;
+  const endH = end.getHours() % 12 || 12;
+
+  const timeRangeShort = startAmpm === endAmpm
+    ? `${startH}:00–${endH}:00 ${endAmpm}`
+    : `${startH}:00 ${startAmpm}–${endH}:00 ${endAmpm}`;
+
+  return {
+    windowKey: `${String(start.getHours()).padStart(2, '0')}-${String(end.getHours()).padStart(2, '0')}`,
+    startTime: start,
+    endTime: end,
+    timeRange: `${formatWindowHour(start)} – ${formatWindowHour(end)}`,
+    timeRangeShort,
+    startTimeCap: formatWindowHour(start),
+    isNightShift: false
+  };
 }
 
-// Generate time window string with forward/backward step support
-function generateHourRange(shiftStep = 0) {
-  let date = new Date();
-  
-  if (shiftStep !== 0) {
-    let steps = Math.abs(shiftStep);
-    let direction = shiftStep > 0 ? 1 : -1;
-    
-    while (steps > 0) {
-      const window = getShiftWindow(date);
-      if (direction > 0) {
-        // Step forward into next window
-        date = new Date(window.endTime.getTime() + 1000);
-      } else {
-        // Step backward into previous window
-        date = new Date(window.startTime.getTime() - 1000);
-      }
-      steps--;
-    }
-  }
+function getPreviousShiftWindow(dateInput = new Date()) {
+  const current = getShiftWindow(dateInput);
+  const prevDate = new Date(current.startTime.getTime() - 60000);
+  return getShiftWindow(prevDate);
+}
 
+function generateHourRange(shiftStep = 0) {
+  if (shiftStep === 0) return getShiftWindow(new Date()).timeRange;
+  if (shiftStep === -1) return getPreviousShiftWindow(new Date()).timeRange;
+  const date = new Date();
+  date.setHours(date.getHours() + shiftStep);
   return getShiftWindow(date).timeRange;
+}
+
+function normalizeTimeRange(str) {
+  if (!str) return '';
+  return str
+    .replace(/[\u2013\u2014–—]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
 }
 
 function parseSMS(text) {
@@ -640,8 +646,9 @@ export default function MpesaCodes() {
   const totalDepositsLogged = last24hAnalytics.reduce((sum, item) => sum + (item.depositCount || 0), 0);
   const totalWithdrawalsLogged = last24hAnalytics.reduce((sum, item) => sum + (item.withdrawalCount || 0), 0);
 
-  const prevEntry = analyticsHistory.length > 0 ? analyticsHistory[0] : null;
-  const prevRange = prevEntry ? prevEntry.timeRange : generateHourRange(-1);
+  const expectedPrevRange = generateHourRange(-1);
+  const prevEntry = analyticsHistory.find(h => normalizeTimeRange(h.timeRange) === normalizeTimeRange(expectedPrevRange)) || null;
+  const prevRange = expectedPrevRange;
   const prevDep = prevEntry ? (prevEntry.depositCount ?? 0) : 0;
   const prevWth = prevEntry ? (prevEntry.withdrawalCount ?? 0) : 0;
 

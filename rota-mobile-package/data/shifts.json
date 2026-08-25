@@ -1,0 +1,43 @@
+[
+  {
+    "id": "AM",
+    "name": "Morning Shift",
+    "startTime": "07:30",
+    "endTime": "15:30",
+    "timeRange": "07:30 – 15:30",
+    "color": "#3d7ee6",
+    "textColor": "#ffffff",
+    "bg": "rgba(45, 212, 191, 0.2)"
+  },
+  {
+    "id": "PM",
+    "name": "Afternoon Shift",
+    "startTime": "15:30",
+    "endTime": "22:30",
+    "timeRange": "15:30 – 22:30",
+    "color": "#28a87c",
+    "textColor": "#ffffff",
+    "bg": "rgba(96, 165, 250, 0.2)"
+  },
+  {
+    "id": "NT",
+    "name": "Night Shift",
+    "startTime": "22:30",
+    "endTime": "07:30",
+    "timeRange": "22:30 – 07:30",
+    "color": "#7a56d4",
+    "textColor": "#ffffff",
+    "bg": "rgba(251, 191, 36, 0.25)",
+    "isOvernight": true
+  },
+  {
+    "id": "OFF",
+    "name": "Day Off",
+    "startTime": "",
+    "endTime": "",
+    "timeRange": "Day Off",
+    "color": "#9CA3AF",
+    "textColor": "#ffffff",
+    "bg": "rgba(156, 163, 175, 0.1)"
+  }
+]
