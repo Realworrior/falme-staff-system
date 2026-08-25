@@ -81,9 +81,6 @@ export function getShiftWindow(dateInput = new Date()) {
 
 /**
  * Returns the exact completed window immediately preceding the given date.
- * E.g., at 9:15 AM -> 8:00 AM – 9:00 AM
- * E.g., at 7:15 AM -> 1:00 AM – 7:00 AM
- * E.g., at 1:15 AM -> 12:00 AM – 1:00 AM
  */
 export function getPreviousShiftWindow(dateInput = new Date()) {
   const current = getShiftWindow(dateInput);
@@ -91,18 +88,37 @@ export function getPreviousShiftWindow(dateInput = new Date()) {
   return getShiftWindow(prevDate);
 }
 
-export function generateHourRange(shiftStep = 0) {
-  if (shiftStep === 0) return getShiftWindow(new Date()).timeRange;
-  if (shiftStep === -1) return getPreviousShiftWindow(new Date()).timeRange;
-  const date = new Date();
-  date.setHours(date.getHours() + shiftStep);
-  return getShiftWindow(date).timeRange;
+/**
+ * Formats a unique date-keyed window ID e.g. "2026-08-25_14-15" or "2026-08-25_01-07"
+ */
+export function getWindowKey(dateInput = new Date()) {
+  const date = new Date(dateInput);
+  const win = getShiftWindow(date);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}_${win.windowKey}`;
 }
 
 /**
- * Normalizes timeRange strings across hyphens, en-dashes, em-dashes and spaces
- * to eliminate lookup mismatches.
+ * Generates the last N completed windows before the given date.
  */
+export function getPastWindows(count = 6, refDate = new Date()) {
+  const list = [];
+  let curr = new Date(getShiftWindow(refDate).startTime.getTime() - 60000);
+  for (let i = 0; i < count; i++) {
+    const win = getShiftWindow(curr);
+    const key = getWindowKey(curr);
+    list.push({ 
+      ...win, 
+      key, 
+      dateStr: win.startTime.toLocaleDateString([], { day: '2-digit', month: 'short' }) 
+    });
+    curr = new Date(win.startTime.getTime() - 60000);
+  }
+  return list;
+}
+
 export function normalizeTimeRange(str) {
   if (!str) return '';
   return str
@@ -112,330 +128,253 @@ export function normalizeTimeRange(str) {
     .toLowerCase();
 }
 
-function buildDefaultCounter() {
-  const windowObj = getShiftWindow(new Date());
-  return {
-    id: 'hourly_counter_global',
-    transactionCode: '__HOURLY_COUNTER__',
-    timeRange: windowObj.timeRange,
-    depositCount: 0,
-    withdrawalCount: 0,
-    depositLabel: 'Deposit completed',
-    withdrawalLabel: 'Completed withdrawal',
-    lastActiveHour: new Date().getHours()
-  };
-}
-
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function HourlyCounter() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [copiedActiveCounter, setCopiedActiveCounter] = useState(false);
+  const [nowTime, setNowTime] = useState(() => new Date());
+
+  const [depositLabel, setDepositLabel] = useState(() => {
+    return localStorage.getItem("betfalme_mpesa_dep_label") || "Deposit completed";
+  });
+  const [withdrawalLabel, setWithdrawalLabel] = useState(() => {
+    return localStorage.getItem("betfalme_mpesa_wth_label") || "Completed withdrawal";
+  });
 
   const toast = useToast();
   const addToast = toast?.addToast || toast?.showToast || (() => {});
 
   const sessionIdRef = useRef(`tab_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
   const broadcastChannelRef = useRef(null);
-  const isInitializedRef = useRef(false);
 
-  // ── 1. Local State Initializers ──────────────────────────────────────────
-  const [analyticsHistory, setAnalyticsHistory] = useState(() => {
+  // ── Core State: Window-Keyed Immutable Logs Map ───────────────────────────
+  // Key format: "YYYY-MM-DD_HH-HH", e.g., "2026-08-25_14-15"
+  const [hourlyLogsMap, setHourlyLogsMap] = useState(() => {
     try {
-      const saved = localStorage.getItem("betfalme_mpesa_analytics_history");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+      const saved = localStorage.getItem("betfalme_hourly_records_map");
+      if (saved) return JSON.parse(saved);
 
-  const [counterState, setCounterState] = useState(() => {
-    try {
-      const saved = localStorage.getItem("betfalme_mpesa_hourly_counter");
-      const currentWindow = getShiftWindow(new Date());
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.timeRange && normalizeTimeRange(parsed.timeRange) === normalizeTimeRange(currentWindow.timeRange)) {
-          return { ...buildDefaultCounter(), ...parsed, timeRange: currentWindow.timeRange };
-        }
+      // Migration from legacy history if present
+      const legacyHistory = localStorage.getItem("betfalme_mpesa_analytics_history");
+      const legacyCounter = localStorage.getItem("betfalme_mpesa_hourly_counter");
+      const map = {};
+
+      if (legacyHistory) {
+        const list = JSON.parse(legacyHistory);
+        list.forEach(item => {
+          if (!item.timeRange) return;
+          const ts = item.copiedAt ? new Date(item.copiedAt) : new Date();
+          const k = getWindowKey(ts);
+          map[k] = {
+            timeRange: item.timeRange,
+            depositCount: item.depositCount || 0,
+            withdrawalCount: item.withdrawalCount || 0,
+            dateStr: item.date || ts.toLocaleDateString([], { day: '2-digit', month: 'short' }),
+            updatedAt: ts.getTime()
+          };
+        });
       }
-      return buildDefaultCounter();
+
+      if (legacyCounter) {
+        const c = JSON.parse(legacyCounter);
+        const k = getWindowKey(new Date());
+        map[k] = {
+          timeRange: c.timeRange || getShiftWindow(new Date()).timeRange,
+          depositCount: c.depositCount || 0,
+          withdrawalCount: c.withdrawalCount || 0,
+          dateStr: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' }),
+          updatedAt: Date.now()
+        };
+      }
+
+      return map;
     } catch {
-      return buildDefaultCounter();
+      return {};
     }
   });
 
-  const counterStateRef = useRef(counterState);
-  const analyticsHistoryRef = useRef(analyticsHistory);
-  useEffect(() => { counterStateRef.current = counterState; }, [counterState]);
-  useEffect(() => { analyticsHistoryRef.current = analyticsHistory; }, [analyticsHistory]);
+  const hourlyLogsMapRef = useRef(hourlyLogsMap);
+  useEffect(() => { hourlyLogsMapRef.current = hourlyLogsMap; }, [hourlyLogsMap]);
 
-  // ── 2. LocalStorage Persistence ──────────────────────────────────────────
+  // Keep nowTime updated every second
+  useEffect(() => {
+    const timer = setInterval(() => setNowTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Save to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem("betfalme_mpesa_hourly_counter", JSON.stringify(counterState));
+      localStorage.setItem("betfalme_hourly_records_map", JSON.stringify(hourlyLogsMap));
     } catch {}
-  }, [counterState]);
+  }, [hourlyLogsMap]);
 
   useEffect(() => {
     try {
-      localStorage.setItem("betfalme_mpesa_analytics_history", JSON.stringify(analyticsHistory));
+      localStorage.setItem("betfalme_mpesa_dep_label", depositLabel);
+      localStorage.setItem("betfalme_mpesa_wth_label", withdrawalLabel);
     } catch {}
-  }, [analyticsHistory]);
+  }, [depositLabel, withdrawalLabel]);
 
-  // ── 3. Supabase Sync Functions ───────────────────────────────────────────
-  const syncCounterToSupabase = useCallback(async (state) => {
+  // ── Database Sync ─────────────────────────────────────────────────────────
+  const syncMapToSupabase = useCallback(async (map) => {
     try {
-      const payload = {
-        ...state,
-        _updatedBySessionId: sessionIdRef.current,
-        _updatedAt: Date.now()
-      };
-
-      // 1. Instant tab-to-tab broadcast
       if (broadcastChannelRef.current) {
         broadcastChannelRef.current.send({
           type: 'broadcast',
-          event: 'COUNTER_UPDATE',
-          payload: { state: payload, senderSessionId: sessionIdRef.current }
+          event: 'HOURLY_MAP_UPDATE',
+          payload: { map, senderSessionId: sessionIdRef.current }
         }).catch(() => {});
       }
 
-      // 2. Active Counter Row
+      // Upsert full map
+      await supabase.from('mpesa_codes').upsert([{
+        id: 'hourly_records_map',
+        transactionCode: '__HOURLY_MAP__',
+        raw: JSON.stringify(map),
+        timestamp: new Date().toISOString()
+      }]);
+
+      // Also update legacy counter row for other views
+      const activeK = getWindowKey(new Date());
+      const activeData = map[activeK] || { depositCount: 0, withdrawalCount: 0 };
       await supabase.from('mpesa_codes').upsert([{
         id: 'hourly_counter_global',
         transactionCode: '__HOURLY_COUNTER__',
-        raw: JSON.stringify(payload),
+        raw: JSON.stringify({
+          timeRange: getShiftWindow(new Date()).timeRange,
+          depositCount: activeData.depositCount || 0,
+          withdrawalCount: activeData.withdrawalCount || 0,
+          depositLabel,
+          withdrawalLabel,
+          lastActiveHour: new Date().getHours()
+        }),
         timestamp: new Date().toISOString()
       }]);
     } catch (err) {
-      console.warn("[Counter] Supabase counter sync error:", err);
+      console.warn("[Counter] Supabase sync error:", err);
     }
-  }, []);
+  }, [depositLabel, withdrawalLabel]);
 
-  const syncAnalyticsToSupabase = useCallback(async (history) => {
-    try {
-      const payload = {
-        history,
-        _updatedBySessionId: sessionIdRef.current,
-        _updatedAt: Date.now()
-      };
-
-      if (broadcastChannelRef.current) {
-        broadcastChannelRef.current.send({
-          type: 'broadcast',
-          event: 'ANALYTICS_UPDATE',
-          payload: { history, senderSessionId: sessionIdRef.current }
-        }).catch(() => {});
-      }
-
-      await supabase.from('mpesa_codes').upsert([{
-        id: 'hourly_analytics_history',
-        transactionCode: '__HOURLY_ANALYTICS__',
-        raw: JSON.stringify(history),
-        timestamp: new Date().toISOString()
-      }]);
-    } catch (err) {
-      console.warn("[Counter] Supabase analytics sync error:", err);
-    }
-  }, []);
-
-  // ── 4. Initial Fetch & Realtime Subscription ─────────────────────────────
+  // ── Initial Fetch & Realtime ──────────────────────────────────────────────
   useEffect(() => {
     const fetchInitial = async () => {
       try {
         const { data, error } = await supabase
           .from('mpesa_codes')
           .select('*')
-          .in('id', ['hourly_counter_global', 'hourly_analytics_history']);
+          .in('id', ['hourly_records_map', 'hourly_counter_global', 'hourly_analytics_history']);
 
         if (error) {
           console.warn("[Counter] Supabase fetch error:", error.message);
-          isInitializedRef.current = true;
           return;
         }
 
-        const currentWindow = getShiftWindow(new Date());
-        let dbHistory = [];
+        const mapRec = data?.find(r => r.id === 'hourly_records_map' || r.transactionCode === '__HOURLY_MAP__');
+        let dbMap = {};
 
-        // Parse DB history
-        const analyticsRec = data?.find(r => r.id === 'hourly_analytics_history' || r.transactionCode === '__HOURLY_ANALYTICS__');
-        if (analyticsRec?.raw) {
+        if (mapRec?.raw) {
           try {
-            const parsed = JSON.parse(analyticsRec.raw);
-            if (Array.isArray(parsed)) dbHistory = parsed;
+            dbMap = JSON.parse(mapRec.raw) || {};
           } catch {}
-        }
-
-        // Parse active counter from DB
-        const counterRec = data?.find(r => r.id === 'hourly_counter_global' || r.transactionCode === '__HOURLY_COUNTER__');
-        if (counterRec?.raw) {
-          try {
-            const parsed = JSON.parse(counterRec.raw);
-            const isSameActive = parsed.timeRange && normalizeTimeRange(parsed.timeRange) === normalizeTimeRange(currentWindow.timeRange);
-
-            if (isSameActive) {
-              setCounterState(prev => ({
-                ...prev,
-                depositCount: Math.max(typeof parsed.depositCount === 'number' ? parsed.depositCount : 0, prev.depositCount || 0),
-                withdrawalCount: Math.max(typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : 0, prev.withdrawalCount || 0),
-                depositLabel: parsed.depositLabel || prev.depositLabel,
-                withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
-                timeRange: currentWindow.timeRange,
-              }));
-            } else if (parsed.timeRange && !isSameActive) {
-              // DB counter was from a previous hour -> merge into history immediately
-              const existingIdx = dbHistory.findIndex(h => normalizeTimeRange(h.timeRange) === normalizeTimeRange(parsed.timeRange));
-              if (existingIdx >= 0) {
-                dbHistory[existingIdx] = {
-                  ...dbHistory[existingIdx],
-                  depositCount: Math.max(dbHistory[existingIdx].depositCount || 0, parsed.depositCount || 0),
-                  withdrawalCount: Math.max(dbHistory[existingIdx].withdrawalCount || 0, parsed.withdrawalCount || 0),
-                };
-              } else {
-                dbHistory.unshift({
-                  id: `analytics_${Date.now()}`,
-                  timeRange: parsed.timeRange,
-                  depositCount: parsed.depositCount || 0,
-                  withdrawalCount: parsed.withdrawalCount || 0,
-                  copiedAt: new Date().toISOString(),
-                  autoArchived: true,
-                  date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
+        } else {
+          // Fallback legacy parse
+          const analyticsRec = data?.find(r => r.id === 'hourly_analytics_history' || r.transactionCode === '__HOURLY_ANALYTICS__');
+          if (analyticsRec?.raw) {
+            try {
+              const list = JSON.parse(analyticsRec.raw);
+              if (Array.isArray(list)) {
+                list.forEach(item => {
+                  if (!item.timeRange) return;
+                  const ts = item.copiedAt ? new Date(item.copiedAt) : new Date();
+                  const k = getWindowKey(ts);
+                  dbMap[k] = {
+                    timeRange: item.timeRange,
+                    depositCount: item.depositCount || 0,
+                    withdrawalCount: item.withdrawalCount || 0,
+                    dateStr: item.date || ts.toLocaleDateString([], { day: '2-digit', month: 'short' }),
+                    updatedAt: ts.getTime()
+                  };
                 });
               }
-            }
-          } catch {}
+            } catch {}
+          }
         }
 
-        // Merge DB History + Local History with normalize deduplication
-        setAnalyticsHistory(prev => {
-          const map = new Map();
-          for (const item of [...dbHistory, ...prev]) {
-            if (!item?.timeRange) continue;
-            const normKey = normalizeTimeRange(item.timeRange);
-            const existing = map.get(normKey);
-            if (!existing) {
-              map.set(normKey, item);
+        // Merge DB map with local map (Math.max for counts)
+        setHourlyLogsMap(prev => {
+          const merged = { ...prev };
+          Object.entries(dbMap).forEach(([k, val]) => {
+            if (!merged[k]) {
+              merged[k] = val;
             } else {
-              map.set(normKey, {
-                ...existing,
-                ...item,
-                depositCount: Math.max(existing.depositCount || 0, item.depositCount || 0),
-                withdrawalCount: Math.max(existing.withdrawalCount || 0, item.withdrawalCount || 0),
-                copiedAt: (new Date(item.copiedAt || 0) > new Date(existing.copiedAt || 0)) ? item.copiedAt : existing.copiedAt
-              });
+              merged[k] = {
+                ...merged[k],
+                ...val,
+                depositCount: Math.max(merged[k].depositCount || 0, val.depositCount || 0),
+                withdrawalCount: Math.max(merged[k].withdrawalCount || 0, val.withdrawalCount || 0),
+              };
             }
-          }
-          const merged = Array.from(map.values()).sort((a, b) => new Date(b.copiedAt || 0) - new Date(a.copiedAt || 0));
-          if (merged.length > dbHistory.length) {
-            syncAnalyticsToSupabase(merged);
-          }
+          });
           return merged;
         });
-
-        isInitializedRef.current = true;
       } catch (err) {
-        console.warn("[Counter] Supabase initialization failed:", err);
-        isInitializedRef.current = true;
+        console.warn("[Counter] Supabase fetch failed:", err);
       }
     };
 
     fetchInitial();
 
-    // Setup Realtime Broadcast and Postgres CDC
-    const channel = supabase.channel('mpesa-hourly-counter-realtime', {
+    // Realtime channel
+    const channel = supabase.channel('mpesa-hourly-counter-realtime-v2', {
       config: { broadcast: { self: false } }
     });
 
-    channel.on('broadcast', { event: 'COUNTER_UPDATE' }, ({ payload }) => {
+    channel.on('broadcast', { event: 'HOURLY_MAP_UPDATE' }, ({ payload }) => {
       if (!payload || payload.senderSessionId === sessionIdRef.current) return;
-      const parsed = payload.state;
-      const currentWindow = getShiftWindow(new Date());
-      if (parsed && (!parsed.timeRange || normalizeTimeRange(parsed.timeRange) === normalizeTimeRange(currentWindow.timeRange))) {
-        setCounterState(prev => ({
-          ...prev,
-          depositCount: typeof parsed.depositCount === 'number' ? parsed.depositCount : prev.depositCount,
-          withdrawalCount: typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : prev.withdrawalCount,
-          depositLabel: parsed.depositLabel || prev.depositLabel,
-          withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
-          timeRange: currentWindow.timeRange,
-        }));
-      }
-    });
-
-    channel.on('broadcast', { event: 'ANALYTICS_UPDATE' }, ({ payload }) => {
-      if (!payload || payload.senderSessionId === sessionIdRef.current) return;
-      if (Array.isArray(payload.history)) {
-        setAnalyticsHistory(prev => {
-          const map = new Map();
-          for (const item of [...payload.history, ...prev]) {
-            if (!item?.timeRange) continue;
-            const normKey = normalizeTimeRange(item.timeRange);
-            const existing = map.get(normKey);
-            if (!existing) {
-              map.set(normKey, item);
+      if (payload.map) {
+        setHourlyLogsMap(prev => {
+          const merged = { ...prev };
+          Object.entries(payload.map).forEach(([k, val]) => {
+            if (!merged[k]) {
+              merged[k] = val;
             } else {
-              map.set(normKey, {
-                ...existing,
-                ...item,
-                depositCount: Math.max(existing.depositCount || 0, item.depositCount || 0),
-                withdrawalCount: Math.max(existing.withdrawalCount || 0, item.withdrawalCount || 0),
-              });
+              merged[k] = {
+                ...merged[k],
+                ...val,
+                depositCount: Math.max(merged[k].depositCount || 0, val.depositCount || 0),
+                withdrawalCount: Math.max(merged[k].withdrawalCount || 0, val.withdrawalCount || 0),
+              };
             }
-          }
-          return Array.from(map.values()).sort((a, b) => new Date(b.copiedAt || 0) - new Date(a.copiedAt || 0));
+          });
+          return merged;
         });
       }
     });
 
     channel.on('postgres_changes', { event: '*', table: 'mpesa_codes', schema: 'public' }, (payload) => {
       const rec = payload.new;
-      if (!rec?.raw) return;
-
-      if (rec.id === 'hourly_counter_global' || rec.transactionCode === '__HOURLY_COUNTER__') {
+      if (rec?.id === 'hourly_records_map' && rec?.raw) {
         try {
-          const parsed = JSON.parse(rec.raw);
-          if (parsed._updatedBySessionId === sessionIdRef.current) return;
-
-          const currentWindow = getShiftWindow(new Date());
-          if (!parsed.timeRange || normalizeTimeRange(parsed.timeRange) === normalizeTimeRange(currentWindow.timeRange)) {
-            setCounterState(prev => ({
-              ...prev,
-              depositCount: typeof parsed.depositCount === 'number' ? parsed.depositCount : prev.depositCount,
-              withdrawalCount: typeof parsed.withdrawalCount === 'number' ? parsed.withdrawalCount : prev.withdrawalCount,
-              depositLabel: parsed.depositLabel || prev.depositLabel,
-              withdrawalLabel: parsed.withdrawalLabel || prev.withdrawalLabel,
-              timeRange: currentWindow.timeRange,
-            }));
-          }
-        } catch {}
-      }
-
-      if (rec.id === 'hourly_analytics_history' || rec.transactionCode === '__HOURLY_ANALYTICS__') {
-        try {
-          const parsed = JSON.parse(rec.raw);
-          if (Array.isArray(parsed)) {
-            setAnalyticsHistory(prev => {
-              const map = new Map();
-              for (const item of [...parsed, ...prev]) {
-                if (!item?.timeRange) continue;
-                const normKey = normalizeTimeRange(item.timeRange);
-                const existing = map.get(normKey);
-                if (!existing) {
-                  map.set(normKey, item);
-                } else {
-                  map.set(normKey, {
-                    ...existing,
-                    ...item,
-                    depositCount: Math.max(existing.depositCount || 0, item.depositCount || 0),
-                    withdrawalCount: Math.max(existing.withdrawalCount || 0, item.withdrawalCount || 0),
-                  });
-                }
+          const incoming = JSON.parse(rec.raw);
+          setHourlyLogsMap(prev => {
+            const merged = { ...prev };
+            Object.entries(incoming).forEach(([k, val]) => {
+              if (!merged[k]) {
+                merged[k] = val;
+              } else {
+                merged[k] = {
+                  ...merged[k],
+                  ...val,
+                  depositCount: Math.max(merged[k].depositCount || 0, val.depositCount || 0),
+                  withdrawalCount: Math.max(merged[k].withdrawalCount || 0, val.withdrawalCount || 0),
+                };
               }
-              return Array.from(map.values()).sort((a, b) => new Date(b.copiedAt || 0) - new Date(a.copiedAt || 0));
             });
-          }
+            return merged;
+          });
         } catch {}
       }
     });
@@ -450,102 +389,74 @@ export default function HourlyCounter() {
       broadcastChannelRef.current = null;
       supabase.removeChannel(channel);
     };
-  }, [syncAnalyticsToSupabase]);
+  }, []);
 
-  // ── 5. Auto Hour Rollover Engine ──────────────────────────────────────────
-  useEffect(() => {
-    const checkRollover = () => {
-      const now = new Date();
-      const currentWindow = getShiftWindow(now);
-      const prev = counterStateRef.current;
-
-      if (!prev.timeRange) return;
-      if (normalizeTimeRange(prev.timeRange) === normalizeTimeRange(currentWindow.timeRange)) return;
-      if (!isInitializedRef.current) return;
-
-      // Completed window archive entry
-      const archiveEntry = {
-        id: `analytics_${Date.now()}`,
-        timeRange: prev.timeRange,
-        depositCount: prev.depositCount || 0,
-        withdrawalCount: prev.withdrawalCount || 0,
-        copiedAt: new Date().toISOString(),
-        autoArchived: true,
-        date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
-      };
-
-      const existingHistory = analyticsHistoryRef.current || [];
-      const existingIdx = existingHistory.findIndex(h => normalizeTimeRange(h.timeRange) === normalizeTimeRange(prev.timeRange));
-      let nextHistory;
-      if (existingIdx >= 0) {
-        nextHistory = [...existingHistory];
-        nextHistory[existingIdx] = {
-          ...nextHistory[existingIdx],
-          depositCount: Math.max(nextHistory[existingIdx].depositCount || 0, prev.depositCount || 0),
-          withdrawalCount: Math.max(nextHistory[existingIdx].withdrawalCount || 0, prev.withdrawalCount || 0),
-          copiedAt: new Date().toISOString()
-        };
-      } else {
-        nextHistory = [archiveEntry, ...existingHistory];
-      }
-
-      setAnalyticsHistory(nextHistory);
-      syncAnalyticsToSupabase(nextHistory);
-
-      const newState = {
-        ...prev,
-        timeRange: currentWindow.timeRange,
-        depositCount: 0,
-        withdrawalCount: 0,
-        lastActiveHour: now.getHours()
-      };
-      setCounterState(newState);
-      syncCounterToSupabase(newState);
-    };
-
-    checkRollover();
-    const interval = setInterval(checkRollover, 2000);
-    return () => clearInterval(interval);
-  }, [syncCounterToSupabase, syncAnalyticsToSupabase]);
-
-  // ── 6. Counter Modifiers ─────────────────────────────────────────────────
-  const updateCounterState = useCallback((updater) => {
-    setCounterState(prev => {
-      const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      setTimeout(() => syncCounterToSupabase(next), 0);
-      return next;
-    });
-  }, [syncCounterToSupabase]);
+  // ── 5. Modify Counts for Current Active Window ───────────────────────────
+  const activeWindow = getShiftWindow(nowTime);
+  const activeKey = getWindowKey(nowTime);
+  const activeRecord = hourlyLogsMap[activeKey] || {
+    timeRange: activeWindow.timeRange,
+    depositCount: 0,
+    withdrawalCount: 0,
+    dateStr: nowTime.toLocaleDateString([], { day: '2-digit', month: 'short' }),
+    updatedAt: Date.now()
+  };
 
   const handleAdjustCount = useCallback((type, delta) => {
-    updateCounterState(prev => {
-      if (type === 'deposit') {
-        return { ...prev, depositCount: Math.max(0, (prev.depositCount || 0) + delta) };
-      }
-      if (type === 'withdrawal') {
-        return { ...prev, withdrawalCount: Math.max(0, (prev.withdrawalCount || 0) + delta) };
-      }
-      return prev;
+    const k = getWindowKey(new Date());
+    const win = getShiftWindow(new Date());
+
+    setHourlyLogsMap(prev => {
+      const current = prev[k] || {
+        timeRange: win.timeRange,
+        depositCount: 0,
+        withdrawalCount: 0,
+        dateStr: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' }),
+        updatedAt: Date.now()
+      };
+
+      const updated = {
+        ...current,
+        depositCount: type === 'deposit' ? Math.max(0, (current.depositCount || 0) + delta) : (current.depositCount || 0),
+        withdrawalCount: type === 'withdrawal' ? Math.max(0, (current.withdrawalCount || 0) + delta) : (current.withdrawalCount || 0),
+        updatedAt: Date.now()
+      };
+
+      const nextMap = { ...prev, [k]: updated };
+      setTimeout(() => syncMapToSupabase(nextMap), 0);
+      return nextMap;
     });
-  }, [updateCounterState]);
+  }, [syncMapToSupabase]);
 
   const handleResetCounts = useCallback(() => {
-    updateCounterState(prev => ({ ...prev, depositCount: 0, withdrawalCount: 0 }));
-    addToast("Hour counters reset", "info");
-  }, [updateCounterState, addToast]);
+    const k = getWindowKey(new Date());
+    const win = getShiftWindow(new Date());
 
-  // ── 7. Formatting and Copying ─────────────────────────────────────────────
+    setHourlyLogsMap(prev => {
+      const updated = {
+        timeRange: win.timeRange,
+        depositCount: 0,
+        withdrawalCount: 0,
+        dateStr: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' }),
+        updatedAt: Date.now()
+      };
+
+      const nextMap = { ...prev, [k]: updated };
+      setTimeout(() => syncMapToSupabase(nextMap), 0);
+      return nextMap;
+    });
+    addToast("Hour counters reset", "info");
+  }, [syncMapToSupabase, addToast]);
+
+  // ── 6. Copying Reports ────────────────────────────────────────────────────
   const getFormattedCounterText = (range, dep, wth) => {
-    const dLabel = counterState.depositLabel || 'Deposit completed';
-    const wLabel = counterState.withdrawalLabel || 'Completed withdrawal';
-    return `⏰ *${range}*\n📥 *${dLabel}:* ${dep}\n📤 *${wLabel}:* ${wth}`;
+    return `⏰ *${range}*\n📥 *${depositLabel}:* ${dep}\n📤 *${withdrawalLabel}:* ${wth}`;
   };
 
   const handleCopyCounterText = useCallback(async (customRange, customDep, customWth, entryId = 'active') => {
-    const activeWin = getShiftWindow(new Date());
-    const range = customRange ?? counterState.timeRange ?? activeWin.timeRange;
-    const dep   = customDep  !== undefined ? customDep  : (counterState.depositCount    ?? 0);
-    const wth   = customWth  !== undefined ? customWth  : (counterState.withdrawalCount ?? 0);
+    const range = customRange ?? activeWindow.timeRange;
+    const dep   = customDep  !== undefined ? customDep  : (activeRecord.depositCount || 0);
+    const wth   = customWth  !== undefined ? customWth  : (activeRecord.withdrawalCount || 0);
     const text  = getFormattedCounterText(range, dep, wth);
 
     try {
@@ -559,45 +470,23 @@ export default function HourlyCounter() {
         setTimeout(() => setCopiedId(null), 2000);
       }
 
-      // Save/merge to history
-      const entry = {
-        id: entryId !== 'active' && entryId ? entryId : `analytics_${Date.now()}`,
-        timeRange: range,
-        depositCount: dep,
-        withdrawalCount: wth,
-        copiedAt: new Date().toISOString(),
-        date: new Date().toLocaleDateString([], { day: '2-digit', month: 'short' })
-      };
-
-      setAnalyticsHistory(prev => {
-        const norm = normalizeTimeRange(range);
-        const filtered = prev.filter(h => normalizeTimeRange(h.timeRange) !== norm);
-        const next = [entry, ...filtered];
-        syncAnalyticsToSupabase(next);
-        return next;
-      });
-
       addToast("Report copied to clipboard", "success");
     } catch {
       addToast("Failed to copy report", "error");
     }
-  }, [counterState, syncAnalyticsToSupabase, addToast]);
+  }, [activeWindow.timeRange, activeRecord, depositLabel, withdrawalLabel, addToast]);
 
-  // ── 8. Derived Display Values ────────────────────────────────────────────
-  const activeWindowObj = getShiftWindow(new Date());
-  const activeRangeDisplay = counterState.timeRange || activeWindowObj.timeRange;
-  const activeRangeShort = activeWindowObj.timeRangeShort;
+  // ── 7. Previous Hour Calculation ("Last Hour Stats") ─────────────────────
+  const prevWindow = getPreviousShiftWindow(nowTime);
+  const prevKey = getWindowKey(prevWindow.startTime);
+  const prevRecord = hourlyLogsMap[prevKey] || null;
 
-  // The last completed hour window (e.g. 11:00 AM – 12:00 PM at 12:05 PM, or 1:00 AM – 7:00 AM at 7:05 AM)
-  const expectedPrevWindow = getPreviousShiftWindow(new Date());
-  const expectedPrevRange = expectedPrevWindow.timeRange;
-  const prevEntry = analyticsHistory.find(h => 
-    normalizeTimeRange(h.timeRange) === normalizeTimeRange(expectedPrevRange)
-  ) || null;
+  const prevRange = prevWindow.timeRange;
+  const prevDep = prevRecord ? (prevRecord.depositCount || 0) : 0;
+  const prevWth = prevRecord ? (prevRecord.withdrawalCount || 0) : 0;
 
-  const prevRange = expectedPrevRange;
-  const prevDep = prevEntry?.depositCount ?? 0;
-  const prevWth = prevEntry?.withdrawalCount ?? 0;
+  // ── 8. Last 6 Hours Windows List ─────────────────────────────────────────
+  const pastWindows = getPastWindows(6, nowTime);
 
   // ── 9. Render ────────────────────────────────────────────────────────────
   return (
@@ -649,8 +538,8 @@ export default function HourlyCounter() {
                 <label className="text-[11px] text-[#54565F] block mb-1">Deposit Label in Copied Report:</label>
                 <input
                   type="text"
-                  value={counterState.depositLabel || 'Deposit completed'}
-                  onChange={(e) => updateCounterState({ depositLabel: e.target.value })}
+                  value={depositLabel}
+                  onChange={(e) => setDepositLabel(e.target.value)}
                   className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#00D66B]"
                 />
               </div>
@@ -658,8 +547,8 @@ export default function HourlyCounter() {
                 <label className="text-[11px] text-[#54565F] block mb-1">Withdrawal Label in Copied Report:</label>
                 <input
                   type="text"
-                  value={counterState.withdrawalLabel || 'Completed withdrawal'}
-                  onChange={(e) => updateCounterState({ withdrawalLabel: e.target.value })}
+                  value={withdrawalLabel}
+                  onChange={(e) => setWithdrawalLabel(e.target.value)}
                   className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#3ED3F2]"
                 />
               </div>
@@ -677,7 +566,7 @@ export default function HourlyCounter() {
                 <span className="text-[13px] text-[#8B8E97] font-medium">Deposits:</span>
                 <div className="flex items-center gap-1.5 bg-[#232429] border border-white/[0.14] rounded-full px-3 py-1 font-mono text-[11.5px] text-[#8B8E97]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]"></span>
-                  <span>{activeRangeShort}</span>
+                  <span>{activeWindow.timeRangeShort}</span>
                 </div>
               </div>
 
@@ -706,10 +595,10 @@ export default function HourlyCounter() {
 
               <div className="flex items-baseline justify-between pt-1">
                 <div>
-                  <span className="text-[13px] text-[#8B8E97]">{counterState.depositLabel || 'Deposit completed'}:</span>
+                  <span className="text-[13px] text-[#8B8E97]">{depositLabel}:</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="font-['Space_Grotesk'] text-[38px] sm:text-[44px] font-semibold tracking-tight text-[#00D66B] leading-none">
-                      {counterState.depositCount ?? 0}
+                      {activeRecord.depositCount || 0}
                     </span>
                     <span className="text-[13px] text-[#54565F] font-medium">times</span>
                   </div>
@@ -717,7 +606,7 @@ export default function HourlyCounter() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleAdjustCount('deposit', -1)}
-                    disabled={(counterState.depositCount ?? 0) <= 0}
+                    disabled={(activeRecord.depositCount || 0) <= 0}
                     className="w-10 h-10 rounded-full bg-[#232429] hover:bg-[#2c2e35] active:bg-[#0E0E12] border border-white/[0.07] text-[#8B8E97] hover:text-[#F4F5F1] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all cursor-pointer select-none"
                   >
                     <Minus size={15} />
@@ -738,7 +627,7 @@ export default function HourlyCounter() {
                 <span className="text-[13px] text-[#8B8E97] font-medium">Withdrawals:</span>
                 <div className="flex items-center gap-1.5 bg-[#232429] border border-white/[0.14] rounded-full px-3 py-1 font-mono text-[11.5px] text-[#8B8E97]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]"></span>
-                  <span>{activeRangeShort}</span>
+                  <span>{activeWindow.timeRangeShort}</span>
                 </div>
               </div>
 
@@ -767,10 +656,10 @@ export default function HourlyCounter() {
 
               <div className="flex items-baseline justify-between pt-1">
                 <div>
-                  <span className="text-[13px] text-[#8B8E97]">{counterState.withdrawalLabel || 'Completed withdrawal'}:</span>
+                  <span className="text-[13px] text-[#8B8E97]">{withdrawalLabel}:</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="font-['Space_Grotesk'] text-[38px] sm:text-[44px] font-semibold tracking-tight text-[#3ED3F2] leading-none">
-                      {counterState.withdrawalCount ?? 0}
+                      {activeRecord.withdrawalCount || 0}
                     </span>
                     <span className="text-[13px] text-[#54565F] font-medium">times</span>
                   </div>
@@ -778,7 +667,7 @@ export default function HourlyCounter() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleAdjustCount('withdrawal', -1)}
-                    disabled={(counterState.withdrawalCount ?? 0) <= 0}
+                    disabled={(activeRecord.withdrawalCount || 0) <= 0}
                     className="w-10 h-10 rounded-full bg-[#232429] hover:bg-[#2c2e35] active:bg-[#0E0E12] border border-white/[0.07] text-[#8B8E97] hover:text-[#F4F5F1] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all cursor-pointer select-none"
                   >
                     <Minus size={15} />
@@ -803,7 +692,7 @@ export default function HourlyCounter() {
           <div className="flex items-center justify-between flex-wrap gap-4 pt-1">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-[13.5px]">
-                <b className="font-semibold text-[#F4F5F1]">{activeRangeDisplay}</b>
+                <b className="font-semibold text-[#F4F5F1]">{activeWindow.timeRange}</b>
                 <span className="flex items-center gap-1 text-[#00D66B] text-xs font-semibold">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3">
                     <path d="m18 15-6-6-6 6"/>
@@ -871,78 +760,63 @@ export default function HourlyCounter() {
         </div>
 
         {/* Card 2: Last 6 hrs log */}
-        {(() => {
-          const eightHrsAgo = Date.now() - 8 * 60 * 60 * 1000;
-          const last6hLog = analyticsHistory.filter(item => {
-            if (!item?.timeRange) return false;
-            const ts = item.copiedAt
-              ? new Date(item.copiedAt).getTime()
-              : item.id?.startsWith('analytics_')
-              ? parseInt(item.id.replace('analytics_', ''), 10)
-              : null;
-            return !ts || isNaN(ts) || ts >= eightHrsAgo;
-          }).slice(0, 8);
-
-          return (
-            <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col gap-3 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-medium text-[#F4F5F1]">
-                  <Clock size={15} className="text-[#8B8E97]" />
-                  <span>Last 6 hrs</span>
-                </div>
-                <span className="text-[10.5px] font-mono text-[#54565F] bg-[#232429] px-2.5 py-1 rounded-full border border-white/[0.05]">
-                  {last6hLog.length} window{last6hLog.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-
-              {last6hLog.length === 0 ? (
-                <div className="py-6 text-center text-[12px] text-[#54565F]">
-                  No hourly logs in the last 6 hours yet.
-                </div>
-              ) : (
-                <div className="space-y-1.5 max-h-[210px] overflow-y-auto no-scrollbar">
-                  {last6hLog.map((item, i) => (
-                    <div
-                      key={item.id || i}
-                      className="flex items-center justify-between bg-[#0E0E12] border border-white/[0.05] rounded-[12px] px-3 py-2.5"
-                    >
-                      <span className="font-mono text-[11.5px] text-[#8B8E97] truncate mr-2 max-w-[140px]">
-                        {item.timeRange || '—'}
-                      </span>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="flex items-center gap-1 text-[11.5px] font-mono font-semibold text-[#00D66B]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" />
-                          {item.depositCount ?? 0}
-                        </span>
-                        <span className="text-[#54565F] text-xs">·</span>
-                        <span className="flex items-center gap-1 text-[11.5px] font-mono font-semibold text-[#3ED3F2]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]" />
-                          {item.withdrawalCount ?? 0}
-                        </span>
-                        <button
-                          onClick={() => handleCopyCounterText(item.timeRange, item.depositCount ?? 0, item.withdrawalCount ?? 0, `log_${i}`)}
-                          className="ml-1.5 p-1.5 rounded-lg bg-[#232429] hover:bg-white/10 border border-white/[0.07] text-[#54565F] hover:text-white transition-all cursor-pointer"
-                          title="Copy this window's report"
-                        >
-                          {copiedId === `log_${i}` ? <Check size={10} className="text-[#00D66B]" /> : <Copy size={10} />}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex items-center gap-3 pt-1 border-t border-white/[0.05]">
-                <span className="flex items-center gap-1 text-[11px] text-[#54565F]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" /> Deposits
-                </span>
-                <span className="flex items-center gap-1 text-[11px] text-[#54565F]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]" /> Withdrawals
-                </span>
-              </div>
+        <div className="bg-[#1B1C22] border border-white/[0.07] rounded-[22px] p-5 sm:p-6 flex flex-col gap-3 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium text-[#F4F5F1]">
+              <Clock size={15} className="text-[#8B8E97]" />
+              <span>Last 6 hrs</span>
             </div>
-          );
-        })()}
+            <span className="text-[10.5px] font-mono text-[#54565F] bg-[#232429] px-2.5 py-1 rounded-full border border-white/[0.05]">
+              {pastWindows.length} windows
+            </span>
+          </div>
+
+          <div className="space-y-1.5 max-h-[210px] overflow-y-auto no-scrollbar">
+            {pastWindows.map((win, i) => {
+              const record = hourlyLogsMap[win.key] || null;
+              const dep = record ? (record.depositCount || 0) : 0;
+              const wth = record ? (record.withdrawalCount || 0) : 0;
+
+              return (
+                <div
+                  key={win.key}
+                  className="flex items-center justify-between bg-[#0E0E12] border border-white/[0.05] rounded-[12px] px-3 py-2.5"
+                >
+                  <span className="font-mono text-[11.5px] text-[#8B8E97] truncate mr-2 max-w-[140px]">
+                    {win.timeRange}
+                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="flex items-center gap-1 text-[11.5px] font-mono font-semibold text-[#00D66B]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" />
+                      {dep}
+                    </span>
+                    <span className="text-[#54565F] text-xs">·</span>
+                    <span className="flex items-center gap-1 text-[11.5px] font-mono font-semibold text-[#3ED3F2]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]" />
+                      {wth}
+                    </span>
+                    <button
+                      onClick={() => handleCopyCounterText(win.timeRange, dep, wth, `log_${i}`)}
+                      className="ml-1.5 p-1.5 rounded-lg bg-[#232429] hover:bg-white/10 border border-white/[0.07] text-[#54565F] hover:text-white transition-all cursor-pointer"
+                      title="Copy this window's report"
+                    >
+                      {copiedId === `log_${i}` ? <Check size={10} className="text-[#00D66B]" /> : <Copy size={10} />}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-3 pt-1 border-t border-white/[0.05]">
+            <span className="flex items-center gap-1 text-[11px] text-[#54565F]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" /> Deposits
+            </span>
+            <span className="flex items-center gap-1 text-[11px] text-[#54565F]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3ED3F2]" /> Withdrawals
+            </span>
+          </div>
+        </div>
 
       </div>
     </div>
