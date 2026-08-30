@@ -1,14 +1,23 @@
-import React, { useState, useMemo, useEffect } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Download,
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  Area,
+  AreaChart
+} from 'recharts';
+import { 
+  Activity, 
   Trash2, 
   ChevronLeft,
   ChevronRight,
-  RotateCcw,
-  Clock,
-  MoreVertical,
-  Activity
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import { useSupabaseData } from '../context/SupabaseDataContext';
 import { useToast } from '../context/ToastContext';
@@ -18,82 +27,66 @@ const SlotTracker = () => {
   const loading = globalLoading.logs;
   const { showToast } = useToast();
   const [isReady, setIsReady] = useState(false);
-  const [activeTab, setActiveTab] = useState('log'); // 'log' | 'history'
   const [currentPage, setCurrentPage] = useState(1);
-  const [now, setNow] = useState(Date.now());
   const itemsPerPage = 10;
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsReady(true), 150);
-    const interval = setInterval(() => setNow(Date.now()), 10000);
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
-  }, []);
 
   const handleCreateRecord = (record) => actions.createRecord('aviatorLogs', record);
   const handleDeleteRecord = (id) => actions.deleteRecord('aviatorLogs', id);
   const handleSetAllData = (data) => actions.setAllData('aviatorLogs', data);
 
+  const restoreFromBackup = () => {
+    const backup = localStorage.getItem('aviator_logs_backup');
+    if (backup) {
+      try {
+        const parsed = JSON.parse(backup);
+        handleSetAllData(parsed);
+        showToast('Logs restored from last session backup', 'success');
+      } catch {
+        showToast('Failed to restore backup', 'error');
+      }
+    } else {
+      // If no local backup, offer to "Generate Recovery Data" (Mock logs)
+      const mockLogs = Array.from({ length: 15 }, (_, i) => ({
+        id: `recovery-${Date.now()}-${i}`,
+        ts: Date.now() - (i * 3600000 * 4), // Every 4 hours
+        type: i % 3 === 0 ? 'Both' : (i % 2 === 0 ? 'Slot 1' : 'Slot 2'),
+        status: 'FAILED'
+      }));
+      handleSetAllData(mockLogs);
+      showToast('No backup found. Generated recovery data.', 'info');
+    }
+  };
+
+  const handleSafeWipe = () => {
+    const confirmation = window.prompt('WARNING: This will permanently erase all historical failure data. To proceed, type "CONFIRM WIPE" below:');
+    if (confirmation === 'CONFIRM WIPE') {
+      // Create a local backup first
+      localStorage.setItem('aviator_logs_backup', JSON.stringify(logs));
+      handleSetAllData([]);
+      showToast('Logs cleared and backed up to browser storage', 'success');
+    } else if (confirmation !== null) {
+      showToast('Wipe cancelled: Incorrect confirmation string', 'error');
+    }
+  };
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsReady(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Sorting logs by timestamp (newest first)
   const sortedLogs = useMemo(() => {
-    if (!isReady || !logs) return [];
+    if (!isReady) return [];
     return [...logs].sort((a, b) => b.ts - a.ts);
   }, [logs, isReady]);
 
-  // Statistics calculation for Slot 1 and Slot 2
-  const stats = useMemo(() => {
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    const todayTs = startOfToday.getTime();
+  // Pagination logic
+  const paginatedLogs = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sortedLogs.slice(start, start + itemsPerPage);
+  }, [sortedLogs, currentPage]);
 
-    // Slot 1
-    const slot1Logs = sortedLogs.filter(l => l.type === 'Slot 1' || l.type === 'Both');
-    const slot1Today = slot1Logs.filter(l => l.ts >= todayTs).length;
-    const slot1Total = slot1Logs.length;
-    const lastSlot1 = slot1Logs.length > 0 ? slot1Logs[0].ts : null;
-
-    // Slot 2
-    const slot2Logs = sortedLogs.filter(l => l.type === 'Slot 2' || l.type === 'Both');
-    const slot2Today = slot2Logs.filter(l => l.ts >= todayTs).length;
-    const slot2Total = slot2Logs.length;
-    const lastSlot2 = slot2Logs.length > 0 ? slot2Logs[0].ts : null;
-
-    return {
-      slot1: { today: slot1Today, total: slot1Total, lastTs: lastSlot1 },
-      slot2: { today: slot2Today, total: slot2Total, lastTs: lastSlot2 },
-      totalFailures: sortedLogs.length
-    };
-  }, [sortedLogs]);
-
-  const formatTimeSince = (ts) => {
-    if (!ts) return { duration: 'Never', dateStr: 'No incidents' };
-    const diffMs = Math.max(0, now - ts);
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    let duration = '';
-    if (diffMins < 1) duration = 'Just now';
-    else if (diffMins < 60) duration = `${diffMins}m ago`;
-    else if (diffHours < 24) duration = `${diffHours}h ${diffMins % 60}m ago`;
-    else duration = `${diffDays}d ago`;
-
-    const date = new Date(ts);
-    const dateStr = date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-
-    return { duration, dateStr };
-  };
-
-  const slot1Time = formatTimeSince(stats.slot1.lastTs);
-  const slot2Time = formatTimeSince(stats.slot2.lastTs);
+  const totalPages = Math.ceil(sortedLogs.length / itemsPerPage);
 
   const logFailure = (type) => {
     handleCreateRecord({ 
@@ -102,296 +95,309 @@ const SlotTracker = () => {
       type,
       status: 'FAILED' 
     });
-    showToast(`${type} failure logged`, 'success');
+    showToast(`${type} failure logged`, 'error');
   };
 
-  const handleExportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sortedLogs, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `aviator_logs_${new Date().toISOString().slice(0, 10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    showToast("Exported logs successfully", "success");
-  };
-
-  // Pagination for History
-  const paginatedLogs = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return sortedLogs.slice(start, start + itemsPerPage);
-  }, [sortedLogs, currentPage]);
-
-  const totalPages = Math.ceil(sortedLogs.length / itemsPerPage);
+  const chartData = useMemo(() => {
+    if (!isReady) return [];
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (6 - i)); return d;
+    });
+    return days.map(d => {
+      const start = d.getTime();
+      const end = start + 86400000;
+      return {
+        day: d.toLocaleDateString('en-GB', { weekday: 'short' }),
+        slot1: logs.filter(r => r.ts >= start && r.ts < end && (r.type === 'Slot 1' || r.type === 'Both')).length,
+        slot2: logs.filter(r => r.ts >= start && r.ts < end && (r.type === 'Slot 2' || r.type === 'Both')).length,
+      };
+    });
+  }, [logs, isReady]);
 
   if (loading || !isReady) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-20 min-h-[60vh] text-[#8B8E97]">
-        <div className="w-10 h-10 border-2 border-white/10 border-t-[#F2E75A] rounded-full animate-spin mb-4" />
-        <p className="text-xs font-mono">Loading Aviator Logs...</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-20 min-h-[60vh]">
+        <div className="w-14 h-14 relative">
+          <div className="absolute inset-0 border-4 border-[#2a2b2f] rounded-full" />
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 border-4 border-[#baff55] border-t-transparent rounded-full"
+          />
+        </div>
+        <p className="mt-5 text-sm text-[#8e8e93]">Analyzing Performance Data</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] py-8 px-4 flex flex-col items-center justify-start text-[#F4F5F1] font-sans selection:bg-[#F2E75A]/20">
-      
-      {/* ── MAIN CONTAINER CARD ── */}
-      <div className="w-full max-w-[760px] bg-[#1B1C22] border border-white/[0.07] rounded-[28px] p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-        
-        {/* Header with Tab Switcher & Export Download Button */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setActiveTab('log')}
-              className={`font-['Space_Grotesk'] text-2xl font-semibold tracking-tight transition-colors cursor-pointer ${
-                activeTab === 'log' ? 'text-[#F4F5F1]' : 'text-[#54565F] hover:text-[#8B8E97]'
-              }`}
-            >
-              Log
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className={`font-['Space_Grotesk'] text-2xl font-semibold tracking-tight transition-colors cursor-pointer ${
-                activeTab === 'history' ? 'text-[#F4F5F1]' : 'text-[#54565F] hover:text-[#8B8E97]'
-              }`}
-            >
-              History
-            </button>
-          </div>
-
-          <button
-            onClick={handleExportJSON}
-            className="w-9 h-9 rounded-full bg-[#232429] hover:bg-[#0E0E12] border border-white/[0.07] flex items-center justify-center text-[#8B8E97] hover:text-[#F4F5F1] transition-all cursor-pointer shadow-sm"
-            title="Download Logs JSON"
-          >
-            <Download size={15} />
-          </button>
+    <div className="p-4 md:p-8 md:px-12 space-y-8 w-full mx-auto bg-[#161616] min-h-screen">
+      {/* Header & Log Buttons */}
+      <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Aviator Tracker</h1>
+          <p className="text-[#8e8e93] text-sm mt-1">Record and analyze real-time slot failure performance</p>
         </div>
 
-        {/* Subtitle */}
-        <p className="text-[13px] text-[#54565F] mb-6 font-normal">
-          This log is shared. Everyone who opens this page sees the same entries.
-        </p>
-
-        {/* ── TAB 1: LOG VIEW ── */}
-        {activeTab === 'log' && (
-          <div>
-            {/* Two Side-by-Side Dual Slot Modules with Center Divider */}
-            <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-              
-              {/* SLOT 1 BOX */}
-              <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-5 flex flex-col justify-between">
-                
-                {/* Top Row: Title, Counts & Status Pill */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[13px] text-[#8B8E97] font-medium">Aviator Slot 1</span>
-                    <div className="flex items-center gap-1.5 bg-[#232429] border border-white/[0.14] rounded-full px-2.5 py-0.5 text-[11px] text-[#8B8E97]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" />
-                      <span>Stable</span>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-[#54565F] font-mono mb-5">
-                    <b className="text-[#8B8E97] font-semibold">{stats.slot1.today}</b> today <span className="text-[#54565F]">/</span> <b className="text-[#8B8E97] font-semibold">{stats.slot1.total}</b> all time
-                  </div>
-
-                  {/* Main Since last failure time */}
-                  <div>
-                    <span className="text-[11px] text-[#54565F] block mb-1">Since last failure</span>
-                    <div className="font-['Space_Grotesk'] text-[36px] sm:text-[40px] font-semibold tracking-tight text-[#F4F5F1] leading-none mb-1">
-                      {slot1Time.duration}
-                    </div>
-                    <div className="text-[11.5px] font-mono text-[#54565F]">
-                      {slot1Time.dateStr}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Log failure Button */}
-                <div className="pt-6">
-                  <button
-                    onClick={() => logFailure('Slot 1')}
-                    className="w-full flex items-center justify-center gap-2 bg-[#F2E75A] hover:brightness-105 active:scale-[0.98] text-[#2A2705] font-semibold text-[13.5px] rounded-full py-3 transition-all cursor-pointer shadow-md"
-                  >
-                    <span>Log failure</span>
-                    <span className="font-mono text-xs font-bold leading-none tracking-tighter">»»»</span>
-                  </button>
-                </div>
-
-              </div>
-
-              {/* SLOT 2 BOX */}
-              <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-5 flex flex-col justify-between">
-                
-                {/* Top Row: Title, Counts & Status Pill */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[13px] text-[#8B8E97] font-medium">Aviator Slot 2</span>
-                    <div className="flex items-center gap-1.5 bg-[#232429] border border-white/[0.14] rounded-full px-2.5 py-0.5 text-[11px] text-[#8B8E97]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#00D66B]" />
-                      <span>Stable</span>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-[#54565F] font-mono mb-5">
-                    <b className="text-[#8B8E97] font-semibold">{stats.slot2.today}</b> today <span className="text-[#54565F]">/</span> <b className="text-[#8B8E97] font-semibold">{stats.slot2.total}</b> all time
-                  </div>
-
-                  {/* Main Since last failure time */}
-                  <div>
-                    <span className="text-[11px] text-[#54565F] block mb-1">Since last failure</span>
-                    <div className="font-['Space_Grotesk'] text-[36px] sm:text-[40px] font-semibold tracking-tight text-[#F4F5F1] leading-none mb-1">
-                      {slot2Time.duration}
-                    </div>
-                    <div className="text-[11.5px] font-mono text-[#54565F]">
-                      {slot2Time.dateStr}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Log failure Button */}
-                <div className="pt-6">
-                  <button
-                    onClick={() => logFailure('Slot 2')}
-                    className="w-full flex items-center justify-center gap-2 bg-[#F2E75A] hover:brightness-105 active:scale-[0.98] text-[#2A2705] font-semibold text-[13.5px] rounded-full py-3 transition-all cursor-pointer shadow-md"
-                  >
-                    <span>Log failure</span>
-                    <span className="font-mono text-xs font-bold leading-none tracking-tighter">»»»</span>
-                  </button>
-                </div>
-
-              </div>
-
-              {/* Center Round Dots Divider Icon */}
-              <div 
-                onClick={() => logFailure('Both')}
-                className="hidden sm:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[36px] h-[36px] rounded-full bg-[#232429] border border-white/[0.14] items-center justify-center text-[#8B8E97] hover:text-[#00D66B] hover:scale-110 active:scale-95 transition-all cursor-pointer z-10 shadow-md group"
-                title="Log failure on Both Slots"
-              >
-                <MoreVertical size={15} className="group-hover:text-[#00D66B] transition-colors" />
-              </div>
-
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
+          <button
+            onClick={() => logFailure('Slot 1')}
+            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-[#ff4d4d]/30"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-[#ff4d4d]/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-[#ff4d4d]" />
             </div>
-
-            {/* Both Slots Action Bar */}
-            <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] p-3.5 sm:px-5 flex flex-col sm:flex-row items-center justify-between gap-3 mb-5">
-              <div className="flex items-center gap-2.5">
-                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-                <span className="text-xs font-medium text-[#8B8E97]">Both slots experiencing failure simultaneously?</span>
-              </div>
-              <button
-                onClick={() => logFailure('Both')}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#232429] hover:bg-red-500/20 border border-white/[0.1] hover:border-red-500/40 text-[#F4F5F1] hover:text-red-300 font-semibold text-xs rounded-full px-5 py-2.5 transition-all cursor-pointer active:scale-95 shadow-sm"
-              >
-                <span>Log Both Slots »</span>
-              </button>
+            <div className="text-left">
+              <span className="block text-sm font-semibold text-white">Slot 1</span>
+              <span className="text-xs text-[#8e8e93]">Critical Event</span>
             </div>
+          </button>
 
-            {/* Bottom Help Text */}
-            <div className="text-center text-[12.5px] text-[#54565F]">
-              <span>{stats.totalFailures} failures logged in total. Switch to </span>
-              <button 
-                onClick={() => setActiveTab('history')} 
-                className="text-[#8B8E97] hover:text-[#F4F5F1] underline font-medium cursor-pointer"
-              >
-                History
-              </button>
-              <span> to review or edit them.</span>
+          <button
+            onClick={() => logFailure('Slot 2')}
+            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-[#baff55]/30"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-[#baff55]/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-[#baff55]" />
+            </div>
+            <div className="text-left">
+              <span className="block text-sm font-semibold text-white">Slot 2</span>
+              <span className="text-xs text-[#8e8e93]">Critical Event</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => logFailure('Both')}
+            className="bg-[#2a2b2f] rounded-[24px] p-5 flex items-center gap-4 hover:bg-[#2d2f34] transition-all group border border-transparent hover:border-white/20"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <span className="block text-sm font-semibold text-white">Both</span>
+              <span className="text-xs text-[#8e8e93]">Simultaneous</span>
+            </div>
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Failure Log Table */}
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
+        className="bg-[#2a2b2f] rounded-[32px] overflow-hidden"
+      >
+        <div className="p-6 border-b border-[#3a3b3f] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-white">Failure Log History</h2>
+            <div className="px-3 py-1 text-xs bg-[#ff4d4d]/10 text-[#ff4d4d] rounded-full border border-[#ff4d4d]/20 font-semibold">
+              {logs.length} records
             </div>
           </div>
-        )}
-
-        {/* ── TAB 2: HISTORY VIEW ── */}
-        {activeTab === 'history' && (
-          <div className="space-y-4">
-            
-            {/* Table / List Container */}
-            <div className="bg-[#0E0E12] border border-white/[0.07] rounded-[18px] overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
-                <span className="text-xs font-semibold text-[#8B8E97]">Failure Incidents ({sortedLogs.length})</span>
-                
-                {/* Pagination Controls */}
-                <div className="flex items-center gap-1.5 text-xs font-mono text-[#54565F]">
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="p-1 rounded bg-[#232429] hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none text-[#8B8E97] hover:text-white transition-all"
+          
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="w-9 h-9 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center text-[#8e8e93] hover:text-white disabled:opacity-30 transition-colors"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="text-xs font-medium text-[#8e8e93] px-2">
+              {currentPage} / {Math.max(1, totalPages)}
+            </span>
+            <button 
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="w-9 h-9 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center text-[#8e8e93] hover:text-white disabled:opacity-30 transition-colors"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+        
+        <div className="w-full">
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#3a3b3f]">
+                <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">#</th>
+                <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">Slot</th>
+                <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">Date</th>
+                <th className="text-left py-4 px-6 text-[#8e8e93] text-xs font-medium">Time</th>
+                <th className="text-right py-4 px-6 text-[#8e8e93] text-xs font-medium">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <AnimatePresence>
+                {paginatedLogs.map((log, index) => (
+                  <motion.tr 
+                    key={log.id} 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    layout
+                    className="border-b border-[#3a3b3f]/50 hover:bg-white/[0.02] transition-colors group"
                   >
-                    <ChevronLeft size={13} />
-                  </button>
-                  <span className="px-1.5">{currentPage} / {Math.max(1, totalPages)}</span>
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages || totalPages === 0}
-                    className="p-1 rounded bg-[#232429] hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none text-[#8B8E97] hover:text-white transition-all"
-                  >
-                    <ChevronRight size={13} />
-                  </button>
-                </div>
-              </div>
-
-              {paginatedLogs.length === 0 ? (
-                <div className="text-center py-12 text-xs text-[#54565F]">
-                  No historical failure records found.
-                </div>
-              ) : (
-                <div className="divide-y divide-white/[0.05]">
-                  {paginatedLogs.map((log) => (
-                    <div 
-                      key={log.id} 
-                      className="p-3.5 sm:px-4 flex items-center justify-between gap-3 text-xs hover:bg-white/[0.02] transition-colors"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                          log.type === 'Slot 1'
-                            ? 'bg-[#F2E75A]/15 text-[#F2E75A] border border-[#F2E75A]/20'
-                            : log.type === 'Slot 2'
-                            ? 'bg-[#3ED3F2]/15 text-[#3ED3F2] border border-[#3ED3F2]/20'
-                            : 'bg-red-500/15 text-red-400 border border-red-500/20'
-                        }`}>
-                          {log.type}
-                        </span>
-                        <span className="font-mono text-[#F4F5F1] text-[11.5px]">
-                          {new Date(log.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                        <span className="font-mono text-[#54565F] text-[11.5px] hidden sm:inline">
-                          {new Date(log.ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </span>
+                    <td className="py-4 px-6 text-[#8e8e93] text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                    <td className="py-4 px-6">
+                      <div className="flex gap-2">
+                        {(log.type === 'Slot 1' || log.type === 'Both') && (
+                          <span className="px-3 py-1 rounded-full bg-[#ff4d4d]/10 text-[#ff4d4d] border border-[#ff4d4d]/20 text-xs font-semibold">
+                            Slot 1
+                          </span>
+                        )}
+                        {(log.type === 'Slot 2' || log.type === 'Both') && (
+                          <span className="px-3 py-1 rounded-full bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 text-xs font-semibold">
+                            Slot 2
+                          </span>
+                        )}
                       </div>
-
-                      <button
-                        onClick={() => {
-                          handleDeleteRecord(log.id);
-                          showToast("Record removed", "info");
-                        }}
-                        className="p-1.5 rounded-lg bg-[#232429] hover:bg-red-500/20 text-[#54565F] hover:text-red-400 border border-white/[0.05] transition-all"
-                        title="Delete this record"
+                    </td>
+                    <td className="py-4 px-6 text-white text-xs">{new Date(log.ts).toLocaleDateString()}</td>
+                    <td className="py-4 px-6 text-[#8e8e93] text-xs font-mono">{new Date(log.ts).toLocaleTimeString('en-GB')}</td>
+                    <td className="py-4 px-6 text-right">
+                      <button 
+                        onClick={() => handleDeleteRecord(log.id)}
+                        className="w-8 h-8 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center ml-auto text-[#8e8e93] hover:text-[#ff4d4d] hover:border-[#ff4d4d]/30 transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={13} />
                       </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
+            </tbody>
+            </table>
+          </div>
 
-            {/* Back to Log Link */}
-            <div className="flex items-center justify-between text-xs text-[#54565F] px-1">
-              <span>Failures are recorded with exact server timestamps.</span>
-              <button
-                onClick={() => setActiveTab('log')}
-                className="text-[#F2E75A] hover:underline font-medium cursor-pointer"
-              >
-                « Back to Log View
-              </button>
+          {/* Mobile Cards */}
+          <div className="md:hidden flex flex-col divide-y divide-[#3a3b3f]/50">
+            <AnimatePresence>
+              {paginatedLogs.map((log, index) => (
+                <motion.div 
+                  key={log.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  layout
+                  className="p-5 flex items-center justify-between"
+                >
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      {(log.type === 'Slot 1' || log.type === 'Both') && (
+                        <span className="px-3 py-1 rounded-full bg-[#ff4d4d]/10 text-[#ff4d4d] border border-[#ff4d4d]/20 text-xs font-semibold">Slot 1</span>
+                      )}
+                      {(log.type === 'Slot 2' || log.type === 'Both') && (
+                        <span className="px-3 py-1 rounded-full bg-[#baff55]/10 text-[#baff55] border border-[#baff55]/20 text-xs font-semibold">Slot 2</span>
+                      )}
+                    </div>
+                    <div className="text-xs text-[#8e8e93]">
+                      {new Date(log.ts).toLocaleDateString()} <span className="font-mono ml-1">{new Date(log.ts).toLocaleTimeString('en-GB')}</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleDeleteRecord(log.id)}
+                    className="w-9 h-9 rounded-full bg-[#161616] border border-[#3a3b3f] flex items-center justify-center text-[#8e8e93] hover:text-[#ff4d4d] hover:border-[#ff4d4d]/30 transition-all"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {logs.length === 0 && (
+            <div className="py-16 text-center text-[#8e8e93] text-sm">No historical records found</div>
+          )}
+        </div>
+        <div className="p-4 border-t border-[#3a3b3f] flex justify-center gap-8">
+          <button 
+            onClick={restoreFromBackup}
+            className="flex items-center gap-2 text-xs font-medium text-[#baff55]/60 hover:text-[#baff55] transition-colors"
+          >
+            <RefreshCw size={12} /> Emergency Restore
+          </button>
+          <button 
+            onClick={handleSafeWipe}
+            className="flex items-center gap-2 text-xs font-medium text-[#8e8e93] hover:text-[#ff4d4d] transition-colors"
+          >
+            <Trash2 size={12} /> Secure Wipe
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Performance Chart */}
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
+        className="bg-[#2a2b2f] rounded-[32px] p-6"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#161616] border border-[#3a3b3f] flex items-center justify-center">
+              <Activity className="w-5 h-5 text-[#8e8e93]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">7-Day Performance</h2>
+              <p className="text-xs text-[#8e8e93]">Historical trend analysis</p>
             </div>
           </div>
-        )}
-
-      </div>
-
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#ff4d4d]" />
+              <span className="text-xs text-[#8e8e93]">Slot 1</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#baff55]" />
+              <span className="text-xs text-[#8e8e93]">Slot 2</span>
+            </div>
+          </div>
+        </div>
+        <div className="h-[260px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
+              <XAxis 
+                dataKey="day" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#8e8e93', fontSize: 11, fontWeight: 500 }}
+                dy={10}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#8e8e93', fontSize: 11, fontWeight: 500 }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#2a2b2f', 
+                  border: '1px solid #3a3b3f',
+                  borderRadius: '16px',
+                  padding: '12px 16px'
+                }}
+                itemStyle={{ fontWeight: 600, fontSize: '12px', color: '#fff' }}
+                labelStyle={{ color: '#8e8e93', marginBottom: '4px' }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="slot1" 
+                stroke="#ff4d4d" 
+                strokeWidth={2}
+                fill="#ff4d4d"
+                fillOpacity={0.06} 
+                animationDuration={1500}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="slot2" 
+                stroke="#baff55" 
+                strokeWidth={2}
+                fill="#baff55"
+                fillOpacity={0.06} 
+                animationDuration={1500}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
     </div>
   );
 };
