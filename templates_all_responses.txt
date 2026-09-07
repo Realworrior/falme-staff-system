@@ -616,10 +616,10 @@ We're giving our live betting feature a quick upgrade to make it even better for
 ⚡ *Triggers: offers, promotions, bonus list, daily cashback, unlimited rains*
 
 ▸ **Standard**
-Great question 🙂 Here's what Betfalme currently offers ➡️ Tax-free bets ➡️ 10% daily cashback on losses ➡️ Unlimited rains on Aviator ➡️ KSh 10 referral bonus ➡️ 5% referral income ➡️ 20% cashback on sports bets ➡️ Free bet when you refer an eligible user. Keep an eye on the platform for new promos!
+Great question 🙂 Here's what Betfalme currently offers ➡️ Tax-free bets ➡️ 10% daily cashback on losses ➡️ Unlimited rains on Aviator ➡️ KSh 10 referral bonus ➡️ 5% referral income ➡️ Free bet when you refer an eligible user. Keep an eye on the platform for new promos!
 
 ▸ **High Empathy**
-We love this question 🙂 Betfalme has some great offers running. You get ➡️ Tax-free bets ➡️ 10% daily cashback on losses ➡️ Unlimited Aviator rains ➡️ KSh 10 per referral ➡️ 5% referral income ➡️ 20% sports cashback ➡️ and a free bet for each eligible referral. Stay tuned for even more!
+We love this question 🙂 Betfalme has some great offers running. You get ➡️ Tax-free bets ➡️ 10% daily cashback on losses ➡️ Unlimited Aviator rains ➡️ KSh 10 per referral ➡️ 5% referral income ➡️ and a free bet for each eligible referral. Stay tuned for even more!
 
 ---
 
