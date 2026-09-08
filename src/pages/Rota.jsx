@@ -12,7 +12,6 @@ import {
   Upload,
   Clock,
   X,
-  Lock,
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ScheduleCalendar } from '../components/Rota/ScheduleCalendar';
@@ -146,26 +145,16 @@ export default function RotaPage() {
 
   const [activeBranch, setActiveBranch] = useState(branchParam === 'sofasafi' ? 'sofasafi' : 'betfalme');
 
-  // Synchronize active branch with URL search params and manager gating
+  // Synchronize active branch with URL search params
   useEffect(() => {
     if (branchParam === 'sofasafi') {
       setActiveBranch('sofasafi');
-      if (!isManagerMode) {
-        setIsManagerLoginOpen(true);
-      }
     } else {
       setActiveBranch('betfalme');
     }
-  }, [branchParam, isManagerMode]);
+  }, [branchParam]);
 
   const handleSwitchBranch = (branch) => {
-    if (branch === 'sofasafi') {
-      if (!isManagerMode) {
-        setPendingBranch('sofasafi');
-        setIsManagerLoginOpen(true);
-        return;
-      }
-    }
     setActiveBranch(branch);
     setSearchParams({ branch });
     showToast(`Switched to ${branch === 'sofasafi' ? 'SofaSafi' : 'Betfalme'} branch`, 'info');
@@ -429,9 +418,6 @@ export default function RotaPage() {
                   }`}
                 >
                   <span>SofaSafi</span>
-                  {!isManagerMode && (
-                    <Lock size={11} className="text-amber-400 shrink-0" />
-                  )}
                 </button>
               </div>
 
@@ -582,89 +568,60 @@ export default function RotaPage() {
           </div>
 
           <div className="p-0 md:p-4 print:p-0">
-            {/* SofaSafi Protected Barrier when unauthenticated */}
-            {activeBranch === 'sofasafi' && !isManagerMode ? (
-              <div className="glass-card p-8 md:p-12 m-4 md:mx-8 rounded-3xl border border-amber-500/20 bg-amber-500/5 text-center flex flex-col items-center justify-center min-h-[380px] space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400 shadow-xl">
-                  <Shield size={32} />
-                </div>
-                <div className="space-y-1.5 max-w-md">
-                  <h3 className="text-xl font-bold text-white tracking-tight">SofaSafi Rota Protected</h3>
-                  <p className="text-xs text-[#8B8E97] leading-relaxed">
-                    Access to the SofaSafi team schedule requires manager credentials.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 pt-2 flex-wrap justify-center">
-                  <button
-                    onClick={() => handleSwitchBranch('betfalme')}
-                    className="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-gray-300 transition-all cursor-pointer"
-                  >
-                    View Betfalme Rota
-                  </button>
-                  <button
-                    onClick={() => setIsManagerLoginOpen(true)}
-                    className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold transition-all shadow-lg cursor-pointer"
-                  >
-                    Enter Management Code
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {activeTab === 'matrix' && (
-                  <ScheduleCalendar
-                    schedule={schedule}
-                    selectedStaff={selectedStaff}
-                    onDayClick={handleDayClick}
-                    overrides={overrides}
-                    desktopView={desktopView}
-                    year={year}
-                    month={month}
+            <>
+              {activeTab === 'matrix' && (
+                <ScheduleCalendar
+                  schedule={schedule}
+                  selectedStaff={selectedStaff}
+                  onDayClick={handleDayClick}
+                  overrides={overrides}
+                  desktopView={desktopView}
+                  year={year}
+                  month={month}
+                />
+              )}
+              {activeTab === 'analytics' && analytics && <AnalyticsDashboard analytics={analytics} />}
+              {activeTab === 'transport' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="pb-12"
+                >
+                  <TransportDashboard 
+                    currentDate={currentDate}
+                    schedule={betfalmeSchedule}
+                    savedRates={betfalmeTransportConfig.rates}
+                    paymentHistory={betfalmeTransportConfig.history}
+                    onSaveRates={handleSaveTransportRates}
+                    onPay={handleProcessPayment}
+                    sofasafiSchedule={sofasafiSchedule}
+                    sofasafiSavedRates={sofasafiTransportConfig.rates}
+                    sofasafiPaymentHistory={sofasafiTransportConfig.history}
+                    onSaveSofaSafiRates={handleSaveSofaSafiTransportRates}
+                    onPaySofaSafi={handleProcessSofaSafiPayment}
+                    isLoggedIn={isManagerMode}
                   />
-                )}
-                {activeTab === 'analytics' && analytics && <AnalyticsDashboard analytics={analytics} />}
-                {activeTab === 'transport' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="pb-12"
-                  >
-                    <TransportDashboard 
-                      currentDate={currentDate}
-                      schedule={betfalmeSchedule}
-                      savedRates={betfalmeTransportConfig.rates}
-                      paymentHistory={betfalmeTransportConfig.history}
-                      onSaveRates={handleSaveTransportRates}
-                      onPay={handleProcessPayment}
-                      sofasafiSchedule={sofasafiSchedule}
-                      sofasafiSavedRates={sofasafiTransportConfig.rates}
-                      sofasafiPaymentHistory={sofasafiTransportConfig.history}
-                      onSaveSofaSafiRates={handleSaveSofaSafiTransportRates}
-                      onPaySofaSafi={handleProcessSofaSafiPayment}
-                      isLoggedIn={isManagerMode}
-                    />
-                  </motion.div>
-                )}
-                {activeTab === 'admin' && isManagerMode && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="glass-card p-8">
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-4 flex items-center gap-2">
-                          <Upload className="text-[#ff7a59]" />
-                          Data Import
-                        </h3>
-                        <button 
-                          onClick={() => setIsImportModalOpen(true)}
-                          className="premium-button w-full py-4 text-white font-black uppercase tracking-widest transition-all"
-                        >
-                          Launch Excel Sync
-                        </button>
-                      </div>
+                </motion.div>
+              )}
+              {activeTab === 'admin' && isManagerMode && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="glass-card p-8">
+                      <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-4 flex items-center gap-2">
+                        <Upload className="text-[#ff7a59]" />
+                        Data Import
+                      </h3>
+                      <button 
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="premium-button w-full py-4 text-white font-black uppercase tracking-widest transition-all"
+                      >
+                        Launch Excel Sync
+                      </button>
                     </div>
                   </div>
-                )}
-              </>
-            )}
+                </div>
+              )}
+            </>
           </div>
         </div>
 
