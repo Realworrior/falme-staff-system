@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 import {
@@ -11,6 +12,7 @@ import {
   Upload,
   Clock,
   X,
+  Lock,
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ScheduleCalendar } from '../components/Rota/ScheduleCalendar';
@@ -107,6 +109,9 @@ const generateICSContent = (staffName, currentDate, schedule) => {
 };
 
 export default function RotaPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const branchParam = searchParams.get('branch');
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -116,6 +121,7 @@ export default function RotaPage() {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isManagerLoginOpen, setIsManagerLoginOpen] = useState(false);
   const [managerPassword, setManagerPassword] = useState('');
+  const [pendingBranch, setPendingBranch] = useState(null);
   const [userEmail, setUserEmail] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [desktopView, setDesktopView] = useState("grid");
@@ -138,13 +144,32 @@ export default function RotaPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const [activeBranch, setActiveBranch] = useState('betfalme');
+  const [activeBranch, setActiveBranch] = useState(branchParam === 'sofasafi' ? 'sofasafi' : 'betfalme');
 
+  // Synchronize active branch with URL search params and manager gating
   useEffect(() => {
-    if (!isManagerMode) {
+    if (branchParam === 'sofasafi') {
+      setActiveBranch('sofasafi');
+      if (!isManagerMode) {
+        setIsManagerLoginOpen(true);
+      }
+    } else {
       setActiveBranch('betfalme');
     }
-  }, [isManagerMode]);
+  }, [branchParam, isManagerMode]);
+
+  const handleSwitchBranch = (branch) => {
+    if (branch === 'sofasafi') {
+      if (!isManagerMode) {
+        setPendingBranch('sofasafi');
+        setIsManagerLoginOpen(true);
+        return;
+      }
+    }
+    setActiveBranch(branch);
+    setSearchParams({ branch });
+    showToast(`Switched to ${branch === 'sofasafi' ? 'SofaSafi' : 'Betfalme'} branch`, 'info');
+  };
 
   // Betfalme Transport config
   const betfalmeTransportConfig = useMemo(() => {
@@ -384,41 +409,36 @@ export default function RotaPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {isManagerMode && (
-                <div className="flex bg-[#0E0E12] border border-white/[0.07] p-1 rounded-full mr-1">
-                  <button
-                    onClick={() => {
-                      setActiveBranch('betfalme');
-                      showToast('Switched to Betfalme branch', 'info');
-                    }}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      activeBranch === 'betfalme'
-                        ? 'bg-[#1B1C22] text-[#F4F5F1] shadow border border-white/10'
-                        : 'text-[#54565F] hover:text-[#8B8E97]'
-                    }`}
-                  >
-                    Betfalme
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveBranch('sofasafi');
-                      showToast('Switched to SofaSafi branch', 'info');
-                    }}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      activeBranch === 'sofasafi'
-                        ? 'bg-[#1B1C22] text-[#F4F5F1] shadow border border-white/10'
-                        : 'text-[#54565F] hover:text-[#8B8E97]'
-                    }`}
-                  >
-                    SofaSafi
-                  </button>
-                </div>
-              )}
+              <div className="flex bg-[#0E0E12] border border-white/[0.07] p-1 rounded-full mr-1">
+                <button
+                  onClick={() => handleSwitchBranch('betfalme')}
+                  className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                    activeBranch === 'betfalme'
+                      ? 'bg-[#1B1C22] text-[#F4F5F1] shadow border border-white/10 font-bold'
+                      : 'text-[#54565F] hover:text-[#8B8E97]'
+                  }`}
+                >
+                  Betfalme
+                </button>
+                <button
+                  onClick={() => handleSwitchBranch('sofasafi')}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                    activeBranch === 'sofasafi'
+                      ? 'bg-[#1B1C22] text-[#F4F5F1] shadow border border-white/10 font-bold'
+                      : 'text-[#54565F] hover:text-[#8B8E97]'
+                  }`}
+                >
+                  <span>SofaSafi</span>
+                  {!isManagerMode && (
+                    <Lock size={11} className="text-amber-400 shrink-0" />
+                  )}
+                </button>
+              </div>
 
               <div className="flex bg-[#0E0E12] border border-white/[0.07] p-1 rounded-full">
                 <button
                   onClick={handlePrevMonth}
-                  className="p-2 hover:bg-white/5 rounded-full transition-all text-[#8B8E97] hover:text-white"
+                  className="p-2 hover:bg-white/5 rounded-full transition-all text-[#8B8E97] hover:text-white cursor-pointer"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -432,7 +452,7 @@ export default function RotaPage() {
                 </div>
                 <button
                   onClick={handleNextMonth}
-                  className="p-2 hover:bg-white/5 rounded-full transition-all text-[#8B8E97] hover:text-white"
+                  className="p-2 hover:bg-white/5 rounded-full transition-all text-[#8B8E97] hover:text-white cursor-pointer"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -441,7 +461,8 @@ export default function RotaPage() {
               {!isManagerMode && (
                 <button
                   onClick={() => setIsManagerLoginOpen(true)}
-                  className="p-2.5 rounded-full bg-[#1B1C22] border border-white/[0.07] hover:border-[#3ED3F2]/40 transition-all text-[#54565F] hover:text-[#3ED3F2] group"
+                  title="Manager Login"
+                  className="p-2.5 rounded-full bg-[#1B1C22] border border-white/[0.07] hover:border-[#3ED3F2]/40 transition-all text-[#54565F] hover:text-[#3ED3F2] group cursor-pointer"
                 >
                   <ShieldAlert size={18} className="group-hover:scale-110 transition-transform" />
                 </button>
@@ -456,7 +477,7 @@ export default function RotaPage() {
             <div className="flex items-center gap-2 mr-6">
               <button 
                 onClick={() => setSelectedStaff(null)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border cursor-pointer ${
                   !selectedStaff 
                     ? "bg-accent border-accent text-black" 
                     : "bg-white/5 border-white/10 text-gray-500 hover:text-gray-300"
@@ -471,7 +492,7 @@ export default function RotaPage() {
                 <button 
                   key={staff.name} 
                   onClick={() => setSelectedStaff(staff.name)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border cursor-pointer ${
                     selectedStaff === staff.name 
                       ? "bg-white/10 border-white/20 text-white" 
                       : "bg-transparent border-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
@@ -496,7 +517,7 @@ export default function RotaPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
                     onClick={handleExportCalendar}
-                    className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-500/30 group"
+                    className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-500/30 group cursor-pointer"
                   >
                     <CalendarIcon size={14} className="group-hover:rotate-12 transition-transform" /> 
                     <span className="text-[10px] font-black uppercase tracking-widest">Sync My Rota</span>
@@ -532,7 +553,7 @@ export default function RotaPage() {
           <div className="flex bg-panel p-1.5 rounded-2xl m-4 md:mx-8 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab('matrix')}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matrix' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${activeTab === 'matrix' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
             >
               Matrix
             </button>
@@ -540,19 +561,19 @@ export default function RotaPage() {
               <>
                 <button
                   onClick={() => setActiveTab('analytics')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'analytics' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${activeTab === 'analytics' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Trends
                 </button>
                 <button
                   onClick={() => setActiveTab('transport')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'transport' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${activeTab === 'transport' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Transport
                 </button>
                 <button
                   onClick={() => setActiveTab('admin')}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'admin' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${activeTab === 'admin' ? 'premium-button' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Admin
                 </button>
@@ -561,57 +582,88 @@ export default function RotaPage() {
           </div>
 
           <div className="p-0 md:p-4 print:p-0">
-            {activeTab === 'matrix' && (
-              <ScheduleCalendar
-                schedule={schedule}
-                selectedStaff={selectedStaff}
-                onDayClick={handleDayClick}
-                overrides={overrides}
-                desktopView={desktopView}
-                year={year}
-                month={month}
-              />
-            )}
-            {activeTab === 'analytics' && analytics && <AnalyticsDashboard analytics={analytics} />}
-            {activeTab === 'transport' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="pb-12"
-              >
-                <TransportDashboard 
-                  currentDate={currentDate}
-                  schedule={betfalmeSchedule}
-                  savedRates={betfalmeTransportConfig.rates}
-                  paymentHistory={betfalmeTransportConfig.history}
-                  onSaveRates={handleSaveTransportRates}
-                  onPay={handleProcessPayment}
-                  sofasafiSchedule={sofasafiSchedule}
-                  sofasafiSavedRates={sofasafiTransportConfig.rates}
-                  sofasafiPaymentHistory={sofasafiTransportConfig.history}
-                  onSaveSofaSafiRates={handleSaveSofaSafiTransportRates}
-                  onPaySofaSafi={handleProcessSofaSafiPayment}
-                  isLoggedIn={isManagerMode}
-                />
-              </motion.div>
-            )}
-            {activeTab === 'admin' && isManagerMode && (
-               <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="glass-card p-8">
-                       <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-4 flex items-center gap-2">
-                         <Upload className="text-[#ff7a59]" />
-                         Data Import
-                       </h3>
-                       <button 
-                         onClick={() => setIsImportModalOpen(true)}
-                         className="premium-button w-full py-4 text-white font-black uppercase tracking-widest transition-all"
-                       >
-                         Launch Excel Sync
-                       </button>
+            {/* SofaSafi Protected Barrier when unauthenticated */}
+            {activeBranch === 'sofasafi' && !isManagerMode ? (
+              <div className="glass-card p-8 md:p-12 m-4 md:mx-8 rounded-3xl border border-amber-500/20 bg-amber-500/5 text-center flex flex-col items-center justify-center min-h-[380px] space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400 shadow-xl">
+                  <Shield size={32} />
+                </div>
+                <div className="space-y-1.5 max-w-md">
+                  <h3 className="text-xl font-bold text-white tracking-tight">SofaSafi Rota Protected</h3>
+                  <p className="text-xs text-[#8B8E97] leading-relaxed">
+                    Access to the SofaSafi team schedule requires manager credentials.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 pt-2 flex-wrap justify-center">
+                  <button
+                    onClick={() => handleSwitchBranch('betfalme')}
+                    className="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-gray-300 transition-all cursor-pointer"
+                  >
+                    View Betfalme Rota
+                  </button>
+                  <button
+                    onClick={() => setIsManagerLoginOpen(true)}
+                    className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold transition-all shadow-lg cursor-pointer"
+                  >
+                    Enter Management Code
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {activeTab === 'matrix' && (
+                  <ScheduleCalendar
+                    schedule={schedule}
+                    selectedStaff={selectedStaff}
+                    onDayClick={handleDayClick}
+                    overrides={overrides}
+                    desktopView={desktopView}
+                    year={year}
+                    month={month}
+                  />
+                )}
+                {activeTab === 'analytics' && analytics && <AnalyticsDashboard analytics={analytics} />}
+                {activeTab === 'transport' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="pb-12"
+                  >
+                    <TransportDashboard 
+                      currentDate={currentDate}
+                      schedule={betfalmeSchedule}
+                      savedRates={betfalmeTransportConfig.rates}
+                      paymentHistory={betfalmeTransportConfig.history}
+                      onSaveRates={handleSaveTransportRates}
+                      onPay={handleProcessPayment}
+                      sofasafiSchedule={sofasafiSchedule}
+                      sofasafiSavedRates={sofasafiTransportConfig.rates}
+                      sofasafiPaymentHistory={sofasafiTransportConfig.history}
+                      onSaveSofaSafiRates={handleSaveSofaSafiTransportRates}
+                      onPaySofaSafi={handleProcessSofaSafiPayment}
+                      isLoggedIn={isManagerMode}
+                    />
+                  </motion.div>
+                )}
+                {activeTab === 'admin' && isManagerMode && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="glass-card p-8">
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-4 flex items-center gap-2">
+                          <Upload className="text-[#ff7a59]" />
+                          Data Import
+                        </h3>
+                        <button 
+                          onClick={() => setIsImportModalOpen(true)}
+                          className="premium-button w-full py-4 text-white font-black uppercase tracking-widest transition-all"
+                        >
+                          Launch Excel Sync
+                        </button>
+                      </div>
                     </div>
                   </div>
-               </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -723,7 +775,10 @@ export default function RotaPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setIsManagerLoginOpen(false)}
+                onClick={() => {
+                  setIsManagerLoginOpen(false);
+                  setPendingBranch(null);
+                }}
                 className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm"
               />
               <motion.div
@@ -756,12 +811,18 @@ export default function RotaPage() {
                       setIsManagerMode(true);
                       setIsManagerLoginOpen(false);
                       setManagerPassword('');
-                      showToast('Admin Mode Active', 'success');
+                      const targetBranch = pendingBranch || (branchParam === 'sofasafi' ? 'sofasafi' : activeBranch);
+                      if (targetBranch === 'sofasafi') {
+                        setActiveBranch('sofasafi');
+                        setSearchParams({ branch: 'sofasafi' });
+                      }
+                      setPendingBranch(null);
+                      showToast('Admin Mode Active - SofaSafi Access Granted', 'success');
                     } else {
                       showToast('Invalid Access Code', 'error');
                     }
                   }}
-                  className="w-full py-4 rounded-2xl bg-amber-600 text-white font-black uppercase tracking-widest hover:bg-amber-500 transition-all"
+                  className="w-full py-4 rounded-2xl bg-amber-600 text-white font-black uppercase tracking-widest hover:bg-amber-500 transition-all cursor-pointer"
                 >
                   Authorize
                 </button>

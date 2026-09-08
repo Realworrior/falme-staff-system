@@ -31,6 +31,13 @@ const navItems = [
     icon: LayoutDashboard,
     badge: null
   },
+  {
+    path: '/ai-agent',
+    label: 'AI Agent',
+    icon: Sparkles,
+    badge: 'AI',
+    badgeColor: 'bg-gradient-to-r from-[#00D66B] to-[#3ED3F2] text-[#04170D] font-black'
+  },
   { 
     path: '/mpesa', 
     label: 'MPesa', 
@@ -70,7 +77,11 @@ const navItems = [
     path: '/rota', 
     label: 'Shift Rota', 
     icon: CalendarDays,
-    badge: null
+    badge: null,
+    subItems: [
+      { label: 'Betfalme', path: '/rota?branch=betfalme' },
+      { label: 'SofaSafi', path: '/rota?branch=sofasafi' }
+    ]
   },
   { 
     path: '/resources', 
@@ -89,7 +100,7 @@ const BottomNav = ({ className }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openSubMenus, setOpenSubMenus] = useState({ '/mpesa': true, '/resources': true, '/tools': false });
+  const [openSubMenus, setOpenSubMenus] = useState({ '/mpesa': true, '/resources': true, '/tools': false, '/rota': true });
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const toggleSubMenu = (path, e) => {
@@ -256,7 +267,7 @@ const BottomNav = ({ className }) => {
                     {item.subItems.map((sub, sIdx) => {
                       const isSubActive = location.search 
                         ? (item.path + location.search) === sub.path 
-                        : location.pathname === sub.path;
+                        : (location.pathname === sub.path || (location.pathname === '/rota' && sub.path.includes('branch=betfalme')));
 
                       return (
                         <NavLink
