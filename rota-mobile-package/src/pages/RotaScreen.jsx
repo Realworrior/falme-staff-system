@@ -6,8 +6,6 @@ import {
   Calendar as CalendarIcon, 
   Upload, 
   Download, 
-  ShieldAlert, 
-  ShieldCheck, 
   X, 
   DollarSign, 
   BarChart2, 
@@ -20,7 +18,6 @@ import { ShiftMates } from '../components/ShiftMates';
 import { TransportDashboard } from '../components/TransportDashboard';
 import { AnalyticsDashboard } from '../components/AnalyticsDashboard';
 import { ImportModal } from '../components/ImportModal';
-import { ManagerLoginModal } from '../components/ManagerLoginModal';
 import { STAFF_THEME } from '../utils/scheduleGenerator';
 
 export function RotaScreen() {
@@ -29,8 +26,6 @@ export function RotaScreen() {
     setCurrentDate,
     activeBranch,
     setActiveBranch,
-    isManagerMode,
-    setIsManagerMode,
     selectedStaff,
     setSelectedStaff,
     selectedDate,
@@ -50,10 +45,12 @@ export function RotaScreen() {
     staffList
   } = useRota();
 
+  // Manager mode is always enabled — no login required
+  const isManagerMode = true;
+
   const { showToast } = useToast();
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [desktopView, setDesktopView] = useState('grid');
 
   const year = currentDate.getFullYear();
@@ -109,19 +106,6 @@ export function RotaScreen() {
               </div>
             </div>
 
-            {/* Mobile Actions Right */}
-            <div className="flex md:hidden items-center gap-2">
-              <button
-                onClick={() => setIsLoginModalOpen(true)}
-                className={`p-2 rounded-full border text-xs ${
-                  isManagerMode 
-                    ? 'bg-[#00D66B]/15 text-[#00D66B] border-[#00D66B]/30' 
-                    : 'bg-[#1B1C22] border-white/10 text-[#8B8E97]'
-                }`}
-              >
-                {isManagerMode ? <ShieldCheck size={16} /> : <ShieldAlert size={16} />}
-              </button>
-            </div>
           </div>
 
           {/* Month Navigator & Branch Switcher */}
@@ -180,25 +164,15 @@ export function RotaScreen() {
               </button>
             </div>
 
-            {/* Desktop Manager Toggle */}
+            {/* Manager Import Button (always visible) */}
             <div className="hidden md:flex items-center gap-2">
-              {isManagerMode ? (
-                <button
-                  onClick={() => setIsImportModalOpen(true)}
-                  className="flex items-center gap-1.5 bg-[#131520] hover:bg-[#1B1C22] border border-white/[0.08] text-xs text-white px-3.5 py-2 rounded-full transition-all cursor-pointer"
-                >
-                  <Upload size={13} className="text-[#00D66B]" />
-                  <span>Import Matrix</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className="p-2.5 rounded-full bg-[#131520] border border-white/[0.07] hover:border-[#00D66B]/40 transition-all text-[#8B8E97] hover:text-[#00D66B] cursor-pointer"
-                  title="Unlock Manager Mode"
-                >
-                  <ShieldAlert size={16} />
-                </button>
-              )}
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-1.5 bg-[#131520] hover:bg-[#1B1C22] border border-white/[0.08] text-xs text-white px-3.5 py-2 rounded-full transition-all cursor-pointer"
+              >
+                <Upload size={13} className="text-[#00D66B]" />
+                <span>Import Matrix</span>
+              </button>
             </div>
           </div>
         </div>
@@ -374,15 +348,6 @@ export function RotaScreen() {
         month={month}
         allOverrides={overrides}
         activeBranch={activeBranch}
-      />
-
-      <ManagerLoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLogin={() => {
-          setIsManagerMode(true);
-          showToast('Manager Mode unlocked', 'success');
-        }}
       />
     </div>
   );
