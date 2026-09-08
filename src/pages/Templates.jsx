@@ -437,56 +437,136 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
 
       <div className="space-y-4">
         {CARDS_CONFIG.map(({ type, title }) => {
-          const text = outputs[type];
+          const rawOutput = outputs[type];
           const isLoading = loadingStates[type];
-          const isCopied = copiedType === type;
-          const hasText = !!text && text.trim().length > 0;
-          const wordCount = hasText ? text.trim().split(/\s+/).length : 0;
-          const charCount = hasText ? text.length : 0;
+          const isShortType = type === 'short';
+
+          // For short type, normalize to array of discrete standalone items
+          const shortItems = isShortType
+            ? (Array.isArray(rawOutput)
+                ? rawOutput.filter(Boolean)
+                : (typeof rawOutput === 'string' && rawOutput.trim().length > 0 ? [rawOutput.trim()] : []))
+            : [];
+
+          const singleText = !isShortType && typeof rawOutput === 'string' ? rawOutput : '';
+          const hasText = isShortType ? shortItems.length > 0 : singleText.trim().length > 0;
+
+          const combinedText = isShortType ? shortItems.join(' ') : singleText;
+          const wordCount = hasText ? combinedText.trim().split(/\s+/).length : 0;
+          const charCount = hasText ? combinedText.length : 0;
+          const isCopiedAll = copiedType === type;
 
           return (
             <div key={type} className="bg-[#1B1C22] rounded-[24px] border border-white/[0.07] p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-bold text-[#F4F5F1]">{title}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[#F4F5F1]">{title}</span>
+                  {isShortType && hasText && (
+                    <span className="text-[10px] font-mono font-bold text-[#00D66B] bg-[#00D66B]/10 border border-[#00D66B]/20 px-2 py-0.5 rounded-full">
+                      {shortItems.length} {shortItems.length === 1 ? 'idea' : 'ideas'}
+                    </span>
+                  )}
+                </div>
 
                 <div className="flex items-center gap-1">
                   {hasText && (
-                    <button onClick={() => onRegenerateSingle(type)} disabled={isLoading} title={`Regenerate ${title}`} className="p-2 text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#232429] rounded-full transition-colors cursor-pointer touch-manipulation">
+                    <button
+                      onClick={() => onRegenerateSingle(type)}
+                      disabled={isLoading}
+                      title={`Regenerate ${title}`}
+                      className="p-2 text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#232429] rounded-full transition-colors cursor-pointer touch-manipulation"
+                    >
                       <RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#00D66B]' : ''}`} />
                     </button>
                   )}
-                  <button onClick={() => hasText && onCopy(type, text)} disabled={!hasText || isLoading} className="p-2 rounded-full text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#232429] transition-colors cursor-pointer disabled:opacity-30 touch-manipulation">
+                  <button
+                    onClick={() => hasText && onCopy(type, combinedText)}
+                    disabled={!hasText || isLoading}
+                    title={isShortType ? 'Copy all standalone ideas' : 'Copy'}
+                    className="p-2 rounded-full text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#232429] transition-colors cursor-pointer disabled:opacity-30 touch-manipulation"
+                  >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
-              <div className="text-sm leading-relaxed text-[#F4F5F1] select-text min-h-[48px]">
+              {/* Main Content Body */}
+              <div className="min-h-[48px]">
                 {isLoading ? (
                   <div className="flex items-center gap-2 text-xs text-[#8B8E97] py-2">
                     <span className="w-3.5 h-3.5 rounded-full border-2 border-[#00D66B]/30 border-t-[#00D66B] animate-spin inline-block" />
                     <span>Generating {title.toLowerCase()} variation...</span>
                   </div>
-                ) : hasText ? text : (
+                ) : hasText ? (
+                  isShortType ? (
+                    <div className="space-y-2 select-text">
+                      {shortItems.map((snippet, idx) => {
+                        const itemKey = `short-${idx}`;
+                        const isItemCopied = copiedType === itemKey;
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-start justify-between gap-3 bg-[#0E0E12] border border-white/[0.05] hover:border-white/15 transition-colors rounded-xl p-3 sm:p-3.5 group/item"
+                          >
+                            <div className="min-w-0 flex-1 pr-1">
+                              <p className="text-xs sm:text-[13px] leading-relaxed text-[#F4F5F1]">
+                                {snippet}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => onCopy(itemKey, snippet)}
+                              disabled={isLoading}
+                              title="Copy this sentence"
+                              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer shrink-0 touch-manipulation active:scale-95 ${
+                                isItemCopied
+                                  ? 'bg-[#00D66B] text-[#04170D] font-bold shadow-sm'
+                                  : 'bg-[#232429] hover:bg-[#2c2e35] hover:text-white border border-white/10 text-[#8B8E97]'
+                              }`}
+                            >
+                              {isItemCopied ? (
+                                <><Check className="w-3 h-3 text-[#04170D] stroke-[3]" /><span>Copied</span></>
+                              ) : (
+                                <><Copy className="w-3 h-3" /><span>Copy</span></>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-sm leading-relaxed text-[#F4F5F1] select-text">
+                      {singleText}
+                    </div>
+                  )
+                ) : (
                   <span className="text-[#54565F] text-xs italic">Click Rewrite Message to generate variations.</span>
                 )}
               </div>
 
+              {/* Card Footer */}
               <div className="flex items-center justify-between pt-3 border-t border-white/5 text-xs flex-wrap gap-2">
                 <span className="font-mono text-[#54565F]">{hasText ? `${wordCount} words · ${charCount} chars` : '—'}</span>
                 <div className="flex items-center gap-2 ml-auto">
                   <button
-                    onClick={() => hasText && onCopy(type, text)}
+                    onClick={() => hasText && onCopy(type, combinedText)}
                     disabled={!hasText || isLoading}
                     className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
-                      isCopied
+                      isCopiedAll
                         ? 'bg-[#00D66B] text-[#04170D] font-bold'
                         : 'bg-[#232429] hover:bg-[#2c2e35] border border-white/5 text-[#F4F5F1]'
                     }`}
                   >
-                    {isCopied ? <><Check className="w-3 h-3 text-[#04170D] inline mr-1 stroke-[3]" /><span>Copied</span></> : <span>Copy</span>}
+                    {isCopiedAll ? (
+                      <><Check className="w-3 h-3 text-[#04170D] inline mr-1 stroke-[3]" /><span>{isShortType ? 'Copied All' : 'Copied'}</span></>
+                    ) : (
+                      <span>{isShortType ? 'Copy All' : 'Copy'}</span>
+                    )}
                   </button>
-                  <button onClick={() => hasText && onUseAsBase(text)} disabled={!hasText || isLoading} className="text-xs text-[#8B8E97] hover:text-[#F4F5F1] px-2 py-1 font-medium transition-colors cursor-pointer disabled:opacity-30 touch-manipulation">
+                  <button
+                    onClick={() => hasText && onUseAsBase(combinedText)}
+                    disabled={!hasText || isLoading}
+                    className="text-xs text-[#8B8E97] hover:text-[#F4F5F1] px-2 py-1 font-medium transition-colors cursor-pointer disabled:opacity-30 touch-manipulation"
+                  >
                     Use as base
                   </button>
                 </div>
@@ -631,7 +711,7 @@ export default function Templates() {
   const [outputs, setOutputs] = useState({
     standard: 'Greetings from the Betfalme support desk, how can I assist you today? Please provide details regarding your inquiry so I can look into this for you immediately.',
     lively: 'Hi there! Welcome to Betfalme support. I am ready to assist you right away, so please share the details of your request below so we can get started.',
-    short: 'Welcome to Betfalme support. Please let us know how we can assist you today so we can begin working on your request.',
+    short: ['Welcome to Betfalme support.', 'Please let us know how we can assist you today so we can begin working on your request.'],
   });
 
   const [loadingStates, setLoadingStates] = useState({ standard: false, lively: false, short: false });
@@ -691,11 +771,19 @@ export default function Templates() {
         toneId,
         categoryTitle: catTitle,
         subsectionTitle: subTitle,
-        avoidHistory: [...(subHistory.standard.slice(-2)), ...(subHistory.lively.slice(-2)), ...(subHistory.short.slice(-2))],
+        avoidHistory: [
+          ...(subHistory.standard.slice(-2)),
+          ...(subHistory.lively.slice(-2)),
+          ...(Array.isArray(subHistory.short) ? subHistory.short.flat().slice(-2) : [])
+        ],
         bypassCache
       });
       if (activeRequestIdRef.current !== currentRequestId) return;
-      const newOutputs = { standard: result.standard || '', lively: result.lively || '', short: result.short || '' };
+      const newOutputs = {
+        standard: result.standard || '',
+        lively: result.lively || '',
+        short: Array.isArray(result.short) ? result.short : (result.short ? [result.short] : [])
+      };
       setOutputs(newOutputs);
       historyRef.current[subKey] = {
         standard: [...(subHistory.standard || []), newOutputs.standard].filter(Boolean),
@@ -777,11 +865,12 @@ export default function Templates() {
     setLoadingStates(prev => ({ ...prev, [type]: true }));
     const subKey = selectedSub?.id || 'custom';
     const subHistory = historyRef.current[subKey] || { standard: [], lively: [], short: [] };
-    const avoid = (subHistory[type] || []).slice(-3);
+    const avoid = (Array.isArray(subHistory[type]) ? subHistory[type].flat() : []).slice(-3);
     try {
-      const newText = await executeSingleRephrase(type, { baseText: textToUse, toneId: selectedToneId, categoryTitle: selectedCat?.title, subsectionTitle: selectedSub?.title, avoidHistory: avoid });
-      setOutputs(prev => ({ ...prev, [type]: newText }));
-      historyRef.current[subKey] = { ...subHistory, [type]: [...(subHistory[type] || []), newText].filter(Boolean) };
+      const newResult = await executeSingleRephrase(type, { baseText: textToUse, toneId: selectedToneId, categoryTitle: selectedCat?.title, subsectionTitle: selectedSub?.title, avoidHistory: avoid });
+      const formatted = type === 'short' ? (Array.isArray(newResult) ? newResult : [newResult]) : newResult;
+      setOutputs(prev => ({ ...prev, [type]: formatted }));
+      historyRef.current[subKey] = { ...subHistory, [type]: [...(subHistory[type] || []), formatted].filter(Boolean) };
       showToast(`Regenerated ${type} variation`);
     } catch (err) {
       showToast(err.message || 'Failed to generate', 'error');
@@ -792,14 +881,16 @@ export default function Templates() {
 
   const handleCopy = useCallback((type, text) => {
     if (!text) return;
-    navigator.clipboard.writeText(text).then(() => {
+    const contentToCopy = Array.isArray(text) ? text.join('\n') : text;
+    navigator.clipboard.writeText(contentToCopy).then(() => {
       setCopiedType(type);
       showToast('Copied to clipboard');
       setTimeout(() => setCopiedType(prev => prev === type ? null : prev), 1800);
     }, () => showToast('Failed to copy', 'error'));
   }, [showToast]);
 
-  const handleUseAsBase = useCallback((text) => {
+  const handleUseAsBase = useCallback((content) => {
+    const text = Array.isArray(content) ? content.join('\n') : (typeof content === 'string' ? content : '');
     setUseCustom(true);
     setCustomText(text);
     setSelectedVariantLabel(null);
