@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Star, ChevronRight, ChevronDown, MessageSquare, ArrowDownToLine, ArrowUpFromLine,
@@ -8,6 +9,8 @@ import {
 } from 'lucide-react';
 
 import { TEMPLATES_DATA } from '../lib/templates/templatesData';
+import { SOFABETS_DATA } from '../lib/templates/sofaBetsData';
+import { SAFIBETS_DATA } from '../lib/templates/safiBetsData';
 import { TONES } from '../lib/templates/tones';
 import { executeRephrase, executeSingleRephrase, getStoredApiKey, setStoredApiKey } from '../lib/templates/rephraseService';
 import { getFavoriteTemplateIds, toggleFavoriteTemplate } from '../lib/templates/storage';
@@ -660,11 +663,75 @@ function ApiKeyModal({ isOpen, onClose, currentKey, onSaveKey }) {
 }
 
 // ─── MAIN TEMPLATES PAGE ──────────────────────────────────────────────────────
+const BRANCH_CONFIG = {
+  betfalme: {
+    id: 'betfalme',
+    label: 'BetFalme',
+    tagline: 'Response Library · BetFalme Direct',
+    data: TEMPLATES_DATA,
+    accent: '#00D66B',
+    accentClass: 'text-[#00D66B]',
+    accentBgClass: 'bg-[#00D66B]',
+    accentBorderClass: 'border-[#00D66B]',
+    pillActive: 'bg-[#00D66B] text-[#04170D] font-bold shadow-sm',
+    greeting: {
+      standard: 'Greetings from the Betfalme support desk, how can I assist you today? Please provide details regarding your inquiry so I can look into this for you immediately.',
+      lively: 'Hi there! Welcome to Betfalme support. I am ready to assist you right away, so please share the details of your request below so we can get started.',
+      short: ['Welcome to Betfalme support.', 'Please let us know how we can assist you today so we can begin working on your request.']
+    }
+  },
+  sofabets: {
+    id: 'sofabets',
+    label: 'SofaBets',
+    tagline: 'Response Library · SofaSafi / SofaBets',
+    data: SOFABETS_DATA,
+    accent: '#A855F7',
+    accentClass: 'text-[#A855F7]',
+    accentBgClass: 'bg-[#A855F7]',
+    accentBorderClass: 'border-[#A855F7]',
+    pillActive: 'bg-[#A855F7] text-white font-bold shadow-sm',
+    greeting: {
+      standard: "Hello! You're through to SofaBets support. Go ahead and let us know what you need help with and we'll get on it right away.",
+      lively: "Hey there! SofaBets support is live. Tell us what's going on and we'll sort it out straight away.",
+      short: ["Welcome to SofaBets support.", "Tell us what you need help with and we'll sort it out immediately."]
+    }
+  },
+  safibets: {
+    id: 'safibets',
+    label: 'SafiBets',
+    tagline: 'Response Library · SofaSafi / SafiBets',
+    data: SAFIBETS_DATA,
+    accent: '#38BDF8',
+    accentClass: 'text-[#38BDF8]',
+    accentBgClass: 'bg-[#38BDF8]',
+    accentBorderClass: 'border-[#38BDF8]',
+    pillActive: 'bg-[#38BDF8] text-[#04170D] font-bold shadow-sm',
+    greeting: {
+      standard: "Good day! You've reached SafiBets customer support. Please go ahead and share your query and we'll assist you promptly.",
+      lively: "Hello! SafiBets support is available and ready. Kindly let us know what you need assistance with today.",
+      short: ["Welcome to SafiBets customer support.", "Please share your query so we can assist you promptly."]
+    }
+  }
+};
+
+// ─── MAIN TEMPLATES PAGE ──────────────────────────────────────────────────────
 export default function Templates() {
-  const [categories] = useState(TEMPLATES_DATA);
-  const [selectedCat, setSelectedCat] = useState(TEMPLATES_DATA[0]);
-  const [selectedSub, setSelectedSub] = useState(TEMPLATES_DATA[0].subsections[0]);
-  const [selectedVariantLabel, setSelectedVariantLabel] = useState(TEMPLATES_DATA[0].subsections[0].variants[0]?.label || null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawBranch = (searchParams.get('branch') || 'betfalme').toLowerCase();
+  const activeBranchKey = BRANCH_CONFIG[rawBranch] ? rawBranch : 'betfalme';
+  const branchConfig = BRANCH_CONFIG[activeBranchKey];
+
+  const [activeBranch, setActiveBranch] = useState(activeBranchKey);
+
+  // Sync state if URL query param changes
+  useEffect(() => {
+    setActiveBranch(activeBranchKey);
+  }, [activeBranchKey]);
+
+  const categories = branchConfig.data;
+  const [selectedCat, setSelectedCat] = useState(categories[0]);
+  const [selectedSub, setSelectedSub] = useState(categories[0]?.subsections[0]);
+  const [selectedVariantLabel, setSelectedVariantLabel] = useState(categories[0]?.subsections[0]?.variants[0]?.label || null);
 
   const [useCustom, setUseCustom] = useState(false);
   const [customText, setCustomText] = useState('');
@@ -708,11 +775,7 @@ export default function Templates() {
     window.addEventListener('mouseup', handleMouseUp);
   }, [sidebarWidth]);
 
-  const [outputs, setOutputs] = useState({
-    standard: 'Greetings from the Betfalme support desk, how can I assist you today? Please provide details regarding your inquiry so I can look into this for you immediately.',
-    lively: 'Hi there! Welcome to Betfalme support. I am ready to assist you right away, so please share the details of your request below so we can get started.',
-    short: ['Welcome to Betfalme support.', 'Please let us know how we can assist you today so we can begin working on your request.'],
-  });
+  const [outputs, setOutputs] = useState(branchConfig.greeting);
 
   const [loadingStates, setLoadingStates] = useState({ standard: false, lively: false, short: false });
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
@@ -730,24 +793,66 @@ export default function Templates() {
     setTimeout(() => setToast(prev => prev?.id === id ? null : prev), 3000);
   }, []);
 
+  // When switching branch
+  const handleSwitchBranch = useCallback((branchKey) => {
+    if (branchKey === activeBranch) return;
+    setActiveBranch(branchKey);
+    setSearchParams({ branch: branchKey });
+    const targetConfig = BRANCH_CONFIG[branchKey] || BRANCH_CONFIG.betfalme;
+    const targetCats = targetConfig.data;
+    const firstCat = targetCats[0];
+    const firstSub = firstCat?.subsections[0];
+    const firstVariant = firstSub?.variants[0];
+
+    setSelectedCat(firstCat);
+    setSelectedSub(firstSub);
+    setSelectedVariantLabel(firstVariant?.label || null);
+    setUseCustom(false);
+    setCustomText('');
+    setOutputs(targetConfig.greeting);
+    showToast(`Switched to ${targetConfig.label} templates`, 'info');
+
+    if (firstVariant?.text) {
+      generateResponses({
+        baseText: firstVariant.text,
+        catTitle: firstCat?.title,
+        subId: firstSub?.id,
+        subTitle: firstSub?.title,
+        toneId: selectedToneId,
+        bypassCache: true
+      });
+    }
+  }, [activeBranch, setSearchParams, selectedToneId, showToast]);
+
   useEffect(() => {
     setFavoriteIds(getFavoriteTemplateIds());
     setApiKey(getStoredApiKey());
 
-    // Auto-generate variations for initial default template on load
-    const initialSub = TEMPLATES_DATA[0]?.subsections[0];
-    const initialText = initialSub?.variants[0]?.text;
+    // When component mounts or branch updates, reset to first sub of current dataset
+    const currentCats = branchConfig.data;
+    const initialCat = currentCats[0];
+    const initialSub = initialCat?.subsections[0];
+    const initialVariant = initialSub?.variants[0];
+
+    setSelectedCat(initialCat);
+    setSelectedSub(initialSub);
+    setSelectedVariantLabel(initialVariant?.label || null);
+    setUseCustom(false);
+    setCustomText('');
+    setOutputs(branchConfig.greeting);
+
+    const initialText = initialVariant?.text;
     if (initialText) {
       generateResponses({
         baseText: initialText,
-        catTitle: TEMPLATES_DATA[0]?.title,
-        subId: initialSub.id,
-        subTitle: initialSub.title,
+        catTitle: initialCat?.title,
+        subId: initialSub?.id,
+        subTitle: initialSub?.title,
         toneId: 'standard',
         bypassCache: true
       });
     }
-  }, []);
+  }, [activeBranchKey]);
 
   const handleSaveApiKey = useCallback((key) => {
     setStoredApiKey(key);
@@ -921,24 +1026,66 @@ export default function Templates() {
       {/* ── Top Header Bar ── */}
       <header className="sticky top-0 z-30 bg-[#0A0A0D]/95 backdrop-blur-xl border-b border-white/[0.07] px-4 sm:px-6 md:px-8 py-3.5 select-none">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:gap-4">
-          {/* Left branding */}
-          <div className="flex items-center justify-between md:justify-start gap-3">
+          {/* Left branding & Branch Switcher */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between md:justify-start gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-2xl bg-[#00D66B] text-[#04170D] font-bold flex items-center justify-center shrink-0 shadow-sm">
+              <div 
+                style={{ backgroundColor: branchConfig.accent }}
+                className="w-9 h-9 rounded-2xl text-[#04170D] font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors"
+              >
                 <Zap className="w-5 h-5 fill-current" />
               </div>
               <div>
-                <h1 className="font-['Space_Grotesk'] text-base font-semibold tracking-tight text-[#F4F5F1] leading-none">
-                  Templates
-                </h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-['Space_Grotesk'] text-base font-semibold tracking-tight text-[#F4F5F1] leading-none">
+                    {branchConfig.label} Templates
+                  </h1>
+                </div>
                 <span className="text-xs text-[#8B8E97] block mt-1">
-                  Response Library
+                  {branchConfig.tagline}
                 </span>
               </div>
             </div>
 
+            {/* Branch Selector Switcher */}
+            <div className="flex items-center bg-[#0E0E12] border border-white/[0.07] p-1 rounded-full sm:ml-2">
+              <button
+                type="button"
+                onClick={() => handleSwitchBranch('betfalme')}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
+                  activeBranch === 'betfalme'
+                    ? 'bg-[#00D66B] text-[#04170D] shadow-sm'
+                    : 'text-[#8B8E97] hover:text-white'
+                }`}
+              >
+                BetFalme
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSwitchBranch('sofabets')}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
+                  activeBranch === 'sofabets'
+                    ? 'bg-[#A855F7] text-white shadow-sm'
+                    : 'text-[#8B8E97] hover:text-white'
+                }`}
+              >
+                SofaBets
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSwitchBranch('safibets')}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
+                  activeBranch === 'safibets'
+                    ? 'bg-[#38BDF8] text-[#04170D] shadow-sm'
+                    : 'text-[#8B8E97] hover:text-white'
+                }`}
+              >
+                SafiBets
+              </button>
+            </div>
+
             {/* Mobile Actions Right */}
-            <div className="flex md:hidden items-center gap-2">
+            <div className="flex md:hidden items-center gap-2 ml-auto sm:ml-0">
               <button
                 onClick={() => setShowOnlyFavorites(prev => !prev)}
                 className={`p-2 text-xs rounded-full flex items-center gap-1 border ${

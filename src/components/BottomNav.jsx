@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -69,9 +69,14 @@ const navItems = [
   { 
     path: '/templates', 
     label: 'Templates', 
-    icon: FileText,
-    badge: '18',
-    badgeColor: 'bg-emerald-500/20 text-emerald-400'
+    icon: FileText, 
+    badge: '3',
+    badgeColor: 'bg-emerald-500/20 text-emerald-400',
+    subItems: [
+      { label: 'BetFalme', path: '/templates?branch=betfalme' },
+      { label: 'SofaBets', path: '/templates?branch=sofabets' },
+      { label: 'SafiBets', path: '/templates?branch=safibets' },
+    ]
   },
   { 
     path: '/rota', 
@@ -100,8 +105,10 @@ const BottomNav = ({ className }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openSubMenus, setOpenSubMenus] = useState({ '/mpesa': true, '/resources': true, '/tools': false, '/rota': true });
+  // Navbars are collapsed by default unless explicitly opened
+  const [openSubMenus, setOpenSubMenus] = useState({});
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [mobileActiveDropdown, setMobileActiveDropdown] = useState(null);
 
   const toggleSubMenu = (path, e) => {
     e.preventDefault();
@@ -112,8 +119,83 @@ const BottomNav = ({ className }) => {
     }));
   };
 
+  // Close mobile dropdown when location changes
+  useEffect(() => {
+    setMobileActiveDropdown(null);
+  }, [location.pathname, location.search]);
+
   return (
     <>
+      {/* ── MOBILE SUBMENU POPUP (Bottom-up above dock) ── */}
+      <AnimatePresence>
+        {mobileActiveDropdown && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileActiveDropdown(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[59] md:hidden"
+            />
+
+            {/* Popup Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed bottom-[74px] left-4 right-4 z-[61] md:hidden bg-[#161822]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3.5 shadow-[0_-12px_40px_rgba(0,0,0,0.8)]"
+            >
+              <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-white/[0.08]">
+                <div className="flex items-center gap-2">
+                  {React.createElement(mobileActiveDropdown.icon, { size: 16, className: 'text-[#00D66B]' })}
+                  <span className="text-xs font-bold text-white tracking-wide">
+                    {mobileActiveDropdown.label}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileActiveDropdown(null)}
+                  className="text-xs text-gray-400 hover:text-white px-2 py-0.5 rounded-full bg-white/5"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1.5">
+                {mobileActiveDropdown.subItems.map((sub, sIdx) => {
+                  const isSubActive = location.search 
+                    ? (mobileActiveDropdown.path + location.search) === sub.path 
+                    : (location.pathname === sub.path || 
+                       (location.pathname === '/rota' && sub.path.includes('branch=betfalme')) ||
+                       (location.pathname === '/templates' && sub.path.includes('branch=betfalme')));
+
+                  return (
+                    <button
+                      key={sIdx}
+                      type="button"
+                      onClick={() => {
+                        navigate(sub.path);
+                        setMobileActiveDropdown(null);
+                      }}
+                      className={`flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium transition-all ${
+                        isSubActive
+                          ? 'bg-[#00D66B] text-[#04170D] font-bold shadow-md'
+                          : 'text-gray-300 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <span>{sub.label}</span>
+                      <ChevronRight size={13} className={isSubActive ? 'text-[#04170D]' : 'text-gray-500'} />
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* ── MOBILE BOTTOM DOCK ── */}
       <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden px-3 pb-3">
         <div
@@ -121,32 +203,47 @@ const BottomNav = ({ className }) => {
         >
           {navItems.map((item) => {
             const Icon = item.icon;
+            const hasSub = item.subItems && item.subItems.length > 0;
             const isActive = item.path === '/' 
               ? location.pathname === '/' 
               : (item.path === '/mpesa' 
                   ? (location.pathname === '/mpesa' || location.pathname === '/counter' || location.pathname === '/sms-ledger')
                   : location.pathname.startsWith(item.path));
+            const isPopupOpen = mobileActiveDropdown?.path === item.path;
 
             return (
-              <NavLink
+              <div
                 key={item.path}
-                to={item.path}
-                className="no-underline flex-1 min-w-0 flex justify-center"
+                onClick={(e) => {
+                  if (hasSub) {
+                    e.preventDefault();
+                    setMobileActiveDropdown(prev => prev?.path === item.path ? null : item);
+                  } else {
+                    setMobileActiveDropdown(null);
+                    navigate(item.path);
+                  }
+                }}
+                className="flex-1 min-w-0 flex justify-center cursor-pointer"
               >
                 <div className={`relative flex flex-col items-center justify-center gap-1 px-1.5 py-2 rounded-2xl transition-all w-full max-w-[54px] ${
-                  isActive ? 'bg-[#00D66B] shadow-lg scale-105' : 'bg-transparent text-gray-400 hover:text-white'
+                  isActive || isPopupOpen ? 'bg-[#00D66B] shadow-lg scale-105' : 'bg-transparent text-gray-400 hover:text-white'
                 }`}>
                   <Icon 
                     size={17} 
-                    className={isActive ? 'text-[#04170D]' : 'text-gray-400'} 
+                    className={isActive || isPopupOpen ? 'text-[#04170D]' : 'text-gray-400'} 
                   />
                   <span className={`text-[8px] font-semibold truncate w-full text-center leading-tight ${
-                    isActive ? 'text-[#04170D] font-bold' : 'text-gray-400'
+                    isActive || isPopupOpen ? 'text-[#04170D] font-bold' : 'text-gray-400'
                   }`}>
                     {item.label.split(' ')[0]}
                   </span>
+                  {hasSub && (
+                    <div className={`absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full ${
+                      isActive || isPopupOpen ? 'bg-[#04170D]' : 'bg-[#00D66B]'
+                    }`} />
+                  )}
                 </div>
-              </NavLink>
+              </div>
             );
           })}
         </div>
@@ -267,7 +364,9 @@ const BottomNav = ({ className }) => {
                     {item.subItems.map((sub, sIdx) => {
                       const isSubActive = location.search 
                         ? (item.path + location.search) === sub.path 
-                        : (location.pathname === sub.path || (location.pathname === '/rota' && sub.path.includes('branch=betfalme')));
+                        : (location.pathname === sub.path || 
+                           (location.pathname === '/rota' && sub.path.includes('branch=betfalme')) ||
+                           (location.pathname === '/templates' && sub.path.includes('branch=betfalme')));
 
                       return (
                         <NavLink
