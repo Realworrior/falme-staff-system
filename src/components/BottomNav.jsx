@@ -31,13 +31,6 @@ const navItems = [
     icon: LayoutDashboard,
     badge: null
   },
-  {
-    path: '/ai-agent',
-    label: 'AI Agent',
-    icon: Sparkles,
-    badge: 'AI',
-    badgeColor: 'bg-gradient-to-r from-[#00D66B] to-[#3ED3F2] text-[#04170D] font-black'
-  },
   { 
     path: '/mpesa', 
     label: 'MPesa', 
