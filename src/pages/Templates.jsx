@@ -685,11 +685,11 @@ const BRANCH_CONFIG = {
     label: 'SofaBets',
     tagline: 'Response Library · SofaSafi / SofaBets',
     data: SOFABETS_DATA,
-    accent: '#A855F7',
-    accentClass: 'text-[#A855F7]',
-    accentBgClass: 'bg-[#A855F7]',
-    accentBorderClass: 'border-[#A855F7]',
-    pillActive: 'bg-[#A855F7] text-white font-bold shadow-sm',
+    accent: '#FF9500',
+    accentClass: 'text-[#FF9500]',
+    accentBgClass: 'bg-[#FF9500]',
+    accentBorderClass: 'border-[#FF9500]',
+    pillActive: 'bg-[#FF9500] text-[#04170D] font-bold shadow-sm',
     greeting: {
       standard: "Hello! You're through to SofaBets support. Go ahead and let us know what you need help with and we'll get on it right away.",
       lively: "Hey there! SofaBets support is live. Tell us what's going on and we'll sort it out straight away.",
@@ -701,11 +701,11 @@ const BRANCH_CONFIG = {
     label: 'SafiBets',
     tagline: 'Response Library · SofaSafi / SafiBets',
     data: SAFIBETS_DATA,
-    accent: '#38BDF8',
-    accentClass: 'text-[#38BDF8]',
-    accentBgClass: 'bg-[#38BDF8]',
-    accentBorderClass: 'border-[#38BDF8]',
-    pillActive: 'bg-[#38BDF8] text-[#04170D] font-bold shadow-sm',
+    accent: '#16A34A',
+    accentClass: 'text-[#16A34A]',
+    accentBgClass: 'bg-[#16A34A]',
+    accentBorderClass: 'border-[#16A34A]',
+    pillActive: 'bg-[#16A34A] text-white font-bold shadow-sm',
     greeting: {
       standard: "Good day! You've reached SafiBets customer support. Please go ahead and share your query and we'll assist you promptly.",
       lively: "Hello! SafiBets support is available and ready. Kindly let us know what you need assistance with today.",
@@ -1065,7 +1065,7 @@ export default function Templates() {
                 onClick={() => handleSwitchBranch('sofabets')}
                 className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
                   activeBranch === 'sofabets'
-                    ? 'bg-[#A855F7] text-white shadow-sm'
+                    ? 'bg-[#FF9500] text-[#04170D] shadow-sm'
                     : 'text-[#8B8E97] hover:text-white'
                 }`}
               >
@@ -1076,7 +1076,7 @@ export default function Templates() {
                 onClick={() => handleSwitchBranch('safibets')}
                 className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
                   activeBranch === 'safibets'
-                    ? 'bg-[#38BDF8] text-[#04170D] shadow-sm'
+                    ? 'bg-[#16A34A] text-white shadow-sm'
                     : 'text-[#8B8E97] hover:text-white'
                 }`}
               >
