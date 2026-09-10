@@ -1052,7 +1052,7 @@ export const SAFIBETS_DATA = [
         variants: [
           {
             label: 'Standard',
-            text: "Your ticket is in the queue and will be attended to shortly. We appreciate your patience.",
+            text: "Your support ticket is currently in our active queue and will be reviewed promptly by a SafiBets representative. We sincerely appreciate your patience.",
           },
           {
             label: 'Alt A',

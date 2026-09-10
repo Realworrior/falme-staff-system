@@ -66,9 +66,9 @@ const navItems = [
     badge: '3',
     badgeColor: 'bg-emerald-500/20 text-emerald-400',
     subItems: [
-      { label: 'BetFalme', path: '/templates?branch=betfalme' },
-      { label: 'SofaBets', path: '/templates?branch=sofabets' },
-      { label: 'SafiBets', path: '/templates?branch=safibets' },
+      { label: 'BetFalme', path: '/templates?branch=betfalme', accent: '#00D66B', activeClass: 'text-[#00D66B] bg-[#00D66B]/10 font-bold', dotBg: 'bg-[#00D66B]' },
+      { label: 'SofaBets', path: '/templates?branch=sofabets', accent: '#FF9500', activeClass: 'text-[#FF9500] bg-[#FF9500]/10 font-bold', dotBg: 'bg-[#FF9500]' },
+      { label: 'SafiBets', path: '/templates?branch=safibets', accent: '#6366F1', activeClass: 'text-[#818CF8] bg-[#6366F1]/15 font-bold', dotBg: 'bg-[#6366F1]' },
     ]
   },
   { 
@@ -172,14 +172,18 @@ const BottomNav = ({ className }) => {
                         navigate(sub.path);
                         setMobileActiveDropdown(null);
                       }}
+                      style={isSubActive && sub.accent ? { backgroundColor: sub.accent, color: sub.accent === '#00D66B' || sub.accent === '#FF9500' ? '#04170D' : '#ffffff' } : undefined}
                       className={`flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium transition-all ${
                         isSubActive
-                          ? 'bg-[#00D66B] text-[#04170D] font-bold shadow-md'
+                          ? (!sub.accent ? 'bg-[#00D66B] text-[#04170D] font-bold shadow-md' : 'font-bold shadow-md')
                           : 'text-gray-300 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      <span>{sub.label}</span>
-                      <ChevronRight size={13} className={isSubActive ? 'text-[#04170D]' : 'text-gray-500'} />
+                      <div className="flex items-center gap-2">
+                        {sub.dotBg && <span className={`w-2 h-2 rounded-full ${sub.dotBg}`} />}
+                        <span>{sub.label}</span>
+                      </div>
+                      <ChevronRight size={13} className={isSubActive ? 'opacity-80' : 'text-gray-500'} />
                     </button>
                   );
                 })}
@@ -369,12 +373,21 @@ const BottomNav = ({ className }) => {
                         >
                           {/* Horizontal connecting tick line */}
                           <div className="absolute -left-[14px] top-1/2 w-2.5 h-[1px] bg-white/10" />
-                          <div className={`text-xs py-1.5 px-3 rounded-lg transition-all ${
-                            isSubActive
-                              ? 'text-[#baff55] font-semibold bg-white/[0.04]'
-                              : 'text-gray-400 hover:text-white hover:bg-white/[0.02]'
-                          }`}>
-                            {sub.label}
+                          <div 
+                            style={isSubActive && sub.accent ? { color: sub.accent === '#6366F1' ? '#818CF8' : sub.accent } : undefined}
+                            className={`text-xs py-1.5 px-2.5 rounded-lg transition-all flex items-center gap-2 ${
+                              isSubActive
+                                ? (sub.activeClass || 'text-[#baff55] font-semibold bg-white/[0.04]')
+                                : 'text-gray-400 hover:text-white hover:bg-white/[0.02]'
+                            }`}
+                          >
+                            {sub.dotBg && (
+                              <span 
+                                style={isSubActive && sub.accent ? { backgroundColor: sub.accent, boxShadow: `0 0 8px ${sub.accent}80` } : undefined}
+                                className={`w-1.5 h-1.5 rounded-full ${sub.dotBg} shrink-0`} 
+                              />
+                            )}
+                            <span>{sub.label}</span>
                           </div>
                         </NavLink>
                       );
@@ -401,7 +414,10 @@ const BottomNav = ({ className }) => {
                             onClick={() => navigate(sub.path)}
                             className="w-full text-left text-xs py-1.5 px-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/[0.06] transition-all flex items-center justify-between"
                           >
-                            <span>{sub.label}</span>
+                            <div className="flex items-center gap-2">
+                              {sub.dotBg && <span className={`w-1.5 h-1.5 rounded-full ${sub.dotBg}`} />}
+                              <span>{sub.label}</span>
+                            </div>
                             <ChevronRight size={11} className="text-gray-500" />
                           </button>
                         ))}

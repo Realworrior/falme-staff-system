@@ -17,8 +17,7 @@ import { getFavoriteTemplateIds, toggleFavoriteTemplate } from '../lib/templates
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getCategoryIcon(catId, isActive) {
-  const cls = `w-4 h-4 shrink-0 ${isActive ? 'text-[#baff55]' : 'text-[#8e8e93]'}`;
+function getCategoryIcon(catId, isActive, activeColor = '#00D66B') {
   const icons = {
     1: MessageSquare, 2: ArrowDownToLine, 3: ArrowUpFromLine,
     4: Gamepad2, 5: Swords, 6: Gift, 7: RotateCcw,
@@ -26,7 +25,12 @@ function getCategoryIcon(catId, isActive) {
     11: ShieldCheck, 12: HelpCircle, 13: AlertCircle,
   };
   const Icon = icons[catId] || MessageSquare;
-  return <Icon className={cls} />;
+  return (
+    <Icon 
+      style={{ color: isActive ? activeColor : '#8e8e93' }} 
+      className="w-4 h-4 shrink-0 transition-colors" 
+    />
+  );
 }
 
 function formatCategoryTitle(title) {
@@ -34,8 +38,9 @@ function formatCategoryTitle(title) {
 }
 
 // ─── CategoryList Sidebar & Mobile Responsive Accordion ───────────────────────
-function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favoriteIds, onToggleFavorite, showOnlyFavorites, isMobileOpen, setIsMobileOpen }) {
+function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favoriteIds, onToggleFavorite, showOnlyFavorites, isMobileOpen, setIsMobileOpen, branchConfig }) {
   const [expandedCatIds, setExpandedCatIds] = useState(() => [categories[0]?.id || 1]);
+  const accentColor = branchConfig?.accent || '#00D66B';
 
   useEffect(() => {
     if (selectedSub) {
@@ -73,12 +78,11 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
     if (q) {
       const catMatches = cat.title.toLowerCase().includes(q);
       const matchedSubs = subs.filter(sub =>
-        sub.id.toLowerCase().includes(q) ||
         sub.title.toLowerCase().includes(q) ||
-        sub.triggers.toLowerCase().includes(q) ||
-        sub.variants.some(v => v.text.toLowerCase().includes(q))
+        sub.id.toLowerCase().includes(q) ||
+        (sub.triggers && sub.triggers.toLowerCase().includes(q))
       );
-      if (catMatches) return { ...cat, subsections: subs };
+      if (catMatches) return cat;
       if (matchedSubs.length > 0) return { ...cat, subsections: matchedSubs };
       return null;
     }
@@ -95,7 +99,7 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
         className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-[#1B1C22] border border-white/[0.07] rounded-2xl text-xs font-semibold text-[#F4F5F1] cursor-pointer active:scale-[0.99] transition-all shadow-md"
       >
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-[#00D66B]" />
+          <Filter style={{ color: accentColor }} className="w-4 h-4" />
           <span>Category Menu ({filteredCategories.length})</span>
         </div>
         <ChevronDown className={`w-4 h-4 text-[#8B8E97] transition-transform duration-200 ${isMobileOpen ? 'rotate-180 text-white' : ''}`} />
@@ -107,7 +111,10 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-[#8B8E97] uppercase tracking-wider">
             <span>Categories</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#232429] text-[#00D66B] border border-white/5 font-semibold">
+            <span 
+              style={{ color: accentColor }}
+              className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#232429] border border-white/5 font-semibold"
+            >
               {filteredCategories.length}
             </span>
           </div>
@@ -143,13 +150,16 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                    {getCategoryIcon(cat.id, isExpanded || !!containsSelected)}
+                    {getCategoryIcon(cat.id, isExpanded || !!containsSelected, accentColor)}
                     <span className={`truncate text-xs font-semibold ${isExpanded || containsSelected ? 'text-[#F4F5F1]' : 'text-[#8B8E97]'}`}>
                       {cleanTitle}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full transition-colors ${isExpanded || containsSelected ? 'bg-[#0E0E12] text-[#00D66B] font-bold' : 'text-[#8B8E97]'}`}>
+                    <span 
+                      style={{ color: (isExpanded || containsSelected) ? accentColor : undefined }}
+                      className={`text-[11px] font-mono px-2 py-0.5 rounded-full transition-colors ${isExpanded || containsSelected ? 'bg-[#0E0E12] font-bold' : 'text-[#8B8E97]'}`}
+                    >
                       {cat.subsections.length}
                     </span>
                     <ChevronRight className={`w-3.5 h-3.5 text-[#8B8E97] transition-transform duration-200 ${isExpanded ? 'rotate-90 text-white' : ''}`} />
@@ -177,16 +187,32 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
                                 onSelectSub(cat, sub);
                                 setIsMobileOpen(false);
                               }}
+                              style={isActive ? { borderColor: `${accentColor}4D` } : {}}
                               className={`group relative flex items-center justify-between w-full pl-3 pr-2.5 py-2.5 rounded-xl cursor-pointer text-xs transition-all touch-manipulation ${
                                 isActive
-                                  ? 'bg-[#232429] text-[#00D66B] font-bold border border-[#00D66B]/30 shadow-sm'
+                                  ? 'bg-[#232429] font-bold border shadow-sm'
                                   : 'text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#1B1C22]'
                               }`}
                             >
-                              {isActive && <div className="absolute left-0 inset-y-2 w-1 bg-[#00D66B] rounded-r" />}
+                              {isActive && (
+                                <div 
+                                  style={{ backgroundColor: accentColor }}
+                                  className="absolute left-0 inset-y-2 w-1 rounded-r" 
+                                />
+                              )}
                               <div className="flex items-center gap-2 min-w-0 pr-1 pl-0.5">
-                                <span className={`text-[11px] font-mono shrink-0 ${isActive ? 'text-[#00D66B]' : 'text-[#54565F]'}`}>{sub.id}</span>
-                                <span className={`truncate text-xs ${isActive ? 'text-[#00D66B]' : 'text-[#8B8E97] group-hover:text-white'}`}>{sub.title}</span>
+                                <span 
+                                  style={{ color: isActive ? accentColor : undefined }}
+                                  className={`text-[11px] font-mono shrink-0 ${isActive ? 'font-bold' : 'text-[#54565F]'}`}
+                                >
+                                  {sub.id}
+                                </span>
+                                <span 
+                                  style={{ color: isActive ? accentColor : undefined }}
+                                  className={`truncate text-xs ${isActive ? '' : 'text-[#8B8E97] group-hover:text-white'}`}
+                                >
+                                  {sub.title}
+                                </span>
                               </div>
                               <button
                                 type="button"
@@ -213,8 +239,10 @@ function CategoryList({ categories, selectedSub, onSelectSub, searchQuery, favor
 }
 
 // ─── WorkspacePanel ───────────────────────────────────────────────────────────
-function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelectVariant, useCustom, onToggleCustom, customText, onCustomTextChange, currentBaseText, tones, selectedToneId, onSelectTone, isGenerating, onGenerate, errorMessage, isFavorite, onToggleFavorite, onOpenKeyModal, hasApiKey }) {
+function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelectVariant, useCustom, onToggleCustom, customText, onCustomTextChange, currentBaseText, tones, selectedToneId, onSelectTone, isGenerating, onGenerate, errorMessage, isFavorite, onToggleFavorite, onOpenKeyModal, hasApiKey, branchConfig }) {
   const [copiedBase, setCopiedBase] = useState(false);
+  const accentColor = branchConfig?.accent || '#00D66B';
+  const isDarkAccentText = accentColor === '#00D66B' || accentColor === '#FF9500';
 
   const handleCopyBase = () => {
     if (!currentBaseText) return;
@@ -254,7 +282,7 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
         <div className="flex items-center gap-2 text-xs text-[#8e8e93] flex-wrap">
           <span className="font-semibold">{cleanCatTitle}</span>
           <span>/</span>
-          <span className="font-mono text-[#baff55] font-bold">{currentSub.id}</span>
+          <span style={{ color: accentColor }} className="font-mono font-bold">{currentSub.id}</span>
         </div>
 
         <div className="flex items-start justify-between gap-3">
@@ -325,9 +353,10 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
                 <button
                   key={v.label}
                   onClick={() => onSelectVariant(v)}
+                  style={isSelected ? { backgroundColor: accentColor, color: isDarkAccentText ? '#04170D' : '#ffffff' } : {}}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
                     isSelected
-                      ? 'bg-[#00D66B] text-[#04170D] shadow-sm font-bold'
+                      ? 'shadow-sm font-bold'
                       : 'text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-white/5'
                   }`}
                 >
@@ -344,7 +373,8 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
             onChange={e => onCustomTextChange(e.target.value)}
             placeholder="Type or paste custom message..."
             rows={4}
-            className="w-full bg-[#0E0E12] border border-white/10 rounded-2xl p-3.5 sm:p-4 text-sm text-[#F4F5F1] leading-relaxed focus:outline-none focus:border-[#00D66B] resize-none min-h-[100px] placeholder-[#54565F]"
+            style={{ borderColor: `${accentColor}4D` }}
+            className="w-full bg-[#0E0E12] border rounded-2xl p-3.5 sm:p-4 text-sm text-[#F4F5F1] leading-relaxed focus:outline-none resize-none min-h-[100px] placeholder-[#54565F]"
           />
         ) : (
           <div className="text-sm leading-relaxed text-[#F4F5F1] py-1 select-text">
@@ -359,7 +389,7 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
             className="bg-[#232429] hover:bg-[#2c2e35] border border-white/10 text-[#F4F5F1] px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer touch-manipulation ml-auto"
           >
             {copiedBase ? (
-              <><Check className="w-3.5 h-3.5 text-[#00D66B] stroke-[3]" /><span className="text-[#00D66B]">Copied</span></>
+              <><Check style={{ color: accentColor }} className="w-3.5 h-3.5 stroke-[3]" /><span style={{ color: accentColor }}>Copied</span></>
             ) : (
               <><Copy className="w-3.5 h-3.5 text-[#8B8E97]" /><span>Copy</span></>
             )}
@@ -378,13 +408,17 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
               <button
                 key={t.id}
                 onClick={() => onSelectTone(t.id)}
+                style={isSelected ? { backgroundColor: `${accentColor}26`, borderColor: accentColor } : {}}
                 className={`p-2.5 sm:p-3 rounded-2xl text-left transition-all cursor-pointer border touch-manipulation ${
                   isSelected
-                    ? 'bg-[#00D66B]/15 border-[#00D66B]'
+                    ? ''
                     : 'bg-[#0E0E12] border-white/5 hover:border-white/20 hover:bg-[#232429]'
                 }`}
               >
-                <div className={`text-xs font-bold ${isSelected ? 'text-[#00D66B]' : 'text-[#F4F5F1]'}`}>
+                <div 
+                  style={{ color: isSelected ? accentColor : undefined }}
+                  className={`text-xs font-bold ${isSelected ? '' : 'text-[#F4F5F1]'}`}
+                >
                   {t.label}
                 </div>
                 <div className="text-[11px] text-[#8B8E97] mt-0.5 line-clamp-1">
@@ -407,10 +441,15 @@ function WorkspacePanel({ currentCat, currentSub, selectedVariantLabel, onSelect
       <button
         onClick={onGenerate}
         disabled={isGenerating || !currentBaseText.trim()}
-        className="w-full bg-[#00D66B] hover:brightness-105 active:scale-[0.99] text-[#04170D] font-bold text-sm py-3.5 px-5 rounded-full shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all touch-manipulation min-h-[48px]"
+        style={{
+          backgroundColor: accentColor,
+          color: isDarkAccentText ? '#04170D' : '#ffffff',
+          boxShadow: isGenerating ? 'none' : `0 8px 25px ${accentColor}40`
+        }}
+        className="w-full hover:brightness-110 active:scale-[0.99] font-bold text-sm py-3.5 px-5 rounded-full shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all touch-manipulation min-h-[48px]"
       >
         {isGenerating ? (
-          <><div className="w-4 h-4 rounded-full border-2 border-[#04170D]/30 border-t-[#04170D] animate-spin" /><span>Generating variations...</span></>
+          <><div style={{ borderColor: isDarkAccentText ? 'rgba(4,23,13,0.3)' : 'rgba(255,255,255,0.3)', borderTopColor: isDarkAccentText ? '#04170D' : '#ffffff' }} className="w-4 h-4 rounded-full border-2 animate-spin" /><span>Generating variations...</span></>
         ) : (
           <>
             <span>Rewrite Message</span>
@@ -431,7 +470,10 @@ const CARDS_CONFIG = [
   { type: 'short', title: 'Short' },
 ];
 
-function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAsBase, onRegenerateSingle }) {
+function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAsBase, onRegenerateSingle, branchConfig }) {
+  const accentColor = branchConfig?.accent || '#00D66B';
+  const isDarkAccentText = accentColor === '#00D66B' || accentColor === '#FF9500';
+
   return (
     <div className="flex flex-col space-y-4 h-full select-none">
       <div className="flex items-center justify-between px-2">
@@ -465,7 +507,10 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-[#F4F5F1]">{title}</span>
                   {isShortType && hasText && (
-                    <span className="text-[10px] font-mono font-bold text-[#00D66B] bg-[#00D66B]/10 border border-[#00D66B]/20 px-2 py-0.5 rounded-full">
+                    <span 
+                      style={{ color: accentColor, backgroundColor: `${accentColor}1A`, borderColor: `${accentColor}33` }}
+                      className="text-[10px] font-mono font-bold border px-2 py-0.5 rounded-full"
+                    >
                       {shortItems.length} {shortItems.length === 1 ? 'idea' : 'ideas'}
                     </span>
                   )}
@@ -479,7 +524,10 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
                       title={`Regenerate ${title}`}
                       className="p-2 text-[#8B8E97] hover:text-[#F4F5F1] hover:bg-[#232429] rounded-full transition-colors cursor-pointer touch-manipulation"
                     >
-                      <RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#00D66B]' : ''}`} />
+                      <RotateCw 
+                        style={isLoading ? { color: accentColor } : undefined}
+                        className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} 
+                      />
                     </button>
                   )}
                   <button
@@ -497,7 +545,10 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
               <div className="min-h-[48px]">
                 {isLoading ? (
                   <div className="flex items-center gap-2 text-xs text-[#8B8E97] py-2">
-                    <span className="w-3.5 h-3.5 rounded-full border-2 border-[#00D66B]/30 border-t-[#00D66B] animate-spin inline-block" />
+                    <span 
+                      style={{ borderColor: `${accentColor}4D`, borderTopColor: accentColor }}
+                      className="w-3.5 h-3.5 rounded-full border-2 animate-spin inline-block" 
+                    />
                     <span>Generating {title.toLowerCase()} variation...</span>
                   </div>
                 ) : hasText ? (
@@ -520,14 +571,15 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
                               onClick={() => onCopy(itemKey, snippet)}
                               disabled={isLoading}
                               title="Copy this sentence"
+                              style={isItemCopied ? { backgroundColor: accentColor, color: isDarkAccentText ? '#04170D' : '#ffffff' } : undefined}
                               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer shrink-0 touch-manipulation active:scale-95 ${
                                 isItemCopied
-                                  ? 'bg-[#00D66B] text-[#04170D] font-bold shadow-sm'
+                                  ? 'font-bold shadow-sm'
                                   : 'bg-[#232429] hover:bg-[#2c2e35] hover:text-white border border-white/10 text-[#8B8E97]'
                               }`}
                             >
                               {isItemCopied ? (
-                                <><Check className="w-3 h-3 text-[#04170D] stroke-[3]" /><span>Copied</span></>
+                                <><Check style={{ color: isDarkAccentText ? '#04170D' : '#ffffff' }} className="w-3 h-3 stroke-[3]" /><span>Copied</span></>
                               ) : (
                                 <><Copy className="w-3 h-3" /><span>Copy</span></>
                               )}
@@ -553,14 +605,15 @@ function AlternativesPanel({ outputs, loadingStates, copiedType, onCopy, onUseAs
                   <button
                     onClick={() => hasText && onCopy(type, combinedText)}
                     disabled={!hasText || isLoading}
+                    style={isCopiedAll ? { backgroundColor: accentColor, color: isDarkAccentText ? '#04170D' : '#ffffff' } : undefined}
                     className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
                       isCopiedAll
-                        ? 'bg-[#00D66B] text-[#04170D] font-bold'
+                        ? 'font-bold'
                         : 'bg-[#232429] hover:bg-[#2c2e35] border border-white/5 text-[#F4F5F1]'
                     }`}
                   >
                     {isCopiedAll ? (
-                      <><Check className="w-3 h-3 text-[#04170D] inline mr-1 stroke-[3]" /><span>{isShortType ? 'Copied All' : 'Copied'}</span></>
+                      <><Check style={{ color: isDarkAccentText ? '#04170D' : '#ffffff' }} className="w-3 h-3 inline mr-1 stroke-[3]" /><span>{isShortType ? 'Copied All' : 'Copied'}</span></>
                     ) : (
                       <span>{isShortType ? 'Copy All' : 'Copy'}</span>
                     )}
@@ -701,11 +754,12 @@ const BRANCH_CONFIG = {
     label: 'SafiBets',
     tagline: 'Response Library · SofaSafi / SafiBets',
     data: SAFIBETS_DATA,
-    accent: '#16A34A',
-    accentClass: 'text-[#16A34A]',
-    accentBgClass: 'bg-[#16A34A]',
-    accentBorderClass: 'border-[#16A34A]',
-    pillActive: 'bg-[#16A34A] text-white font-bold shadow-sm',
+    accent: '#6366F1',
+    accentLight: '#818CF8',
+    accentClass: 'text-[#818CF8]',
+    accentBgClass: 'bg-[#6366F1]',
+    accentBorderClass: 'border-[#6366F1]',
+    pillActive: 'bg-[#6366F1] text-white font-bold shadow-md shadow-indigo-500/30',
     greeting: {
       standard: "Good day! You've reached SafiBets customer support. Please go ahead and share your query and we'll assist you promptly.",
       lively: "Hello! SafiBets support is available and ready. Kindly let us know what you need assistance with today.",
@@ -874,12 +928,13 @@ export default function Templates() {
       const result = await executeRephrase({
         baseText,
         toneId,
+        brandName: branchConfig.label,
         categoryTitle: catTitle,
         subsectionTitle: subTitle,
         avoidHistory: [
-          ...(subHistory.standard.slice(-2)),
-          ...(subHistory.lively.slice(-2)),
-          ...(Array.isArray(subHistory.short) ? subHistory.short.flat().slice(-2) : [])
+          ...(subHistory.standard.slice(-3)),
+          ...(subHistory.lively.slice(-3)),
+          ...(Array.isArray(subHistory.short) ? subHistory.short.flat().slice(-3) : [])
         ],
         bypassCache
       });
@@ -972,7 +1027,14 @@ export default function Templates() {
     const subHistory = historyRef.current[subKey] || { standard: [], lively: [], short: [] };
     const avoid = (Array.isArray(subHistory[type]) ? subHistory[type].flat() : []).slice(-3);
     try {
-      const newResult = await executeSingleRephrase(type, { baseText: textToUse, toneId: selectedToneId, categoryTitle: selectedCat?.title, subsectionTitle: selectedSub?.title, avoidHistory: avoid });
+      const newResult = await executeSingleRephrase(type, { 
+        baseText: textToUse, 
+        toneId: selectedToneId, 
+        brandName: branchConfig.label, 
+        categoryTitle: selectedCat?.title, 
+        subsectionTitle: selectedSub?.title, 
+        avoidHistory: avoid 
+      });
       const formatted = type === 'short' ? (Array.isArray(newResult) ? newResult : [newResult]) : newResult;
       setOutputs(prev => ({ ...prev, [type]: formatted }));
       historyRef.current[subKey] = { ...subHistory, [type]: [...(subHistory[type] || []), formatted].filter(Boolean) };
@@ -1021,8 +1083,16 @@ export default function Templates() {
 
   const totalSubsections = categories.reduce((acc, cat) => acc + cat.subsections.length, 0);
 
+  const accentColor = branchConfig.accent;
+  const isDarkAccentText = accentColor === '#00D66B' || accentColor === '#FF9500';
+
   return (
-    <div className="min-h-screen bg-[#0A0A0D] text-[#F4F5F1] flex flex-col selection:bg-[#00D66B]/30 selection:text-[#00D66B] font-sans">
+    <div 
+      style={{
+        '--branch-accent': accentColor,
+      }}
+      className="min-h-screen bg-[#0A0A0D] text-[#F4F5F1] flex flex-col font-sans"
+    >
       {/* ── Top Header Bar ── */}
       <header className="sticky top-0 z-30 bg-[#0A0A0D]/95 backdrop-blur-xl border-b border-white/[0.07] px-4 sm:px-6 md:px-8 py-3.5 select-none">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:gap-4">
@@ -1030,8 +1100,11 @@ export default function Templates() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between md:justify-start gap-3">
             <div className="flex items-center gap-3">
               <div 
-                style={{ backgroundColor: branchConfig.accent }}
-                className="w-9 h-9 rounded-2xl text-[#04170D] font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors"
+                style={{ 
+                  backgroundColor: branchConfig.accent,
+                  color: isDarkAccentText ? '#04170D' : '#ffffff'
+                }}
+                className="w-9 h-9 rounded-2xl font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors"
               >
                 <Zap className="w-5 h-5 fill-current" />
               </div>
@@ -1076,7 +1149,7 @@ export default function Templates() {
                 onClick={() => handleSwitchBranch('safibets')}
                 className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
                   activeBranch === 'safibets'
-                    ? 'bg-[#16A34A] text-white shadow-sm'
+                    ? 'bg-[#6366F1] text-white shadow-md shadow-indigo-500/30'
                     : 'text-[#8B8E97] hover:text-white'
                 }`}
               >
@@ -1113,7 +1186,12 @@ export default function Templates() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search templates, triggers, or codes (e.g. 2.1)..."
-              className="w-full bg-[#1B1C22] hover:bg-[#232429] focus:bg-[#232429] border border-white/[0.07] focus:border-[#00D66B] rounded-full pl-11 pr-12 py-2.5 sm:py-3 text-xs text-[#F4F5F1] placeholder-[#54565F] focus:outline-none transition-all font-mono"
+              style={{
+                '--focus-border': accentColor
+              }}
+              onFocus={e => e.target.style.borderColor = accentColor}
+              onBlur={e => e.target.style.borderColor = ''}
+              className="w-full bg-[#1B1C22] hover:bg-[#232429] focus:bg-[#232429] border border-white/[0.07] rounded-full pl-11 pr-12 py-2.5 sm:py-3 text-xs text-[#F4F5F1] placeholder-[#54565F] focus:outline-none transition-all font-mono"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {searchQuery ? (
@@ -1134,7 +1212,7 @@ export default function Templates() {
                 showOnlyFavorites ? 'bg-amber-400/10 text-amber-400 border-amber-400/30' : 'bg-[#1B1C22] border-white/[0.07] text-[#8B8E97] hover:text-white hover:bg-[#232429]'
               }`}
             >
-              <Star className={`w-3.5 h-3.5 ${showOnlyFavorites ? 'fill-current text-amber-400' : 'text-[#8B8E97]'}`} />
+              <Star className={`w-3.5 h-3.5 ${showOnlyFavorites ? 'fill-current' : ''}`} />
               <span>Starred</span>
               {favoriteIds.length > 0 && (
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 font-bold">
@@ -1180,6 +1258,7 @@ export default function Templates() {
             showOnlyFavorites={showOnlyFavorites}
             isMobileOpen={isMobileOpen}
             setIsMobileOpen={setIsMobileOpen}
+            branchConfig={branchConfig}
           />
         </section>
 
@@ -1189,7 +1268,10 @@ export default function Templates() {
           className="hidden lg:flex flex-col justify-center items-center w-2 -mx-3 self-stretch cursor-col-resize z-20 group hover:w-3 transition-all select-none"
           title="Drag to resize Category column"
         >
-          <div className="w-[3px] h-12 rounded-full bg-white/10 group-hover:bg-[#00D66B] transition-colors" />
+          <div 
+            style={{ backgroundColor: `${accentColor}4D` }}
+            className="w-[3px] h-12 rounded-full transition-colors" 
+          />
         </div>
 
         {/* Column 2 & 3: Template Workspace & AI Variations Rail (Flex-1) */}
@@ -1216,6 +1298,7 @@ export default function Templates() {
               onToggleFavorite={selectedSub ? () => handleToggleFavorite(selectedSub.id) : undefined}
               onOpenKeyModal={() => setIsKeyModalOpen(true)}
               hasApiKey={!!apiKey}
+              branchConfig={branchConfig}
             />
           </section>
 
@@ -1228,6 +1311,7 @@ export default function Templates() {
               onCopy={handleCopy}
               onUseAsBase={handleUseAsBase}
               onRegenerateSingle={handleRegenerateSingle}
+              branchConfig={branchConfig}
             />
           </section>
         </div>

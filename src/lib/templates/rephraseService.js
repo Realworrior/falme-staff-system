@@ -17,9 +17,8 @@ const TONE_MAP = {
 // Officially supported & active Gemini API model identifiers (fastest first)
 const CANDIDATE_MODELS = [
   'gemini-3.5-flash-lite',
-  'gemini-3.5-flash',
-  'gemini-3.6-flash',
   'gemini-flash-latest',
+  'gemini-3.6-flash',
 ];
 
 function cleanErrorMessage(err) {
@@ -56,29 +55,62 @@ function cleanShortOutput(shortRaw, slotMap) {
  * Emergency offline fallback — only fires when ALL Gemini API calls fail.
  * Decomposes text into standalone actionable thoughts for Short.
  */
-function generateInstantFallback(baseText) {
+function generateInstantFallback(baseText, toneId = 'standard', brandName = '') {
   const clean = baseText.trim();
+  const seed = Math.floor(Math.random() * 3);
 
-  // Standard: minimal phrase-level rewrite to avoid returning raw source
-  const standard = clean
-    .replace(/please note that/gi, 'Be advised —')
-    .replace(/kindly/gi, 'Please')
-    .replace(/we are sorry/gi, 'We apologise')
-    .replace(/feel free to/gi, 'do not hesitate to')
-    .replace(/we would like to inform you/gi, 'We want you to know')
-    .trim();
+  // Standard: Dynamic tone and phrase transformations
+  const standardStarters = [
+    ['Hello.', 'Hello —', 'Greetings.'],
+    ['Please note that', 'Be advised that', 'Kindly note that'],
+    ['we will get right on it', 'we will address this promptly', 'we are investigating right now'],
+    ['we appreciate your patience', 'thank you for your patience with us', 'we thank you for bearing with us'],
+  ];
 
-  // Lively: minimal context enrichment
-  const lively = clean
-    .replace(/deposit/gi, '💳 deposit')
-    .replace(/withdraw/gi, '💸 withdraw')
-    .replace(/mpesa|m-pesa/gi, '📲 M-PESA')
-    .replace(/bet/gi, '🎯 bet')
-    .replace(/account/gi, '🔐 account')
-    .replace(/send|share/gi, '📤 send')
-    .trim();
+  let standard = clean;
+  if (seed === 0) {
+    standard = standard
+      .replace(/please note that/gi, 'Be advised —')
+      .replace(/kindly/gi, 'Please')
+      .replace(/we are sorry/gi, 'We apologise')
+      .replace(/feel free to/gi, 'do not hesitate to')
+      .replace(/we would like to inform you that/gi, 'We want you to know that');
+  } else if (seed === 1) {
+    standard = standard
+      .replace(/please note that/gi, 'Kindly keep in mind that')
+      .replace(/kindly/gi, 'Please')
+      .replace(/we will get right on it/gi, 'we are attending to this immediately')
+      .replace(/reach out/gi, 'contact support')
+      .replace(/we are investigating/gi, 'our team is looking into this right now');
+  } else {
+    standard = standard
+      .replace(/please note that/gi, 'For your awareness,')
+      .replace(/we are sorry for the inconvenience/gi, 'we regret any delays caused')
+      .replace(/as quickly as possible/gi, 'without delay')
+      .replace(/please share/gi, 'kindly provide');
+  }
 
-  // Short: Extract distinct standalone ideas/sentences, strip all filler
+  // Lively: Contextual emojis and dynamic energy
+  const emojiSets = [
+    { deposit: '💳 deposit', withdraw: '💸 withdraw', mpesa: '📲 M-PESA', bet: '🎯 bet', account: '🔐 account' },
+    { deposit: '⚡ deposit', withdraw: '💰 withdraw', mpesa: '📱 M-PESA', bet: '🔥 bet', account: '👤 account' },
+    { deposit: '✨ deposit', withdraw: '💵 withdraw', mpesa: '📲 M-PESA', bet: '🎲 bet', account: '🔑 account' },
+  ];
+  const activeEmojis = emojiSets[seed];
+  let lively = clean
+    .replace(/deposit/gi, activeEmojis.deposit)
+    .replace(/withdraw/gi, activeEmojis.withdraw)
+    .replace(/mpesa|m-pesa/gi, activeEmojis.mpesa)
+    .replace(/bet\b/gi, activeEmojis.bet)
+    .replace(/account/gi, activeEmojis.account);
+
+  if (seed === 0) {
+    lively = lively.replace(/^(Hello|Good day|Hi there)/i, '$1! Happy to help 🚀');
+  } else if (seed === 1) {
+    lively = lively.replace(/^(Hello|Good day|Hi there)/i, '$1! We are right here with you ✨');
+  }
+
+  // Short: Distinct standalone ideas
   const fillerRx = /\b(please note that|kindly note that|we would like to inform you that|we are pleased to inform you|as per our records|for your information|we are sorry to hear that|we understand your concern|feel free to contact us)\b/gi;
   const compressed = clean
     .replace(fillerRx, '')
@@ -94,7 +126,7 @@ function generateInstantFallback(baseText) {
 
   const short = parts.length > 0 ? parts : [compressed];
 
-  return { standard, lively, short };
+  return { standard: standard.trim(), lively: lively.trim(), short };
 }
 
 /**
@@ -186,9 +218,19 @@ You MUST respond strictly with a valid JSON object matching this schema (no mark
   ]
 }`;
 
-function buildPrompt({ baseText, toneId, categoryTitle, subsectionTitle, avoidHistory = [] }) {
+function buildPrompt({ baseText, toneId, brandName, categoryTitle, subsectionTitle, avoidHistory = [] }) {
   const tone = TONE_MAP[toneId] || TONE_MAP.standard;
   let prompt = '';
+  if (brandName) {
+    prompt += `Target Brand Platform: ${brandName}\n`;
+    if (brandName.toLowerCase().includes('sofabets')) {
+      prompt += `Brand Voice: Casual, upbeat, friendly lifestyle betting support. Energetic, welcoming tone.\n`;
+    } else if (brandName.toLowerCase().includes('safibets')) {
+      prompt += `Brand Voice: Polished, refined, courteous, and respectful premium customer support.\n`;
+    } else {
+      prompt += `Brand Voice: Direct, clear, sport-focused, professional support.\n`;
+    }
+  }
   if (categoryTitle)   prompt += `Support Category: ${categoryTitle}\n`;
   if (subsectionTitle) prompt += `Topic / Sub-section: ${subsectionTitle}\n`;
   prompt += `Selected Agent Tone: ${tone.label} — ${tone.desc}\n`;
@@ -197,10 +239,10 @@ function buildPrompt({ baseText, toneId, categoryTitle, subsectionTitle, avoidHi
   if (avoidHistory && avoidHistory.length > 0) {
     prompt += `\n[Freshness Constraint — Avoid These Previously Generated Variants]\n`;
     avoidHistory.forEach((t, i) => { prompt += `Variant ${i + 1}: """${typeof t === 'string' ? t : JSON.stringify(t)}"""\n`; });
-    prompt += `All new outputs must have distinct vocabulary, structure, and phrasing from the above.\n`;
+    prompt += `All new outputs must have completely fresh, distinct vocabulary, sentence structure, and phrasing from the above.\n`;
   }
 
-  prompt += `\nApply all System Role rules and generate the JSON object now:`;
+  prompt += `\nFreshness Directive: Generate brand-accurate, fresh, and naturally varied phrasing. Do not reuse generic clichés. Apply all System Role rules and generate the JSON object now:`;
   return prompt;
 }
 
@@ -215,6 +257,7 @@ export async function executeRephrase(options) {
   const {
     baseText,
     toneId,
+    brandName,
     categoryTitle,
     subsectionTitle,
     avoidHistory = [],
@@ -225,6 +268,7 @@ export async function executeRephrase(options) {
   const prompt = buildPrompt({
     baseText: maskedText,
     toneId,
+    brandName,
     categoryTitle,
     subsectionTitle,
     avoidHistory,
@@ -246,9 +290,8 @@ export async function executeRephrase(options) {
             config: {
               systemInstruction: SYSTEM_INSTRUCTION,
               responseMimeType: 'application/json',
-              // High temperature ensures each call produces noticeably different outputs
-              temperature: 1.0,
-              topP: 0.97,
+              temperature: 1.05,
+              topP: 0.98,
               topK: 40,
             },
           });
@@ -303,9 +346,9 @@ export async function executeRephrase(options) {
  * Regenerates a single variant (standard | lively | short) via Gemini.
  */
 export async function executeSingleRephrase(type, options) {
-  const { baseText, toneId, categoryTitle, subsectionTitle, avoidHistory = [] } = options;
+  const { baseText, toneId, brandName, categoryTitle, subsectionTitle, avoidHistory = [] } = options;
   const { maskedText, slotMap } = maskEntities(baseText);
-  const prompt = buildPrompt({ baseText: maskedText, toneId, categoryTitle, subsectionTitle, avoidHistory });
+  const prompt = buildPrompt({ baseText: maskedText, toneId, brandName, categoryTitle, subsectionTitle, avoidHistory });
 
   const availableKeys = getApiKeys();
   if (availableKeys.length > 0) {
@@ -320,8 +363,8 @@ export async function executeSingleRephrase(type, options) {
             config: {
               systemInstruction: SYSTEM_INSTRUCTION,
               responseMimeType: 'application/json',
-              temperature: 1.0,
-              topP: 0.97,
+              temperature: 1.05,
+              topP: 0.98,
               topK: 40,
             },
           });
