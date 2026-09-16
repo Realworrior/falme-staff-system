@@ -8,9 +8,91 @@ import {
   Clock, 
   RotateCcw,
   SlidersHorizontal,
+  Bell,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
+
+// ─── Web Audio Chime Generator ────────────────────────────────────────────────
+function playChimeSound(tone = 'classic', volume = 0.7) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(Math.max(0, Math.min(1, volume)), ctx.currentTime);
+    masterGain.connect(ctx.destination);
+
+    if (tone === 'digital') {
+      // Crisp digital double beep
+      [0, 0.12].forEach((startTime, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(i === 0 ? 880 : 1320, ctx.currentTime + startTime);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + 0.08);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(ctx.currentTime + startTime);
+        osc.stop(ctx.currentTime + startTime + 0.09);
+      });
+    } else if (tone === 'marimba') {
+      // Gentle 3-note melodic arpeggio (C5 -> E5 -> G5)
+      const freqs = [523.25, 659.25, 783.99];
+      freqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.1));
+        gain.gain.setValueAtTime(0.35, ctx.currentTime + (idx * 0.1));
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.1) + 0.35);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(ctx.currentTime + (idx * 0.1));
+        osc.stop(ctx.currentTime + (idx * 0.1) + 0.36);
+      });
+    } else if (tone === 'warning') {
+      // Two-tone warning prompt
+      const freqs = [587.33, 440];
+      freqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.15));
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + (idx * 0.15));
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.15) + 0.25);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(ctx.currentTime + (idx * 0.15));
+        osc.stop(ctx.currentTime + (idx * 0.15) + 0.26);
+      });
+    } else {
+      // Classic pleasant ascending chime (D5 -> A5)
+      const notes = [587.33, 880];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.14));
+        gain.gain.setValueAtTime(0.35, ctx.currentTime + (idx * 0.14));
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.14) + 0.45);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(ctx.currentTime + (idx * 0.14));
+        osc.stop(ctx.currentTime + (idx * 0.14) + 0.46);
+      });
+    }
+  } catch (err) {
+    console.warn("[HourlyCounter] Audio playback error:", err);
+  }
+}
 
 // ─── Deterministic Time Window Engine ──────────────────────────────────────────
 
@@ -143,6 +225,26 @@ export default function HourlyCounter() {
     return localStorage.getItem("betfalme_mpesa_wth_label") || "Completed withdrawal";
   });
 
+  // ── Alert Settings State (Minimal by default) ────────────────────────────
+  const [alertSettings, setAlertSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("betfalme_hourly_alert_settings");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      rolloverAlert: true,      // Turn-of-the-hour alert (:00)
+      soundEnabled: true,       // Play chime sound
+      tone: 'classic',          // 'classic' | 'digital' | 'marimba'
+      volume: 0.7,              // 0.1 to 1.0
+      desktopNotify: true,      // HTML5 browser desktop notification
+      fiveMinWarning: false,    // Optional :55 warning
+    };
+  });
+
+  const [notificationPermission, setNotificationPermission] = useState(() => {
+    return typeof Notification !== 'undefined' ? Notification.permission : 'default';
+  });
+
   const toast = useToast();
   const addToast = toast?.addToast || toast?.showToast || (() => {});
 
@@ -217,6 +319,107 @@ export default function HourlyCounter() {
       localStorage.setItem("betfalme_mpesa_wth_label", withdrawalLabel);
     } catch {}
   }, [depositLabel, withdrawalLabel]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("betfalme_hourly_alert_settings", JSON.stringify(alertSettings));
+    } catch {}
+  }, [alertSettings]);
+
+  // Request browser desktop notification permission
+  const requestNotificationPermission = useCallback(async () => {
+    if (typeof Notification === 'undefined') {
+      addToast("Desktop notifications are not supported by your browser", "error");
+      return;
+    }
+    try {
+      const perm = await Notification.requestPermission();
+      setNotificationPermission(perm);
+      if (perm === 'granted') {
+        addToast("Desktop notifications enabled successfully!", "success");
+        try {
+          new Notification("🔔 Shift Alerts Enabled", {
+            body: "You'll receive a desktop notification at every :00 hour shift rollover.",
+            tag: "alert_test_welcome"
+          });
+        } catch {}
+      } else if (perm === 'denied') {
+        addToast("Notifications were blocked. Please enable them in your browser settings.", "warning");
+      }
+    } catch (err) {
+      console.warn("[HourlyCounter] Notification permission error:", err);
+    }
+  }, [addToast]);
+
+  // Rollover & 5-minute warning monitoring
+  const lastActiveWindowKeyRef = useRef(getWindowKey(new Date()));
+  const warningTriggeredMapRef = useRef({});
+
+  useEffect(() => {
+    const currentKey = getWindowKey(nowTime);
+    const prevKey = lastActiveWindowKeyRef.current;
+
+    // Detect rollover (:00)
+    if (prevKey && currentKey !== prevKey) {
+      lastActiveWindowKeyRef.current = currentKey;
+
+      if (alertSettings.rolloverAlert) {
+        const completedRecord = hourlyLogsMapRef.current[prevKey] || null;
+        const prevWin = getShiftWindow(new Date(nowTime.getTime() - 60000));
+        const dep = completedRecord ? (completedRecord.depositCount || 0) : 0;
+        const wth = completedRecord ? (completedRecord.withdrawalCount || 0) : 0;
+        const total = dep + wth;
+
+        // Play Sound Chime
+        if (alertSettings.soundEnabled) {
+          playChimeSound(alertSettings.tone, alertSettings.volume);
+        }
+
+        // Desktop Notification
+        if (alertSettings.desktopNotify && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try {
+            const notif = new Notification(`⏰ Shift Window Ended: ${prevWin.timeRange}`, {
+              body: `📥 Deposits: ${dep} | 📤 Withdrawals: ${wth} (${total} total)\nClick to view and copy shift report.`,
+              tag: `hourly_rollover_${prevKey}`
+            });
+            notif.onclick = () => {
+              window.focus();
+              notif.close();
+            };
+          } catch (e) {
+            console.warn("Desktop notification trigger error:", e);
+          }
+        }
+
+        addToast(`⏰ Shift window ${prevWin.timeRangeShort} closed (${dep} Dep, ${wth} Wth)`, "info");
+      }
+    } else {
+      lastActiveWindowKeyRef.current = currentKey;
+    }
+
+    // Optional 5-Minute Warning Check (:55)
+    if (alertSettings.fiveMinWarning) {
+      const minutes = nowTime.getMinutes();
+      const seconds = nowTime.getSeconds();
+      const warningKey = `${currentKey}_55`;
+
+      if (minutes === 55 && seconds <= 5 && !warningTriggeredMapRef.current[warningKey]) {
+        warningTriggeredMapRef.current[warningKey] = true;
+        if (alertSettings.soundEnabled) {
+          playChimeSound('warning', alertSettings.volume * 0.85);
+        }
+        if (alertSettings.desktopNotify && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try {
+            new Notification("⚠️ 5 Minutes Remaining in Shift Hour", {
+              body: "The current shift bracket is closing in 5 minutes.",
+              tag: `warning_${warningKey}`
+            });
+          } catch {}
+        }
+        addToast("⚠️ 5 minutes left in current shift window", "warning");
+      }
+    }
+  }, [nowTime, alertSettings, addToast]);
 
   // ── Database Sync ─────────────────────────────────────────────────────────
   const syncMapToSupabase = useCallback(async (map) => {
@@ -506,6 +709,24 @@ export default function HourlyCounter() {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => {
+                if (alertSettings.soundEnabled) {
+                  playChimeSound(alertSettings.tone, alertSettings.volume);
+                  addToast(`Playing test ${alertSettings.tone} chime`, "info");
+                } else {
+                  addToast("Sound alerts are currently muted", "warning");
+                }
+              }}
+              className={`w-9 h-9 rounded-full border transition-all flex items-center justify-center cursor-pointer ${
+                alertSettings.soundEnabled
+                  ? 'bg-[#232429] hover:bg-[#0E0E12] border-white/[0.07] text-[#00D66B]'
+                  : 'bg-[#232429] hover:bg-[#0E0E12] border-white/[0.07] text-[#54565F]'
+              }`}
+              title={alertSettings.soundEnabled ? "Sound enabled (Click to test chime)" : "Sound muted"}
+            >
+              {alertSettings.soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+            </button>
+            <button
               onClick={handleResetCounts}
               className="w-9 h-9 rounded-full bg-[#232429] hover:bg-[#0E0E12] border border-white/[0.07] flex items-center justify-center text-[#8B8E97] hover:text-[#F4F5F1] transition-all cursor-pointer"
               title="Reset hour counters"
@@ -519,38 +740,169 @@ export default function HourlyCounter() {
                   ? 'bg-[#0E0E12] text-[#F4F5F1] border-white/20'
                   : 'bg-[#232429] hover:bg-[#0E0E12] border-white/[0.07] text-[#8B8E97] hover:text-[#F4F5F1]'
               }`}
-              title="Settings & Labels"
+              title="Settings & Alerts"
             >
               <SlidersHorizontal size={15} />
             </button>
           </div>
         </div>
 
-        {/* Settings Panel */}
+        {/* Settings & Alerts Panel */}
         {showSettingsModal && (
-          <div className="mb-5 p-4 rounded-2xl bg-[#0E0E12] border border-white/[0.07] space-y-3 animate-in fade-in duration-150 text-xs">
-            <div className="flex items-center justify-between text-[#8B8E97] font-medium border-b border-white/[0.05] pb-2">
-              <span>Counter Settings &amp; Custom Labels</span>
-              <button onClick={() => setShowSettingsModal(false)} className="hover:text-white p-0.5 cursor-pointer"><X size={13} /></button>
+          <div className="mb-6 p-5 rounded-2xl bg-[#0E0E12] border border-white/[0.09] space-y-4 animate-in fade-in duration-150 text-xs">
+            <div className="flex items-center justify-between text-[#8B8E97] font-medium border-b border-white/[0.06] pb-2.5">
+              <span className="text-[13px] font-semibold text-[#F4F5F1] flex items-center gap-2">
+                <Bell size={14} className="text-[#00D66B]" />
+                Shift Alerts & Counter Settings
+              </span>
+              <button onClick={() => setShowSettingsModal(false)} className="hover:text-white p-0.5 cursor-pointer"><X size={14} /></button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-[11px] text-[#54565F] block mb-1">Deposit Label in Copied Report:</label>
+
+            {/* Section 1: Alert Triggers & Notification */}
+            <div className="space-y-3 bg-[#1B1C22]/60 p-3.5 rounded-xl border border-white/[0.05]">
+              <span className="text-[11px] font-semibold text-[#8B8E97] uppercase tracking-wider block">
+                Shift Window Alerts
+              </span>
+
+              {/* Rollover Toggle */}
+              <div className="flex items-center justify-between py-1">
+                <div>
+                  <div className="text-white font-medium text-xs">Turn-of-the-Hour Alert (:00 Rollover)</div>
+                  <div className="text-[11px] text-[#54565F]">Triggers when shift hour closes with completed summary stats</div>
+                </div>
                 <input
-                  type="text"
-                  value={depositLabel}
-                  onChange={(e) => setDepositLabel(e.target.value)}
-                  className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#00D66B]"
+                  type="checkbox"
+                  checked={alertSettings.rolloverAlert}
+                  onChange={(e) => setAlertSettings(s => ({ ...s, rolloverAlert: e.target.checked }))}
+                  className="w-4 h-4 accent-[#00D66B] rounded cursor-pointer"
                 />
               </div>
-              <div>
-                <label className="text-[11px] text-[#54565F] block mb-1">Withdrawal Label in Copied Report:</label>
+
+              {/* Desktop Push Notification Toggle */}
+              <div className="flex items-center justify-between py-1 border-t border-white/[0.04]">
+                <div>
+                  <div className="text-white font-medium text-xs flex items-center gap-1.5">
+                    <span>Desktop System Notifications</span>
+                    {notificationPermission === 'granted' ? (
+                      <span className="text-[10px] bg-[#00D66B]/15 text-[#00D66B] font-semibold px-2 py-0.5 rounded-full border border-[#00D66B]/30">
+                        Active
+                      </span>
+                    ) : (
+                      <span className="text-[10px] bg-[#F2E75A]/15 text-[#F2E75A] font-semibold px-2 py-0.5 rounded-full border border-[#F2E75A]/30">
+                        Permission required
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-[#54565F]">Alerts you even if the browser window or tab is minimized</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {notificationPermission !== 'granted' ? (
+                    <button
+                      onClick={requestNotificationPermission}
+                      className="px-2.5 py-1 bg-[#00D66B] text-[#04170D] font-bold text-[11px] rounded-lg hover:brightness-105 cursor-pointer shadow-sm"
+                    >
+                      Enable
+                    </button>
+                  ) : (
+                    <input
+                      type="checkbox"
+                      checked={alertSettings.desktopNotify}
+                      onChange={(e) => setAlertSettings(s => ({ ...s, desktopNotify: e.target.checked }))}
+                      className="w-4 h-4 accent-[#00D66B] rounded cursor-pointer"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* 5-Min Warning (:55) Toggle */}
+              <div className="flex items-center justify-between py-1 border-t border-white/[0.04]">
+                <div>
+                  <div className="text-white font-medium text-xs">5-Minute Pre-Rollover Warning (:55)</div>
+                  <div className="text-[11px] text-[#54565F]">Gentle prompt 5 minutes before current hour closes</div>
+                </div>
                 <input
-                  type="text"
-                  value={withdrawalLabel}
-                  onChange={(e) => setWithdrawalLabel(e.target.value)}
-                  className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#3ED3F2]"
+                  type="checkbox"
+                  checked={alertSettings.fiveMinWarning}
+                  onChange={(e) => setAlertSettings(s => ({ ...s, fiveMinWarning: e.target.checked }))}
+                  className="w-4 h-4 accent-[#00D66B] rounded cursor-pointer"
                 />
+              </div>
+            </div>
+
+            {/* Section 2: Sound Settings */}
+            <div className="space-y-3 bg-[#1B1C22]/60 p-3.5 rounded-xl border border-white/[0.05]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-[#8B8E97] uppercase tracking-wider">
+                  Audio &amp; Chime Tone
+                </span>
+                <button
+                  onClick={() => playChimeSound(alertSettings.tone, alertSettings.volume)}
+                  className="px-2.5 py-1 bg-[#232429] hover:bg-white/10 text-white font-medium text-[11px] rounded-lg border border-white/10 flex items-center gap-1 cursor-pointer"
+                >
+                  <Volume2 size={12} className="text-[#00D66B]" />
+                  <span>Test Chime</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="text-[11px] text-[#54565F] block mb-1">Chime Tone:</label>
+                  <select
+                    value={alertSettings.tone}
+                    onChange={(e) => {
+                      const tone = e.target.value;
+                      setAlertSettings(s => ({ ...s, tone }));
+                      playChimeSound(tone, alertSettings.volume);
+                    }}
+                    className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#00D66B] cursor-pointer"
+                  >
+                    <option value="classic">Classic Chime (Ascending D5-A5)</option>
+                    <option value="digital">Digital Double Beep</option>
+                    <option value="marimba">Soft Marimba Arpeggio</option>
+                  </select>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] text-[#54565F]">Chime Volume:</label>
+                    <span className="font-mono text-[11px] text-[#8B8E97]">{Math.round(alertSettings.volume * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="1.0"
+                    step="0.05"
+                    value={alertSettings.volume}
+                    onChange={(e) => setAlertSettings(s => ({ ...s, volume: parseFloat(e.target.value) }))}
+                    className="w-full accent-[#00D66B] cursor-pointer mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Custom Labels */}
+            <div className="space-y-2 bg-[#1B1C22]/60 p-3.5 rounded-xl border border-white/[0.05]">
+              <span className="text-[11px] font-semibold text-[#8B8E97] uppercase tracking-wider block">
+                Copied Report Labels
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="text-[11px] text-[#54565F] block mb-1">Deposit Label:</label>
+                  <input
+                    type="text"
+                    value={depositLabel}
+                    onChange={(e) => setDepositLabel(e.target.value)}
+                    className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#00D66B]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-[#54565F] block mb-1">Withdrawal Label:</label>
+                  <input
+                    type="text"
+                    value={withdrawalLabel}
+                    onChange={(e) => setWithdrawalLabel(e.target.value)}
+                    className="w-full bg-[#1B1C22] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#3ED3F2]"
+                  />
+                </div>
               </div>
             </div>
           </div>
