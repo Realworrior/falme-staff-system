@@ -15,18 +15,44 @@ import {
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
 
-// ─── Web Audio Chime Generator ────────────────────────────────────────────────
-function playChimeSound(tone = 'classic', volume = 0.7) {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
+// ─── Web Audio Singleton & Autoplay Unlocker ──────────────────────────────────
+let globalAudioCtx = null;
 
+function getAudioContext() {
+  try {
+    if (!globalAudioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        globalAudioCtx = new AudioContextClass();
+      }
+    }
+    if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+      globalAudioCtx.resume().catch(() => {});
+    }
+  } catch (e) {
+    console.warn("[HourlyCounter] AudioContext init error:", e);
+  }
+  return globalAudioCtx;
+}
+
+// Unlock audio on first user gesture anywhere
+if (typeof window !== 'undefined') {
+  const unlockAudio = () => {
+    const ctx = getAudioContext();
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+  };
+  ['click', 'touchstart', 'keydown', 'mousedown'].forEach(ev => {
+    window.addEventListener(ev, unlockAudio, { passive: true });
+  });
+}
+
+function executeChime(ctx, tone, volume) {
+  try {
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(Math.max(0, Math.min(1, volume)), ctx.currentTime);
+    const safeVol = Math.max(0.05, Math.min(1, volume || 0.7));
+    masterGain.gain.setValueAtTime(safeVol, ctx.currentTime);
     masterGain.connect(ctx.destination);
 
     if (tone === 'digital') {
@@ -90,8 +116,45 @@ function playChimeSound(tone = 'classic', volume = 0.7) {
       });
     }
   } catch (err) {
+    console.warn("[HourlyCounter] executeChime error:", err);
+  }
+}
+
+function playChimeSound(tone = 'classic', volume = 0.7) {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => executeChime(ctx, tone, volume)).catch(() => {});
+    } else {
+      executeChime(ctx, tone, volume);
+    }
+  } catch (err) {
     console.warn("[HourlyCounter] Audio playback error:", err);
   }
+}
+
+// Web Worker for unthrottled background clock
+function createClockWorker() {
+  const blob = new Blob([`
+    let timer = null;
+    self.onmessage = function(e) {
+      if (e.data === 'start') {
+        if (!timer) {
+          timer = setInterval(function() {
+            self.postMessage({ type: 'tick', timestamp: Date.now() });
+          }, 1000);
+        }
+      } else if (e.data === 'stop') {
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
+      }
+    };
+  `], { type: 'application/javascript' });
+  
+  return new Worker(URL.createObjectURL(blob));
 }
 
 // ─── Deterministic Time Window Engine ──────────────────────────────────────────
@@ -300,10 +363,31 @@ export default function HourlyCounter() {
   const hourlyLogsMapRef = useRef(hourlyLogsMap);
   useEffect(() => { hourlyLogsMapRef.current = hourlyLogsMap; }, [hourlyLogsMap]);
 
-  // Keep nowTime updated every second
+  // Accurate Web Worker clock to prevent background tab throttling
   useEffect(() => {
-    const timer = setInterval(() => setNowTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    let worker;
+    let fallbackInterval;
+    try {
+      worker = createClockWorker();
+      worker.onmessage = (e) => {
+        if (e.data?.type === 'tick') {
+          setNowTime(new Date(e.data.timestamp));
+        }
+      };
+      worker.postMessage('start');
+    } catch {
+      fallbackInterval = setInterval(() => setNowTime(new Date()), 1000);
+    }
+
+    return () => {
+      if (worker) {
+        try {
+          worker.postMessage('stop');
+          worker.terminate();
+        } catch {}
+      }
+      if (fallbackInterval) clearInterval(fallbackInterval);
+    };
   }, []);
 
   // Save to localStorage
@@ -351,6 +435,49 @@ export default function HourlyCounter() {
     }
   }, [addToast]);
 
+  // Core trigger for rollover alert
+  const triggerRolloverAlert = useCallback((prevKey, customDep, customWth, isTest = false) => {
+    const completedRecord = hourlyLogsMapRef.current[prevKey] || null;
+    const prevWin = getShiftWindow(new Date(Date.now() - 60000));
+    const dep = customDep !== undefined ? customDep : (completedRecord ? (completedRecord.depositCount || 0) : 0);
+    const wth = customWth !== undefined ? customWth : (completedRecord ? (completedRecord.withdrawalCount || 0) : 0);
+    const total = dep + wth;
+
+    // 1. Play Sound
+    if (alertSettings.soundEnabled) {
+      playChimeSound(alertSettings.tone, alertSettings.volume);
+    }
+
+    // 2. Desktop Notification
+    if (alertSettings.desktopNotify && typeof Notification !== 'undefined') {
+      if (Notification.permission === 'granted') {
+        try {
+          const title = isTest 
+            ? `[TEST] ⏰ Shift Window Ended: ${prevWin.timeRange}`
+            : `⏰ Shift Window Ended: ${prevWin.timeRange}`;
+          const notif = new Notification(title, {
+            body: `📥 Deposits: ${dep} | 📤 Withdrawals: ${wth} (${total} total)\nClick to focus and copy shift report.`,
+            tag: `hourly_rollover_${prevKey}_${Date.now()}`
+          });
+          notif.onclick = () => {
+            window.focus();
+            notif.close();
+          };
+        } catch (e) {
+          console.warn("Desktop notification trigger error:", e);
+        }
+      }
+    }
+
+    // 3. In-App Toast
+    addToast(
+      isTest 
+        ? `🔔 [Test Alert] Shift window ${prevWin.timeRangeShort} closed (${dep} Dep, ${wth} Wth)`
+        : `⏰ Shift window ${prevWin.timeRangeShort} closed (${dep} Dep, ${wth} Wth)`,
+      "info"
+    );
+  }, [alertSettings, addToast]);
+
   // Rollover & 5-minute warning monitoring
   const lastActiveWindowKeyRef = useRef(getWindowKey(new Date()));
   const warningTriggeredMapRef = useRef({});
@@ -364,34 +491,7 @@ export default function HourlyCounter() {
       lastActiveWindowKeyRef.current = currentKey;
 
       if (alertSettings.rolloverAlert) {
-        const completedRecord = hourlyLogsMapRef.current[prevKey] || null;
-        const prevWin = getShiftWindow(new Date(nowTime.getTime() - 60000));
-        const dep = completedRecord ? (completedRecord.depositCount || 0) : 0;
-        const wth = completedRecord ? (completedRecord.withdrawalCount || 0) : 0;
-        const total = dep + wth;
-
-        // Play Sound Chime
-        if (alertSettings.soundEnabled) {
-          playChimeSound(alertSettings.tone, alertSettings.volume);
-        }
-
-        // Desktop Notification
-        if (alertSettings.desktopNotify && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          try {
-            const notif = new Notification(`⏰ Shift Window Ended: ${prevWin.timeRange}`, {
-              body: `📥 Deposits: ${dep} | 📤 Withdrawals: ${wth} (${total} total)\nClick to view and copy shift report.`,
-              tag: `hourly_rollover_${prevKey}`
-            });
-            notif.onclick = () => {
-              window.focus();
-              notif.close();
-            };
-          } catch (e) {
-            console.warn("Desktop notification trigger error:", e);
-          }
-        }
-
-        addToast(`⏰ Shift window ${prevWin.timeRangeShort} closed (${dep} Dep, ${wth} Wth)`, "info");
+        triggerRolloverAlert(prevKey);
       }
     } else {
       lastActiveWindowKeyRef.current = currentKey;
@@ -400,10 +500,9 @@ export default function HourlyCounter() {
     // Optional 5-Minute Warning Check (:55)
     if (alertSettings.fiveMinWarning) {
       const minutes = nowTime.getMinutes();
-      const seconds = nowTime.getSeconds();
       const warningKey = `${currentKey}_55`;
 
-      if (minutes === 55 && seconds <= 5 && !warningTriggeredMapRef.current[warningKey]) {
+      if (minutes === 55 && !warningTriggeredMapRef.current[warningKey]) {
         warningTriggeredMapRef.current[warningKey] = true;
         if (alertSettings.soundEnabled) {
           playChimeSound('warning', alertSettings.volume * 0.85);
@@ -419,7 +518,7 @@ export default function HourlyCounter() {
         addToast("⚠️ 5 minutes left in current shift window", "warning");
       }
     }
-  }, [nowTime, alertSettings, addToast]);
+  }, [nowTime, alertSettings, triggerRolloverAlert, addToast]);
 
   // ── Database Sync ─────────────────────────────────────────────────────────
   const syncMapToSupabase = useCallback(async (map) => {
@@ -826,6 +925,36 @@ export default function HourlyCounter() {
                   onChange={(e) => setAlertSettings(s => ({ ...s, fiveMinWarning: e.target.checked }))}
                   className="w-4 h-4 accent-[#00D66B] rounded cursor-pointer"
                 />
+              </div>
+
+              {/* Instant Test Buttons */}
+              <div className="flex items-center gap-2 pt-2 border-t border-white/[0.04] flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => triggerRolloverAlert(activeKey, activeRecord.depositCount, activeRecord.withdrawalCount, true)}
+                  className="px-3 py-1.5 bg-[#232429] hover:bg-white/10 text-white font-medium text-[11px] rounded-lg border border-white/10 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Bell size={12} className="text-[#00D66B]" />
+                  <span>Simulate :00 Rollover Alert</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    playChimeSound('warning', alertSettings.volume * 0.85);
+                    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                      try {
+                        new Notification("⚠️ [TEST] 5 Minutes Remaining in Shift Hour", {
+                          body: "The current shift bracket is closing in 5 minutes.",
+                          tag: `test_warning_${Date.now()}`
+                        });
+                      } catch {}
+                    }
+                    addToast("⚠️ [Test] 5-minute warning alert fired", "warning");
+                  }}
+                  className="px-3 py-1.5 bg-[#232429] hover:bg-white/10 text-white font-medium text-[11px] rounded-lg border border-white/10 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Test 5-Min Warning</span>
+                </button>
               </div>
             </div>
 
